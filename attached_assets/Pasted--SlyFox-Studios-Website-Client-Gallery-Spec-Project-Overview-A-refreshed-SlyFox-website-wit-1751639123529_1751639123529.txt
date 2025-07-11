@@ -1,0 +1,123 @@
+📸 SlyFox Studios Website & Client Gallery — Spec
+🎯 Project Overview
+A refreshed SlyFox website with a public-facing service showcase plus a client gallery system for viewing, sharing, and managing photography shoots.
+Backlinks & shareability baked in for SEO boost.
+
+🗂️ Entities
+Users
+
+id
+
+email
+
+password (hashed)
+
+role (staff or client)
+
+Clients
+
+id
+
+name
+
+slug (for /clients/:slug)
+
+user_id (optional, if they register)
+
+Shoots
+
+id
+
+client_id
+
+title
+
+is_private
+
+Images
+
+id
+
+shoot_id
+
+filename or url
+
+is_private
+
+🌍 Pages & Routes
+🏠 Public Website
+Page	Route	Purpose
+Home	/	Hero, showcase, CTA, links to core services
+Photography Landing	/photography	Show main photography categories
+Photography Subpage	/photography/[subcategory]	Details for each subcategory
+Videography Landing	/videography	Show main videography categories
+Videography Subpage	/videography/[subcategory]	Details for each subcategory
+About Us	/about	Company info, mission, team
+Pricing	/pricing	Transparent packages, PDF download optional
+Contact Us	/contact	Contact form, send to email/Slack
+Client Gallery	/clients/[slug]	Unique public gallery for each client, link-shareable
+
+🔒 Auth / Admin
+Page	Route	Purpose
+Admin Panel	/admin	Staff login, CRUD for clients, shoots, images
+Client Dashboard	/dashboard	Client login, manage privacy, select layout
+
+🔐 Access Control
+Public: All main pages, all galleries that are not is_private.
+
+Staff: /admin routes only.
+
+Client: /dashboard for linked shoots only.
+
+🗃️ Tech Stack Recommendation
+Frontend: Next.js (SSR & API routes built-in) or Astro if you fancy static-heavy.
+
+Styles: TailwindCSS. Upload your exact fonts & brand CSS.
+
+Backend: Next.js API routes or Express.
+
+ORM: Prisma with PostgreSQL (Supabase or Railway are good for free-tier dev).
+
+Storage: S3, Cloudflare R2, or Supabase Storage. Signed URLs for downloads.
+
+Auth: NextAuth.js or Supabase Auth.
+
+Contact Form: Basic POST route, email via SMTP or service (e.g. Formspree).
+
+⚙️ Key Functional Flows
+Staff:
+
+Log in → create client → create shoot → upload images → generate client slug.
+
+Client:
+
+Receive link → view gallery → optional: create account → log in → manage privacy/layout.
+
+Public:
+
+Land on gallery via link → view → download images → share on Linktree/socials.
+
+📝 Build Tips
+Fonts: Upload real WOFF/WOFF2, link via CSS.
+
+Nav: Static nav with nested dropdowns for service sub-categories.
+
+SEO: OG meta tags for gallery pages so they look good when shared.
+
+Sitemap: /robots.txt + sitemap.xml for Google indexing main pages only.
+
+Admin UI: Don’t over-polish — just get it working.
+
+✅ Handoff Checklist
+ Add this spec to your README.md.
+
+ Save final fonts & colour palette.
+
+ Export any reusable CSS snippets.
+
+ Generate the base Next.js routes & folders matching the sitemap.
+
+ Connect to your dev DB.
+
+ Test slug flow: create → upload → share → toggle privacy.
+
