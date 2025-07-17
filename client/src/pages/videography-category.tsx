@@ -329,15 +329,21 @@ export default function VideographyCategory() {
           </div>
           
           <div className="max-w-3xl">
-            <h1 className="text-5xl lg:text-6xl font-saira font-black mb-6">
-              {data.name.split(' ')[0]} <span className="text-gold">{data.name.split(' ').slice(1).join(' ')}</span>
+            <h1 className="text-5xl lg:text-6xl font-quicksand font-light mb-6">
+              {data.name.split(' ')[0]} <span className="text-salmon">{data.name.split(' ').slice(1).join(' ')}</span>
             </h1>
-            <p className="text-xl text-muted-foreground mb-8">
+            <p className="text-2xl font-corinthia text-cyan mb-4">
+              {data.name === "Corporate Videography" ? "Professional excellence in every frame" : 
+               data.name === "Wedding Videography" ? "Love stories captured in motion" :
+               data.name === "Event Videography" ? "Moments that matter, preserved forever" :
+               "Creative storytelling through film"}
+            </p>
+            <p className="text-lg text-muted-foreground mb-8">
               {data.description}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/contact">
-                <Button className="bg-gold text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold-muted transition-all duration-300">
+                <Button className="bg-salmon text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-salmon-muted transition-all duration-300">
                   Start Project
                 </Button>
               </Link>
@@ -358,8 +364,8 @@ export default function VideographyCategory() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-4xl font-saira font-black mb-6">
-                Why Choose Our <span className="text-gold">{data.name}</span>
+              <h2 className="text-4xl font-quicksand font-light mb-6">
+                Why Choose Our <span className="text-salmon">{data.name}</span>
               </h2>
               <p className="text-lg text-muted-foreground mb-8">
                 {data.longDescription}
@@ -368,7 +374,7 @@ export default function VideographyCategory() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {data.features.map((feature, index) => (
                   <div key={index} className="flex items-center">
-                    <Check className="w-5 h-5 text-gold mr-3 flex-shrink-0" />
+                    <Check className="w-5 h-5 text-cyan mr-3 flex-shrink-0" />
                     <span className="text-sm">{feature}</span>
                   </div>
                 ))}
@@ -396,8 +402,8 @@ export default function VideographyCategory() {
       <section className="py-20 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-saira font-black mb-6">
-              {data.name} <span className="text-gold">Packages</span>
+            <h2 className="text-4xl lg:text-5xl font-quicksand font-light mb-6">
+              {data.name} <span className="text-salmon">Packages</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Choose the perfect package for your video needs. All packages include professional editing and digital delivery.
@@ -413,15 +419,15 @@ export default function VideographyCategory() {
                 }`}
               >
                 <div className="text-center mb-8">
-                  <h3 className="text-2xl font-saira font-bold text-gold mb-2">{pkg.name}</h3>
-                  <div className="text-4xl font-saira font-black mb-2">{pkg.price}</div>
+                  <h3 className="text-2xl font-quicksand font-light text-salmon mb-2">{pkg.name}</h3>
+                  <div className="text-4xl font-quicksand font-light mb-2">{pkg.price}</div>
                   <p className="text-muted-foreground">{pkg.duration}</p>
                 </div>
 
                 <ul className="space-y-4 mb-8">
                   {pkg.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-center">
-                      <Check className="w-5 h-5 text-gold mr-3 flex-shrink-0" />
+                      <Check className="w-5 h-5 text-cyan mr-3 flex-shrink-0" />
                       <span className="text-sm">{feature}</span>
                     </li>
                   ))}
@@ -448,8 +454,8 @@ export default function VideographyCategory() {
       <section id="showreel" className="py-20 bg-charcoal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-saira font-black mb-6">
-              Recent <span className="text-gold">Work</span>
+            <h2 className="text-4xl lg:text-5xl font-quicksand font-light mb-6">
+              Recent <span className="text-salmon">Work</span>
             </h2>
             <p className="text-xl text-muted-foreground">
               Browse our latest {data.name.toLowerCase()} projects

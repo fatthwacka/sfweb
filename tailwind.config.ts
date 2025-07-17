@@ -95,6 +95,7 @@ export default {
         "great-vibes": ["Great Vibes", "cursive"],
         forum: ["Forum", "serif"],
         barlow: ["Barlow Semi Condensed", "sans-serif"],
+        corinthia: ["Corinthia", "cursive"],
       },
     },
   },

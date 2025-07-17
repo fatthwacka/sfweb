@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { AuthButton } from "@/components/ui/auth-button";
-import { useTheme } from "@/components/ui/theme-provider";
 import { Button } from "@/components/ui/button";
-import { Moon, Sun, Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const photographyCategories = [
@@ -26,7 +25,7 @@ const videographyCategories = [
 
 export function Navigation() {
   const [location] = useLocation();
-  const { theme, toggleTheme } = useTheme();
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -110,20 +109,6 @@ export function Navigation() {
 
           {/* Right side controls */}
           <div className="flex items-center space-x-4">
-            {/* Theme Toggle */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleTheme}
-              className="p-2 rounded-full hover:bg-muted transition-colors duration-300"
-            >
-              {theme === "dark" ? (
-                <Sun className="w-5 h-5" />
-              ) : (
-                <Moon className="w-5 h-5" />
-              )}
-            </Button>
-
             {/* Auth Button */}
             <AuthButton />
 
