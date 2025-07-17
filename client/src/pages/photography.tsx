@@ -73,13 +73,13 @@ export default function Photography() {
               From intimate moments to grand celebrations, our photography services capture the essence of every occasion with artistic vision and technical excellence.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button className="bg-gold text-black px-8 py-4 rounded-full text-lg hover:bg-gold-muted transition-all duration-300">
+              <button className="btn-primary">
                 View Portfolio
-              </Button>
+              </button>
               <Link href="/contact">
-                <Button variant="outline" className="border-2 border-gold text-gold px-8 py-4 rounded-full text-lg hover:bg-gold hover:text-black transition-all duration-300">
+                <button className="btn-outline">
                   Get Quote
-                </Button>
+                </button>
               </Link>
             </div>
           </div>

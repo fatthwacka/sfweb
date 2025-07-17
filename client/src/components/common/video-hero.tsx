@@ -45,8 +45,8 @@ export function VideoHero({
             pointerEvents: 'none'
           }}
         />
-        {/* Dark overlay for better text readability */}
-        <div className="absolute inset-0 bg-black bg-opacity-40" />
+        {/* Light overlay for better text readability */}
+        <div className="absolute inset-0 bg-black bg-opacity-10" />
       </div>
 
       {/* Content */}

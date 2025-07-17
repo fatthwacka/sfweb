@@ -382,26 +382,30 @@ export default function VideographyCategory() {
                 key={index}
                 className={index === 1 ? "studio-card-premium relative" : "studio-card"}
               >
-                <div className="text-center mb-8">
-                  <h3 className="studio-card-title">{pkg.name}</h3>
-                  <div className="studio-card-price">{pkg.price}</div>
-                  <p className="studio-card-duration">{pkg.duration}</p>
+                <div className="studio-card-content">
+                  <div className="text-center mb-8">
+                    <h3 className="studio-card-title">{pkg.name}</h3>
+                    <div className="studio-card-price">{pkg.price}</div>
+                    <p className="studio-card-duration">{pkg.duration}</p>
+                  </div>
+
+                  <div className="studio-card-features">
+                    <ul className="space-y-4">
+                      {pkg.features.map((feature, featureIndex) => (
+                        <li key={featureIndex} className="studio-card-feature">
+                          <Check className="studio-card-feature-icon" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <Link href="/contact">
+                    <button className={index === 1 ? "studio-card-button-premium" : "studio-card-button"}>
+                      Choose {pkg.name}
+                    </button>
+                  </Link>
                 </div>
-
-                <ul className="space-y-4 mb-8">
-                  {pkg.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="studio-card-feature">
-                      <Check className="studio-card-feature-icon" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link href="/contact">
-                  <button className={index === 1 ? "studio-card-button-premium" : "studio-card-button"}>
-                    Choose {pkg.name}
-                  </button>
-                </Link>
               </div>
             ))}
           </div>

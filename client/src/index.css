@@ -243,8 +243,42 @@
     color: hsl(var(--cyan));
   }
   
+  .studio-card {
+    @apply bg-charcoal rounded-2xl border transition-all duration-300 transform hover:-translate-y-2 flex flex-col;
+    background: linear-gradient(135deg, rgba(45, 45, 45, 0.9) 0%, rgba(30, 30, 30, 0.95) 100%);
+    border-color: rgba(255, 107, 107, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    min-height: 550px;
+  }
+  
+  .studio-card:hover {
+    border-color: rgba(255, 107, 107, 0.6);
+    box-shadow: 0 8px 30px rgba(255, 107, 107, 0.2);
+  }
+  
+  .studio-card-premium {
+    @apply bg-charcoal rounded-2xl border transition-all duration-300 transform hover:-translate-y-2 flex flex-col scale-105;
+    background: linear-gradient(135deg, rgba(45, 45, 45, 0.9) 0%, rgba(30, 30, 30, 0.95) 100%);
+    border-color: rgba(0, 255, 255, 0.4);
+    box-shadow: 0 8px 30px rgba(0, 255, 255, 0.2);
+    min-height: 550px;
+  }
+  
+  .studio-card-premium:hover {
+    border-color: rgba(0, 255, 255, 0.7);
+    box-shadow: 0 12px 40px rgba(0, 255, 255, 0.3);
+  }
+  
+  .studio-card-content {
+    @apply p-8 flex-1 flex flex-col;
+  }
+  
+  .studio-card-features {
+    @apply flex-1 mb-8;
+  }
+  
   .studio-card-button {
-    @apply w-full px-8 py-4 rounded-full text-lg font-medium transition-all duration-300;
+    @apply w-full px-8 py-4 rounded-full text-lg font-medium transition-all duration-300 mt-auto;
     background: linear-gradient(135deg, rgba(96, 96, 96, 0.8) 0%, rgba(64, 64, 64, 0.9) 100%);
     color: white;
     border: 1px solid rgba(255, 107, 107, 0.3);
@@ -259,7 +293,7 @@
   }
   
   .studio-card-button-premium {
-    @apply w-full px-8 py-4 rounded-full text-lg font-medium transition-all duration-300;
+    @apply w-full px-8 py-4 rounded-full text-lg font-medium transition-all duration-300 mt-auto;
     background: linear-gradient(135deg, rgba(96, 96, 96, 0.8) 0%, rgba(64, 64, 64, 0.9) 100%);
     color: white;
     border: 1px solid rgba(0, 255, 255, 0.4);
@@ -271,6 +305,49 @@
     color: black;
     box-shadow: 0 10px 25px rgba(0, 255, 255, 0.4);
     border-color: rgba(0, 255, 255, 0.6);
+  }
+  
+  /* General Button Classes */
+  .btn-primary {
+    @apply px-8 py-4 rounded-full text-lg font-medium transition-all duration-300;
+    background: linear-gradient(135deg, hsl(var(--salmon)) 0%, hsl(var(--cyan)) 100%);
+    color: black;
+    border: 1px solid transparent;
+  }
+  
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(255, 107, 107, 0.4);
+    filter: brightness(1.1);
+  }
+  
+  .btn-secondary {
+    @apply px-8 py-4 rounded-full text-lg font-medium transition-all duration-300;
+    background: transparent;
+    color: white;
+    border: 2px solid rgba(255, 107, 107, 0.6);
+  }
+  
+  .btn-secondary:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(135deg, hsl(var(--salmon)) 0%, hsl(var(--cyan)) 100%);
+    color: black;
+    box-shadow: 0 10px 25px rgba(255, 107, 107, 0.4);
+    border-color: transparent;
+  }
+  
+  .btn-outline {
+    @apply px-8 py-4 rounded-full text-lg font-medium transition-all duration-300;
+    background: transparent;
+    color: hsl(var(--salmon));
+    border: 2px solid hsl(var(--salmon));
+  }
+  
+  .btn-outline:hover {
+    transform: translateY(-2px);
+    background: hsl(var(--salmon));
+    color: black;
+    box-shadow: 0 10px 25px rgba(255, 107, 107, 0.4);
   }
   
   .text-salmon {
@@ -348,7 +425,7 @@
   }
   
   .hero-gradient {
-    background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(26,26,26,0.8) 100%);
+    background: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, rgba(26,26,26,0.2) 100%);
   }
   
   .image-hover-effect {
@@ -484,7 +561,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(26,26,26,0.7) 100%);
+    background: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, rgba(26,26,26,0.2) 100%);
     z-index: 1;
   }
   

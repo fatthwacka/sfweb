@@ -337,17 +337,16 @@ export default function PhotographyCategory() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/contact">
-                <Button className="bg-gold text-black px-8 py-4 rounded-full text-lg hover:bg-gold-muted transition-all duration-300">
+                <button className="btn-primary">
                   Book Session
-                </Button>
+                </button>
               </Link>
-              <Button 
-                variant="outline" 
-                className="border-2 border-white text-white px-8 py-4 rounded-full text-lg hover:bg-white hover:text-black transition-all duration-300"
+              <button 
+                className="btn-secondary"
                 onClick={() => document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 View Gallery
-              </Button>
+              </button>
             </div>
           </div>
         </div>
@@ -407,26 +406,30 @@ export default function PhotographyCategory() {
                 key={index}
                 className={index === 1 ? "studio-card-premium relative" : "studio-card"}
               >
-                <div className="text-center mb-8">
-                  <h3 className="studio-card-title">{pkg.name}</h3>
-                  <div className="studio-card-price">{pkg.price}</div>
-                  <p className="studio-card-duration">{pkg.duration}</p>
+                <div className="studio-card-content">
+                  <div className="text-center mb-8">
+                    <h3 className="studio-card-title">{pkg.name}</h3>
+                    <div className="studio-card-price">{pkg.price}</div>
+                    <p className="studio-card-duration">{pkg.duration}</p>
+                  </div>
+
+                  <div className="studio-card-features">
+                    <ul className="space-y-4">
+                      {pkg.features.map((feature, featureIndex) => (
+                        <li key={featureIndex} className="studio-card-feature">
+                          <Check className="studio-card-feature-icon" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <Link href="/contact">
+                    <button className={index === 1 ? "studio-card-button-premium" : "studio-card-button"}>
+                      Choose {pkg.name}
+                    </button>
+                  </Link>
                 </div>
-
-                <ul className="space-y-4 mb-8">
-                  {pkg.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="studio-card-feature">
-                      <Check className="studio-card-feature-icon" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link href="/contact">
-                  <button className={index === 1 ? "studio-card-button-premium" : "studio-card-button"}>
-                    Choose {pkg.name}
-                  </button>
-                </Link>
               </div>
             ))}
           </div>
@@ -464,10 +467,81 @@ export default function PhotographyCategory() {
 
           <div className="text-center mt-12">
             <Link href="/contact">
-              <Button className="bg-gold text-black px-8 py-4 rounded-full text-lg hover:bg-gold-muted transition-all duration-300">
+              <button className="btn-primary">
                 Start Your Project
-              </Button>
+              </button>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* SEO Optimization Section */}
+      <section className="py-20 bg-black">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl mb-6">
+              {data.name === "Wedding Photography" ? "Professional Wedding Photography" : 
+               data.name === "Portrait Photography" ? "Expert Portrait Photography" :
+               data.name === "Corporate Photography" ? "Corporate Photography Services" :
+               data.name === "Event Photography" ? "Event Photography Specialists" :
+               data.name === "Product Photography" ? "Product Photography Excellence" :
+               "Professional Photography Services"} <span className="text-gold">in Cape Town</span>
+            </h2>
+          </div>
+          
+          <div className="space-y-8 text-lg leading-relaxed">
+            <div>
+              <h3 className="text-2xl mb-4">
+                <span className="text-salmon">
+                  {data.name === "Wedding Photography" ? "Cape Town Wedding Photography Specialists" :
+                   data.name === "Portrait Photography" ? "Portrait Photography Excellence" :
+                   data.name === "Corporate Photography" ? "Corporate Photography Solutions" :
+                   data.name === "Event Photography" ? "Event Photography Professionals" :
+                   data.name === "Product Photography" ? "E-commerce Product Photography" :
+                   "Professional Photography Services"}
+                </span>
+              </h3>
+              <p className="text-muted-foreground">
+                {data.name === "Wedding Photography" ? "Our Cape Town wedding photography team specializes in capturing the most precious moments of your special day. With years of experience in wedding photography, we understand the importance of preserving every emotion, every glance, and every celebration that makes your wedding unique. Our wedding photographers combine artistic vision with technical expertise to create stunning wedding albums that tell your love story." :
+                 data.name === "Portrait Photography" ? "Professional portrait photography in Cape Town requires skill, creativity, and an understanding of what makes each person unique. Our portrait photographers specialize in capturing authentic expressions and creating compelling headshots that make lasting impressions. From executive headshots to family portraits, we deliver high-quality images that reflect your personality and professional brand." :
+                 data.name === "Corporate Photography" ? "Corporate photography services in Cape Town encompass everything from executive headshots to comprehensive business documentation. Our corporate photographers understand the importance of professional imagery in building brand credibility and establishing trust with your audience. We specialize in creating polished, professional photographs that enhance your company's image and support your marketing objectives." :
+                 data.name === "Event Photography" ? "Event photography in Cape Town requires quick thinking, adaptability, and the ability to capture spontaneous moments as they unfold. Our event photographers specialize in documenting conferences, corporate events, parties, and special occasions with precision and creativity. We understand the importance of capturing the energy and atmosphere of your event while ensuring every important moment is preserved." :
+                 data.name === "Product Photography" ? "Product photography is essential for e-commerce success and brand marketing. Our Cape Town product photographers specialize in creating compelling images that showcase your products in the best possible light. From catalog photography to lifestyle product shots, we understand how to highlight product features and create images that drive sales and enhance your brand presentation." :
+                 "Our professional photography services in Cape Town combine technical excellence with creative vision to deliver exceptional results for every client. Whether you need commercial photography, personal portraits, or event documentation, our experienced photographers understand how to capture the essence of your subject and create images that exceed expectations."}
+              </p>
+            </div>
+            
+            <div>
+              <h3 className="text-2xl mb-4">
+                <span className="text-cyan">
+                  {data.name === "Wedding Photography" ? "Wedding Photography Packages and Pricing" :
+                   data.name === "Portrait Photography" ? "Portrait Session Options" :
+                   data.name === "Corporate Photography" ? "Corporate Photography Packages" :
+                   data.name === "Event Photography" ? "Event Photography Coverage" :
+                   data.name === "Product Photography" ? "Product Photography Solutions" :
+                   "Photography Service Options"}
+                </span>
+              </h3>
+              <p className="text-muted-foreground">
+                {data.name === "Wedding Photography" ? "We offer comprehensive wedding photography packages designed to fit different budgets and requirements. Our wedding photography services include engagement sessions, full wedding day coverage, professional editing, and beautiful wedding albums. Each package is carefully crafted to ensure you receive exceptional value and stunning photographs that capture the magic of your wedding day." :
+                 data.name === "Portrait Photography" ? "Our portrait photography sessions are tailored to meet your specific needs and objectives. Whether you need professional headshots for LinkedIn, family portraits for your home, or personal branding photography for your business, we offer flexible packages that deliver outstanding results. Each portrait session includes professional lighting, expert direction, and thorough post-processing to ensure perfect results." :
+                 data.name === "Corporate Photography" ? "Our corporate photography packages are designed to meet the diverse needs of businesses in Cape Town. From individual executive headshots to large team photography sessions, we provide comprehensive solutions that enhance your professional image. Our services include on-location photography, studio sessions, and complete post-production to ensure your corporate imagery meets the highest standards." :
+                 data.name === "Event Photography" ? "Event photography coverage options range from brief documentation to comprehensive all-day coverage. Our event photographers work discreetly to capture candid moments while ensuring all important aspects of your event are documented. We provide fast turnaround times and deliver high-resolution images that you can use for marketing, social media, and archival purposes." :
+                 data.name === "Product Photography" ? "Our product photography services are designed to meet the needs of e-commerce businesses, catalogs, and marketing campaigns. We offer studio photography, lifestyle product shots, and 360-degree product photography. Each product photography session includes professional lighting, multiple angles, and expert post-processing to ensure your products look their absolute best." :
+                 "Our photography services are structured to provide maximum value and exceptional results for every client. We offer flexible packages that can be customized to meet your specific requirements and budget. Each session includes professional equipment, expert guidance, and comprehensive post-processing to ensure you receive outstanding photographs that exceed your expectations."}
+              </p>
+            </div>
+            
+            <div>
+              <p className="text-muted-foreground">
+                {data.name === "Wedding Photography" ? "Book your Cape Town wedding photographer today and ensure your special day is captured with the artistry and professionalism it deserves. Our wedding photography team is committed to creating timeless images that you'll treasure for a lifetime. Contact us to discuss your wedding photography needs and learn more about our packages and availability." :
+                 data.name === "Portrait Photography" ? "Ready to book your portrait session? Our Cape Town portrait photographers are here to help you create professional, compelling images that make the right impression. Whether you need corporate headshots or personal portraits, we're committed to delivering exceptional results that exceed your expectations." :
+                 data.name === "Corporate Photography" ? "Enhance your business image with professional corporate photography. Our Cape Town team specializes in creating polished, professional photographs that support your brand and marketing objectives. Contact us today to discuss your corporate photography needs and learn how we can help strengthen your professional presence." :
+                 data.name === "Event Photography" ? "Don't let your important events go undocumented. Our Cape Town event photographers are ready to capture every significant moment with skill and creativity. From corporate events to private celebrations, we ensure your event is preserved with professional-quality photography that tells the complete story." :
+                 data.name === "Product Photography" ? "Transform your product marketing with professional product photography. Our Cape Town studio specializes in creating compelling product images that drive sales and enhance brand presentation. Contact us today to discuss your product photography needs and learn how we can help showcase your products effectively." :
+                 "Experience the difference that professional photography makes. Our Cape Town photography team is dedicated to delivering exceptional results that capture the essence of your subject and exceed your expectations. Contact us today to discuss your photography needs and learn more about our services and packages."}
+              </p>
+            </div>
           </div>
         </div>
       </section>
