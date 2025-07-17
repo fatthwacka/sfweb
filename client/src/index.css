@@ -244,25 +244,33 @@
   }
   
   .studio-card-button {
-    @apply w-full px-8 py-4 rounded-full text-lg transition-all duration-300;
-    background: linear-gradient(135deg, hsl(var(--salmon)) 0%, hsl(var(--cyan)) 100%);
-    color: black;
+    @apply w-full px-8 py-4 rounded-full text-lg font-medium transition-all duration-300;
+    background: linear-gradient(135deg, rgba(96, 96, 96, 0.8) 0%, rgba(64, 64, 64, 0.9) 100%);
+    color: white;
+    border: 1px solid rgba(255, 107, 107, 0.3);
   }
   
   .studio-card-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+    background: linear-gradient(135deg, hsl(var(--salmon)) 0%, hsl(var(--cyan)) 100%);
+    color: black;
+    box-shadow: 0 10px 25px rgba(255, 107, 107, 0.4);
+    border-color: rgba(255, 107, 107, 0.6);
   }
   
   .studio-card-button-premium {
-    @apply w-full px-8 py-4 rounded-full text-lg transition-all duration-300;
-    background: linear-gradient(135deg, hsl(var(--cyan)) 0%, hsl(var(--salmon)) 100%);
-    color: black;
+    @apply w-full px-8 py-4 rounded-full text-lg font-medium transition-all duration-300;
+    background: linear-gradient(135deg, rgba(96, 96, 96, 0.8) 0%, rgba(64, 64, 64, 0.9) 100%);
+    color: white;
+    border: 1px solid rgba(0, 255, 255, 0.4);
   }
   
   .studio-card-button-premium:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(0, 255, 255, 0.3);
+    background: linear-gradient(135deg, hsl(var(--cyan)) 0%, hsl(var(--salmon)) 100%);
+    color: black;
+    box-shadow: 0 10px 25px rgba(0, 255, 255, 0.4);
+    border-color: rgba(0, 255, 255, 0.6);
   }
   
   .text-salmon {

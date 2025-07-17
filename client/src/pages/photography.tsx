@@ -60,7 +60,7 @@ export default function Photography() {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 bg-gradient-to-br from-black via-charcoal to-black">
+      <section className="relative h-screen bg-gradient-to-br from-black via-charcoal to-black flex items-center justify-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <div className="flex justify-center mb-6">

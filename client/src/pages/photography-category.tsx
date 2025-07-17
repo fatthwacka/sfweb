@@ -310,7 +310,7 @@ export default function PhotographyCategory() {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 overflow-hidden">
+      <section className="relative h-screen overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url('${data.heroImage}')` }}
@@ -318,7 +318,7 @@ export default function PhotographyCategory() {
           <div className="absolute inset-0 hero-gradient"></div>
         </div>
         
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center">
           <div className="mb-8">
             <Link href="/photography">
               <Button variant="ghost" className="text-gold hover:text-gold-muted mb-4">
