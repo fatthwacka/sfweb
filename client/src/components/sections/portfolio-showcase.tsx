@@ -103,7 +103,7 @@ export function PortfolioShowcase() {
 
                 <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                   <div className="text-center">
-                    <h4 className="text-xl font-saira font-bold text-gold mb-2">{item.title}</h4>
+                    <h4 className="text-xl font-quicksand font-bold text-salmon mb-2">{item.title}</h4>
                     <p className="text-gray-200 text-sm">{item.location}</p>
                   </div>
                 </div>
@@ -115,7 +115,7 @@ export function PortfolioShowcase() {
         <div className="text-center mt-12">
           <Button 
             variant="outline"
-            className="border-2 border-gold text-gold px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold hover:text-black transition-all duration-300 transform hover:scale-105"
+            className="border-2 border-cyan text-cyan px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-cyan hover:text-black transition-all duration-300 transform hover:scale-105"
           >
             View Full Portfolio
           </Button>

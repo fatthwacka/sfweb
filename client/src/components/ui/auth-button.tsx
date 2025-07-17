@@ -103,8 +103,8 @@ export function AuthButton() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-gold text-black hover:bg-gold-muted font-barlow font-semibold">
-          Client Login
+        <Button className="bg-salmon text-black hover:bg-salmon-muted font-barlow font-semibold">
+          Account
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">

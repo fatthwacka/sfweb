@@ -34,7 +34,7 @@ export function Footer() {
         <div className="grid lg:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
           <div className="lg:col-span-1">
-            <div className="text-3xl font-saira font-black text-gold mb-4">
+            <div className="text-3xl font-saira font-black text-salmon mb-4">
               SlyFox <span className="text-white">Studios</span>
             </div>
             <p className="text-muted-foreground mb-6">
@@ -61,7 +61,7 @@ export function Footer() {
 
           {/* Photography Services */}
           <div>
-            <h4 className="font-saira font-bold text-lg text-gold mb-6">Photography</h4>
+            <h4 className="font-quicksand font-bold text-lg text-salmon mb-6">Photography</h4>
             <ul className="space-y-3">
               {photographyServices.map(service => (
                 <li key={service.href}>
@@ -75,7 +75,7 @@ export function Footer() {
 
           {/* Videography Services */}
           <div>
-            <h4 className="font-saira font-bold text-lg text-gold mb-6">Videography</h4>
+            <h4 className="font-quicksand font-bold text-lg text-cyan mb-6">Videography</h4>
             <ul className="space-y-3">
               {videographyServices.map(service => (
                 <li key={service.href}>
@@ -89,7 +89,7 @@ export function Footer() {
 
           {/* Company Links */}
           <div>
-            <h4 className="font-saira font-bold text-lg text-gold mb-6">Company</h4>
+            <h4 className="font-quicksand font-bold text-lg text-salmon mb-6">Company</h4>
             <ul className="space-y-3">
               {companyLinks.map(link => (
                 <li key={link.href}>

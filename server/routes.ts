@@ -118,20 +118,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Package endpoints
   app.get("/api/packages", async (req, res) => {
     try {
+      console.log("Fetching all packages...");
       const packages = await storage.getPackages();
+      console.log(`Found ${packages.length} total packages`);
       res.json(packages);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch packages" });
+      console.error("All packages fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch packages", error: error.message });
     }
   });
 
   app.get("/api/packages/:category", async (req, res) => {
     try {
       const { category } = req.params;
+      console.log(`Fetching packages for category: ${category}`);
       const packages = await storage.getPackagesByCategory(category);
+      console.log(`Found ${packages.length} packages`);
       res.json(packages);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch packages" });
+      console.error("Package fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch packages", error: error.message });
     }
   });
 

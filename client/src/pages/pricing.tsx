@@ -133,20 +133,20 @@ export default function Pricing() {
               </ul>
 
               <Link href="/contact">
-                <Button className="w-full bg-transparent border-2 border-gold text-gold py-3 rounded-full font-barlow font-semibold hover:bg-gold hover:text-black transition-all duration-300">
+                <Button className="w-full bg-transparent border-2 border-cyan text-cyan py-3 rounded-full font-barlow font-semibold hover:bg-cyan hover:text-black transition-all duration-300">
                   Choose Wedding Films
                 </Button>
               </Link>
             </div>
 
             {/* Corporate Video */}
-            <div className="bg-charcoal rounded-2xl p-8 border-2 border-gold relative scale-105">
+            <div className="bg-charcoal rounded-2xl p-8 border-2 border-salmon relative scale-105">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="bg-gold text-black px-6 py-2 rounded-full font-barlow font-semibold text-sm">Popular</span>
+                <span className="bg-salmon text-black px-6 py-2 rounded-full font-barlow font-semibold text-sm">Popular</span>
               </div>
 
               <div className="text-center mb-8">
-                <h3 className="text-2xl font-saira font-bold text-gold mb-4">Corporate Video</h3>
+                <h3 className="text-2xl font-quicksand font-bold text-salmon mb-4">Corporate Video</h3>
                 <div className="text-4xl font-saira font-black mb-2">R8,500</div>
                 <p className="text-muted-foreground">Professional business videos</p>
               </div>

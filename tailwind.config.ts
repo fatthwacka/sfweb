@@ -61,6 +61,11 @@ export default {
           border: "var(--sidebar-border)",
           ring: "var(--sidebar-ring)",
         },
+        salmon: "var(--salmon)",
+        "salmon-muted": "var(--salmon-muted)",
+        cyan: "var(--cyan)",
+        "cyan-muted": "var(--cyan-muted)",
+        charcoal: "var(--charcoal)",
       },
       keyframes: {
         "accordion-down": {
@@ -83,6 +88,13 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+      },
+      fontFamily: {
+        quicksand: ["Quicksand", "sans-serif"],
+        saira: ["Saira Condensed", "sans-serif"],
+        "great-vibes": ["Great Vibes", "cursive"],
+        forum: ["Forum", "serif"],
+        barlow: ["Barlow Semi Condensed", "sans-serif"],
       },
     },
   },

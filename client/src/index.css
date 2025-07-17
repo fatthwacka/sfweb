@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700;800;900&family=Great+Vibes:wght@400&family=Forum:wght@400&family=Barlow+Semi+Condensed:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Saira+Condensed:wght@600;700;800;900&family=Great+Vibes:wght@400&family=Forum:wght@400&family=Barlow+Semi+Condensed:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -15,20 +15,22 @@
   --card-foreground: hsl(0, 0%, 100%);
   --border: hsl(240, 6%, 20%);
   --input: hsl(240, 6%, 20%);
-  --primary: hsl(45, 75%, 55%);
+  --primary: hsl(16, 100%, 73%);
   --primary-foreground: hsl(0, 0%, 0%);
   --secondary: hsl(240, 4%, 15%);
   --secondary-foreground: hsl(0, 0%, 100%);
-  --accent: hsl(240, 4%, 15%);
-  --accent-foreground: hsl(0, 0%, 100%);
+  --accent: hsl(180, 50%, 65%);
+  --accent-foreground: hsl(0, 0%, 0%);
   --destructive: hsl(0, 84%, 60%);
   --destructive-foreground: hsl(0, 0%, 100%);
-  --ring: hsl(45, 75%, 55%);
+  --ring: hsl(16, 100%, 73%);
   --radius: 0.5rem;
   
   /* Custom colors */
-  --gold: hsl(45, 75%, 55%);
-  --gold-muted: hsl(45, 40%, 65%);
+  --salmon: hsl(16, 100%, 73%);
+  --salmon-muted: hsl(16, 60%, 65%);
+  --cyan: hsl(180, 50%, 65%);
+  --cyan-muted: hsl(180, 35%, 55%);
   --charcoal: hsl(0, 0%, 10%);
 }
 
@@ -43,7 +45,7 @@
   --card-foreground: hsl(20, 14%, 4%);
   --border: hsl(20, 6%, 90%);
   --input: hsl(20, 6%, 90%);
-  --primary: hsl(45, 75%, 55%);
+  --primary: hsl(16, 100%, 73%);
   --primary-foreground: hsl(0, 0%, 0%);
   --secondary: hsl(60, 5%, 96%);
   --secondary-foreground: hsl(24, 10%, 10%);
@@ -90,40 +92,72 @@
     font-family: 'Barlow Semi Condensed', sans-serif;
   }
   
-  .text-gold {
-    color: var(--gold);
+  .text-salmon {
+    color: var(--salmon);
   }
   
-  .text-gold-muted {
-    color: var(--gold-muted);
+  .text-salmon-muted {
+    color: var(--salmon-muted);
+  }
+
+  .text-cyan {
+    color: var(--cyan);
   }
   
-  .bg-gold {
-    background-color: var(--gold);
+  .text-cyan-muted {
+    color: var(--cyan-muted);
   }
   
-  .bg-gold-muted {
-    background-color: var(--gold-muted);
+  .bg-salmon {
+    background-color: var(--salmon);
+  }
+  
+  .bg-salmon-muted {
+    background-color: var(--salmon-muted);
+  }
+
+  .bg-cyan {
+    background-color: var(--cyan);
+  }
+  
+  .bg-cyan-muted {
+    background-color: var(--cyan-muted);
   }
   
   .bg-charcoal {
     background-color: var(--charcoal);
   }
   
-  .border-gold {
-    border-color: var(--gold);
+  .border-salmon {
+    border-color: var(--salmon);
+  }
+
+  .border-cyan {
+    border-color: var(--cyan);
   }
   
-  .hover\:bg-gold:hover {
-    background-color: var(--gold);
+  .hover\:bg-salmon:hover {
+    background-color: var(--salmon);
   }
   
-  .hover\:text-gold:hover {
-    color: var(--gold);
+  .hover\:text-salmon:hover {
+    color: var(--salmon);
   }
   
-  .hover\:border-gold:hover {
-    border-color: var(--gold);
+  .hover\:border-salmon:hover {
+    border-color: var(--salmon);
+  }
+
+  .hover\:bg-cyan:hover {
+    background-color: var(--cyan);
+  }
+  
+  .hover\:text-cyan:hover {
+    color: var(--cyan);
+  }
+  
+  .hover\:border-cyan:hover {
+    border-color: var(--cyan);
   }
   
   .glass-effect {

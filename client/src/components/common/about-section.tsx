@@ -26,24 +26,24 @@ export function AboutSection() {
             
             <div className="grid grid-cols-2 gap-8 mb-8">
               <div>
-                <div className="text-3xl font-saira font-bold text-gold mb-2">500+</div>
+                <div className="text-3xl font-quicksand font-bold text-salmon mb-2">500+</div>
                 <p className="text-gray-400">Happy Clients</p>
               </div>
               <div>
-                <div className="text-3xl font-saira font-bold text-gold mb-2">5 Years</div>
+                <div className="text-3xl font-quicksand font-bold text-cyan mb-2">5 Years</div>
                 <p className="text-gray-400">Experience</p>
               </div>
               <div>
-                <div className="text-3xl font-saira font-bold text-gold mb-2">1000+</div>
+                <div className="text-3xl font-quicksand font-bold text-salmon mb-2">1000+</div>
                 <p className="text-gray-400">Events Captured</p>
               </div>
               <div>
-                <div className="text-3xl font-saira font-bold text-gold mb-2">Cape Town</div>
+                <div className="text-3xl font-quicksand font-bold text-cyan mb-2">Cape Town</div>
                 <p className="text-gray-400">Based & Proud</p>
               </div>
             </div>
             
-            <button className="bg-transparent border-2 border-gold text-gold px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold hover:text-black transition-all duration-300 transform hover:scale-105">
+            <button className="bg-transparent border-2 border-salmon text-salmon px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-salmon hover:text-black transition-all duration-300 transform hover:scale-105">
               Meet Our Team
             </button>
           </div>

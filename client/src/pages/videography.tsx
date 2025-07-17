@@ -73,11 +73,11 @@ export default function Videography() {
               Bring your stories to life with compelling videography that captures emotion, tells stories, and creates lasting impact across all platforms.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button className="bg-gold text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold-muted transition-all duration-300">
+              <Button className="bg-salmon text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-salmon-muted transition-all duration-300">
                 View Showreel
               </Button>
               <Link href="/contact">
-                <Button variant="outline" className="border-2 border-gold text-gold px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold hover:text-black transition-all duration-300">
+                <Button variant="outline" className="border-2 border-cyan text-cyan px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-cyan hover:text-black transition-all duration-300">
                   Get Quote
                 </Button>
               </Link>
@@ -121,13 +121,13 @@ export default function Videography() {
                     <div className="grid grid-cols-2 gap-2 mb-6">
                       {category.features.map((feature, featureIndex) => (
                         <div key={featureIndex} className="flex items-center text-sm text-muted-foreground">
-                          <div className="w-2 h-2 bg-gold rounded-full mr-2 flex-shrink-0"></div>
+                          <div className="w-2 h-2 bg-salmon rounded-full mr-2 flex-shrink-0"></div>
                           {feature}
                         </div>
                       ))}
                     </div>
                     
-                    <div className="flex items-center text-gold font-barlow font-semibold group-hover:translate-x-2 transition-transform duration-300">
+                    <div className="flex items-center text-cyan font-barlow font-semibold group-hover:translate-x-2 transition-transform duration-300">
                       Learn More
                       <ArrowRight className="w-5 h-5 ml-2" />
                     </div>

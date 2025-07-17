@@ -285,7 +285,14 @@ export class MemStorage implements IStorage {
   }
 
   async getPackagesByCategory(category: string): Promise<Package[]> {
-    return Array.from(this.packages.values()).filter(pkg => pkg.category === category);
+    try {
+      const packages = Array.from(this.packages.values()).filter(pkg => pkg.category === category);
+      console.log(`Found ${packages.length} packages for category: ${category}`);
+      return packages;
+    } catch (error) {
+      console.error("Error getting packages by category:", error);
+      return [];
+    }
   }
 
   async createPackage(insertPackage: InsertPackage): Promise<Package> {
@@ -365,7 +372,5 @@ export class MemStorage implements IStorage {
 
 import { PostgreSQLStorage } from "./pg-storage";
 
-// Use PostgreSQL in production, MemStorage for development
-export const storage = process.env.NODE_ENV === 'development' && !process.env.DATABASE_URL 
-  ? new MemStorage() 
-  : new PostgreSQLStorage();
+// Use MemStorage for now - temporarily bypass database issues
+export const storage = new MemStorage();

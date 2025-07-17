@@ -182,7 +182,7 @@ export default function About() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {teamMembers.map((member, index) => (
-              <div key={index} className="bg-black rounded-2xl overflow-hidden shadow-2xl hover:shadow-gold/20 transition-all duration-300 transform hover:-translate-y-2">
+              <div key={index} className="bg-black rounded-2xl overflow-hidden shadow-2xl hover:shadow-salmon/20 transition-all duration-300 transform hover:-translate-y-2">
                 <div className="relative h-80 overflow-hidden">
                   <img 
                     src={member.image}
@@ -193,12 +193,12 @@ export default function About() {
                 </div>
                 
                 <div className="p-8">
-                  <h3 className="text-2xl font-saira font-bold text-gold mb-2">{member.name}</h3>
-                  <p className="text-gold/80 font-barlow font-semibold mb-4">{member.role}</p>
+                  <h3 className="text-2xl font-quicksand font-bold text-salmon mb-2">{member.name}</h3>
+                  <p className="text-cyan/80 font-barlow font-semibold mb-4">{member.role}</p>
                   <p className="text-muted-foreground mb-6">{member.description}</p>
                   <a 
                     href={`mailto:${member.email}`}
-                    className="text-gold hover:text-gold-muted transition-colors duration-300 font-barlow font-semibold"
+                    className="text-salmon hover:text-salmon-muted transition-colors duration-300 font-barlow font-semibold"
                   >
                     {member.email}
                   </a>
