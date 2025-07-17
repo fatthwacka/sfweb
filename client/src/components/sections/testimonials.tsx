@@ -29,8 +29,8 @@ export function Testimonials() {
     <section className="py-20 bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl lg:text-5xl font-saira font-black mb-6">
-            What Our <span className="text-gold">Clients Say</span>
+          <h2 className="text-4xl lg:text-5xl font-quicksand font-light mb-6">
+            What Our <span className="text-salmon">Clients Say</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Don't just take our word for it. Here's what our clients have to say about their experience with SlyFox Studios.
@@ -44,7 +44,7 @@ export function Testimonials() {
               className="bg-charcoal rounded-2xl p-8 border border-border hover:border-gold transition-all duration-300"
             >
               <div className="flex items-center mb-6">
-                <div className="flex text-gold">
+                <div className="flex text-salmon">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="w-5 h-5 fill-current" />
                   ))}

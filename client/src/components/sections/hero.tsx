@@ -17,29 +17,13 @@ export function Hero() {
       {/* Content */}
       <div className="relative z-10 text-center max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="animate-slide-up">
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-saira font-black mb-6 leading-tight">
-            Capturing Life's
-            <span className="text-gold font-vibes text-6xl sm:text-7xl lg:text-8xl block mt-2">
-              Beautiful Moments
-            </span>
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-righteous mb-12 leading-tight">
+            Capturing Life's Beautiful Moments
           </h1>
 
-          <p className="text-xl sm:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto font-forum">
-            Professional photography and videography services in Cape Town. 
-            Creating timeless memories through our lens, one frame at a time.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button className="bg-gold text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold-muted transition-all duration-300 transform hover:scale-105 shadow-lg">
-              View Our Work
-            </Button>
-            <Button 
-              variant="outline" 
-              className="border-2 border-white text-white px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-white hover:text-black transition-all duration-300 transform hover:scale-105"
-            >
-              Get a Quote
-            </Button>
-          </div>
+          <Button className="bg-salmon text-black px-12 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-salmon-muted transition-all duration-300">
+            Book Your Session
+          </Button>
         </div>
 
         {/* Scroll indicator */}

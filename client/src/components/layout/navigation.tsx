@@ -46,9 +46,14 @@ export function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center">
-            <div className="text-2xl font-saira font-black text-gold">
-              SlyFox <span className="text-foreground">Studios</span>
+          <Link href="/" className="flex items-center space-x-3">
+            <img 
+              src="@assets/Head-only-black_1752749907547.png" 
+              alt="SlyFox Studios Logo" 
+              className="w-8 h-8"
+            />
+            <div className="text-2xl font-righteous font-bold gradient-logo">
+              SlyFox Studios
             </div>
           </Link>
 

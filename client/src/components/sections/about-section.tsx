@@ -21,8 +21,8 @@ export function AboutSection() {
           </div>
 
           <div className="order-1 lg:order-2">
-            <h2 className="text-4xl lg:text-5xl font-saira font-black mb-6">
-              About <span className="text-gold">SlyFox Studios</span>
+            <h2 className="text-4xl lg:text-5xl font-quicksand font-light mb-6">
+              About <span className="text-salmon">SlyFox Studios</span>
             </h2>
 
             <p className="text-xl text-muted-foreground mb-6">
@@ -36,7 +36,7 @@ export function AboutSection() {
             <div className="grid grid-cols-2 gap-8 mb-8">
               {stats.map((stat, index) => (
                 <div key={index}>
-                  <div className="text-3xl font-saira font-bold text-gold mb-2">{stat.number}</div>
+                  <div className="text-3xl font-quicksand font-light text-salmon mb-2">{stat.number}</div>
                   <p className="text-muted-foreground">{stat.label}</p>
                 </div>
               ))}

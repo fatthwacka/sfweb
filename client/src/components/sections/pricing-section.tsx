@@ -37,8 +37,8 @@ export function PricingSection() {
     <section className="py-20 bg-charcoal">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl lg:text-5xl font-saira font-black mb-6">
-            Transparent <span className="text-gold">Pricing</span>
+          <h2 className="text-4xl lg:text-5xl font-quicksand font-light mb-6">
+            Transparent <span className="text-salmon">Pricing</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Choose the perfect package for your needs. All packages include professional editing, online gallery, and high-resolution downloads.
@@ -72,7 +72,7 @@ export function PricingSection() {
               <ul className="space-y-4 mb-8">
                 {pkg.features.map((feature, featureIndex) => (
                   <li key={featureIndex} className="flex items-center">
-                    <Check className="w-5 h-5 text-gold mr-3 flex-shrink-0" />
+                    <Check className="w-5 h-5 text-cyan mr-3 flex-shrink-0" />
                     <span className="text-sm">{feature}</span>
                   </li>
                 ))}

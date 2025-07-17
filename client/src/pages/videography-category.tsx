@@ -4,6 +4,7 @@ import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { ArrowLeft, Video, Check, Play } from "lucide-react";
+import { YouTubeHero } from "@/components/common/youtube-hero";
 
 const categoryData: Record<string, {
   name: string;
@@ -309,63 +310,25 @@ export default function VideographyCategory() {
       
       <Navigation />
       
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('${data.heroImage}')` }}
-        >
-          <div className="absolute inset-0 hero-gradient"></div>
-        </div>
-        
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <Link href="/videography">
-              <Button variant="ghost" className="text-gold hover:text-gold-muted mb-4">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Videography
-              </Button>
-            </Link>
-          </div>
-          
-          <div className="max-w-3xl">
-            <h1 className="text-5xl lg:text-6xl font-quicksand font-light mb-6">
-              {data.name.split(' ')[0]} <span className="text-salmon">{data.name.split(' ').slice(1).join(' ')}</span>
-            </h1>
-            <p className="text-2xl font-corinthia text-cyan mb-4">
-              {data.name === "Corporate Videography" ? "Professional excellence in every frame" : 
-               data.name === "Wedding Videography" ? "Love stories captured in motion" :
-               data.name === "Event Videography" ? "Moments that matter, preserved forever" :
-               "Creative storytelling through film"}
-            </p>
-            <p className="text-lg text-muted-foreground mb-8">
-              {data.description}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/contact">
-                <Button className="bg-salmon text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-salmon-muted transition-all duration-300">
-                  Start Project
-                </Button>
-              </Link>
-              <Button 
-                variant="outline" 
-                className="border-2 border-white text-white px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-white hover:text-black transition-all duration-300"
-                onClick={() => document.getElementById('showreel')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                View Showreel
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Hero Section with YouTube Background */}
+      <YouTubeHero
+        videoId={category === "corporate" ? "0KMY9L849Hg" : "-MKtFeO_9pE"}
+        title={data.name}
+        subtitle={data.name === "Corporate Videography" ? "Professional excellence in every frame" : 
+                 data.name === "Wedding Videography" ? "Love stories captured in motion" :
+                 data.name === "Event Videography" ? "Moments that matter, preserved forever" :
+                 "Creative storytelling through film"}
+        ctaText="Start Project"
+        ctaLink="/contact"
+      />
 
       {/* About Section */}
       <section className="py-20 bg-charcoal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-4xl font-quicksand font-light mb-6">
-                Why Choose Our <span className="text-salmon">{data.name}</span>
+              <h2 className="text-4xl font-saira font-light mb-6">
+                <span className="text-salmon">{data.name}</span>
               </h2>
               <p className="text-lg text-muted-foreground mb-8">
                 {data.longDescription}
@@ -403,7 +366,7 @@ export default function VideographyCategory() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-quicksand font-light mb-6">
-              {data.name} <span className="text-salmon">Packages</span>
+              {data.name} <span className="text-cyan">Packages</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Choose the perfect package for your video needs. All packages include professional editing and digital delivery.
@@ -454,7 +417,7 @@ export default function VideographyCategory() {
       <section id="showreel" className="py-20 bg-charcoal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-quicksand font-light mb-6">
+            <h2 className="text-4xl lg:text-5xl font-saira font-light mb-6">
               Recent <span className="text-salmon">Work</span>
             </h2>
             <p className="text-xl text-muted-foreground">

@@ -25,8 +25,8 @@ export function ClientGalleryAccess() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
-            <h2 className="text-4xl lg:text-5xl font-saira font-black mb-6">
-              Your Private <span className="text-gold">Gallery</span>
+            <h2 className="text-4xl lg:text-5xl font-quicksand font-light mb-6">
+              Your Private <span className="text-cyan">Gallery</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
               Access your photos anytime, anywhere. Share with family and friends, download high-resolution images, and relive your special moments through our secure client portal.
@@ -37,11 +37,11 @@ export function ClientGalleryAccess() {
                 const Icon = feature.icon;
                 return (
                   <div key={index} className="flex items-start">
-                    <div className="bg-gold rounded-full p-2 mr-4 mt-1">
+                    <div className="bg-cyan rounded-full p-2 mr-4 mt-1">
                       <Icon className="w-5 h-5 text-black" />
                     </div>
                     <div>
-                      <h4 className="font-saira font-bold text-lg mb-2">{feature.title}</h4>
+                      <h4 className="font-quicksand font-light text-lg mb-2">{feature.title}</h4>
                       <p className="text-muted-foreground">{feature.description}</p>
                     </div>
                   </div>
@@ -50,7 +50,7 @@ export function ClientGalleryAccess() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="bg-gold text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold-muted transition-all duration-300 transform hover:scale-105">
+              <Button className="bg-salmon text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-salmon-muted transition-all duration-300 transform hover:scale-105">
                 Access My Gallery
               </Button>
               <Button 

@@ -3,6 +3,7 @@ import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Video, ArrowRight } from "lucide-react";
+import { YouTubeHero } from "@/components/common/youtube-hero";
 
 const videographyCategories = [
   {
@@ -59,39 +60,21 @@ export default function Videography() {
       
       <Navigation />
       
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 bg-gradient-to-br from-black via-charcoal to-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <div className="flex justify-center mb-6">
-              <Video className="w-16 h-16 text-gold" />
-            </div>
-            <h1 className="text-5xl lg:text-6xl font-saira font-black mb-6">
-              Cinematic <span className="text-gold">Videography</span>
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-              Bring your stories to life with compelling videography that captures emotion, tells stories, and creates lasting impact across all platforms.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button className="bg-salmon text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-salmon-muted transition-all duration-300">
-                View Showreel
-              </Button>
-              <Link href="/contact">
-                <Button variant="outline" className="border-2 border-cyan text-cyan px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-cyan hover:text-black transition-all duration-300">
-                  Get Quote
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Hero Section with YouTube Background */}
+      <YouTubeHero
+        videoId="0KMY9L849Hg"
+        title="Videography"
+        subtitle="Motion that tells your story"
+        ctaText="Start Project"
+        ctaLink="/contact"
+      />
 
       {/* Videography Categories */}
       <section className="py-20 bg-charcoal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-saira font-black mb-6">
-              Our Videography <span className="text-gold">Services</span>
+            <h2 className="text-4xl lg:text-5xl font-saira font-light mb-6">
+              Our <span className="text-salmon">Videography Services</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               From intimate wedding films to dynamic corporate content, we create videos that engage, inspire, and deliver results.

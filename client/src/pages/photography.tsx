@@ -66,8 +66,8 @@ export default function Photography() {
             <div className="flex justify-center mb-6">
               <Camera className="w-16 h-16 text-gold" />
             </div>
-            <h1 className="text-5xl lg:text-6xl font-saira font-black mb-6">
-              Professional <span className="text-gold">Photography</span>
+            <h1 className="text-5xl lg:text-6xl font-righteous mb-6">
+              Professional Photography
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
               From intimate moments to grand celebrations, our photography services capture the essence of every occasion with artistic vision and technical excellence.
