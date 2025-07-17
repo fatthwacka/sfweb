@@ -112,7 +112,7 @@ export default function Photography() {
                   </div>
                   
                   <div className="p-8">
-                    <h3 className="text-2xl font-saira font-bold text-gold mb-4">{category.name}</h3>
+                    <h3 className="text-2xl text-gold mb-4">{category.name}</h3>
                     <p className="text-muted-foreground mb-6">{category.description}</p>
                     
                     <div className="grid grid-cols-2 gap-2 mb-6">

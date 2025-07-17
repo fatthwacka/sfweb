@@ -382,7 +382,7 @@ export default function VideographyCategory() {
                 }`}
               >
                 <div className="text-center mb-8">
-                  <h3 className="text-2xl font-quicksand font-light text-salmon mb-2">{pkg.name}</h3>
+                  <h3 className="text-2xl text-salmon mb-2">{pkg.name}</h3>
                   <div className="text-4xl font-quicksand font-light mb-2">{pkg.price}</div>
                   <p className="text-muted-foreground">{pkg.duration}</p>
                 </div>

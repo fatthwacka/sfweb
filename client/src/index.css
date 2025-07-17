@@ -73,7 +73,7 @@
   /* Typography System - NEVER use inline fonts */
   h1 {
     @apply font-righteous;
-    background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+    background: linear-gradient(135deg, var(--salmon) 0%, var(--cyan) 100%);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -212,6 +212,89 @@
     transition: transform 0.4s ease, box-shadow 0.4s ease;
   }
   
+  /* Script font tagline - doubled size for responsive scaling */
+  .script-tagline {
+    font-family: var(--font-vibes);
+    font-size: 2.5rem; /* doubled from 1.25rem */
+    line-height: 1.2;
+    color: #e2e8f0;
+  }
+  
+  /* Card styling system - consistent design with color alternation */
+  .card-salmon {
+    background: var(--charcoal);
+    border: 1px solid rgba(255, 107, 107, 0.2);
+    border-radius: 1rem;
+    padding: 2rem;
+    transition: all 0.3s ease;
+  }
+  
+  .card-cyan {
+    background: var(--charcoal);
+    border: 1px solid rgba(78, 205, 196, 0.2);
+    border-radius: 1rem;
+    padding: 2rem;
+    transition: all 0.3s ease;
+  }
+  
+  .card-dark {
+    background: var(--black);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    border-radius: 1rem;
+    padding: 2rem;
+    transition: all 0.3s ease;
+  }
+  
+  /* Card button styling - alternating colors */
+  .card-button-salmon {
+    background: var(--salmon);
+    color: var(--black);
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    width: 100%;
+  }
+  
+  .card-button-salmon:hover {
+    background: #ff5252;
+    transform: translateY(-2px);
+  }
+  
+  .card-button-cyan {
+    background: var(--cyan);
+    color: var(--black);
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    width: 100%;
+  }
+  
+  .card-button-cyan:hover {
+    background: #26d0ce;
+    transform: translateY(-2px);
+  }
+  
+  /* Card headers - consistent styling */
+  .card-header-salmon {
+    color: var(--salmon);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+  
+  .card-header-cyan {
+    color: var(--cyan);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
   /* Social media icon colors - inline usage */
   .social-salmon {
     color: #ff6b6b !important;

@@ -193,7 +193,7 @@ export default function About() {
                 </div>
                 
                 <div className="p-8">
-                  <h3 className="text-2xl font-quicksand font-bold text-salmon mb-2">{member.name}</h3>
+                  <h3 className="text-2xl text-salmon mb-2">{member.name}</h3>
                   <p className="text-cyan/80 font-barlow font-semibold mb-4">{member.role}</p>
                   <p className="text-muted-foreground mb-6">{member.description}</p>
                   <a 

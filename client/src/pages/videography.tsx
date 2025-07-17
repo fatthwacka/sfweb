@@ -158,10 +158,10 @@ export default function Videography() {
               }
             ].map((item, index) => (
               <div key={index} className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gold text-black rounded-full font-saira font-black text-xl mb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gold text-black rounded-full text-xl mb-6">
                   {item.step}
                 </div>
-                <h3 className="text-xl font-saira font-bold text-gold mb-4">{item.title}</h3>
+                <h3 className="text-xl text-gold mb-4">{item.title}</h3>
                 <p className="text-muted-foreground">{item.description}</p>
               </div>
             ))}

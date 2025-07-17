@@ -36,7 +36,7 @@ export function YouTubeHero({ videoId, title, subtitle, ctaText = "Get Started",
         </h1>
         
         {subtitle && (
-          <p className="text-2xl font-corinthia text-cyan mb-8">
+          <p className="script-tagline text-cyan mb-8">
             {subtitle}
           </p>
         )}

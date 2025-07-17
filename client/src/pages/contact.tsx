@@ -45,7 +45,7 @@ export default function Contact() {
       <section className="relative pt-32 pb-20 bg-gradient-to-br from-black via-charcoal to-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h1 className="text-5xl lg:text-6xl font-saira font-black mb-6">
+            <h1 className="text-5xl lg:text-6xl mb-6">
               Get In <span className="text-gold">Touch</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
@@ -62,7 +62,7 @@ export default function Contact() {
                   {method.action ? (
                     <a href={method.action} className="block">
                       <Icon className="w-8 h-8 text-gold mx-auto mb-4" />
-                      <h3 className="font-saira font-bold text-lg mb-2">{method.title}</h3>
+                      <h3 className="text-lg mb-2">{method.title}</h3>
                       {method.details.map((detail, i) => (
                         <p key={i} className={`text-sm ${i === 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
                           {detail}
@@ -72,7 +72,7 @@ export default function Contact() {
                   ) : (
                     <div>
                       <Icon className="w-8 h-8 text-gold mx-auto mb-4" />
-                      <h3 className="font-saira font-bold text-lg mb-2">{method.title}</h3>
+                      <h3 className="text-lg mb-2">{method.title}</h3>
                       {method.details.map((detail, i) => (
                         <p key={i} className={`text-sm ${i === 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
                           {detail}
@@ -98,7 +98,7 @@ export default function Contact() {
             <div className="bg-charcoal rounded-2xl p-8">
               <div className="flex items-center mb-6">
                 <Clock className="w-8 h-8 text-gold mr-4" />
-                <h3 className="text-2xl font-saira font-bold">Business Hours</h3>
+                <h3 className="text-2xl">Business Hours</h3>
               </div>
               <div className="space-y-3">
                 <div className="flex justify-between">
@@ -123,7 +123,7 @@ export default function Contact() {
             <div className="bg-charcoal rounded-2xl p-8">
               <div className="flex items-center mb-6">
                 <MessageCircle className="w-8 h-8 text-gold mr-4" />
-                <h3 className="text-2xl font-saira font-bold">Response Times</h3>
+                <h3 className="text-2xl">Response Times</h3>
               </div>
               <div className="space-y-4">
                 <div>
