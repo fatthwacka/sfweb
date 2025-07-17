@@ -192,6 +192,74 @@
   .font-corinthia {
     font-family: 'Corinthia', cursive;
   }
+
+  /* Card System Classes */
+  .studio-card {
+    @apply bg-charcoal rounded-2xl p-8 shadow-2xl transition-all duration-500 transform hover:scale-[1.02];
+    border: 1px solid rgba(255, 107, 107, 0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 107, 107, 0.05);
+  }
+  
+  .studio-card:hover {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 30px rgba(255, 107, 107, 0.1);
+    border-color: rgba(255, 107, 107, 0.2);
+  }
+  
+  .studio-card-premium {
+    @apply bg-gradient-to-br from-charcoal to-black rounded-2xl p-8 shadow-2xl transition-all duration-500 transform hover:scale-[1.02];
+    border: 2px solid rgba(0, 255, 255, 0.3);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 255, 255, 0.1);
+  }
+  
+  .studio-card-premium:hover {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 255, 255, 0.2);
+    border-color: rgba(0, 255, 255, 0.4);
+  }
+  
+  .studio-card-title {
+    @apply text-2xl mb-4;
+    color: hsl(var(--salmon));
+  }
+  
+  .studio-card-price {
+    @apply text-4xl font-bold mb-2;
+    color: hsl(var(--foreground));
+  }
+  
+  .studio-card-duration {
+    @apply text-sm text-muted-foreground mb-6;
+  }
+  
+  .studio-card-feature {
+    @apply flex items-center text-sm text-muted-foreground mb-3;
+  }
+  
+  .studio-card-feature-icon {
+    @apply w-4 h-4 mr-3 flex-shrink-0;
+    color: hsl(var(--cyan));
+  }
+  
+  .studio-card-button {
+    @apply w-full px-8 py-4 rounded-full text-lg transition-all duration-300;
+    background: linear-gradient(135deg, hsl(var(--salmon)) 0%, hsl(var(--cyan)) 100%);
+    color: black;
+  }
+  
+  .studio-card-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+  }
+  
+  .studio-card-button-premium {
+    @apply w-full px-8 py-4 rounded-full text-lg transition-all duration-300;
+    background: linear-gradient(135deg, hsl(var(--cyan)) 0%, hsl(var(--salmon)) 100%);
+    color: black;
+  }
+  
+  .studio-card-button-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 255, 255, 0.3);
+  }
   
   .text-salmon {
     color: var(--salmon);

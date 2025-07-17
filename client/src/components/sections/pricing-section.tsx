@@ -49,10 +49,8 @@ export function PricingSection() {
           {packages && packages.length > 0 ? packages.map((pkg, index) => (
             <div 
               key={pkg.id} 
-              className={`transition-all duration-300 transform hover:-translate-y-2 ${
-                index === 0 ? "card-salmon" :
-                index === 1 ? "card-dark relative scale-105" : 
-                "card-cyan"
+              className={`${
+                index === 1 ? "studio-card-premium relative" : "studio-card"
               }`}
             >
               {index === 1 && (
@@ -64,25 +62,23 @@ export function PricingSection() {
               )}
 
               <div className="text-center mb-8">
-                <h3 className={index === 0 ? "card-header-salmon" : index === 1 ? "card-header-cyan" : "card-header-salmon"}>{pkg.name}</h3>
-                <div className="text-4xl mb-2">R{parseFloat(pkg.price).toLocaleString()}</div>
-                <p className="text-muted-foreground">{pkg.description}</p>
+                <h3 className="studio-card-title">{pkg.name}</h3>
+                <div className="studio-card-price">R{parseFloat(pkg.price).toLocaleString()}</div>
+                <p className="studio-card-duration">{pkg.description}</p>
               </div>
 
               <ul className="space-y-4 mb-8">
                 {pkg.features.map((feature, featureIndex) => (
-                  <li key={featureIndex} className="flex items-center">
-                    <Check className={`w-5 h-5 mr-3 flex-shrink-0 ${index === 0 ? "text-salmon" : index === 1 ? "text-cyan" : "text-salmon"}`} />
-                    <span className="text-sm">{feature}</span>
+                  <li key={featureIndex} className="studio-card-feature">
+                    <Check className="studio-card-feature-icon" />
+                    <span>{feature}</span>
                   </li>
                 ))}
               </ul>
 
               <button 
                 className={
-                  index === 0 ? "card-button-salmon" :
-                  index === 1 ? "card-button-cyan" : 
-                  "card-button-salmon"
+                  index === 1 ? "studio-card-button-premium" : "studio-card-button"
                 }
               >
                 Choose {pkg.name}

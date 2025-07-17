@@ -67,13 +67,13 @@ export default function Pricing() {
       <section className="relative pt-32 pb-20 bg-gradient-to-br from-black via-charcoal to-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h1 className="text-5xl lg:text-6xl font-saira font-black mb-6">
+            <h1 className="text-5xl lg:text-6xl mb-6">
               Transparent <span className="text-gold">Pricing</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
               Professional photography and videography services with clear, honest pricing. No hidden fees, no surprises—just exceptional value for your investment.
             </p>
-            <Button className="bg-gold text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold-muted transition-all duration-300">
+            <Button className="bg-gold text-black px-8 py-4 rounded-full text-lg hover:bg-gold-muted transition-all duration-300">
               <Download className="w-5 h-5 mr-2" />
               Download Full Price Guide
             </Button>
@@ -88,7 +88,7 @@ export default function Pricing() {
       <section className="py-20 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-saira font-black mb-6">
+            <h2 className="text-4xl lg:text-5xl mb-6">
               Videography <span className="text-gold">Packages</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
