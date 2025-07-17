@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
 import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
+import { useScrollToTop } from "./hooks/use-scroll-to-top";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { AuthProvider } from "@/lib/auth";
 
@@ -26,6 +27,8 @@ import NotFound from "@/pages/not-found";
 function Router() {
   // Track page views when routes change
   useAnalytics();
+  // Auto scroll to top on route change
+  useScrollToTop();
   
   return (
     <Switch>

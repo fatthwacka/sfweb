@@ -73,8 +73,8 @@ export default function Videography() {
       <section className="py-20 bg-charcoal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-saira font-light mb-6">
-              Our <span className="text-salmon">Videography Services</span>
+            <h2 className="cyan text-4xl lg:text-5xl mb-6">
+              Our <span>Videography Services</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               From intimate wedding films to dynamic corporate content, we create videos that engage, inspire, and deliver results.
@@ -98,7 +98,7 @@ export default function Videography() {
                   </div>
                   
                   <div className="p-8">
-                    <h3 className="text-2xl font-saira font-bold text-gold mb-4">{category.name}</h3>
+                    <h3 className="text-2xl text-gold mb-4">{category.name}</h3>
                     <p className="text-muted-foreground mb-6">{category.description}</p>
                     
                     <div className="grid grid-cols-2 gap-2 mb-6">

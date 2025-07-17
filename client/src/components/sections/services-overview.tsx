@@ -14,8 +14,8 @@ export function ServicesOverview() {
     <section className="py-20 bg-charcoal">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl lg:text-5xl font-quicksand font-light mb-6">
-            Our <span className="text-salmon">Services</span>
+          <h2 className="salmon text-4xl lg:text-5xl mb-6">
+            Our <span>Services</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             From intimate portraits to grand celebrations, we capture every moment with artistic vision and technical excellence.
@@ -36,7 +36,7 @@ export function ServicesOverview() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
 
                 <div className="absolute bottom-0 left-0 right-0 p-8">
-                  <h3 className="text-3xl font-quicksand font-light mb-4 text-salmon">Photography</h3>
+                  <h3 className="text-3xl mb-4 text-salmon">Photography</h3>
                   <p className="text-gray-200 mb-6">
                     Capture life's precious moments with our professional photography services. From weddings to corporate events, we create stunning visual narratives.
                   </p>
@@ -76,7 +76,7 @@ export function ServicesOverview() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
 
                 <div className="absolute bottom-0 left-0 right-0 p-8">
-                  <h3 className="text-3xl font-quicksand font-light mb-4 text-cyan">Videography</h3>
+                  <h3 className="text-3xl mb-4 text-cyan">Videography</h3>
                   <p className="text-gray-200 mb-6">
                     Bring your stories to life with cinematic videography. From wedding films to corporate content, we create compelling visual experiences.
                   </p>

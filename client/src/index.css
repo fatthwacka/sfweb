@@ -67,7 +67,41 @@
   }
 
   body {
-    @apply bg-background text-foreground font-forum antialiased;
+    @apply bg-background text-foreground font-saira antialiased;
+  }
+  
+  /* Typography System - NEVER use inline fonts */
+  h1 {
+    @apply font-righteous;
+    background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% 200%;
+    animation: gradient 3s ease infinite;
+  }
+
+  /* All h2 headers use consistent styling */
+  h2 {
+    @apply font-quicksand font-light;
+  }
+  
+  /* Section headers with salmon color */
+  h2.salmon {
+    color: #ff6b6b;
+  }
+  
+  /* Section headers with cyan color */
+  h2.cyan {
+    color: #4ecdc4;
+  }
+
+  h3, h4, h5, h6 {
+    @apply font-quicksand font-light;
+  }
+
+  p {
+    @apply font-saira;
   }
   
   html {
@@ -178,12 +212,13 @@
     transition: transform 0.4s ease, box-shadow 0.4s ease;
   }
   
-  /* H1 Gradient for all hero headings */
-  h1 {
-    background: linear-gradient(135deg, var(--salmon) 0%, var(--cyan) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  /* Social media icon colors - inline usage */
+  .social-salmon {
+    color: #ff6b6b !important;
+  }
+  
+  .social-cyan {
+    color: #4ecdc4 !important;
   }
   
   /* YouTube video background styling */

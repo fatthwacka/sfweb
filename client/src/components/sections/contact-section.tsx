@@ -96,8 +96,8 @@ export function ContactSection() {
         <div className="grid lg:grid-cols-2 gap-16">
           {/* Contact Form */}
           <div>
-            <h2 className="text-4xl lg:text-5xl font-saira font-light mb-6">
-              Let's Create <span className="text-cyan">Something Beautiful</span>
+            <h2 className="salmon text-4xl lg:text-5xl mb-6">
+              Let's Create <span>Something Beautiful</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
               Ready to capture your special moments? Get in touch with us and let's discuss how we can bring your vision to life.

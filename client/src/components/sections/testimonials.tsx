@@ -29,8 +29,8 @@ export function Testimonials() {
     <section className="py-20 bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl lg:text-5xl font-quicksand font-light mb-6">
-            What Our <span className="text-salmon">Clients Say</span>
+          <h2 className="cyan text-4xl lg:text-5xl mb-6">
+            What Our <span>Clients Say</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Don't just take our word for it. Here's what our clients have to say about their experience with SlyFox Studios.

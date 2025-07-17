@@ -154,7 +154,7 @@ export default function Contact() {
             <div className="bg-charcoal rounded-2xl p-8">
               <div className="flex items-center mb-6">
                 <MapPin className="w-8 h-8 text-gold mr-4" />
-                <h3 className="text-2xl font-saira font-bold">Service Areas</h3>
+                <h3 className="text-2xl">Service Areas</h3>
               </div>
               <div className="space-y-3">
                 <div>
@@ -181,8 +181,8 @@ export default function Contact() {
       {/* Emergency Contact */}
       <section className="py-20 bg-charcoal">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-saira font-black mb-6">
-            Need Urgent <span className="text-gold">Assistance?</span>
+          <h2 className="salmon text-4xl mb-6">
+            Need Urgent <span>Assistance?</span>
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
             For time-sensitive inquiries or last-minute bookings, contact us directly for the fastest response.

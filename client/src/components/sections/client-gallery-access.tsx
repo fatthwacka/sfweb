@@ -25,8 +25,8 @@ export function ClientGalleryAccess() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
-            <h2 className="text-4xl lg:text-5xl font-quicksand font-light mb-6">
-              Your Private <span className="text-cyan">Gallery</span>
+            <h2 className="salmon text-4xl lg:text-5xl mb-6">
+              Your Private <span>Gallery</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
               Access your photos anytime, anywhere. Share with family and friends, download high-resolution images, and relive your special moments through our secure client portal.
@@ -41,7 +41,7 @@ export function ClientGalleryAccess() {
                       <Icon className="w-5 h-5 text-black" />
                     </div>
                     <div>
-                      <h4 className="font-quicksand font-light text-lg mb-2">{feature.title}</h4>
+                      <h4 className="text-lg mb-2">{feature.title}</h4>
                       <p className="text-muted-foreground">{feature.description}</p>
                     </div>
                   </div>

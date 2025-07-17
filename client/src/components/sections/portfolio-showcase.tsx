@@ -64,8 +64,8 @@ export function PortfolioShowcase() {
     <section className="py-20 bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl lg:text-5xl font-saira font-light mb-6">
-            Featured <span className="text-cyan">Work</span>
+          <h2 className="cyan text-4xl lg:text-5xl mb-6">
+            Featured <span>Work</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
             A glimpse into our creative journey - showcasing moments that matter, stories that inspire, and memories that last forever.
