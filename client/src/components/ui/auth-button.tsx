@@ -103,13 +103,13 @@ export function AuthButton() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-salmon text-black hover:bg-salmon-muted font-barlow font-semibold">
+        <Button className="bg-salmon text-black hover:bg-salmon-muted">
           Account
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-saira font-bold text-xl">
+          <DialogTitle className="text-xl">
             {isSignUp ? "Create Account" : "Sign In"}
           </DialogTitle>
         </DialogHeader>
@@ -138,7 +138,7 @@ export function AuthButton() {
           </div>
           <Button 
             type="submit" 
-            className="w-full bg-gold text-black hover:bg-gold-muted font-barlow font-semibold"
+            className="w-full bg-gold text-black hover:bg-gold-muted"
             disabled={loading}
           >
             {loading ? "Loading..." : (isSignUp ? "Create Account" : "Sign In")}

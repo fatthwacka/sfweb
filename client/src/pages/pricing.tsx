@@ -248,8 +248,8 @@ export default function Pricing() {
               return (
                 <div key={index} className="bg-black rounded-2xl p-8 text-center hover:bg-gold/10 transition-colors duration-300">
                   <Icon className="w-12 h-12 text-gold mx-auto mb-6" />
-                  <h3 className="text-xl font-saira font-bold text-gold mb-2">{service.title}</h3>
-                  <div className="text-2xl font-saira font-black mb-4">{service.price}</div>
+                  <h3 className="text-xl text-gold mb-2">{service.title}</h3>
+                  <div className="text-2xl mb-4">{service.price}</div>
                   <p className="text-muted-foreground">{service.description}</p>
                 </div>
               );
@@ -262,7 +262,7 @@ export default function Pricing() {
       <section className="py-20 bg-black">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-saira font-black mb-6">
+            <h2 className="text-4xl lg:text-5xl mb-6">
               Frequently Asked <span className="text-gold">Questions</span>
             </h2>
             <p className="text-xl text-muted-foreground">
@@ -273,7 +273,7 @@ export default function Pricing() {
           <div className="space-y-8">
             {faqs.map((faq, index) => (
               <div key={index} className="bg-charcoal rounded-2xl p-8">
-                <h3 className="text-xl font-saira font-bold text-gold mb-4">{faq.question}</h3>
+                <h3 className={`text-xl mb-4 ${index % 2 === 0 ? 'h3-salmon' : 'h3-cyan'}`}>{faq.question}</h3>
                 <p className="text-muted-foreground">{faq.answer}</p>
               </div>
             ))}

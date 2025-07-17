@@ -48,7 +48,7 @@ export function Navigation() {
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <img 
-              src="/attached_assets/Head-only-black_1752749907547.png" 
+              src="@assets/Head-only-black_1752749907547.png" 
               alt="SlyFox Studios Logo" 
               className="w-10 h-10"
             />
@@ -58,7 +58,7 @@ export function Navigation() {
           <div className="hidden lg:flex items-center space-x-8">
             {/* Photography Dropdown */}
             <div className="relative group">
-              <Link href="/photography" className="font-barlow font-medium hover:text-gold transition-colors duration-300 flex items-center">
+              <Link href="/photography" className="hover:text-gold transition-colors duration-300 flex items-center">
                 Photography
                 <ChevronDown className="w-4 h-4 ml-1" />
               </Link>

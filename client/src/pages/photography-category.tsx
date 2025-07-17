@@ -289,7 +289,7 @@ export default function PhotographyCategory() {
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-4xl font-saira font-black mb-4">Category Not Found</h1>
+          <h1 className="text-4xl mb-4">Category Not Found</h1>
           <Link href="/photography">
             <Button className="bg-gold text-black">Back to Photography</Button>
           </Link>
@@ -329,7 +329,7 @@ export default function PhotographyCategory() {
           </div>
           
           <div className="max-w-3xl">
-            <h1 className="text-5xl lg:text-6xl font-saira font-black mb-6">
+            <h1 className="text-5xl lg:text-6xl mb-6">
               {data.name.split(' ')[0]} <span className="text-gold">{data.name.split(' ')[1]}</span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
@@ -358,7 +358,7 @@ export default function PhotographyCategory() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-4xl font-saira font-black mb-6">
+              <h2 className="text-4xl mb-6">
                 Why Choose Our <span className="text-gold">{data.name}</span>
               </h2>
               <p className="text-lg text-muted-foreground mb-8">
@@ -393,7 +393,7 @@ export default function PhotographyCategory() {
       <section className="py-20 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-saira font-black mb-6">
+            <h2 className="text-4xl lg:text-5xl mb-6">
               {data.name} <span className="text-gold">Packages</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -410,8 +410,8 @@ export default function PhotographyCategory() {
                 }`}
               >
                 <div className="text-center mb-8">
-                  <h3 className="text-2xl font-saira font-bold text-gold mb-2">{pkg.name}</h3>
-                  <div className="text-4xl font-saira font-black mb-2">{pkg.price}</div>
+                  <h3 className="text-2xl text-gold mb-2">{pkg.name}</h3>
+                  <div className="text-4xl mb-2">{pkg.price}</div>
                   <p className="text-muted-foreground">{pkg.duration}</p>
                 </div>
 
@@ -426,7 +426,7 @@ export default function PhotographyCategory() {
 
                 <Link href="/contact">
                   <Button 
-                    className={`w-full py-3 rounded-full font-barlow font-semibold transition-all duration-300 ${
+                    className={`w-full py-3 rounded-full transition-all duration-300 ${
                       index === 1
                         ? "bg-gold text-black hover:bg-gold-muted"
                         : "bg-transparent border-2 border-gold text-gold hover:bg-gold hover:text-black"
@@ -445,7 +445,7 @@ export default function PhotographyCategory() {
       <section id="gallery" className="py-20 bg-charcoal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-saira font-black mb-6">
+            <h2 className="text-4xl lg:text-5xl mb-6">
               Recent <span className="text-gold">Work</span>
             </h2>
             <p className="text-xl text-muted-foreground">
@@ -472,7 +472,7 @@ export default function PhotographyCategory() {
 
           <div className="text-center mt-12">
             <Link href="/contact">
-              <Button className="bg-gold text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold-muted transition-all duration-300">
+              <Button className="bg-gold text-black px-8 py-4 rounded-full text-lg hover:bg-gold-muted transition-all duration-300">
                 Start Your Project
               </Button>
             </Link>

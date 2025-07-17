@@ -383,7 +383,7 @@ export default function VideographyCategory() {
               >
                 <div className="text-center mb-8">
                   <h3 className="text-2xl text-salmon mb-2">{pkg.name}</h3>
-                  <div className="text-4xl font-quicksand font-light mb-2">{pkg.price}</div>
+                  <div className="text-4xl mb-2">{pkg.price}</div>
                   <p className="text-muted-foreground">{pkg.duration}</p>
                 </div>
 
@@ -444,7 +444,7 @@ export default function VideographyCategory() {
 
           <div className="text-center mt-12">
             <Link href="/contact">
-              <Button className="bg-gold text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold-muted transition-all duration-300">
+              <Button className="bg-gold text-black px-8 py-4 rounded-full text-lg hover:bg-gold-muted transition-all duration-300">
                 Start Your Project
               </Button>
             </Link>

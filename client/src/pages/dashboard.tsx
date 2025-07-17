@@ -125,7 +125,7 @@ export default function Dashboard() {
         <Navigation />
         <div className="pt-32 pb-20">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-4xl font-saira font-black mb-6">Access Required</h1>
+            <h1 className="text-4xl mb-6">Access Required</h1>
             <p className="text-xl text-muted-foreground mb-8">
               Please sign in to access your dashboard.
             </p>
@@ -169,7 +169,7 @@ export default function Dashboard() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h1 className="text-3xl font-saira font-black">
+                <h1 className="text-3xl">
                   Welcome back, <span className="text-gold">{user.email.split('@')[0]}</span>
                 </h1>
                 <p className="text-muted-foreground">
@@ -272,7 +272,7 @@ export default function Dashboard() {
                 {/* Recent Activity */}
                 <Card className="bg-black border-border">
                   <CardHeader>
-                    <CardTitle className="text-xl font-saira font-bold text-gold">Recent Activity</CardTitle>
+                    <CardTitle className="text-xl text-gold">Recent Activity</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
@@ -300,7 +300,7 @@ export default function Dashboard() {
                 {/* Quick Actions */}
                 <Card className="bg-black border-border">
                   <CardHeader>
-                    <CardTitle className="text-xl font-saira font-bold text-gold">Quick Actions</CardTitle>
+                    <CardTitle className="text-xl text-gold">Quick Actions</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 gap-4">
@@ -345,7 +345,7 @@ export default function Dashboard() {
           {activeTab === 'galleries' && (
             <div className="space-y-8">
               <div className="flex items-center justify-between">
-                <h2 className="text-3xl font-saira font-black">
+                <h2 className="text-3xl">
                   My <span className="text-gold">Galleries</span>
                 </h2>
                 <Button className="bg-gold text-black hover:bg-gold-muted">

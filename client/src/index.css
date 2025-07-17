@@ -96,8 +96,36 @@
     color: #4ecdc4;
   }
 
-  h3, h4, h5, h6 {
+  h3 {
     @apply font-quicksand font-light;
+    color: hsl(var(--salmon));
+  }
+  
+  h4 {
+    @apply font-quicksand font-light;
+    color: hsl(var(--cyan));
+  }
+  
+  h5, h6 {
+    @apply font-quicksand font-light;
+    color: hsl(var(--salmon));
+  }
+  
+  /* Helper classes for alternating header colors */
+  .h3-salmon {
+    color: hsl(var(--salmon));
+  }
+  
+  .h3-cyan {
+    color: hsl(var(--cyan));
+  }
+  
+  .h4-salmon {
+    color: hsl(var(--salmon));
+  }
+  
+  .h4-cyan {
+    color: hsl(var(--cyan));
   }
 
   p {
@@ -214,7 +242,7 @@
   
   /* Script font tagline - doubled size for responsive scaling */
   .script-tagline {
-    font-family: var(--font-vibes);
+    font-family: 'Great Vibes', cursive;
     font-size: 2.5rem; /* doubled from 1.25rem */
     line-height: 1.2;
     color: #e2e8f0;

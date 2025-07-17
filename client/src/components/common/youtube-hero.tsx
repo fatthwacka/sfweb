@@ -31,7 +31,7 @@ export function YouTubeHero({ videoId, title, subtitle, ctaText = "Get Started",
       
       {/* Content */}
       <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-        <h1 className="text-5xl md:text-6xl lg:text-7xl font-righteous mb-8">
+        <h1 className="text-5xl md:text-6xl lg:text-7xl mb-8">
           {title}
         </h1>
         

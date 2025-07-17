@@ -113,7 +113,7 @@ export default function ClientGallery() {
         <div className="pt-32 pb-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
-              <h1 className="text-4xl font-saira font-black mb-4">Gallery Not Found</h1>
+              <h1 className="text-4xl mb-4">Gallery Not Found</h1>
               <p className="text-muted-foreground mb-8">This client gallery doesn't exist or has been removed.</p>
               <Link href="/">
                 <Button className="bg-gold text-black hover:bg-gold-muted">
@@ -194,7 +194,7 @@ export default function ClientGallery() {
           </div>
           
           <div className="text-center mb-12">
-            <h1 className="text-5xl lg:text-6xl font-saira font-black mb-6">
+            <h1 className="text-5xl lg:text-6xl mb-6">
               {client.name}'s <span className="text-gold">Gallery</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
@@ -204,7 +204,7 @@ export default function ClientGallery() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button 
                 onClick={handleShareGallery}
-                className="bg-gold text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold-muted transition-all duration-300"
+                className="bg-gold text-black px-8 py-4 rounded-full text-lg hover:bg-gold-muted transition-all duration-300"
               >
                 <Share2 className="w-5 h-5 mr-2" />
                 Share Gallery
