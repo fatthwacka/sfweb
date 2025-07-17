@@ -98,132 +98,132 @@ export default function Pricing() {
 
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Wedding Videography */}
-            <div className="bg-charcoal rounded-2xl p-8 border border-border hover:border-gold transition-all duration-300 transform hover:-translate-y-2">
+            <div className="studio-card">
               <div className="text-center mb-8">
-                <h3 className="text-2xl font-saira font-bold text-gold mb-4">Wedding Films</h3>
-                <div className="text-4xl font-saira font-black mb-2">R12,500</div>
-                <p className="text-muted-foreground">Cinematic wedding videography</p>
+                <h3 className="studio-card-title">Wedding Films</h3>
+                <div className="studio-card-price">R12,500</div>
+                <p className="studio-card-duration">Cinematic wedding videography</p>
               </div>
 
               <ul className="space-y-4 mb-8">
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-gold mr-3" />
-                  <span className="text-sm">6-8 hour coverage</span>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>6-8 hour coverage</span>
                 </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-gold mr-3" />
-                  <span className="text-sm">Highlight reel (3-5 minutes)</span>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>Highlight reel (3-5 minutes)</span>
                 </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-gold mr-3" />
-                  <span className="text-sm">Full ceremony footage</span>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>Full ceremony footage</span>
                 </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-gold mr-3" />
-                  <span className="text-sm">Reception highlights</span>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>Reception highlights</span>
                 </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-gold mr-3" />
-                  <span className="text-sm">Professional color grading</span>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>Professional color grading</span>
                 </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-gold mr-3" />
-                  <span className="text-sm">Multiple format delivery</span>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>Multiple format delivery</span>
                 </li>
               </ul>
 
               <Link href="/contact">
-                <Button className="w-full bg-transparent border-2 border-cyan text-cyan py-3 rounded-full font-barlow font-semibold hover:bg-cyan hover:text-black transition-all duration-300">
+                <button className="studio-card-button">
                   Choose Wedding Films
-                </Button>
+                </button>
               </Link>
             </div>
 
             {/* Corporate Video */}
-            <div className="bg-charcoal rounded-2xl p-8 border-2 border-salmon relative scale-105">
+            <div className="studio-card-premium relative">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="bg-salmon text-black px-6 py-2 rounded-full font-barlow font-semibold text-sm">Popular</span>
+                <span className="bg-salmon text-black px-6 py-2 rounded-full text-sm">Popular</span>
               </div>
 
               <div className="text-center mb-8">
-                <h3 className="text-2xl font-quicksand font-bold text-salmon mb-4">Corporate Video</h3>
-                <div className="text-4xl font-saira font-black mb-2">R8,500</div>
-                <p className="text-muted-foreground">Professional business videos</p>
+                <h3 className="studio-card-title">Corporate Video</h3>
+                <div className="studio-card-price">R8,500</div>
+                <p className="studio-card-duration">Professional business videos</p>
               </div>
 
               <ul className="space-y-4 mb-8">
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-gold mr-3" />
-                  <span className="text-sm">Full day production</span>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>Full day production</span>
                 </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-gold mr-3" />
-                  <span className="text-sm">3-5 minute final video</span>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>3-5 minute final video</span>
                 </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-gold mr-3" />
-                  <span className="text-sm">Professional interviews</span>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>Professional interviews</span>
                 </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-gold mr-3" />
-                  <span className="text-sm">Company profile content</span>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>Company profile content</span>
                 </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-gold mr-3" />
-                  <span className="text-sm">Motion graphics package</span>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>Motion graphics package</span>
                 </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-gold mr-3" />
-                  <span className="text-sm">Multi-platform optimization</span>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>Multi-platform optimization</span>
                 </li>
               </ul>
 
               <Link href="/contact">
-                <Button className="w-full bg-gold text-black py-3 rounded-full font-barlow font-semibold hover:bg-gold-muted transition-all duration-300">
+                <button className="studio-card-button-premium">
                   Choose Corporate Video
-                </Button>
+                </button>
               </Link>
             </div>
 
             {/* Social Media Content */}
-            <div className="bg-charcoal rounded-2xl p-8 border border-border hover:border-gold transition-all duration-300 transform hover:-translate-y-2">
+            <div className="studio-card">
               <div className="text-center mb-8">
-                <h3 className="text-2xl font-saira font-bold text-gold mb-4">Social Content</h3>
-                <div className="text-4xl font-saira font-black mb-2">R2,500</div>
-                <p className="text-muted-foreground">Social media video package</p>
+                <h3 className="studio-card-title">Social Content</h3>
+                <div className="studio-card-price">R2,500</div>
+                <p className="studio-card-duration">Social media video package</p>
               </div>
 
               <ul className="space-y-4 mb-8">
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-gold mr-3" />
-                  <span className="text-sm">Half day shoot</span>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>Half day shoot</span>
                 </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-gold mr-3" />
-                  <span className="text-sm">10-15 short videos</span>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>10-15 short videos</span>
                 </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-gold mr-3" />
-                  <span className="text-sm">Platform-specific editing</span>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>Platform-specific editing</span>
                 </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-gold mr-3" />
-                  <span className="text-sm">Instagram Reels & TikTok</span>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>Instagram Reels & TikTok</span>
                 </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-gold mr-3" />
-                  <span className="text-sm">Trending formats</span>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>Trending formats</span>
                 </li>
-                <li className="flex items-center">
-                  <Check className="w-5 h-5 text-gold mr-3" />
-                  <span className="text-sm">Quick turnaround</span>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>Quick turnaround</span>
                 </li>
               </ul>
 
               <Link href="/contact">
-                <Button className="w-full bg-transparent border-2 border-gold text-gold py-3 rounded-full font-barlow font-semibold hover:bg-gold hover:text-black transition-all duration-300">
+                <button className="studio-card-button">
                   Choose Social Content
-                </Button>
+                </button>
               </Link>
             </div>
           </div>
@@ -234,7 +234,7 @@ export default function Pricing() {
       <section className="py-20 bg-charcoal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-saira font-black mb-6">
+            <h2 className="text-4xl lg:text-5xl mb-6">
               Additional <span className="text-gold">Services</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">

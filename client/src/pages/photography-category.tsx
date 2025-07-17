@@ -337,13 +337,13 @@ export default function PhotographyCategory() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/contact">
-                <Button className="bg-gold text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold-muted transition-all duration-300">
+                <Button className="bg-gold text-black px-8 py-4 rounded-full text-lg hover:bg-gold-muted transition-all duration-300">
                   Book Session
                 </Button>
               </Link>
               <Button 
                 variant="outline" 
-                className="border-2 border-white text-white px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-white hover:text-black transition-all duration-300"
+                className="border-2 border-white text-white px-8 py-4 rounded-full text-lg hover:bg-white hover:text-black transition-all duration-300"
                 onClick={() => document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 View Gallery
@@ -405,35 +405,27 @@ export default function PhotographyCategory() {
             {data.packages.map((pkg, index) => (
               <div 
                 key={index}
-                className={`bg-charcoal rounded-2xl p-8 border transition-all duration-300 transform hover:-translate-y-2 ${
-                  index === 1 ? "border-gold scale-105" : "border-border hover:border-gold"
-                }`}
+                className={index === 1 ? "studio-card-premium relative" : "studio-card"}
               >
                 <div className="text-center mb-8">
-                  <h3 className="text-2xl text-gold mb-2">{pkg.name}</h3>
-                  <div className="text-4xl mb-2">{pkg.price}</div>
-                  <p className="text-muted-foreground">{pkg.duration}</p>
+                  <h3 className="studio-card-title">{pkg.name}</h3>
+                  <div className="studio-card-price">{pkg.price}</div>
+                  <p className="studio-card-duration">{pkg.duration}</p>
                 </div>
 
                 <ul className="space-y-4 mb-8">
                   {pkg.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center">
-                      <Check className="w-5 h-5 text-gold mr-3 flex-shrink-0" />
-                      <span className="text-sm">{feature}</span>
+                    <li key={featureIndex} className="studio-card-feature">
+                      <Check className="studio-card-feature-icon" />
+                      <span>{feature}</span>
                     </li>
                   ))}
                 </ul>
 
                 <Link href="/contact">
-                  <Button 
-                    className={`w-full py-3 rounded-full transition-all duration-300 ${
-                      index === 1
-                        ? "bg-gold text-black hover:bg-gold-muted"
-                        : "bg-transparent border-2 border-gold text-gold hover:bg-gold hover:text-black"
-                    }`}
-                  >
+                  <button className={index === 1 ? "studio-card-button-premium" : "studio-card-button"}>
                     Choose {pkg.name}
-                  </Button>
+                  </button>
                 </Link>
               </div>
             ))}

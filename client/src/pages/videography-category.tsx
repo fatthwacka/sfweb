@@ -327,7 +327,7 @@ export default function VideographyCategory() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-4xl font-saira font-light mb-6">
+              <h2 className="text-4xl mb-6">
                 <span className="text-salmon">{data.name}</span>
               </h2>
               <p className="text-lg text-muted-foreground mb-8">
@@ -365,7 +365,7 @@ export default function VideographyCategory() {
       <section className="py-20 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-quicksand font-light mb-6">
+            <h2 className="text-4xl lg:text-5xl mb-6">
               {data.name} <span className="text-cyan">Packages</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -377,35 +377,27 @@ export default function VideographyCategory() {
             {data.packages.map((pkg, index) => (
               <div 
                 key={index}
-                className={`bg-charcoal rounded-2xl p-8 border transition-all duration-300 transform hover:-translate-y-2 ${
-                  index === 1 ? "border-gold scale-105" : "border-border hover:border-gold"
-                }`}
+                className={index === 1 ? "studio-card-premium relative" : "studio-card"}
               >
                 <div className="text-center mb-8">
-                  <h3 className="text-2xl text-salmon mb-2">{pkg.name}</h3>
-                  <div className="text-4xl mb-2">{pkg.price}</div>
-                  <p className="text-muted-foreground">{pkg.duration}</p>
+                  <h3 className="studio-card-title">{pkg.name}</h3>
+                  <div className="studio-card-price">{pkg.price}</div>
+                  <p className="studio-card-duration">{pkg.duration}</p>
                 </div>
 
                 <ul className="space-y-4 mb-8">
                   {pkg.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center">
-                      <Check className="w-5 h-5 text-cyan mr-3 flex-shrink-0" />
-                      <span className="text-sm">{feature}</span>
+                    <li key={featureIndex} className="studio-card-feature">
+                      <Check className="studio-card-feature-icon" />
+                      <span>{feature}</span>
                     </li>
                   ))}
                 </ul>
 
                 <Link href="/contact">
-                  <Button 
-                    className={`w-full py-3 rounded-full font-barlow font-semibold transition-all duration-300 ${
-                      index === 1
-                        ? "bg-gold text-black hover:bg-gold-muted"
-                        : "bg-transparent border-2 border-gold text-gold hover:bg-gold hover:text-black"
-                    }`}
-                  >
+                  <button className={index === 1 ? "studio-card-button-premium" : "studio-card-button"}>
                     Choose {pkg.name}
-                  </Button>
+                  </button>
                 </Link>
               </div>
             ))}
