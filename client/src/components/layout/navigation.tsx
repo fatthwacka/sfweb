@@ -48,11 +48,20 @@ export function Navigation() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <img 
-              src={logoPath} 
-              alt="SlyFox Studios Logo" 
-              className="w-10 h-10"
-            />
+            <div className="w-10 h-10 relative">
+              <img 
+                src={logoPath} 
+                alt="SlyFox Studios Logo" 
+                className="w-10 h-10 filter brightness-0 invert"
+                style={{
+                  background: 'linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(180, 100%, 50%) 100%)',
+                  WebkitMask: `url(${logoPath}) no-repeat center`,
+                  mask: `url(${logoPath}) no-repeat center`,
+                  WebkitMaskSize: 'contain',
+                  maskSize: 'contain'
+                }}
+              />
+            </div>
           </Link>
 
           {/* Desktop Navigation */}

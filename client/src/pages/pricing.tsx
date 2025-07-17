@@ -55,7 +55,7 @@ const faqs = [
 
 export default function Pricing() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground background-gradient-blobs">
       {/* SEO Meta Tags */}
       <title>Photography & Videography Pricing Cape Town | SlyFox Studios</title>
       <meta name="description" content="Transparent pricing for professional photography and videography services in Cape Town. Wedding, corporate, portrait, and event packages available. Download our detailed price guide." />

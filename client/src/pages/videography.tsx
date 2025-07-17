@@ -52,7 +52,7 @@ const videographyCategories = [
 
 export default function Videography() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground background-gradient-blobs">
       {/* SEO Meta Tags */}
       <title>Professional Videography Services Cape Town | SlyFox Studios</title>
       <meta name="description" content="Expert videography services in Cape Town including wedding films, corporate videos, events, product videos, social media content, and animation. Cinematic video production in South Africa." />
@@ -110,7 +110,7 @@ export default function Videography() {
                       ))}
                     </div>
                     
-                    <div className="flex items-center text-cyan font-barlow font-semibold group-hover:translate-x-2 transition-transform duration-300">
+                    <div className="flex items-center text-cyan group-hover:translate-x-2 transition-transform duration-300">
                       Learn More
                       <ArrowRight className="w-5 h-5 ml-2" />
                     </div>
@@ -126,7 +126,7 @@ export default function Videography() {
       <section className="py-20 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-saira font-black mb-6">
+            <h2 className="text-4xl lg:text-5xl mb-6">
               Our Video <span className="text-gold">Process</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -172,7 +172,7 @@ export default function Videography() {
       {/* Call to Action */}
       <section className="py-20 bg-charcoal">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-saira font-black mb-6">
+          <h2 className="text-4xl mb-6">
             Ready to Create Your <span className="text-gold">Video?</span>
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
@@ -180,12 +180,12 @@ export default function Videography() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
-              <Button className="bg-gold text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold-muted transition-all duration-300">
+              <Button className="bg-gold text-black px-8 py-4 rounded-full text-lg hover:bg-gold-muted transition-all duration-300">
                 Start Your Project
               </Button>
             </Link>
             <Link href="/pricing">
-              <Button variant="outline" className="border-2 border-white text-white px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-white hover:text-black transition-all duration-300">
+              <Button variant="outline" className="border-2 border-white text-white px-8 py-4 rounded-full text-lg hover:bg-white hover:text-black transition-all duration-300">
                 View Pricing
               </Button>
             </Link>
