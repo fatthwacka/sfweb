@@ -60,7 +60,7 @@ const values = [
 
 export default function About() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground background-gradient-blobs">
       {/* SEO Meta Tags */}
       <title>About SlyFox Studios - Professional Photography & Videography Cape Town</title>
       <meta name="description" content="Meet the SlyFox Studios team. Professional photographers and videographers based in Cape Town, South Africa. Learn about our story, values, and commitment to excellence." />

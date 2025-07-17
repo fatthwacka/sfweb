@@ -4,6 +4,7 @@ import { AuthButton } from "@/components/ui/auth-button";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import logoPath from "@assets/Head-only-black_1752749907547.png";
 
 const photographyCategories = [
   { name: "Weddings", slug: "weddings" },
@@ -48,7 +49,7 @@ export function Navigation() {
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <img 
-              src="@assets/Head-only-black_1752749907547.png" 
+              src={logoPath} 
               alt="SlyFox Studios Logo" 
               className="w-10 h-10"
             />
@@ -58,7 +59,7 @@ export function Navigation() {
           <div className="hidden lg:flex items-center space-x-8">
             {/* Photography Dropdown */}
             <div className="relative group">
-              <Link href="/photography" className="hover:text-gold transition-colors duration-300 flex items-center">
+              <Link href="/photography" className="text-cyan hover:text-gold transition-colors duration-300 flex items-center">
                 Photography
                 <ChevronDown className="w-4 h-4 ml-1" />
               </Link>
@@ -79,7 +80,7 @@ export function Navigation() {
 
             {/* Videography Dropdown */}
             <div className="relative group">
-              <Link href="/videography" className="font-barlow font-medium hover:text-gold transition-colors duration-300 flex items-center">
+              <Link href="/videography" className="text-cyan hover:text-gold transition-colors duration-300 flex items-center">
                 Videography
                 <ChevronDown className="w-4 h-4 ml-1" />
               </Link>
@@ -98,13 +99,13 @@ export function Navigation() {
               </div>
             </div>
 
-            <Link href="/about" className="font-barlow font-medium hover:text-gold transition-colors duration-300">
+            <Link href="/about" className="text-cyan hover:text-gold transition-colors duration-300">
               About
             </Link>
-            <Link href="/pricing" className="font-barlow font-medium hover:text-gold transition-colors duration-300">
+            <Link href="/pricing" className="text-cyan hover:text-gold transition-colors duration-300">
               Pricing
             </Link>
-            <Link href="/contact" className="font-barlow font-medium hover:text-gold transition-colors duration-300">
+            <Link href="/contact" className="text-cyan hover:text-gold transition-colors duration-300">
               Contact
             </Link>
           </div>

@@ -33,7 +33,7 @@ const contactMethods = [
 
 export default function Contact() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground background-gradient-blobs">
       {/* SEO Meta Tags */}
       <title>Contact SlyFox Studios - Photography & Videography Cape Town</title>
       <meta name="description" content="Get in touch with SlyFox Studios for professional photography and videography services in Cape Town. Phone, email, WhatsApp contact options available. Quick response guaranteed." />
