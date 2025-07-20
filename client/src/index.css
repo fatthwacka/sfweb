@@ -234,9 +234,9 @@
   }
   
   .btn-salmon:hover {
-    background: linear-gradient(135deg, hsl(16, 80%, 65%) 0%, hsl(16, 60%, 55%) 100%);
+    background: linear-gradient(135deg, hsl(180, 100%, 50%) 0%, hsl(180, 80%, 45%) 100%);
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+    box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3);
   }
 
   .btn-cyan {
@@ -247,37 +247,37 @@
   }
   
   .btn-cyan:hover {
-    background: linear-gradient(135deg, hsl(180, 80%, 45%) 0%, hsl(180, 60%, 40%) 100%);
+    background: linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(16, 80%, 65%) 100%);
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3);
+    box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
   }
 
   .btn-outline-salmon {
     @apply px-8 py-4 rounded-full font-barlow font-semibold text-lg transition-all duration-300;
     background: transparent;
     color: hsl(16, 100%, 73%);
-    border: 2px solid hsl(16, 100%, 73%);
+    border: none;
   }
   
   .btn-outline-salmon:hover {
-    background: hsl(16, 100%, 73%);
+    background: linear-gradient(135deg, hsl(180, 100%, 50%) 0%, hsl(180, 80%, 45%) 100%);
     color: hsl(260, 30%, 8%);
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+    box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3);
   }
 
   .btn-outline-cyan {
     @apply px-8 py-4 rounded-full font-barlow font-semibold text-lg transition-all duration-300;
     background: transparent;
     color: hsl(180, 100%, 50%);
-    border: 2px solid hsl(180, 100%, 50%);
+    border: none;
   }
   
   .btn-outline-cyan:hover {
-    background: hsl(180, 100%, 50%);
+    background: linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(16, 80%, 65%) 100%);
     color: hsl(260, 30%, 8%);
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3);
+    box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
   }
 
   /* Studio Card Button System - remove all inline styling */
@@ -302,9 +302,28 @@
   }
   
   .studio-card-button-premium:hover {
-    background: linear-gradient(135deg, hsl(180, 80%, 45%) 0%, hsl(180, 60%, 40%) 100%);
+    background: linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(16, 80%, 65%) 100%);
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3);
+    box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+  }
+  
+  /* Contact Section Styling */
+  .contact-info-card {
+    @apply rounded-xl p-6 border transition-all duration-300 hover:scale-105;
+    background: linear-gradient(135deg, rgba(45, 45, 45, 0.8) 0%, rgba(30, 30, 30, 0.9) 100%);
+    border-color: rgba(78, 205, 196, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  .contact-info-card:hover {
+    border-color: rgba(78, 205, 196, 0.6);
+    box-shadow: 0 8px 30px rgba(78, 205, 196, 0.2);
+  }
+  
+  .contact-info-icon {
+    @apply w-12 h-12 p-3 rounded-full mb-4;
+    background: linear-gradient(135deg, hsl(180, 100%, 50%) 0%, hsl(180, 80%, 45%) 100%);
+    color: hsl(260, 30%, 8%);
   }
   
   .studio-card:hover {

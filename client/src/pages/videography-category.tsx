@@ -312,7 +312,7 @@ export default function VideographyCategory() {
       
       {/* Hero Section with YouTube Background */}
       <YouTubeHero
-        videoId="0KMY9L849Hg"
+        videoId="ck_GbYnz8FY"
         title={data.name}
         subtitle={data.name === "Corporate Videography" ? "Professional excellence in frames" : 
                  data.name === "Wedding Videography" ? "Love stories in motion" :

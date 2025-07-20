@@ -58,10 +58,12 @@ export default function Contact() {
             {contactMethods.map((method, index) => {
               const Icon = method.icon;
               return (
-                <div key={index} className="bg-charcoal rounded-2xl p-6 text-center hover:bg-gold/10 transition-colors duration-300">
+                <div key={index} className="contact-info-card text-center">
                   {method.action ? (
                     <a href={method.action} className="block">
-                      <Icon className="w-8 h-8 text-gold mx-auto mb-4" />
+                      <div className="contact-info-icon mx-auto">
+                        <Icon className="w-8 h-8" />
+                      </div>
                       <h3 className="text-lg mb-2">{method.title}</h3>
                       {method.details.map((detail, i) => (
                         <p key={i} className={`text-sm ${i === 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
@@ -71,7 +73,9 @@ export default function Contact() {
                     </a>
                   ) : (
                     <div>
-                      <Icon className="w-8 h-8 text-gold mx-auto mb-4" />
+                      <div className="contact-info-icon mx-auto">
+                        <Icon className="w-8 h-8" />
+                      </div>
                       <h3 className="text-lg mb-2">{method.title}</h3>
                       {method.details.map((detail, i) => (
                         <p key={i} className={`text-sm ${i === 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
@@ -95,9 +99,11 @@ export default function Contact() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Business Hours */}
-            <div className="bg-charcoal rounded-2xl p-8">
+            <div className="contact-info-card">
               <div className="flex items-center mb-6">
-                <Clock className="w-8 h-8 text-gold mr-4" />
+                <div className="contact-info-icon mr-4">
+                  <Clock className="w-8 h-8" />
+                </div>
                 <h3 className="text-2xl">Business Hours</h3>
               </div>
               <div className="space-y-3">
@@ -120,9 +126,11 @@ export default function Contact() {
             </div>
 
             {/* Response Times */}
-            <div className="bg-charcoal rounded-2xl p-8">
+            <div className="contact-info-card">
               <div className="flex items-center mb-6">
-                <MessageCircle className="w-8 h-8 text-gold mr-4" />
+                <div className="contact-info-icon mr-4">
+                  <MessageCircle className="w-8 h-8" />
+                </div>
                 <h3 className="text-2xl">Response Times</h3>
               </div>
               <div className="space-y-4">
@@ -151,9 +159,11 @@ export default function Contact() {
             </div>
 
             {/* Service Areas */}
-            <div className="bg-charcoal rounded-2xl p-8">
+            <div className="contact-info-card">
               <div className="flex items-center mb-6">
-                <MapPin className="w-8 h-8 text-gold mr-4" />
+                <div className="contact-info-icon mr-4">
+                  <MapPin className="w-8 h-8" />
+                </div>
                 <h3 className="text-2xl">Service Areas</h3>
               </div>
               <div className="space-y-3">

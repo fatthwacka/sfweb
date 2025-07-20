@@ -138,7 +138,7 @@ export function AuthButton() {
           </div>
           <Button 
             type="submit" 
-            className="w-full bg-gold text-black hover:bg-gold-muted"
+            className={`w-full ${isSignUp ? "btn-cyan" : "btn-salmon"}`}
             disabled={loading}
           >
             {loading ? "Loading..." : (isSignUp ? "Create Account" : "Sign In")}
@@ -147,7 +147,7 @@ export function AuthButton() {
             <button
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-gold hover:underline"
+              className="text-sm text-cyan hover:text-salmon transition-colors duration-300"
             >
               {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
             </button>

@@ -144,7 +144,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
               </div>
               <Button
                 type="submit"
-                className="w-full bg-gold text-black hover:bg-gold-muted font-barlow font-semibold"
+                className="w-full btn-salmon"
                 disabled={isLoading}
               >
                 {isLoading ? "Signing in..." : "Sign In"}
@@ -189,7 +189,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
               </div>
               <Button
                 type="submit"
-                className="w-full bg-gold text-black hover:bg-gold-muted font-barlow font-semibold"
+                className="w-full btn-cyan"
                 disabled={isLoading}
               >
                 {isLoading ? "Creating account..." : "Create Account"}
