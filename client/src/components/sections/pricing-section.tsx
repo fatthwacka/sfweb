@@ -34,11 +34,11 @@ export function PricingSection() {
   }
 
   return (
-    <section className="py-20 bg-charcoal">
+    <section className="py-20 bg-gradient-to-br from-purple-900/35 via-background to-violet-900/25">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="salmon text-4xl lg:text-5xl mb-6">
-            Transparent <span>Pricing</span>
+          <h2 className="text-4xl lg:text-5xl mb-6 h2-cyan">
+            Transparent Pricing
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Choose the perfect package for your needs. All packages include professional editing, online gallery, and high-resolution downloads.
@@ -86,10 +86,7 @@ export function PricingSection() {
 
         <div className="text-center mt-12">
           <p className="text-muted-foreground mb-6">All packages include travel within Cape Town metro area. Custom packages available.</p>
-          <Button 
-            variant="outline"
-            className="border-2 border-white text-white px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-white hover:text-black transition-all duration-300"
-          >
+          <Button className="btn-outline-cyan">
             Download Price Guide (PDF)
           </Button>
         </div>

@@ -291,7 +291,7 @@ export default function PhotographyCategory() {
         <div className="text-center">
           <h1 className="text-4xl mb-4">Category Not Found</h1>
           <Link href="/photography">
-            <Button className="bg-gold text-black">Back to Photography</Button>
+            <Button className="btn-salmon">Back to Photography</Button>
           </Link>
         </div>
       </div>
@@ -456,16 +456,16 @@ export default function PhotographyCategory() {
 
           <div className="text-center mt-12">
             <Link href="/contact">
-              <button className="btn-primary">
+              <Button className="btn-salmon">
                 Start Your Project
-              </button>
+              </Button>
             </Link>
           </div>
         </div>
       </section>
 
       {/* SEO Optimization Section */}
-      <section className="py-20 bg-black">
+      <section className="py-20 bg-gradient-to-br from-slate-900/40 via-background to-gray-900/30">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6 h2-cyan">

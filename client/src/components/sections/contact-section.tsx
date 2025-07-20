@@ -91,13 +91,13 @@ export function ContactSection() {
   };
 
   return (
-    <section className="py-20 bg-charcoal">
+    <section className="py-20 bg-gradient-to-br from-slate-900/40 via-background to-gray-900/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16">
           {/* Contact Form */}
           <div>
-            <h2 className="salmon text-4xl lg:text-5xl mb-6">
-              Let's Create <span>Something Beautiful</span>
+            <h2 className="text-4xl lg:text-5xl mb-6 h2-salmon">
+              Let's Create Something Beautiful
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
               Ready to capture your special moments? Get in touch with us and let's discuss how we can bring your vision to life.
@@ -194,7 +194,7 @@ export function ContactSection() {
               <Button 
                 type="submit" 
                 disabled={contactMutation.isPending}
-                className="w-full bg-gold text-black py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold-muted transition-all duration-300 transform hover:scale-105"
+                className="w-full btn-salmon"
               >
                 {contactMutation.isPending ? "Sending..." : "Send Message"}
               </Button>
@@ -203,7 +203,7 @@ export function ContactSection() {
 
           {/* Contact Information */}
           <div>
-            <div className="bg-black rounded-2xl p-8 border border-border">
+            <div className="bg-charcoal/80 rounded-2xl p-8 border border-border">
               <h3 className="text-2xl font-saira font-bold text-gold mb-6">Get in Touch</h3>
 
               <div className="space-y-6">

@@ -292,7 +292,7 @@ export default function VideographyCategory() {
         <div className="text-center">
           <h1 className="text-4xl font-saira font-black mb-4">Category Not Found</h1>
           <Link href="/videography">
-            <Button className="bg-gold text-black">Back to Videography</Button>
+            <Button className="btn-salmon">Back to Videography</Button>
           </Link>
         </div>
       </div>
@@ -416,8 +416,8 @@ export default function VideographyCategory() {
       <section id="showreel" className="py-20 bg-gradient-to-br from-rose-900/25 via-background to-pink-900/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6">
-              Recent <span className="text-salmon">Work</span>
+            <h2 className="text-4xl lg:text-5xl mb-6 h2-salmon">
+              Recent Work
             </h2>
             <p className="text-xl text-muted-foreground">
               Browse our latest {data.name.toLowerCase()} projects
@@ -443,7 +443,7 @@ export default function VideographyCategory() {
 
           <div className="text-center mt-12">
             <Link href="/contact">
-              <Button className="bg-gold text-black px-8 py-4 rounded-full text-lg hover:bg-gold-muted transition-all duration-300">
+              <Button className="btn-cyan">
                 Start Your Project
               </Button>
             </Link>

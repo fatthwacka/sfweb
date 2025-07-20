@@ -73,7 +73,7 @@ export default function Pricing() {
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
               Professional photography and videography services with clear, honest pricing. No hidden fees, no surprises—just exceptional value for your investment.
             </p>
-            <Button className="bg-gold text-black px-8 py-4 rounded-full text-lg hover:bg-gold-muted transition-all duration-300">
+            <Button className="btn-salmon">
               <Download className="w-5 h-5 mr-2" />
               Download Full Price Guide
             </Button>
@@ -246,7 +246,7 @@ export default function Pricing() {
             {additionalServices.map((service, index) => {
               const Icon = service.icon;
               return (
-                <div key={index} className="bg-black rounded-2xl p-8 text-center hover:bg-gold/10 transition-colors duration-300">
+                <div key={index} className="bg-charcoal/80 rounded-2xl p-8 text-center hover:bg-gold/10 transition-colors duration-300">
                   <Icon className="w-12 h-12 text-gold mx-auto mb-6" />
                   <h3 className="text-xl text-gold mb-2">{service.title}</h3>
                   <div className="text-2xl mb-4">{service.price}</div>
@@ -292,11 +292,11 @@ export default function Pricing() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
-              <Button className="bg-gold text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold-muted transition-all duration-300">
+              <Button className="btn-salmon">
                 Get Custom Quote
               </Button>
             </Link>
-            <Button variant="outline" className="border-2 border-white text-white px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-white hover:text-black transition-all duration-300">
+            <Button className="btn-outline-cyan">
               <Download className="w-5 h-5 mr-2" />
               Download Full Price Guide
             </Button>

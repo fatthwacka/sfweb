@@ -179,25 +179,24 @@ export default function Contact() {
       </section>
 
       {/* Emergency Contact */}
-      <section className="py-20 bg-charcoal">
+      <section className="py-20 bg-gradient-to-br from-red-900/30 via-background to-pink-900/20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="salmon text-4xl mb-6">
-            Need Urgent <span>Assistance?</span>
+          <h2 className="text-4xl mb-6 h2-salmon">
+            Need Urgent Assistance?
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
             For time-sensitive inquiries or last-minute bookings, contact us directly for the fastest response.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
-              className="bg-gold text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold-muted transition-all duration-300"
+              className="btn-salmon"
               onClick={() => window.open('tel:+27123456789')}
             >
               <Phone className="w-5 h-5 mr-2" />
               Call Now
             </Button>
             <Button 
-              variant="outline" 
-              className="border-2 border-gold text-gold px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold hover:text-black transition-all duration-300"
+              className="btn-outline-cyan"
               onClick={() => window.open('https://wa.me/27123456789')}
             >
               <MessageCircle className="w-5 h-5 mr-2" />

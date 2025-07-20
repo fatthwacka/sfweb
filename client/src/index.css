@@ -224,6 +224,88 @@
     border: 1px solid rgba(255, 107, 107, 0.3);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 107, 107, 0.1);
   }
+
+  /* Universal Button Classes - replace all inline button styling */
+  .btn-salmon {
+    @apply px-8 py-4 rounded-full font-barlow font-semibold text-lg transition-all duration-300;
+    background: linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(16, 80%, 65%) 100%);
+    color: hsl(260, 30%, 8%);
+    border: none;
+  }
+  
+  .btn-salmon:hover {
+    background: linear-gradient(135deg, hsl(16, 80%, 65%) 0%, hsl(16, 60%, 55%) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+  }
+
+  .btn-cyan {
+    @apply px-8 py-4 rounded-full font-barlow font-semibold text-lg transition-all duration-300;
+    background: linear-gradient(135deg, hsl(180, 100%, 50%) 0%, hsl(180, 80%, 45%) 100%);
+    color: hsl(260, 30%, 8%);
+    border: none;
+  }
+  
+  .btn-cyan:hover {
+    background: linear-gradient(135deg, hsl(180, 80%, 45%) 0%, hsl(180, 60%, 40%) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3);
+  }
+
+  .btn-outline-salmon {
+    @apply px-8 py-4 rounded-full font-barlow font-semibold text-lg transition-all duration-300;
+    background: transparent;
+    color: hsl(16, 100%, 73%);
+    border: 2px solid hsl(16, 100%, 73%);
+  }
+  
+  .btn-outline-salmon:hover {
+    background: hsl(16, 100%, 73%);
+    color: hsl(260, 30%, 8%);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+  }
+
+  .btn-outline-cyan {
+    @apply px-8 py-4 rounded-full font-barlow font-semibold text-lg transition-all duration-300;
+    background: transparent;
+    color: hsl(180, 100%, 50%);
+    border: 2px solid hsl(180, 100%, 50%);
+  }
+  
+  .btn-outline-cyan:hover {
+    background: hsl(180, 100%, 50%);
+    color: hsl(260, 30%, 8%);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3);
+  }
+
+  /* Studio Card Button System - remove all inline styling */
+  .studio-card-button {
+    @apply w-full mt-auto py-4 rounded-xl font-barlow font-semibold text-lg transition-all duration-300;
+    background: linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(16, 80%, 65%) 100%);
+    color: hsl(260, 30%, 8%);
+    border: none;
+  }
+  
+  .studio-card-button:hover {
+    background: linear-gradient(135deg, hsl(16, 80%, 65%) 0%, hsl(16, 60%, 55%) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+  }
+
+  .studio-card-button-premium {
+    @apply w-full mt-auto py-4 rounded-xl font-barlow font-semibold text-lg transition-all duration-300;
+    background: linear-gradient(135deg, hsl(180, 100%, 50%) 0%, hsl(180, 80%, 45%) 100%);
+    color: hsl(260, 30%, 8%);
+    border: none;
+  }
+  
+  .studio-card-button-premium:hover {
+    background: linear-gradient(135deg, hsl(180, 80%, 45%) 0%, hsl(180, 60%, 40%) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3);
+  }
   
   .studio-card:hover {
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 30px rgba(255, 107, 107, 0.2);

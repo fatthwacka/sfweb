@@ -21,7 +21,7 @@ export function Hero() {
             Capturing Life's Beautiful Moments
           </h1>
 
-          <Button className="bg-salmon text-black px-12 py-4 rounded-full text-lg hover:bg-salmon-muted transition-all duration-300">
+          <Button className="btn-salmon px-12">
             Book Your Session
           </Button>
         </div>

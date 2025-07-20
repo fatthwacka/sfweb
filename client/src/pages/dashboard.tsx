@@ -216,13 +216,13 @@ export default function Dashboard() {
       </section>
 
       {/* Content */}
-      <section className="py-12 bg-charcoal min-h-screen">
+      <section className="py-12 bg-gradient-to-br from-indigo-900/30 via-background to-purple-900/20 min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {activeTab === 'overview' && (
             <div className="space-y-8">
               {/* Stats Grid */}
               <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
-                <Card className="bg-black border-border">
+                <Card className="bg-charcoal/80 border-border">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Total Albums</CardTitle>
                   </CardHeader>
@@ -231,7 +231,7 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-black border-border">
+                <Card className="bg-charcoal/80 border-border">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Total Photos</CardTitle>
                   </CardHeader>
@@ -240,7 +240,7 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-black border-border">
+                <Card className="bg-charcoal/80 border-border">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Total Views</CardTitle>
                   </CardHeader>
@@ -249,7 +249,7 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-black border-border">
+                <Card className="bg-charcoal/80 border-border">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Downloads</CardTitle>
                   </CardHeader>
@@ -258,7 +258,7 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-black border-border">
+                <Card className="bg-charcoal/80 border-border">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Favorites</CardTitle>
                   </CardHeader>
@@ -270,7 +270,7 @@ export default function Dashboard() {
 
               <div className="grid lg:grid-cols-2 gap-8">
                 {/* Recent Activity */}
-                <Card className="bg-black border-border">
+                <Card className="bg-charcoal/80 border-border">
                   <CardHeader>
                     <CardTitle className="text-xl text-gold">Recent Activity</CardTitle>
                   </CardHeader>
@@ -298,7 +298,7 @@ export default function Dashboard() {
                 </Card>
 
                 {/* Quick Actions */}
-                <Card className="bg-black border-border">
+                <Card className="bg-charcoal/80 border-border">
                   <CardHeader>
                     <CardTitle className="text-xl text-gold">Quick Actions</CardTitle>
                   </CardHeader>

@@ -172,20 +172,20 @@ export default function Videography() {
       {/* Call to Action */}
       <section className="py-20 bg-gradient-to-br from-amber-900/25 via-background to-orange-900/20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl mb-6">
-            Ready to Create Your <span className="text-gold">Video?</span>
+          <h2 className="text-4xl mb-6 h2-cyan">
+            Ready to Create Your Video?
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
             Let's discuss your videography needs and bring your vision to life with cinematic quality.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
-              <Button className="bg-gold text-black px-8 py-4 rounded-full text-lg hover:bg-gold-muted transition-all duration-300">
+              <Button className="btn-cyan">
                 Start Your Project
               </Button>
             </Link>
             <Link href="/pricing">
-              <Button variant="outline" className="border-2 border-white text-white px-8 py-4 rounded-full text-lg hover:bg-white hover:text-black transition-all duration-300">
+              <Button className="btn-outline-salmon">
                 View Pricing
               </Button>
             </Link>

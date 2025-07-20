@@ -118,7 +118,7 @@ export default function About() {
               
               <div className="mt-8">
                 <Link href="/contact">
-                  <Button className="bg-gold text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold-muted transition-all duration-300">
+                  <Button className="btn-salmon">
                     Work With Us
                   </Button>
                 </Link>
@@ -182,7 +182,7 @@ export default function About() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {teamMembers.map((member, index) => (
-              <div key={index} className="bg-black rounded-2xl overflow-hidden shadow-2xl hover:shadow-salmon/20 transition-all duration-300 transform hover:-translate-y-2">
+              <div key={index} className="bg-charcoal/80 rounded-2xl overflow-hidden shadow-2xl hover:shadow-salmon/20 transition-all duration-300 transform hover:-translate-y-2">
                 <div className="relative h-80 overflow-hidden">
                   <img 
                     src={member.image}
@@ -210,12 +210,12 @@ export default function About() {
       </section>
 
       {/* Location Section */}
-      <section className="py-20 bg-black">
+      <section className="py-20 bg-gradient-to-br from-slate-900/40 via-background to-gray-900/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-4xl font-saira font-black mb-6">
-                Based in <span className="text-gold">Cape Town</span>
+              <h2 className="text-4xl mb-6 h2-salmon">
+                Based in Cape Town
               </h2>
               <div className="space-y-6 text-lg text-muted-foreground">
                 <p>
@@ -256,22 +256,22 @@ export default function About() {
       </section>
 
       {/* Call to Action */}
-      <section className="py-20 bg-charcoal">
+      <section className="py-20 bg-gradient-to-br from-orange-900/35 via-background to-amber-900/25">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-saira font-black mb-6">
-            Ready to Create <span className="text-gold">Together?</span>
+          <h2 className="text-4xl mb-6 h2-cyan">
+            Ready to Create Together?
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
             Let's discuss your vision and create something beautiful that tells your unique story.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
-              <Button className="bg-gold text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold-muted transition-all duration-300">
+              <Button className="btn-cyan">
                 Get In Touch
               </Button>
             </Link>
             <Link href="/pricing">
-              <Button variant="outline" className="border-2 border-white text-white px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-white hover:text-black transition-all duration-300">
+              <Button className="btn-outline-salmon">
                 View Our Work
               </Button>
             </Link>

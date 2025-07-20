@@ -134,20 +134,20 @@ export default function Photography() {
       {/* Call to Action */}
       <section className="py-20 bg-gradient-to-br from-emerald-900/30 via-background to-cyan-900/20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl mb-6">
-            Ready to Capture Your <span className="text-gold">Story?</span>
+          <h2 className="text-4xl mb-6 h2-salmon">
+            Ready to Capture Your Story?
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
             Let's discuss your photography needs and create something beautiful together.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
-              <Button className="bg-gold text-black px-8 py-4 rounded-full text-lg hover:bg-gold-muted transition-all duration-300">
+              <Button className="btn-salmon">
                 Start Your Project
               </Button>
             </Link>
             <Link href="/pricing">
-              <Button variant="outline" className="border-2 border-white text-white px-8 py-4 rounded-full text-lg hover:bg-white hover:text-black transition-all duration-300">
+              <Button className="btn-outline-cyan">
                 View Pricing
               </Button>
             </Link>
