@@ -61,7 +61,7 @@ export default function Contact() {
                 <div key={index} className="contact-info-card text-center">
                   {method.action ? (
                     <a href={method.action} className="block">
-                      <div className="contact-info-icon-cyan mx-auto">
+                      <div className="contact-info-icon-cyan">
                         <Icon className="w-8 h-8" />
                       </div>
                       <h3 className="text-lg mb-2">{method.title}</h3>
@@ -73,7 +73,7 @@ export default function Contact() {
                     </a>
                   ) : (
                     <div>
-                      <div className="contact-info-icon-cyan mx-auto">
+                      <div className="contact-info-icon-cyan">
                         <Icon className="w-8 h-8" />
                       </div>
                       <h3 className="text-lg mb-2">{method.title}</h3>

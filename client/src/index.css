@@ -333,7 +333,7 @@
   }
   
   .contact-info-icon-cyan {
-    @apply mb-4;
+    @apply mb-4 flex justify-center;
     color: hsl(180, 100%, 50%);
     filter: drop-shadow(0 0 8px rgba(78, 205, 196, 0.6));
   }
