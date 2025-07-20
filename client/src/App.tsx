@@ -8,7 +8,7 @@ import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
 import { useScrollToTop } from "./hooks/use-scroll-to-top";
 import { ThemeProvider } from "@/components/ui/theme-provider";
-import { AuthProvider } from "@/lib/auth";
+import { AuthProvider } from "@/hooks/use-auth";
 
 // Pages
 import Home from "@/pages/home";

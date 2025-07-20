@@ -3,14 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LogOut, User, Settings, Shield } from "lucide-react";
 
 export function AuthButton() {
-  const { user, signIn, signUp, signOut } = useAuth();
+  const { user, login, logout } = useAuth();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
@@ -23,29 +23,26 @@ export function AuthButton() {
     setLoading(true);
 
     try {
-      const { error } = isSignUp 
-        ? await signUp(email, password)
-        : await signIn(email, password);
-
-      if (error) {
-        toast({
-          title: "Authentication Error",
-          description: error.message,
-          variant: "destructive"
-        });
-      } else {
+      if (!isSignUp) {
+        await login(email, password);
         setIsOpen(false);
         setEmail("");
         setPassword("");
         toast({
           title: "Success",
-          description: isSignUp ? "Account created successfully!" : "Signed in successfully!"
+          description: "Signed in successfully!"
+        });
+      } else {
+        toast({
+          title: "Sign Up",
+          description: "Sign up functionality not yet implemented",
+          variant: "destructive"
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "An unexpected error occurred",
+        description: error.message || "Invalid credentials",
         variant: "destructive"
       });
     } finally {
@@ -53,8 +50,8 @@ export function AuthButton() {
     }
   };
 
-  const handleSignOut = async () => {
-    await signOut();
+  const handleSignOut = () => {
+    logout();
     toast({
       title: "Signed out",
       description: "You have been signed out successfully"
