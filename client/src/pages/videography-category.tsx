@@ -40,19 +40,19 @@ const categoryData: Record<string, {
     ],
     packages: [
       {
-        name: "Essential Film",
+        name: "Essential",
         price: "R12,500",
         duration: "6 hours",
         features: ["6 hours filming", "Highlight reel (3-5 min)", "Ceremony footage", "Basic color grading", "Digital delivery"]
       },
       {
-        name: "Premium Film",
+        name: "Premium",
         price: "R18,500",
         duration: "8 hours",
         features: ["8 hours filming", "Extended highlight reel", "Full ceremony edit", "Reception highlights", "Drone footage", "Professional audio"]
       },
       {
-        name: "Cinematic Package",
+        name: "Cinematic",
         price: "R25,500",
         duration: "Full day",
         features: ["Full day coverage", "Feature-length film", "Same-day edit", "Multiple camera angles", "Drone cinematography", "Custom soundtrack"]
@@ -212,19 +212,19 @@ const categoryData: Record<string, {
     ],
     packages: [
       {
-        name: "Social Starter",
+        name: "Starter",
         price: "R2,500",
         duration: "2 hours",
         features: ["5 short videos", "Platform optimization", "Basic editing", "Trending formats", "Same-day delivery"]
       },
       {
-        name: "Content Creator",
+        name: "Creator",
         price: "R4,500",
         duration: "Half day",
         features: ["10-15 videos", "Multiple platforms", "Advanced editing", "Graphics package", "Content strategy"]
       },
       {
-        name: "Viral Package",
+        name: "Viral",
         price: "R8,500",
         duration: "Full day",
         features: ["20+ videos", "All platforms", "Professional production", "Trend analysis", "Monthly package available"]
@@ -255,19 +255,19 @@ const categoryData: Record<string, {
     ],
     packages: [
       {
-        name: "Basic Animation",
+        name: "Basic",
         price: "R4,500",
         duration: "1 week",
         features: ["Simple logo animation", "15-30 seconds", "Basic motion graphics", "2 revisions", "Multiple formats"]
       },
       {
-        name: "Professional Motion",
+        name: "Professional",
         price: "R8,500",
         duration: "2 weeks",
         features: ["Complex animation", "60-90 seconds", "Professional voiceover", "Advanced graphics", "Unlimited revisions"]
       },
       {
-        name: "Complete Package",
+        name: "Complete",
         price: "R15,500",
         duration: "3-4 weeks",
         features: ["Full explainer video", "2-3 minutes", "Custom illustrations", "Professional production", "Complete package"]
@@ -402,7 +402,7 @@ export default function VideographyCategory() {
 
                   <Link href="/contact">
                     <button className={index === 1 ? "studio-card-button-premium" : "studio-card-button"}>
-                      Choose {pkg.name}
+                      Select
                     </button>
                   </Link>
                 </div>

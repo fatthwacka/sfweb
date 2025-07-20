@@ -39,19 +39,19 @@ const categoryData: Record<string, {
     ],
     packages: [
       {
-        name: "Essential Wedding",
+        name: "Essential",
         price: "R8,500",
         duration: "6 hours",
         features: ["Pre-wedding consultation", "6 hours coverage", "200+ edited photos", "Online gallery", "USB drive"]
       },
       {
-        name: "Premium Wedding",
+        name: "Premium",
         price: "R12,500",
         duration: "8 hours",
         features: ["Engagement session", "8 hours coverage", "400+ edited photos", "Premium gallery", "USB drive", "Print release"]
       },
       {
-        name: "Elite Wedding",
+        name: "Elite",
         price: "R18,500",
         duration: "Full day",
         features: ["Engagement session", "Full day coverage", "600+ edited photos", "Luxury gallery", "2 photographers", "Photo album", "Print release"]
@@ -82,19 +82,19 @@ const categoryData: Record<string, {
     ],
     packages: [
       {
-        name: "Basic Portrait",
+        name: "Basic",
         price: "R1,500",
         duration: "1 hour",
         features: ["1 hour session", "1 outfit", "10 edited photos", "Online gallery", "Print release"]
       },
       {
-        name: "Professional Headshots",
+        name: "Professional",
         price: "R2,500",
         duration: "2 hours",
         features: ["2 hour session", "3 outfits", "25 edited photos", "Multiple backgrounds", "LinkedIn optimization"]
       },
       {
-        name: "Premium Portrait",
+        name: "Premium",
         price: "R3,500",
         duration: "3 hours",
         features: ["3 hour session", "Unlimited outfits", "50 edited photos", "Studio & location", "Professional makeup consultation"]
@@ -125,19 +125,19 @@ const categoryData: Record<string, {
     ],
     packages: [
       {
-        name: "Executive Package",
+        name: "Executive",
         price: "R3,500",
         duration: "Half day",
         features: ["5 executive portraits", "Professional lighting", "Multiple poses", "Same-day editing", "LinkedIn ready"]
       },
       {
-        name: "Team Package",
+        name: "Team",
         price: "R5,500",
         duration: "Full day",
         features: ["Up to 20 team members", "Individual portraits", "Group photos", "Office environment", "Brand guidelines"]
       },
       {
-        name: "Corporate Complete",
+        name: "Complete",
         price: "R8,500",
         duration: "2 days",
         features: ["Unlimited team members", "Office photography", "Event coverage", "Environmental portraits", "Full brand package"]
@@ -168,19 +168,19 @@ const categoryData: Record<string, {
     ],
     packages: [
       {
-        name: "Basic Event",
+        name: "Basic",
         price: "R2,500",
         duration: "4 hours",
         features: ["4 hours coverage", "100+ photos", "Online gallery", "Social media ready", "Quick turnaround"]
       },
       {
-        name: "Full Event",
+        name: "Full",
         price: "R4,500",
         duration: "8 hours",
         features: ["8 hours coverage", "300+ photos", "Multiple photographers", "Live social sharing", "Highlight reel"]
       },
       {
-        name: "Premium Event",
+        name: "Premium",
         price: "R6,500",
         duration: "Full day",
         features: ["Full day coverage", "500+ photos", "Multi-angle coverage", "Real-time uploads", "Professional editing"]
@@ -211,19 +211,19 @@ const categoryData: Record<string, {
     ],
     packages: [
       {
-        name: "Basic Product",
+        name: "Basic",
         price: "R150",
         duration: "Per product",
         features: ["5 angles per product", "White background", "Basic editing", "E-commerce ready", "24h turnaround"]
       },
       {
-        name: "Lifestyle Product",
+        name: "Lifestyle",
         price: "R350",
         duration: "Per product",
         features: ["10 angles", "Lifestyle shots", "Model usage", "Environmental shots", "Advanced editing"]
       },
       {
-        name: "Premium Catalog",
+        name: "Premium",
         price: "R500",
         duration: "Per product",
         features: ["Unlimited angles", "360° photography", "Video clips", "Detail shots", "Complete package"]
@@ -254,7 +254,7 @@ const categoryData: Record<string, {
     ],
     packages: [
       {
-        name: "Individual Graduate",
+        name: "Individual",
         price: "R1,200",
         duration: "1 hour",
         features: ["Individual portraits", "Campus locations", "10 edited photos", "Digital gallery", "Print package"]
@@ -415,7 +415,7 @@ export default function PhotographyCategory() {
 
                   <Link href="/contact">
                     <button className={index === 1 ? "studio-card-button-premium" : "studio-card-button"}>
-                      Choose {pkg.name}
+                      Select
                     </button>
                   </Link>
                 </div>

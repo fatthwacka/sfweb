@@ -81,7 +81,7 @@ export function PricingSection() {
                   index === 1 ? "studio-card-button-premium" : "studio-card-button"
                 }
               >
-                Choose {pkg.name}
+                Select
               </button>
             </div>
           )) : (
