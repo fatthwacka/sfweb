@@ -42,9 +42,9 @@ export function YouTubeHero({ videoId, title, subtitle, ctaText = "Get Started",
         )}
         
         <Link href={ctaLink}>
-          <Button className="bg-salmon text-black px-12 py-4 rounded-full text-lg hover:bg-salmon-muted transition-all duration-300">
+          <button className="btn-primary">
             {ctaText}
-          </Button>
+          </button>
         </Link>
       </div>
     </section>

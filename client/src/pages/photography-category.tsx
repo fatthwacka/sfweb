@@ -310,7 +310,7 @@ export default function PhotographyCategory() {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="relative h-screen overflow-hidden">
+      <section className="relative h-screen overflow-hidden flex items-center justify-center">
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url('${data.heroImage}')` }}
@@ -318,36 +318,32 @@ export default function PhotographyCategory() {
           <div className="absolute inset-0 hero-gradient"></div>
         </div>
         
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center">
-          <div className="mb-8">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="absolute top-8 left-8">
             <Link href="/photography">
-              <Button variant="ghost" className="text-gold hover:text-gold-muted mb-4">
+              <Button variant="ghost" className="text-gold hover:text-gold-muted">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Photography
               </Button>
             </Link>
           </div>
           
-          <div className="max-w-3xl">
+          <div className="text-center max-w-4xl mx-auto">
             <h1 className="text-5xl lg:text-6xl mb-6">
               {data.name.split(' ')[0]} <span className="text-gold">{data.name.split(' ')[1]}</span>
             </h1>
-            <p className="text-xl text-muted-foreground mb-8">
-              {data.description}
+            <p className="script-tagline text-cyan mb-8">
+              {data.name === "Wedding Photography" ? "Love stories captured through timeless imagery" :
+               data.name === "Portrait Photography" ? "Professional headshots and personal portraits that tell your story with confidence and style" :
+               data.name === "Corporate Photography" ? "Building professional credibility through exceptional business imagery" :
+               data.name === "Event Photography" ? "Preserving memorable moments with artistic precision" :
+               data.name === "Product Photography" ? "Showcasing your products with stunning visual appeal" :
+               data.name === "Graduation Photography" ? "Celebrating achievements with professional graduation portraits" :
+               "Capturing life's precious moments with artistic vision"}
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/contact">
-                <button className="btn-primary">
-                  Book Session
-                </button>
-              </Link>
-              <button 
-                className="btn-secondary"
-                onClick={() => document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                View Gallery
-              </button>
-            </div>
+            <button className="btn-primary">
+              Book Session
+            </button>
           </div>
         </div>
       </section>
