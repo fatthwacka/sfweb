@@ -42,11 +42,11 @@ export default function Contact() {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 bg-gradient-to-br from-black via-charcoal to-black">
+      <section className="relative pt-32 pb-20 bg-gradient-to-br from-teal-900/40 via-background to-emerald-900/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h1 className="text-5xl lg:text-6xl mb-6">
-              Get In <span className="text-gold">Touch</span>
+              Get In Touch
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
               Ready to capture your special moments? We'd love to hear about your project and discuss how we can bring your vision to life.
@@ -91,7 +91,7 @@ export default function Contact() {
       <ContactSection />
 
       {/* Business Hours & Additional Info */}
-      <section className="py-20 bg-black">
+      <section className="py-20 bg-gradient-to-br from-indigo-900/35 via-background to-purple-900/25">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Business Hours */}

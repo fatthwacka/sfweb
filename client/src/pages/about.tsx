@@ -69,11 +69,11 @@ export default function About() {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 bg-gradient-to-br from-black via-charcoal to-black">
+      <section className="relative pt-32 pb-20 bg-gradient-to-br from-purple-900/40 via-background to-indigo-900/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h1 className="text-5xl lg:text-6xl font-saira font-black mb-6">
-              About <span className="text-gold">SlyFox Studios</span>
+            <h1 className="text-5xl lg:text-6xl mb-6">
+              About SlyFox Studios
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
               Founded in the heart of Cape Town, we're more than just a photography business—we're storytellers, memory makers, and artists passionate about capturing life's most precious moments.
@@ -97,12 +97,12 @@ export default function About() {
       </section>
 
       {/* Our Story Section */}
-      <section className="py-20 bg-charcoal">
+      <section className="py-20 bg-gradient-to-br from-emerald-900/35 via-background to-teal-900/25">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-4xl font-saira font-black mb-6">
-                Our <span className="text-gold">Story</span>
+              <h2 className="text-4xl mb-6 h2-salmon">
+                Our Story
               </h2>
               <div className="space-y-6 text-lg text-muted-foreground">
                 <p>
@@ -140,11 +140,11 @@ export default function About() {
       </section>
 
       {/* Values Section */}
-      <section className="py-20 bg-black">
+      <section className="py-20 bg-gradient-to-br from-amber-900/35 via-background to-orange-900/25">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-saira font-black mb-6">
-              Our <span className="text-gold">Values</span>
+            <h2 className="text-4xl lg:text-5xl mb-6 h2-cyan">
+              Our Values
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               These core values guide everything we do, from our initial consultation to the final delivery of your images.
@@ -169,11 +169,11 @@ export default function About() {
       </section>
 
       {/* Team Section */}
-      <section className="py-20 bg-charcoal">
+      <section className="py-20 bg-gradient-to-br from-blue-900/35 via-background to-violet-900/25">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-saira font-black mb-6">
-              Meet Our <span className="text-gold">Team</span>
+            <h2 className="text-4xl lg:text-5xl mb-6 h2-salmon">
+              Meet Our Team
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               The creative minds behind SlyFox Studios, each bringing unique skills and passion to every project.

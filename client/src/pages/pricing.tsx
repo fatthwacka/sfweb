@@ -64,11 +64,11 @@ export default function Pricing() {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 bg-gradient-to-br from-black via-charcoal to-black">
+      <section className="relative pt-32 pb-20 bg-gradient-to-br from-violet-900/40 via-background to-purple-900/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h1 className="text-5xl lg:text-6xl mb-6">
-              Transparent <span className="text-gold">Pricing</span>
+              Transparent Pricing
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
               Professional photography and videography services with clear, honest pricing. No hidden fees, no surprises—just exceptional value for your investment.
@@ -85,11 +85,11 @@ export default function Pricing() {
       <PricingSection />
 
       {/* Videography Pricing */}
-      <section className="py-20 bg-black">
+      <section className="py-20 bg-gradient-to-br from-blue-900/40 via-background to-indigo-900/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6">
-              Videography <span className="text-gold">Packages</span>
+            <h2 className="text-4xl lg:text-5xl mb-6 h2-cyan">
+              Videography Packages
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Cinematic videography services with professional editing and delivery in multiple formats.
@@ -231,11 +231,11 @@ export default function Pricing() {
       </section>
 
       {/* Additional Services */}
-      <section className="py-20 bg-charcoal">
+      <section className="py-20 bg-gradient-to-br from-emerald-900/35 via-background to-cyan-900/25">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6">
-              Additional <span className="text-gold">Services</span>
+            <h2 className="text-4xl lg:text-5xl mb-6 h2-salmon">
+              Additional Services
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Enhance your package with these additional services and options.
@@ -259,11 +259,11 @@ export default function Pricing() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-black">
+      <section className="py-20 bg-gradient-to-br from-rose-900/30 via-background to-pink-900/20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6">
-              Frequently Asked <span className="text-gold">Questions</span>
+            <h2 className="text-4xl lg:text-5xl mb-6 h2-cyan">
+              Frequently Asked Questions
             </h2>
             <p className="text-xl text-muted-foreground">
               Common questions about our pricing and services.
@@ -282,10 +282,10 @@ export default function Pricing() {
       </section>
 
       {/* Call to Action */}
-      <section className="py-20 bg-charcoal">
+      <section className="py-20 bg-gradient-to-br from-violet-900/35 via-background to-indigo-900/25">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-saira font-black mb-6">
-            Ready to Book Your <span className="text-gold">Session?</span>
+          <h2 className="text-4xl mb-6 h2-salmon">
+            Ready to Book Your Session?
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
             Contact us for a personalized quote or to discuss custom packages that fit your specific needs.
