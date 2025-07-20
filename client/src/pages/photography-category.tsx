@@ -319,27 +319,20 @@ export default function PhotographyCategory() {
         </div>
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="absolute top-8 left-8">
-            <Link href="/photography">
-              <Button variant="ghost" className="text-gold hover:text-gold-muted">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Photography
-              </Button>
-            </Link>
-          </div>
+
           
           <div className="text-center max-w-4xl mx-auto">
             <h1 className="text-5xl lg:text-6xl mb-6">
               {data.name.split(' ')[0]} <span className="text-gold">{data.name.split(' ')[1]}</span>
             </h1>
             <p className="script-tagline text-cyan mb-8">
-              {data.name === "Wedding Photography" ? "Love stories captured through timeless imagery" :
-               data.name === "Portrait Photography" ? "Professional headshots and personal portraits that tell your story with confidence and style" :
-               data.name === "Corporate Photography" ? "Building professional credibility through exceptional business imagery" :
-               data.name === "Event Photography" ? "Preserving memorable moments with artistic precision" :
-               data.name === "Product Photography" ? "Showcasing your products with stunning visual appeal" :
-               data.name === "Graduation Photography" ? "Celebrating achievements with professional graduation portraits" :
-               "Capturing life's precious moments with artistic vision"}
+              {data.name === "Wedding Photography" ? "Love stories captured timelessly" :
+               data.name === "Portrait Photography" ? "Professional portraits with confidence" :
+               data.name === "Corporate Photography" ? "Professional business imagery excellence" :
+               data.name === "Event Photography" ? "Memorable moments preserved artistically" :
+               data.name === "Product Photography" ? "Products showcased with stunning appeal" :
+               data.name === "Graduation Photography" ? "Achievements celebrated through portraits" :
+               "Life's precious moments captured"}
             </p>
             <button className="btn-primary">
               Book Session
@@ -353,8 +346,8 @@ export default function PhotographyCategory() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-4xl mb-6">
-                Why Choose Our <span className="text-gold">{data.name}</span>
+              <h2 className="text-4xl mb-6 h2-salmon">
+                Why Choose Our {data.name}
               </h2>
               <p className="text-lg text-muted-foreground mb-8">
                 {data.longDescription}
@@ -363,7 +356,7 @@ export default function PhotographyCategory() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {data.features.map((feature, index) => (
                   <div key={index} className="flex items-center">
-                    <Check className="w-5 h-5 text-gold mr-3 flex-shrink-0" />
+                    <Check className="w-5 h-5 text-cyan mr-3 flex-shrink-0" />
                     <span className="text-sm">{feature}</span>
                   </div>
                 ))}
@@ -388,8 +381,8 @@ export default function PhotographyCategory() {
       <section className="py-20 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6">
-              {data.name} <span className="text-gold">Packages</span>
+            <h2 className="text-4xl lg:text-5xl mb-6 h2-cyan">
+              {data.name} Packages
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Choose the perfect package for your needs. All packages include professional editing and digital delivery.
@@ -436,8 +429,8 @@ export default function PhotographyCategory() {
       <section id="gallery" className="py-20 bg-charcoal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6">
-              Recent <span className="text-gold">Work</span>
+            <h2 className="text-4xl lg:text-5xl mb-6 h2-salmon">
+              Recent Work
             </h2>
             <p className="text-xl text-muted-foreground">
               Browse our latest {data.name.toLowerCase()} projects
@@ -454,7 +447,7 @@ export default function PhotographyCategory() {
                     className="w-full h-80 object-cover"
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <Camera className="w-12 h-12 text-gold" />
+                    <Camera className="w-12 h-12 text-salmon" />
                   </div>
                 </div>
               </div>
@@ -475,13 +468,13 @@ export default function PhotographyCategory() {
       <section className="py-20 bg-black">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6">
+            <h2 className="text-4xl lg:text-5xl mb-6 h2-cyan">
               {data.name === "Wedding Photography" ? "Professional Wedding Photography" : 
                data.name === "Portrait Photography" ? "Expert Portrait Photography" :
                data.name === "Corporate Photography" ? "Corporate Photography Services" :
                data.name === "Event Photography" ? "Event Photography Specialists" :
                data.name === "Product Photography" ? "Product Photography Excellence" :
-               "Professional Photography Services"} <span className="text-gold">in Cape Town</span>
+               "Professional Photography Services"} in Cape Town
             </h2>
           </div>
           

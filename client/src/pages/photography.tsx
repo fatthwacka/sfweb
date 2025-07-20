@@ -73,7 +73,7 @@ export default function Photography() {
             Professional Photography
           </h1>
           <p className="script-tagline text-cyan mb-8 max-w-3xl mx-auto">
-            From intimate moments to grand celebrations, capturing the essence of every occasion with artistic vision and technical excellence
+            Capturing life's beautiful moments
           </p>
           <button className="btn-primary">
             View Portfolio
