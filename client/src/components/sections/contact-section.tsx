@@ -211,7 +211,7 @@ export function ContactSection() {
                   const Icon = info.icon;
                   return (
                     <div key={index} className="flex items-start">
-                      <div className="contact-info-icon">
+                      <div className="contact-info-icon-salmon mr-4 mt-1">
                         <Icon className="w-6 h-6" />
                       </div>
                       <div>

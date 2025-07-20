@@ -61,7 +61,7 @@ export default function Contact() {
                 <div key={index} className="contact-info-card text-center">
                   {method.action ? (
                     <a href={method.action} className="block">
-                      <div className="contact-info-icon mx-auto">
+                      <div className="contact-info-icon-cyan mx-auto">
                         <Icon className="w-8 h-8" />
                       </div>
                       <h3 className="text-lg mb-2">{method.title}</h3>
@@ -73,7 +73,7 @@ export default function Contact() {
                     </a>
                   ) : (
                     <div>
-                      <div className="contact-info-icon mx-auto">
+                      <div className="contact-info-icon-cyan mx-auto">
                         <Icon className="w-8 h-8" />
                       </div>
                       <h3 className="text-lg mb-2">{method.title}</h3>
@@ -101,7 +101,7 @@ export default function Contact() {
             {/* Business Hours */}
             <div className="contact-info-card">
               <div className="flex items-center mb-6">
-                <div className="contact-info-icon mr-4">
+                <div className="contact-info-icon-salmon mr-4">
                   <Clock className="w-8 h-8" />
                 </div>
                 <h3 className="text-2xl">Business Hours</h3>
@@ -128,7 +128,7 @@ export default function Contact() {
             {/* Response Times */}
             <div className="contact-info-card">
               <div className="flex items-center mb-6">
-                <div className="contact-info-icon mr-4">
+                <div className="contact-info-icon-cyan mr-4">
                   <MessageCircle className="w-8 h-8" />
                 </div>
                 <h3 className="text-2xl">Response Times</h3>
@@ -161,7 +161,7 @@ export default function Contact() {
             {/* Service Areas */}
             <div className="contact-info-card">
               <div className="flex items-center mb-6">
-                <div className="contact-info-icon mr-4">
+                <div className="contact-info-icon-salmon mr-4">
                   <MapPin className="w-8 h-8" />
                 </div>
                 <h3 className="text-2xl">Service Areas</h3>
