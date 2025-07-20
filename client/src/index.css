@@ -59,6 +59,12 @@
   --gold: hsl(45, 75%, 45%);
   --gold-muted: hsl(45, 40%, 55%);
   --charcoal: hsl(0, 0%, 20%);
+  
+  /* Salmon and Cyan color variables */
+  --salmon: 16 100% 73%;
+  --salmon-muted: 16 80% 65%;
+  --cyan: 180 100% 50%;
+  --cyan-muted: 180 80% 60%;
 }
 
 @layer base {
@@ -73,7 +79,7 @@
   /* Typography System - NEVER use inline fonts */
   h1 {
     @apply font-righteous;
-    background: linear-gradient(135deg, hsl(var(--salmon)) 0%, hsl(var(--cyan)) 100%);
+    background: linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(180, 100%, 50%) 100%);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -310,15 +316,15 @@
   /* General Button Classes */
   .btn-primary {
     @apply px-8 py-4 rounded-full text-lg font-medium transition-all duration-300;
-    background: linear-gradient(135deg, hsl(var(--salmon)) 0%, hsl(var(--cyan)) 100%);
-    color: black;
-    border: 1px solid transparent;
+    background: linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(180, 100%, 50%) 100%) !important;
+    color: black !important;
+    border: 1px solid transparent !important;
   }
   
   .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(255, 107, 107, 0.4);
-    filter: brightness(1.1);
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 25px rgba(255, 107, 107, 0.4) !important;
+    filter: brightness(1.1) !important;
   }
   
   .btn-secondary {
@@ -443,13 +449,13 @@
   /* Animation keyframes - slower gradient animation with full color swing */
   @keyframes gradient {
     0% { 
-      background: linear-gradient(135deg, hsl(var(--salmon)) 0%, hsl(var(--salmon)) 100%);
+      background: linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(16, 100%, 73%) 100%);
     }
     50% { 
-      background: linear-gradient(135deg, hsl(var(--cyan)) 0%, hsl(var(--cyan)) 100%);
+      background: linear-gradient(135deg, hsl(180, 100%, 50%) 0%, hsl(180, 100%, 50%) 100%);
     }
     100% { 
-      background: linear-gradient(135deg, hsl(var(--salmon)) 0%, hsl(var(--salmon)) 100%);
+      background: linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(16, 100%, 73%) 100%);
     }
   }
 
