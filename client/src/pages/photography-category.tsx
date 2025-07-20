@@ -342,7 +342,7 @@ export default function PhotographyCategory() {
       </section>
 
       {/* About Section */}
-      <section className="py-20 bg-charcoal">
+      <section className="py-20 bg-gradient-to-br from-indigo-900/30 via-background to-purple-900/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
@@ -378,7 +378,7 @@ export default function PhotographyCategory() {
       </section>
 
       {/* Packages Section */}
-      <section className="py-20 bg-black">
+      <section className="py-20 bg-gradient-to-br from-slate-900/40 via-background to-cyan-900/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6 h2-cyan">
@@ -393,7 +393,7 @@ export default function PhotographyCategory() {
             {data.packages.map((pkg, index) => (
               <div 
                 key={index}
-                className={index === 1 ? "studio-card-premium relative" : "studio-card"}
+                className={index === 1 ? "studio-card-premium" : "studio-card"}
               >
                 <div className="studio-card-content">
                   <div className="text-center mb-8">
@@ -426,7 +426,7 @@ export default function PhotographyCategory() {
       </section>
 
       {/* Gallery Section */}
-      <section id="gallery" className="py-20 bg-charcoal">
+      <section id="gallery" className="py-20 bg-gradient-to-br from-emerald-900/25 via-background to-teal-900/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6 h2-salmon">

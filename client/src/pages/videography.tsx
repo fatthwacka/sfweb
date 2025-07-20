@@ -123,7 +123,7 @@ export default function Videography() {
       </section>
 
       {/* Process Section */}
-      <section className="py-20 bg-black">
+      <section className="py-20 bg-gradient-to-br from-blue-900/30 via-background to-indigo-900/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6">
@@ -170,7 +170,7 @@ export default function Videography() {
       </section>
 
       {/* Call to Action */}
-      <section className="py-20 bg-charcoal">
+      <section className="py-20 bg-gradient-to-br from-amber-900/25 via-background to-orange-900/20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl mb-6">
             Ready to Create Your <span className="text-gold">Video?</span>

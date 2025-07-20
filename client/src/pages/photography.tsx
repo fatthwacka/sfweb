@@ -96,7 +96,7 @@ export default function Photography() {
           <div className="grid lg:grid-cols-2 gap-8">
             {photographyCategories.map((category, index) => (
               <Link key={category.slug} href={`/photography/${category.slug}`}>
-                <div className="group cursor-pointer bg-black rounded-2xl overflow-hidden shadow-2xl hover:shadow-gold/20 transition-all duration-500 transform hover:scale-[1.02]">
+                <div className="group cursor-pointer bg-gradient-to-br from-slate-800/60 to-gray-900/80 rounded-2xl overflow-hidden shadow-2xl hover:shadow-gold/20 transition-all duration-500 transform hover:scale-[1.02]">
                   <div className="relative h-64 overflow-hidden">
                     <img 
                       src={category.image}
@@ -132,7 +132,7 @@ export default function Photography() {
       </section>
 
       {/* Call to Action */}
-      <section className="py-20 bg-black">
+      <section className="py-20 bg-gradient-to-br from-emerald-900/30 via-background to-cyan-900/20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl mb-6">
             Ready to Capture Your <span className="text-gold">Story?</span>

@@ -44,17 +44,9 @@ export function PricingSection() {
           {packages?.map((pkg: any, index: number) => (
             <Card 
               key={pkg.id}
-              className={`bg-black border border-gray-700 hover:border-gold transition-all duration-300 transform hover:-translate-y-2 ${
-                index === 1 ? "lg:scale-105 border-2 border-gold relative" : ""
-              }`}
+              className={`bg-gradient-to-br from-slate-800/60 to-gray-900/80 border border-gray-700 hover:border-gold transition-all duration-300 transform hover:-translate-y-2`}
             >
-              {index === 1 && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-gold text-black px-6 py-2 rounded-full font-barlow font-semibold text-sm">
-                    Most Popular
-                  </span>
-                </div>
-              )}
+
               
               <CardContent className="p-8">
                 <div className="text-center mb-8">

@@ -326,7 +326,7 @@ export default function VideographyCategory() {
       />
 
       {/* About Section */}
-      <section className="py-20 bg-charcoal">
+      <section className="py-20 bg-gradient-to-br from-violet-900/30 via-background to-blue-900/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
@@ -365,7 +365,7 @@ export default function VideographyCategory() {
       </section>
 
       {/* Packages Section */}
-      <section className="py-20 bg-black">
+      <section className="py-20 bg-gradient-to-br from-amber-900/30 via-background to-orange-900/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6 h2-cyan">
@@ -380,7 +380,7 @@ export default function VideographyCategory() {
             {data.packages.map((pkg, index) => (
               <div 
                 key={index}
-                className={index === 1 ? "studio-card-premium relative" : "studio-card"}
+                className={index === 1 ? "studio-card-premium" : "studio-card"}
               >
                 <div className="studio-card-content">
                   <div className="text-center mb-8">
@@ -413,7 +413,7 @@ export default function VideographyCategory() {
       </section>
 
       {/* Showreel Section */}
-      <section id="showreel" className="py-20 bg-charcoal">
+      <section id="showreel" className="py-20 bg-gradient-to-br from-rose-900/25 via-background to-pink-900/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6">

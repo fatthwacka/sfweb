@@ -50,16 +50,9 @@ export function PricingSection() {
             <div 
               key={pkg.id} 
               className={`${
-                index === 1 ? "studio-card-premium relative" : "studio-card"
+                index === 1 ? "studio-card-premium" : "studio-card"
               }`}
             >
-              {index === 1 && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-gold text-black px-6 py-2">
-                    Most Popular
-                  </Badge>
-                </div>
-              )}
 
               <div className="text-center mb-8">
                 <h3 className="studio-card-title">{pkg.name}</h3>

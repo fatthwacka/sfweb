@@ -5,19 +5,19 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(0, 0%, 0%);
+  --background: hsl(260, 25%, 6%);
   --foreground: hsl(0, 0%, 100%);
-  --muted: hsl(240, 4%, 15%);
+  --muted: hsl(260, 20%, 12%);
   --muted-foreground: hsl(240, 5%, 65%);
-  --popover: hsl(0, 0%, 0%);
+  --popover: hsl(260, 25%, 6%);
   --popover-foreground: hsl(0, 0%, 100%);
-  --card: hsl(240, 10%, 4%);
+  --card: hsl(260, 20%, 10%);
   --card-foreground: hsl(0, 0%, 100%);
-  --border: hsl(240, 6%, 20%);
-  --input: hsl(240, 6%, 20%);
+  --border: hsl(260, 15%, 20%);
+  --input: hsl(260, 15%, 20%);
   --primary: hsl(16, 100%, 73%);
   --primary-foreground: hsl(0, 0%, 0%);
-  --secondary: hsl(240, 4%, 15%);
+  --secondary: hsl(260, 15%, 15%);
   --secondary-foreground: hsl(0, 0%, 100%);
   --accent: hsl(180, 50%, 65%);
   --accent-foreground: hsl(0, 0%, 0%);
@@ -31,7 +31,7 @@
   --salmon-muted: hsl(16, 60%, 65%);
   --cyan: hsl(180, 100%, 50%);
   --cyan-muted: hsl(180, 35%, 55%);
-  --charcoal: hsl(0, 0%, 10%);
+  --charcoal: hsl(260, 15%, 12%);
 }
 
 .light {
@@ -74,6 +74,14 @@
 
   body {
     @apply bg-background text-foreground font-saira antialiased;
+    background: 
+      radial-gradient(ellipse at 20% 30%, hsla(280, 60%, 40%, 0.3) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, hsla(16, 80%, 50%, 0.25) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 10%, hsla(180, 70%, 40%, 0.2) 0%, transparent 50%),
+      radial-gradient(ellipse at 10% 80%, hsla(220, 50%, 30%, 0.3) 0%, transparent 50%),
+      hsl(260, 25%, 6%);
+    background-attachment: fixed;
+    min-height: 100vh;
   }
   
   /* Typography System - NEVER use inline fonts */
@@ -279,7 +287,7 @@
   }
   
   .studio-card-premium {
-    @apply rounded-2xl border transition-all duration-300 transform hover:-translate-y-2 flex flex-col scale-105;
+    @apply rounded-2xl border transition-all duration-300 transform hover:-translate-y-2 flex flex-col;
     background: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, rgba(45, 45, 45, 0.9) 50%, rgba(30, 30, 30, 0.95) 100%);
     border-color: rgba(0, 255, 255, 0.5);
     box-shadow: 0 8px 30px rgba(0, 255, 255, 0.2);
