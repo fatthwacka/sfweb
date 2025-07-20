@@ -83,19 +83,19 @@ const categoryData: Record<string, {
     ],
     packages: [
       {
-        name: "Basic Corporate",
+        name: "Basic",
         price: "R8,500",
         duration: "Half day",
         features: ["Half day filming", "2-3 minute video", "Basic editing", "Single location", "Digital delivery"]
       },
       {
-        name: "Professional Package",
+        name: "Professional",
         price: "R15,500",
         duration: "Full day",
         features: ["Full day filming", "5-8 minute video", "Multiple locations", "Professional interviews", "Graphics package"]
       },
       {
-        name: "Premium Production",
+        name: "Premium",
         price: "R25,500",
         duration: "2 days",
         features: ["Multi-day production", "Multiple videos", "Advanced post-production", "Motion graphics", "Complete brand package"]
@@ -126,19 +126,19 @@ const categoryData: Record<string, {
     ],
     packages: [
       {
-        name: "Basic Event",
+        name: "Basic",
         price: "R5,500",
         duration: "4 hours",
         features: ["4 hours coverage", "Single camera", "Highlight reel", "Basic editing", "Digital delivery"]
       },
       {
-        name: "Professional Event",
+        name: "Professional",
         price: "R9,500",
         duration: "8 hours",
         features: ["8 hours coverage", "Multi-camera setup", "Live streaming", "Extended highlights", "Professional editing"]
       },
       {
-        name: "Premium Coverage",
+        name: "Premium",
         price: "R15,500",
         duration: "Full day",
         features: ["Full day coverage", "3+ cameras", "Live streaming", "Same-day edit", "Complete documentation"]
@@ -169,19 +169,19 @@ const categoryData: Record<string, {
     ],
     packages: [
       {
-        name: "Basic Product",
+        name: "Basic",
         price: "R3,500",
         duration: "Half day",
         features: ["Simple product demo", "30-60 second video", "Basic lighting", "Standard editing", "Social media formats"]
       },
       {
-        name: "Professional Demo",
+        name: "Professional",
         price: "R6,500",
         duration: "Full day",
         features: ["Detailed demonstration", "2-3 minute video", "Professional lighting", "Multiple angles", "Advanced editing"]
       },
       {
-        name: "Commercial Package",
+        name: "Commercial",
         price: "R12,500",
         duration: "2 days",
         features: ["Multiple videos", "Lifestyle shots", "Commercial quality", "Motion graphics", "Complete campaign"]

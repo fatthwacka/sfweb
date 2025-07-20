@@ -260,13 +260,13 @@ const categoryData: Record<string, {
         features: ["Individual portraits", "Campus locations", "10 edited photos", "Digital gallery", "Print package"]
       },
       {
-        name: "Family Package",
+        name: "Family",
         price: "R2,200",
         duration: "2 hours",
         features: ["Graduate portraits", "Family group shots", "Multiple locations", "25 edited photos", "Premium gallery"]
       },
       {
-        name: "Full Graduation",
+        name: "Complete",
         price: "R3,200",
         duration: "Half day",
         features: ["Ceremony coverage", "Portrait session", "Family photos", "50+ edited photos", "Complete package"]
