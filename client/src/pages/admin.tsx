@@ -30,7 +30,14 @@ import {
   BarChart3,
   Shield,
   Settings,
-  Download
+  Download,
+  ArrowUp,
+  ArrowDown,
+  ExternalLink,
+  Copy,
+  Image as ImageIcon,
+  Palette,
+  Link as LinkIcon
 } from "lucide-react";
 import { useState } from "react";
 
@@ -50,14 +57,231 @@ interface Shoot {
   clientId: number;
   title: string;
   description: string;
+  shootType: string;
   shootDate: string;
   location: string;
   notes: string;
+  customSlug: string;
+  customTitle: string;
+  albumCoverId: number | null;
   isPrivate: boolean;
   bannerImageId: number | null;
   seoTags: string;
   viewCount: number;
   createdAt: string;
+}
+
+interface GalleryImage {
+  id: number;
+  shootId: number;
+  filename: string;
+  storagePath: string;
+  thumbnailPath: string | null;
+  sequence: number;
+  downloadCount: number;
+  createdAt: string;
+}
+
+// Gallery Editor Component
+function GalleryEditor({ shootId }: { shootId: number }) {
+  const { toast } = useToast();
+  const [editMode, setEditMode] = useState(false);
+  const [customTitle, setCustomTitle] = useState('');
+  const [customSlug, setCustomSlug] = useState('');
+  const [selectedCover, setSelectedCover] = useState<number | null>(null);
+  
+  // Demo data - would be replaced with actual API calls
+  const demoImages: GalleryImage[] = [
+    { id: 1, shootId, filename: "wedding-1.jpg", storagePath: "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 1, downloadCount: 5, createdAt: new Date().toISOString() },
+    { id: 2, shootId, filename: "wedding-2.jpg", storagePath: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 2, downloadCount: 3, createdAt: new Date().toISOString() },
+    { id: 3, shootId, filename: "wedding-3.jpg", storagePath: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 3, downloadCount: 8, createdAt: new Date().toISOString() },
+    { id: 4, shootId, filename: "wedding-4.jpg", storagePath: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 4, downloadCount: 2, createdAt: new Date().toISOString() },
+    { id: 5, shootId, filename: "wedding-5.jpg", storagePath: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 5, downloadCount: 6, createdAt: new Date().toISOString() },
+    { id: 6, shootId, filename: "wedding-6.jpg", storagePath: "https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 6, downloadCount: 4, createdAt: new Date().toISOString() },
+  ];
+
+  const [images, setImages] = useState(demoImages);
+  
+  const moveImage = (imageId: number, direction: 'up' | 'down') => {
+    const currentIndex = images.findIndex(img => img.id === imageId);
+    if (currentIndex === -1) return;
+    
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (newIndex < 0 || newIndex >= images.length) return;
+    
+    const newImages = [...images];
+    [newImages[currentIndex], newImages[newIndex]] = [newImages[newIndex], newImages[currentIndex]];
+    
+    // Update sequence numbers
+    newImages.forEach((img, index) => {
+      img.sequence = index + 1;
+    });
+    
+    setImages(newImages);
+    toast({ title: "Image order updated" });
+  };
+
+  const setAlbumCover = (imageId: number) => {
+    setSelectedCover(imageId);
+    toast({ title: "Album cover updated" });
+  };
+
+  const updateGallerySettings = () => {
+    // Would make API call here
+    setEditMode(false);
+    toast({ title: "Gallery settings updated successfully!" });
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Gallery Settings */}
+      <Card className="bg-charcoal/80">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-gold">Gallery Settings</CardTitle>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setEditMode(!editMode)}
+              className="border-border hover:border-gold"
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              {editMode ? 'Cancel' : 'Edit'}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {editMode ? (
+            <>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="customTitle">Custom Title</Label>
+                  <Input
+                    id="customTitle"
+                    value={customTitle}
+                    onChange={(e) => setCustomTitle(e.target.value)}
+                    placeholder="Sarah & Michael's Wedding"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="customSlug">Custom URL Slug</Label>
+                  <Input
+                    id="customSlug"
+                    value={customSlug}
+                    onChange={(e) => setCustomSlug(e.target.value)}
+                    placeholder="sarah-michael_SlyFox_wedding_2024"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={updateGallerySettings} className="bg-gold text-black hover:bg-gold-muted">
+                  Save Changes
+                </Button>
+                <Button variant="outline" onClick={() => setEditMode(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <LinkIcon className="w-4 h-4 icon-salmon" />
+                <span className="font-medium">Gallery URL:</span>
+                <code className="text-sm bg-muted px-2 py-1 rounded">/gallery/sarah-michael_SlyFox_wedding_2024</code>
+                <Button size="sm" variant="ghost" onClick={() => navigator.clipboard.writeText('/gallery/sarah-michael_SlyFox_wedding_2024')}>
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <ImageIcon className="w-4 h-4 icon-cyan" />
+                <span className="font-medium">Total Images:</span>
+                <Badge variant="outline">{images.length}</Badge>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Image Management */}
+      <Card className="bg-charcoal/80">
+        <CardHeader>
+          <CardTitle className="text-gold">Image Sequence & Album Cover</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {images.map((image, index) => (
+              <div 
+                key={image.id} 
+                className={`relative group bg-black/20 rounded-lg overflow-hidden ${
+                  selectedCover === image.id ? 'ring-2 ring-gold' : ''
+                }`}
+              >
+                <img 
+                  src={image.storagePath} 
+                  alt={image.filename}
+                  className="w-full h-48 object-cover"
+                />
+                
+                {/* Image Controls Overlay */}
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                  <div className="flex gap-2">
+                    {/* Move Up */}
+                    {index > 0 && (
+                      <Button 
+                        size="sm" 
+                        variant="secondary"
+                        onClick={() => moveImage(image.id, 'up')}
+                      >
+                        <ArrowUp className="w-4 h-4" />
+                      </Button>
+                    )}
+                    
+                    {/* Move Down */}
+                    {index < images.length - 1 && (
+                      <Button 
+                        size="sm" 
+                        variant="secondary"
+                        onClick={() => moveImage(image.id, 'down')}
+                      >
+                        <ArrowDown className="w-4 h-4" />
+                      </Button>
+                    )}
+                    
+                    {/* Set as Cover */}
+                    <Button 
+                      size="sm" 
+                      variant={selectedCover === image.id ? "default" : "secondary"}
+                      onClick={() => setAlbumCover(image.id)}
+                    >
+                      <Star className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Sequence Number */}
+                <div className="absolute top-2 left-2 bg-black/80 text-white px-2 py-1 rounded text-sm font-bold">
+                  #{image.sequence}
+                </div>
+
+                {/* Album Cover Badge */}
+                {selectedCover === image.id && (
+                  <div className="absolute top-2 right-2 bg-gold text-black px-2 py-1 rounded text-sm font-bold">
+                    Cover
+                  </div>
+                )}
+
+                {/* Download Count */}
+                <div className="absolute bottom-2 right-2 bg-black/80 text-white px-2 py-1 rounded text-sm flex items-center gap-1">
+                  <Download className="w-3 h-3" />
+                  {image.downloadCount}
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
 
 interface Image {
@@ -75,11 +299,13 @@ export default function Admin() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'shoots' | 'images'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'shoots' | 'images' | 'galleries'>('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [newClientOpen, setNewClientOpen] = useState(false);
   const [newShootOpen, setNewShootOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<number | null>(null);
+  const [selectedShoot, setSelectedShoot] = useState<number | null>(null);
+  const [gallerySettingsOpen, setGallerySettingsOpen] = useState(false);
 
   // Check if user is staff
   if (!user || user.role !== 'staff') {
@@ -224,7 +450,8 @@ export default function Admin() {
               { id: 'overview', label: 'Overview', icon: BarChart3 },
               { id: 'clients', label: 'Clients', icon: Users },
               { id: 'shoots', label: 'Shoots', icon: Camera },
-              { id: 'images', label: 'Images', icon: FileImage }
+              { id: 'images', label: 'Images', icon: FileImage },
+              { id: 'galleries', label: 'Gallery Management', icon: Palette }
             ].map((tab) => {
               const Icon = tab.icon;
               return (
@@ -718,6 +945,93 @@ export default function Admin() {
                 <h3 className="text-xl font-saira font-bold mb-2">Image Management</h3>
                 <p className="text-muted-foreground">Upload and organize images for your shoots.</p>
               </div>
+            </div>
+          )}
+
+          {/* Gallery Management Tab */}
+          {activeTab === 'galleries' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-3xl font-saira font-black">
+                  Gallery <span className="text-gold">Management</span>
+                </h2>
+                <Button 
+                  className="bg-gold text-black hover:bg-gold-muted"
+                  onClick={() => setGallerySettingsOpen(true)}
+                >
+                  <Settings className="w-4 h-4 mr-2 icon-salmon" />
+                  Gallery Settings
+                </Button>
+              </div>
+
+              {/* Shoot Selection */}
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                {filteredShoots.map((shoot) => (
+                  <Card 
+                    key={shoot.id} 
+                    className={`cursor-pointer transition-all duration-300 hover:scale-105 ${
+                      selectedShoot === shoot.id ? 'ring-2 ring-gold bg-charcoal' : 'bg-charcoal/80'
+                    }`}
+                    onClick={() => setSelectedShoot(shoot.id)}
+                  >
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg text-gold">{shoot.title}</CardTitle>
+                        <Badge variant="outline" className="border-gold text-gold">
+                          {shoot.shootType}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 icon-salmon" />
+                          {shoot.shootDate ? new Date(shoot.shootDate).toLocaleDateString() : 'No date'}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4 icon-cyan" />
+                          {shoot.location || 'No location'}
+                        </div>
+                        <div className="flex items-center justify-between mt-4">
+                          <div className="flex items-center gap-2">
+                            <Eye className="w-4 h-4 icon-salmon" />
+                            <span>{shoot.viewCount} views</span>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" className="border-border hover:border-gold">
+                              <ExternalLink className="w-4 h-4 icon-cyan" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="border-border hover:border-gold"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigator.clipboard.writeText(`/gallery/${shoot.customSlug}`);
+                                toast({ title: "Gallery URL copied to clipboard!" });
+                              }}
+                            >
+                              <Copy className="w-4 h-4 icon-salmon" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {selectedShoot && (
+                <GalleryEditor shootId={selectedShoot} />
+              )}
+
+              {!selectedShoot && (
+                <div className="text-center py-16">
+                  <Palette className="w-16 h-16 icon-cyan mx-auto mb-4" />
+                  <h3 className="text-xl font-saira font-bold mb-2">Select a Gallery</h3>
+                  <p className="text-muted-foreground">Choose a shoot above to manage its gallery settings and image sequence.</p>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -3,7 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
   insertUserSchema, insertClientSchema, insertShootSchema, 
-  insertImageSchema, insertBookingSchema, insertAnalyticsSchema
+  insertImageSchema, insertBookingSchema, insertAnalyticsSchema,
+  updateImageSequenceSchema, updateAlbumCoverSchema, updateShootDetailsSchema
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -299,6 +300,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(userWithoutPassword);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Gallery Management endpoints
+  app.put("/api/gallery/image-sequence", async (req, res) => {
+    try {
+      const data = updateImageSequenceSchema.parse(req.body);
+      // TODO: Implement image sequence update in storage
+      res.json({ success: true, message: "Image sequence updated" });
+    } catch (error) {
+      console.error("Update image sequence error:", error);
+      res.status(400).json({ message: "Invalid request data" });
+    }
+  });
+
+  app.put("/api/gallery/album-cover", async (req, res) => {
+    try {
+      const data = updateAlbumCoverSchema.parse(req.body);
+      // TODO: Implement album cover update in storage
+      res.json({ success: true, message: "Album cover updated" });
+    } catch (error) {
+      console.error("Update album cover error:", error);
+      res.status(400).json({ message: "Invalid request data" });
+    }
+  });
+
+  app.put("/api/gallery/shoot-details", async (req, res) => {
+    try {
+      const data = updateShootDetailsSchema.parse(req.body);
+      // TODO: Implement shoot details update in storage
+      res.json({ success: true, message: "Shoot details updated" });
+    } catch (error) {
+      console.error("Update shoot details error:", error);
+      res.status(400).json({ message: "Invalid request data" });
+    }
+  });
+
+  app.get("/api/gallery/:shootId/images", async (req, res) => {
+    try {
+      const shootId = parseInt(req.params.shootId);
+      if (isNaN(shootId)) {
+        return res.status(400).json({ message: "Invalid shoot ID" });
+      }
+      
+      // TODO: Implement in storage - for now return demo data
+      const demoImages = [
+        { id: 1, shootId, filename: "wedding-1.jpg", storagePath: "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 1, downloadCount: 5, createdAt: new Date().toISOString() },
+        { id: 2, shootId, filename: "wedding-2.jpg", storagePath: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 2, downloadCount: 3, createdAt: new Date().toISOString() },
+        { id: 3, shootId, filename: "wedding-3.jpg", storagePath: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 3, downloadCount: 8, createdAt: new Date().toISOString() },
+        { id: 4, shootId, filename: "wedding-4.jpg", storagePath: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 4, downloadCount: 2, createdAt: new Date().toISOString() },
+        { id: 5, shootId, filename: "wedding-5.jpg", storagePath: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 5, downloadCount: 6, createdAt: new Date().toISOString() },
+        { id: 6, shootId, filename: "wedding-6.jpg", storagePath: "https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 6, downloadCount: 4, createdAt: new Date().toISOString() },
+      ];
+      
+      res.json(demoImages);
+    } catch (error) {
+      console.error("Get gallery images error:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 

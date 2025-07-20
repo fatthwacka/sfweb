@@ -29,11 +29,14 @@ export const shoots = pgTable("shoots", {
   clientId: integer("client_id").references(() => clients.id).notNull(),
   title: text("title").notNull(),
   description: text("description"),
+  shootType: text("shoot_type").notNull(), // Wedding, Portrait, Corporate, etc.
   shootDate: timestamp("shoot_date"),
   location: text("location"),
   notes: text("notes"),
   isPrivate: boolean("is_private").default(false).notNull(),
-  bannerImageId: integer("banner_image_id"),
+  customSlug: text("custom_slug").notNull().unique(),
+  customTitle: text("custom_title"),
+  albumCoverId: integer("album_cover_id"),
   seoTags: text("seo_tags"),
   viewCount: integer("view_count").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -44,8 +47,9 @@ export const images = pgTable("images", {
   shootId: integer("shoot_id").references(() => shoots.id).notNull(),
   filename: text("filename").notNull(),
   storagePath: text("storage_path").notNull(),
+  thumbnailPath: text("thumbnail_path"),
   isPrivate: boolean("is_private").default(false).notNull(),
-  uploadOrder: integer("upload_order").default(0).notNull(),
+  sequence: integer("sequence").default(0).notNull(),
   downloadCount: integer("download_count").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -98,11 +102,13 @@ export const insertClientSchema = createInsertSchema(clients).omit({
 export const insertShootSchema = createInsertSchema(shoots).omit({
   id: true,
   createdAt: true,
+  viewCount: true,
 });
 
 export const insertImageSchema = createInsertSchema(images).omit({
   id: true,
   createdAt: true,
+  downloadCount: true,
 });
 
 export const insertPackageSchema = createInsertSchema(packages).omit({
@@ -149,3 +155,24 @@ export type InsertFavorite = z.infer<typeof insertFavoriteSchema>;
 
 export type Booking = typeof bookings.$inferSelect;
 export type InsertBooking = z.infer<typeof insertBookingSchema>;
+
+// Gallery management schemas
+export const updateImageSequenceSchema = z.object({
+  imageId: z.number(),
+  newSequence: z.number(),
+});
+
+export const updateAlbumCoverSchema = z.object({
+  shootId: z.number(),
+  imageId: z.number(),
+});
+
+export const updateShootDetailsSchema = z.object({
+  shootId: z.number(),
+  customTitle: z.string().optional(),
+  customSlug: z.string().optional(),
+});
+
+export type UpdateImageSequence = z.infer<typeof updateImageSequenceSchema>;
+export type UpdateAlbumCover = z.infer<typeof updateAlbumCoverSchema>;
+export type UpdateShootDetails = z.infer<typeof updateShootDetailsSchema>;
