@@ -106,6 +106,17 @@ export default function Admin() {
   const [selectedShoot, setSelectedShoot] = useState<number | null>(null);
   const [gallerySettingsOpen, setGallerySettingsOpen] = useState(false);
 
+  // Fetch data - moved before early return to avoid hooks order issue
+  const { data: clients = [], isLoading: clientsLoading } = useQuery<Client[]>({
+    queryKey: ["/api/clients"],
+    enabled: !!user && user.role === 'staff'
+  });
+
+  const { data: shoots = [], isLoading: shootsLoading } = useQuery<Shoot[]>({
+    queryKey: ["/api/shoots"],
+    enabled: !!user && user.role === 'staff'
+  });
+
   // Check if user is staff
   if (!user || user.role !== 'staff') {
     return (
@@ -128,15 +139,6 @@ export default function Admin() {
       </div>
     );
   }
-
-  // Fetch data
-  const { data: clients = [], isLoading: clientsLoading } = useQuery<Client[]>({
-    queryKey: ["/api/clients"]
-  });
-
-  const { data: shoots = [], isLoading: shootsLoading } = useQuery<Shoot[]>({
-    queryKey: ["/api/shoots"]
-  });
 
   // Mutations
   const createClientMutation = useMutation({
