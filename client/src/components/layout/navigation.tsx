@@ -121,6 +121,9 @@ export function Navigation() {
             <Link href="/contact" className="text-cyan-muted hover:text-cyan transition-colors duration-300">
               Contact
             </Link>
+            <Link href="/my-gallery" className="text-cyan-muted hover:text-cyan transition-colors duration-300">
+              My Gallery
+            </Link>
           </div>
 
           {/* Right side controls */}
@@ -182,6 +185,13 @@ export function Navigation() {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Contact
+              </Link>
+              <Link
+                href="/my-gallery"
+                className="block py-2 text-lg font-barlow font-medium hover:text-gold transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                My Gallery
               </Link>
             </div>
           </div>

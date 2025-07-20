@@ -247,7 +247,7 @@ export default function Pricing() {
               const Icon = service.icon;
               return (
                 <div key={index} className="bg-charcoal/80 rounded-2xl p-8 text-center hover:bg-gold/10 transition-colors duration-300">
-                  <Icon className="w-12 h-12 text-gold mx-auto mb-6" />
+                  <Icon className={`w-12 h-12 mx-auto mb-6 ${index % 2 === 0 ? 'icon-salmon' : 'icon-cyan'}`} />
                   <h3 className="text-xl text-gold mb-2">{service.title}</h3>
                   <div className="text-2xl mb-4">{service.price}</div>
                   <p className="text-muted-foreground">{service.description}</p>
@@ -297,7 +297,7 @@ export default function Pricing() {
               </Button>
             </Link>
             <Button className="btn-outline-cyan">
-              <Download className="w-5 h-5 mr-2" />
+              <Download className="w-5 h-5 mr-2 icon-cyan" />
               Download Full Price Guide
             </Button>
           </div>
