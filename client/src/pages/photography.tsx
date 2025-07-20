@@ -121,7 +121,7 @@ export default function Photography() {
                     
                     <div className="flex items-center text-gold group-hover:translate-x-2 transition-transform duration-300">
                       Learn More
-                      <ArrowRight className="w-5 h-5 ml-2" />
+                      <ArrowRight className="w-5 h-5 ml-2 icon-cyan" />
                     </div>
                   </div>
                 </div>

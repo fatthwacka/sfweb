@@ -338,6 +338,17 @@
     filter: drop-shadow(0 0 8px rgba(78, 205, 196, 0.6));
   }
   
+  /* General icon styling classes for alternating sections */
+  .icon-salmon {
+    color: hsl(16, 100%, 73%);
+    filter: drop-shadow(0 0 8px rgba(255, 107, 107, 0.6));
+  }
+  
+  .icon-cyan {
+    color: hsl(180, 100%, 50%);
+    filter: drop-shadow(0 0 8px rgba(78, 205, 196, 0.6));
+  }
+  
   .studio-card:hover {
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 30px rgba(255, 107, 107, 0.2);
     border-color: rgba(255, 107, 107, 0.5);

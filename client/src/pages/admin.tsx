@@ -202,7 +202,7 @@ export default function Admin() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Shield className="w-12 h-12 text-gold" />
+              <Shield className="w-12 h-12 icon-salmon" />
               <div>
                 <h1 className="text-3xl font-saira font-black">
                   Admin <span className="text-gold">Panel</span>
@@ -237,7 +237,7 @@ export default function Admin() {
                       : 'border-transparent text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className={`w-5 h-5 ${activeTab === tab.id ? 'icon-salmon' : ''}`} />
                   {tab.label}
                 </button>
               );
@@ -256,7 +256,7 @@ export default function Admin() {
                 <Card className="bg-black border-border">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                      <Users className="w-4 h-4" />
+                      <Users className="w-4 h-4 icon-cyan" />
                       Total Clients
                     </CardTitle>
                   </CardHeader>
@@ -268,7 +268,7 @@ export default function Admin() {
                 <Card className="bg-black border-border">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                      <Camera className="w-4 h-4" />
+                      <Camera className="w-4 h-4 icon-salmon" />
                       Total Shoots
                     </CardTitle>
                   </CardHeader>
@@ -280,7 +280,7 @@ export default function Admin() {
                 <Card className="bg-black border-border">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                      <FileImage className="w-4 h-4" />
+                      <FileImage className="w-4 h-4 icon-cyan" />
                       Total Images
                     </CardTitle>
                   </CardHeader>
@@ -292,7 +292,7 @@ export default function Admin() {
                 <Card className="bg-black border-border">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                      <Eye className="w-4 h-4" />
+                      <Eye className="w-4 h-4 icon-salmon" />
                       Total Views
                     </CardTitle>
                   </CardHeader>
@@ -314,7 +314,7 @@ export default function Admin() {
                     <Dialog open={newClientOpen} onOpenChange={setNewClientOpen}>
                       <DialogTrigger asChild>
                         <Button className="h-20 flex-col gap-2 bg-gold text-black hover:bg-gold-muted">
-                          <Plus className="w-6 h-6" />
+                          <Plus className="w-6 h-6 icon-salmon" />
                           <span className="text-sm">Add Client</span>
                         </Button>
                       </DialogTrigger>
@@ -353,7 +353,7 @@ export default function Admin() {
                     <Dialog open={newShootOpen} onOpenChange={setNewShootOpen}>
                       <DialogTrigger asChild>
                         <Button variant="outline" className="h-20 flex-col gap-2 border-border hover:border-gold hover:text-gold">
-                          <Camera className="w-6 h-6" />
+                          <Camera className="w-6 h-6 icon-cyan" />
                           <span className="text-sm">Add Shoot</span>
                         </Button>
                       </DialogTrigger>
@@ -414,12 +414,12 @@ export default function Admin() {
                     </Dialog>
 
                     <Button variant="outline" className="h-20 flex-col gap-2 border-border hover:border-gold hover:text-gold">
-                      <Upload className="w-6 h-6" />
+                      <Upload className="w-6 h-6 icon-salmon" />
                       <span className="text-sm">Upload Images</span>
                     </Button>
 
                     <Button variant="outline" className="h-20 flex-col gap-2 border-border hover:border-gold hover:text-gold">
-                      <Download className="w-6 h-6" />
+                      <Download className="w-6 h-6 icon-cyan" />
                       <span className="text-sm">Export Data</span>
                     </Button>
                   </div>
@@ -437,7 +437,7 @@ export default function Admin() {
                 <Dialog open={newClientOpen} onOpenChange={setNewClientOpen}>
                   <DialogTrigger asChild>
                     <Button className="bg-gold text-black hover:bg-gold-muted">
-                      <Plus className="w-4 h-4 mr-2" />
+                      <Plus className="w-4 h-4 mr-2 icon-salmon" />
                       Add Client
                     </Button>
                   </DialogTrigger>
@@ -491,7 +491,7 @@ export default function Admin() {
                   <div className="text-center py-8">Loading clients...</div>
                 ) : filteredClients.length === 0 ? (
                   <div className="text-center py-8">
-                    <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                    <Users className="w-16 h-16 icon-salmon mx-auto mb-4" />
                     <h3 className="text-xl font-saira font-bold mb-2">No Clients Found</h3>
                     <p className="text-muted-foreground">Add your first client to get started.</p>
                   </div>
@@ -513,14 +513,14 @@ export default function Admin() {
                           <div className="flex items-center gap-2">
                             <Link href={`/clients/${client.slug}`}>
                               <Button size="sm" variant="outline" className="border-border hover:border-gold">
-                                <Eye className="w-4 h-4" />
+                                <Eye className="w-4 h-4 icon-cyan" />
                               </Button>
                             </Link>
                             <Button size="sm" variant="outline" className="border-border hover:border-gold">
-                              <Edit className="w-4 h-4" />
+                              <Edit className="w-4 h-4 icon-salmon" />
                             </Button>
                             <Button size="sm" variant="outline" className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground">
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-4 h-4 icon-salmon" />
                             </Button>
                           </div>
                         </div>
@@ -541,7 +541,7 @@ export default function Admin() {
                 <Dialog open={newShootOpen} onOpenChange={setNewShootOpen}>
                   <DialogTrigger asChild>
                     <Button className="bg-gold text-black hover:bg-gold-muted">
-                      <Plus className="w-4 h-4 mr-2" />
+                      <Plus className="w-4 h-4 mr-2 icon-cyan" />
                       Add Shoot
                     </Button>
                   </DialogTrigger>
@@ -662,33 +662,33 @@ export default function Admin() {
                             <div className="flex items-center gap-4 text-sm">
                               {shoot.shootDate && (
                                 <div className="flex items-center gap-1">
-                                  <Calendar className="w-4 h-4 text-gold" />
+                                  <Calendar className="w-4 h-4 icon-salmon" />
                                   {new Date(shoot.shootDate).toLocaleDateString()}
                                 </div>
                               )}
                               {shoot.location && (
                                 <div className="flex items-center gap-1">
-                                  <MapPin className="w-4 h-4 text-gold" />
+                                  <MapPin className="w-4 h-4 icon-cyan" />
                                   {shoot.location}
                                 </div>
                               )}
                             </div>
                             
                             <div className="flex items-center gap-2 text-sm">
-                              <Eye className="w-4 h-4 text-gold" />
+                              <Eye className="w-4 h-4 icon-salmon" />
                               <span>{shoot.viewCount} views</span>
                             </div>
                             
                             <div className="flex gap-2 pt-2">
                               <Button size="sm" className="flex-1 bg-gold text-black hover:bg-gold-muted">
-                                <Upload className="w-4 h-4 mr-2" />
+                                <Upload className="w-4 h-4 mr-2 icon-cyan" />
                                 Upload Images
                               </Button>
                               <Button size="sm" variant="outline" className="border-border hover:border-gold">
-                                <Edit className="w-4 h-4" />
+                                <Edit className="w-4 h-4 icon-salmon" />
                               </Button>
                               <Button size="sm" variant="outline" className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground">
-                                <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-4 h-4 icon-salmon" />
                               </Button>
                             </div>
                           </div>
@@ -708,13 +708,13 @@ export default function Admin() {
                   Manage <span className="text-gold">Images</span>
                 </h2>
                 <Button className="bg-gold text-black hover:bg-gold-muted">
-                  <Upload className="w-4 h-4 mr-2" />
+                  <Upload className="w-4 h-4 mr-2 icon-salmon" />
                   Bulk Upload
                 </Button>
               </div>
 
               <div className="text-center py-16">
-                <FileImage className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                <FileImage className="w-16 h-16 icon-cyan mx-auto mb-4" />
                 <h3 className="text-xl font-saira font-bold mb-2">Image Management</h3>
                 <p className="text-muted-foreground">Upload and organize images for your shoots.</p>
               </div>

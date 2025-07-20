@@ -74,7 +74,7 @@ export default function Pricing() {
               Professional photography and videography services with clear, honest pricing. No hidden fees, no surprises—just exceptional value for your investment.
             </p>
             <Button className="btn-salmon">
-              <Download className="w-5 h-5 mr-2" />
+              <Download className="w-5 h-5 mr-2 icon-salmon" />
               Download Full Price Guide
             </Button>
           </div>

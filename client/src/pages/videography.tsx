@@ -93,7 +93,7 @@ export default function Videography() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <Video className="w-12 h-12 text-gold" />
+                      <Video className="w-12 h-12 icon-salmon" />
                     </div>
                   </div>
                   
@@ -112,7 +112,7 @@ export default function Videography() {
                     
                     <div className="flex items-center text-cyan group-hover:translate-x-2 transition-transform duration-300">
                       Learn More
-                      <ArrowRight className="w-5 h-5 ml-2" />
+                      <ArrowRight className="w-5 h-5 ml-2 icon-salmon" />
                     </div>
                   </div>
                 </div>

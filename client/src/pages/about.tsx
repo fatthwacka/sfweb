@@ -86,7 +86,7 @@ export default function About() {
               const Icon = stat.icon;
               return (
                 <div key={index} className="text-center">
-                  <Icon className="w-8 h-8 text-gold mx-auto mb-4" />
+                  <Icon className={`w-8 h-8 mx-auto mb-4 ${index % 2 === 0 ? 'icon-salmon' : 'icon-cyan'}`} />
                   <div className="text-3xl font-saira font-bold text-gold mb-2">{stat.number}</div>
                   <p className="text-muted-foreground">{stat.label}</p>
                 </div>
@@ -155,9 +155,9 @@ export default function About() {
             {values.map((value, index) => {
               const Icon = value.icon;
               return (
-                <div key={index} className="text-center p-6 bg-charcoal rounded-2xl hover:bg-gold/10 transition-colors duration-300">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gold text-black rounded-full mb-6">
-                    <Icon className="w-8 h-8" />
+                <div key={index} className="text-center p-6 bg-charcoal rounded-2xl hover:bg-salmon/10 transition-colors duration-300">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-6">
+                    <Icon className={`w-8 h-8 ${index % 2 === 0 ? 'icon-salmon' : 'icon-cyan'}`} />
                   </div>
                   <h3 className="text-xl font-saira font-bold text-gold mb-4">{value.title}</h3>
                   <p className="text-muted-foreground">{value.description}</p>
@@ -231,11 +231,11 @@ export default function About() {
               
               <div className="mt-8 space-y-4">
                 <div className="flex items-center">
-                  <MapPin className="w-6 h-6 text-gold mr-4" />
+                  <MapPin className="w-6 h-6 icon-salmon mr-4" />
                   <span>Cape Town, South Africa</span>
                 </div>
                 <div className="flex items-center">
-                  <Clock className="w-6 h-6 text-gold mr-4" />
+                  <Clock className="w-6 h-6 icon-cyan mr-4" />
                   <span>Monday - Friday: 9AM - 6PM</span>
                 </div>
               </div>
