@@ -35,46 +35,46 @@ const demoGallery: GalleryData = {
   customTitle: "Sarah & Michael's Dream Wedding",
   customSlug: "sarah-michael_SlyFox_wedding_2024-06-15",
   images: [
-    {
-      id: 1,
-      url: "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      sequence: 1
-    },
-    {
-      id: 2, 
-      url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      sequence: 2
-    },
-    {
-      id: 3,
-      url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      sequence: 3
-    },
-    {
-      id: 4,
-      url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      sequence: 4
-    },
-    {
-      id: 5,
-      url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      sequence: 5
-    },
-    {
-      id: 6,
-      url: "https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      sequence: 6
-    },
-    {
-      id: 7,
-      url: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      sequence: 7
-    },
-    {
-      id: 8,
-      url: "https://images.unsplash.com/photo-1529636798458-92182e662485?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      sequence: 8
-    }
+    { id: 1, url: "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 1 },
+    { id: 2, url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 2 },
+    { id: 3, url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 3 },
+    { id: 4, url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 4 },
+    { id: 5, url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 5 },
+    { id: 6, url: "https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 6 },
+    { id: 7, url: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 7 },
+    { id: 8, url: "https://images.unsplash.com/photo-1529636798458-92182e662485?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 8 },
+    { id: 9, url: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 9 },
+    { id: 10, url: "https://images.unsplash.com/photo-1460978812857-470ed1c77af0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 10 },
+    { id: 11, url: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 11 },
+    { id: 12, url: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 12 },
+    { id: 13, url: "https://images.unsplash.com/photo-1518049362265-d5b2a6467637?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 13 },
+    { id: 14, url: "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 14 },
+    { id: 15, url: "https://images.unsplash.com/photo-1551836022-8b2858c9c69b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 15 },
+    { id: 16, url: "https://images.unsplash.com/photo-1594736797933-d0c4c33bd96f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 16 },
+    { id: 17, url: "https://images.unsplash.com/photo-1523438885200-e635ba2c371e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 17 },
+    { id: 18, url: "https://images.unsplash.com/photo-1606800052052-a08af7148866?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 18 },
+    { id: 19, url: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 19 },
+    { id: 20, url: "https://images.unsplash.com/photo-1464207687429-7505649dae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 20 },
+    { id: 21, url: "https://images.unsplash.com/photo-1511795409834-432f7b3d6e79?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 21 },
+    { id: 22, url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 22 },
+    { id: 23, url: "https://images.unsplash.com/photo-1543199088-7e8ad230b96a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 23 },
+    { id: 24, url: "https://images.unsplash.com/photo-1560472354-81bf77eb9d4a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 24 },
+    { id: 25, url: "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 25 },
+    { id: 26, url: "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 26 },
+    { id: 27, url: "https://images.unsplash.com/photo-1529636798458-92182e662485?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 27 },
+    { id: 28, url: "https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 28 },
+    { id: 29, url: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 29 },
+    { id: 30, url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 30 },
+    { id: 31, url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 31 },
+    { id: 32, url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 32 },
+    { id: 33, url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 33 },
+    { id: 34, url: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 34 },
+    { id: 35, url: "https://images.unsplash.com/photo-1460978812857-470ed1c77af0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 35 },
+    { id: 36, url: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 36 },
+    { id: 37, url: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 37 },
+    { id: 38, url: "https://images.unsplash.com/photo-1518049362265-d5b2a6467637?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 38 },
+    { id: 39, url: "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 39 },
+    { id: 40, url: "https://images.unsplash.com/photo-1551836022-8b2858c9c69b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 40 }
   ]
 };
 
@@ -83,11 +83,18 @@ export default function MyGallery() {
   const [gallery] = useState<GalleryData>(demoGallery);
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [showDownload, setShowDownload] = useState(false);
+  const [displayedImages, setDisplayedImages] = useState(20);
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
 
-  // Sort images by sequence
+  // Sort images by sequence and limit display
   const sortedImages = gallery.images.sort((a, b) => a.sequence - b.sequence);
+  const visibleImages = sortedImages.slice(0, displayedImages);
+  const hasMoreImages = displayedImages < sortedImages.length;
+
+  const loadMoreImages = () => {
+    setDisplayedImages(prev => Math.min(prev + 20, sortedImages.length));
+  };
 
   const openFullscreen = (imageIndex: number) => {
     setSelectedImage(imageIndex);
@@ -99,7 +106,7 @@ export default function MyGallery() {
   };
 
   const nextImage = () => {
-    if (selectedImage !== null && selectedImage < sortedImages.length - 1) {
+    if (selectedImage !== null && selectedImage < visibleImages.length - 1) {
       setSelectedImage(selectedImage + 1);
     }
   };
@@ -207,7 +214,7 @@ export default function MyGallery() {
           <h1 className="h1-gradient text-5xl lg:text-7xl font-saira font-black mb-6">
             {gallery.clientName}
           </h1>
-          <p className="hero-tagline text-2xl lg:text-3xl font-cormorant italic font-light">
+          <p className="hero-tagline text-2xl lg:text-3xl font-corinthia italic font-light">
             {gallery.shootType}
           </p>
           {gallery.location && (
@@ -226,7 +233,7 @@ export default function MyGallery() {
       <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="masonry-grid">
-            {sortedImages.map((image, index) => (
+            {visibleImages.map((image, index) => (
               <div 
                 key={image.id}
                 className="masonry-item cursor-pointer group relative overflow-hidden rounded-lg"
@@ -242,6 +249,18 @@ export default function MyGallery() {
               </div>
             ))}
           </div>
+          
+          {/* Load More Button */}
+          {hasMoreImages && (
+            <div className="text-center mt-12">
+              <Button 
+                onClick={loadMoreImages}
+                className="btn-salmon text-lg px-8 py-4"
+              >
+                Load More Images
+              </Button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -270,7 +289,7 @@ export default function MyGallery() {
             </Button>
           )}
 
-          {selectedImage < sortedImages.length - 1 && (
+          {selectedImage < visibleImages.length - 1 && (
             <Button
               variant="ghost"
               size="icon"
@@ -294,7 +313,7 @@ export default function MyGallery() {
             onTouchEnd={handleTouchEnd}
           >
             <img
-              src={sortedImages[selectedImage].url}
+              src={visibleImages[selectedImage].url}
               alt={`Gallery image ${selectedImage + 1}`}
               className="max-w-full max-h-full object-contain"
             />
@@ -304,7 +323,7 @@ export default function MyGallery() {
               <Button
                 className="absolute bottom-4 right-4 bg-salmon text-black hover:bg-salmon-muted"
                 onClick={() => downloadImage(
-                  sortedImages[selectedImage].url, 
+                  visibleImages[selectedImage].url, 
                   `${gallery.customSlug}-image-${selectedImage + 1}.jpg`
                 )}
               >
@@ -316,7 +335,7 @@ export default function MyGallery() {
 
           {/* Image Counter */}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white bg-black/50 px-4 py-2 rounded-full">
-            {selectedImage + 1} of {sortedImages.length}
+            {selectedImage + 1} of {visibleImages.length}
           </div>
         </div>
       )}
