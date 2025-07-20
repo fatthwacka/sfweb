@@ -68,13 +68,13 @@ export function Navigation() {
           <div className="hidden lg:flex items-center space-x-8">
             {/* Photography Dropdown */}
             <div className="relative group">
-              <Link href="/photography" className="text-cyan hover:text-salmon transition-colors duration-300 flex items-center">
+              <Link href="/photography" className="text-cyan-muted hover:text-cyan transition-colors duration-300 flex items-center">
                 Photography
                 <ChevronDown className="w-4 h-4 ml-1" />
               </Link>
               <div className="absolute top-full left-0 w-64 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 mt-2 overflow-hidden" 
-                   style={{background: 'linear-gradient(135deg, rgba(16, 16, 16, 0.95) 0%, rgba(32, 32, 32, 0.95) 100%)', 
-                          border: '1px solid rgba(255, 107, 107, 0.3)'}}>
+                   style={{background: 'linear-gradient(135deg, rgba(64, 64, 64, 0.9) 0%, rgba(96, 96, 96, 0.9) 50%, rgba(78, 205, 196, 0.2) 100%)', 
+                          border: '1px solid rgba(78, 205, 196, 0.4)'}}>
                 <div className="p-2">
                   {photographyCategories.map(category => (
                     <Link
@@ -91,19 +91,19 @@ export function Navigation() {
 
             {/* Videography Dropdown */}
             <div className="relative group">
-              <Link href="/videography" className="text-salmon hover:text-cyan transition-colors duration-300 flex items-center">
+              <Link href="/videography" className="text-cyan-muted hover:text-cyan transition-colors duration-300 flex items-center">
                 Videography
                 <ChevronDown className="w-4 h-4 ml-1" />
               </Link>
               <div className="absolute top-full left-0 w-64 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 mt-2 overflow-hidden"
-                   style={{background: 'linear-gradient(135deg, rgba(16, 16, 16, 0.95) 0%, rgba(32, 32, 32, 0.95) 100%)', 
-                          border: '1px solid rgba(78, 205, 196, 0.3)'}}>
+                   style={{background: 'linear-gradient(135deg, rgba(64, 64, 64, 0.9) 0%, rgba(96, 96, 96, 0.9) 50%, rgba(255, 107, 107, 0.2) 100%)', 
+                          border: '1px solid rgba(255, 107, 107, 0.4)'}}>
                 <div className="p-2">
                   {videographyCategories.map(category => (
                     <Link
                       key={category.slug}
                       href={`/videography/${category.slug}`}
-                      className="block px-4 py-2 rounded transition-all duration-300 text-salmon-muted hover:text-cyan hover:bg-gradient-to-r hover:from-cyan/20 hover:to-salmon/20"
+                      className="block px-4 py-2 rounded transition-all duration-300 text-cyan-muted hover:text-salmon hover:bg-gradient-to-r hover:from-cyan/20 hover:to-salmon/20"
                     >
                       {category.name}
                     </Link>
@@ -112,13 +112,13 @@ export function Navigation() {
               </div>
             </div>
 
-            <Link href="/about" className="text-cyan hover:text-salmon transition-colors duration-300">
+            <Link href="/about" className="text-cyan-muted hover:text-cyan transition-colors duration-300">
               About
             </Link>
-            <Link href="/pricing" className="text-salmon hover:text-cyan transition-colors duration-300">
+            <Link href="/pricing" className="text-cyan-muted hover:text-cyan transition-colors duration-300">
               Pricing
             </Link>
-            <Link href="/contact" className="text-cyan hover:text-salmon transition-colors duration-300">
+            <Link href="/contact" className="text-cyan-muted hover:text-cyan transition-colors duration-300">
               Contact
             </Link>
           </div>

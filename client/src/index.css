@@ -118,6 +118,14 @@
   }
   
   /* Helper classes for alternating header colors */
+  .h2-salmon {
+    color: hsl(16, 100%, 73%) !important;
+  }
+  
+  .h2-cyan {
+    color: hsl(180, 100%, 50%) !important;
+  }
+  
   .h3-salmon {
     color: hsl(var(--salmon));
   }
@@ -254,7 +262,7 @@
     background: linear-gradient(135deg, rgba(45, 45, 45, 0.9) 0%, rgba(30, 30, 30, 0.95) 100%);
     border-color: rgba(255, 107, 107, 0.3);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    min-height: 550px;
+    min-height: 600px;
   }
   
   .studio-card:hover {
@@ -267,7 +275,7 @@
     background: linear-gradient(135deg, rgba(45, 45, 45, 0.9) 0%, rgba(30, 30, 30, 0.95) 100%);
     border-color: rgba(0, 255, 255, 0.4);
     box-shadow: 0 8px 30px rgba(0, 255, 255, 0.2);
-    min-height: 550px;
+    min-height: 600px;
   }
   
   .studio-card-premium:hover {
@@ -281,6 +289,7 @@
   
   .studio-card-features {
     @apply flex-1 mb-8;
+    min-height: 240px;
   }
   
   .studio-card-button {

@@ -368,8 +368,8 @@ export default function VideographyCategory() {
       <section className="py-20 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6">
-              {data.name} <span className="text-cyan">Packages</span>
+            <h2 className="text-4xl lg:text-5xl mb-6 h2-cyan">
+              {data.name} Packages
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Choose the perfect package for your video needs. All packages include professional editing and digital delivery.
