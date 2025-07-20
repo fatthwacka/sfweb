@@ -22,6 +22,7 @@ import Contact from "@/pages/contact";
 import ClientGallery from "@/pages/client-gallery";
 import Dashboard from "@/pages/dashboard";
 import Admin from "@/pages/admin";
+import MyGallery from "@/pages/my-gallery";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -43,6 +44,8 @@ function Router() {
       <Route path="/clients/:slug" component={ClientGallery} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/admin" component={Admin} />
+      <Route path="/my-gallery" component={MyGallery} />
+      <Route path="/gallery/:slug" component={MyGallery} />
       <Route component={NotFound} />
     </Switch>
   );
