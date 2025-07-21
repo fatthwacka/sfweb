@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { 
   ArrowUp,
@@ -13,7 +14,8 @@ import {
   Star,
   Download,
   Image as ImageIcon,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Crown
 } from "lucide-react";
 
 interface GalleryImage {
@@ -81,7 +83,8 @@ export function GalleryEditor({ shootId }: GalleryEditorProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <TooltipProvider>
+      <div className="space-y-6">
       {/* Gallery Settings */}
       <Card className="bg-charcoal/80">
         <CardHeader>
@@ -122,7 +125,7 @@ export function GalleryEditor({ shootId }: GalleryEditorProps) {
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button onClick={updateGallerySettings} className="bg-gold text-black hover:bg-gold-muted">
+                <Button onClick={updateGallerySettings} className="bg-gold text-black hover:bg-gold/80">
                   Save Changes
                 </Button>
                 <Button variant="outline" onClick={() => setEditMode(false)}>
@@ -175,34 +178,56 @@ export function GalleryEditor({ shootId }: GalleryEditorProps) {
                   <div className="flex gap-2">
                     {/* Move Up */}
                     {index > 0 && (
-                      <Button 
-                        size="sm" 
-                        variant="secondary"
-                        onClick={() => moveImage(image.id, 'up')}
-                      >
-                        <ArrowUp className="w-4 h-4" />
-                      </Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            size="sm" 
+                            variant="secondary"
+                            onClick={() => moveImage(image.id, 'up')}
+                          >
+                            <ArrowUp className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Move image up in sequence</p>
+                        </TooltipContent>
+                      </Tooltip>
                     )}
                     
                     {/* Move Down */}
                     {index < images.length - 1 && (
-                      <Button 
-                        size="sm" 
-                        variant="secondary"
-                        onClick={() => moveImage(image.id, 'down')}
-                      >
-                        <ArrowDown className="w-4 h-4" />
-                      </Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            size="sm" 
+                            variant="secondary"
+                            onClick={() => moveImage(image.id, 'down')}
+                          >
+                            <ArrowDown className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Move image down in sequence</p>
+                        </TooltipContent>
+                      </Tooltip>
                     )}
                     
                     {/* Set as Cover */}
-                    <Button 
-                      size="sm" 
-                      variant={selectedCover === image.id ? "default" : "secondary"}
-                      onClick={() => setAlbumCover(image.id)}
-                    >
-                      <Star className="w-4 h-4" />
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          size="sm" 
+                          variant={selectedCover === image.id ? "default" : "secondary"}
+                          onClick={() => setAlbumCover(image.id)}
+                          className={selectedCover === image.id ? "bg-gold text-black" : ""}
+                        >
+                          {selectedCover === image.id ? <Crown className="w-4 h-4" /> : <Star className="w-4 h-4" />}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{selectedCover === image.id ? "Current album cover" : "Set as album cover"}</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
 
@@ -228,6 +253,7 @@ export function GalleryEditor({ shootId }: GalleryEditorProps) {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }

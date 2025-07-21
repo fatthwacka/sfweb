@@ -522,19 +522,19 @@ export function AdminContent() {
                             </div>
                           </div>
 
-                          <Button type="submit" disabled={createShootMutation.isPending} className="w-full bg-gold text-black hover:bg-gold-muted">
+                          <Button type="submit" disabled={createShootMutation.isPending} className="w-full bg-gold text-black hover:bg-gold/80">
                             {createShootMutation.isPending ? 'Creating Shoot...' : 'Create Shoot'}
                           </Button>
                         </form>
                       </DialogContent>
                     </Dialog>
 
-                    <Button className="h-20 flex-col gap-2 bg-charcoal border-border hover:border-gold">
+                    <Button className="h-20 flex-col gap-2 bg-charcoal border-border hover:border-gold text-white">
                       <FileImage className="w-6 h-6 icon-salmon" />
                       <span className="text-sm">Upload Images</span>
                     </Button>
 
-                    <Button className="h-20 flex-col gap-2 bg-charcoal border-border hover:border-gold">
+                    <Button className="h-20 flex-col gap-2 bg-charcoal border-border hover:border-gold text-white">
                       <BarChart3 className="w-6 h-6 icon-cyan" />
                       <span className="text-sm">View Analytics</span>
                     </Button>
@@ -560,11 +560,37 @@ export function AdminContent() {
                   </div>
                   <Dialog open={newClientOpen} onOpenChange={setNewClientOpen}>
                     <DialogTrigger asChild>
-                      <Button className="bg-gold text-black hover:bg-gold-muted">
+                      <Button className="bg-gold text-black hover:bg-gold/80">
                         <Plus className="w-4 h-4 mr-2" />
                         Add Client
                       </Button>
                     </DialogTrigger>
+                    <DialogContent className="bg-charcoal border-border max-w-md">
+                      <DialogHeader>
+                        <DialogTitle className="text-gold">Add New Client</DialogTitle>
+                      </DialogHeader>
+                      <form onSubmit={handleCreateClient} className="space-y-4">
+                        <div>
+                          <Label htmlFor="clientName">Client Name *</Label>
+                          <Input id="clientName" name="name" required />
+                        </div>
+                        <div>
+                          <Label htmlFor="clientEmail">Email</Label>
+                          <Input id="clientEmail" name="email" type="email" />
+                        </div>
+                        <div>
+                          <Label htmlFor="clientPhone">Phone</Label>
+                          <Input id="clientPhone" name="phone" />
+                        </div>
+                        <div>
+                          <Label htmlFor="clientAddress">Address</Label>
+                          <Input id="clientAddress" name="address" />
+                        </div>
+                        <Button type="submit" disabled={createClientMutation.isPending} className="w-full bg-gold text-black hover:bg-gold/80">
+                          {createClientMutation.isPending ? 'Creating...' : 'Create Client'}
+                        </Button>
+                      </form>
+                    </DialogContent>
                   </Dialog>
                 </div>
               </div>
@@ -603,10 +629,10 @@ export function AdminContent() {
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            <Button size="sm" variant="outline" className="border-border hover:border-gold">
+                            <Button size="sm" variant="outline" className="border-border hover:border-gold text-white">
                               <Edit className="w-4 h-4" />
                             </Button>
-                            <Button size="sm" variant="outline" className="border-border hover:border-red-500">
+                            <Button size="sm" variant="outline" className="border-border hover:border-red-500 text-white">
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
@@ -635,7 +661,7 @@ export function AdminContent() {
                   </div>
                   <Dialog open={newShootOpen} onOpenChange={setNewShootOpen}>
                     <DialogTrigger asChild>
-                      <Button className="bg-gold text-black hover:bg-gold-muted">
+                      <Button className="bg-gold text-black hover:bg-gold/80">
                         <Plus className="w-4 h-4 mr-2" />
                         Add Shoot
                       </Button>
@@ -694,12 +720,12 @@ export function AdminContent() {
                             <Button 
                               size="sm" 
                               variant="outline" 
-                              className="border-border hover:border-gold"
+                              className="border-border hover:border-gold text-white"
                               onClick={() => setEditingShoot(shoot)}
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
-                            <Button size="sm" variant="outline" className="border-border hover:border-red-500">
+                            <Button size="sm" variant="outline" className="border-border hover:border-red-500 text-white">
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
@@ -958,7 +984,7 @@ export function AdminContent() {
                 <Button 
                   type="submit" 
                   disabled={updateShootMutation.isPending} 
-                  className="flex-1 bg-gold text-black hover:bg-gold-muted"
+                  className="flex-1 bg-gold text-black hover:bg-gold/80"
                 >
                   {updateShootMutation.isPending ? 'Updating Shoot...' : 'Update Shoot'}
                 </Button>
