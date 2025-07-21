@@ -77,6 +77,7 @@ export function AdminContent() {
   const [newShootOpen, setNewShootOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<number | null>(null);
   const [selectedShoot, setSelectedShoot] = useState<number | null>(null);
+  const [editingShoot, setEditingShoot] = useState<Shoot | null>(null);
 
   // Fetch data
   const { data: clients = [], isLoading: clientsLoading } = useQuery<Client[]>({
@@ -126,6 +127,25 @@ export function AdminContent() {
     }
   });
 
+  const updateShootMutation = useMutation({
+    mutationFn: (data: any) => apiRequest("PATCH", `/api/shoots/${data.id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/shoots"] });
+      setEditingShoot(null);
+      toast({
+        title: "Success",
+        description: "Shoot updated successfully"
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update shoot",
+        variant: "destructive"
+      });
+    }
+  });
+
   const handleCreateClient = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -141,16 +161,69 @@ export function AdminContent() {
   const handleCreateShoot = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
+    
+    // Generate slug if not provided
+    const customSlug = formData.get('customSlug') as string;
+    const title = formData.get('title') as string;
+    const autoSlug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+    
     const data = {
       clientId: parseInt(formData.get('clientId') as string),
-      title: formData.get('title') as string,
-      description: formData.get('description') as string,
+      title: title,
+      description: formData.get('description') as string || '',
+      shootType: formData.get('shootType') as string,
       shootDate: formData.get('shootDate') as string,
       location: formData.get('location') as string,
-      notes: formData.get('notes') as string,
+      notes: formData.get('notes') as string || '',
+      customSlug: customSlug || `${autoSlug}-slyfox-${new Date().getFullYear()}`,
+      customTitle: formData.get('customTitle') as string || title,
+      seoTags: formData.get('seoTags') as string || '',
       isPrivate: formData.get('isPrivate') === 'on',
+      albumCoverId: null,
+      bannerImageId: null,
+      viewCount: 0
     };
+    
     createShootMutation.mutate(data);
+  };
+
+  const handleUpdateShoot = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!editingShoot) return;
+    
+    const formData = new FormData(event.currentTarget);
+    
+    // Generate slug if not provided
+    const customSlug = formData.get('customSlug') as string;
+    const title = formData.get('title') as string;
+    const autoSlug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+    
+    const data = {
+      id: editingShoot.id,
+      clientId: parseInt(formData.get('clientId') as string),
+      title: title,
+      description: formData.get('description') as string || '',
+      shootType: formData.get('shootType') as string,
+      shootDate: formData.get('shootDate') as string,
+      location: formData.get('location') as string,
+      notes: formData.get('notes') as string || '',
+      customSlug: customSlug || `${autoSlug}-slyfox-${new Date().getFullYear()}`,
+      customTitle: formData.get('customTitle') as string || title,
+      seoTags: formData.get('seoTags') as string || '',
+      isPrivate: formData.get('isPrivate') === 'on'
+    };
+    
+    updateShootMutation.mutate(data);
   };
 
   const filteredClients = clients.filter(client =>
@@ -299,52 +372,158 @@ export function AdminContent() {
                           <span className="text-sm">Add Shoot</span>
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="bg-charcoal border-border max-w-2xl">
+                      <DialogContent className="bg-charcoal border-border max-w-4xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle className="text-gold">Add New Shoot</DialogTitle>
                         </DialogHeader>
-                        <form onSubmit={handleCreateShoot} className="space-y-4">
-                          <div className="grid md:grid-cols-2 gap-4">
-                            <div>
-                              <Label htmlFor="clientId">Client</Label>
-                              <Select name="clientId" required>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select client" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {clients.map(client => (
-                                    <SelectItem key={client.id} value={client.id.toString()}>
-                                      {client.name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                        <form onSubmit={handleCreateShoot} className="space-y-6">
+                          {/* Basic Information */}
+                          <div className="space-y-4">
+                            <h3 className="text-lg font-semibold text-gold">Basic Information</h3>
+                            <div className="grid md:grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="clientId">Client *</Label>
+                                <Select name="clientId" required>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select client" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {clients.map(client => (
+                                      <SelectItem key={client.id} value={client.id.toString()}>
+                                        {client.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div>
+                                <Label htmlFor="shootType">Shoot Type *</Label>
+                                <Select name="shootType" required>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select shoot type" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="wedding">Wedding</SelectItem>
+                                    <SelectItem value="portrait">Portrait</SelectItem>
+                                    <SelectItem value="corporate">Corporate</SelectItem>
+                                    <SelectItem value="event">Event</SelectItem>
+                                    <SelectItem value="family">Family</SelectItem>
+                                    <SelectItem value="maternity">Maternity</SelectItem>
+                                    <SelectItem value="engagement">Engagement</SelectItem>
+                                    <SelectItem value="commercial">Commercial</SelectItem>
+                                    <SelectItem value="lifestyle">Lifestyle</SelectItem>
+                                    <SelectItem value="other">Other</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
                             </div>
                             <div>
-                              <Label htmlFor="title">Title</Label>
-                              <Input id="title" name="title" required />
-                            </div>
-                          </div>
-                          <div>
-                            <Label htmlFor="description">Description</Label>
-                            <Textarea id="description" name="description" />
-                          </div>
-                          <div className="grid md:grid-cols-2 gap-4">
-                            <div>
-                              <Label htmlFor="shootDate">Shoot Date</Label>
-                              <Input id="shootDate" name="shootDate" type="date" required />
+                              <Label htmlFor="title">Shoot Title *</Label>
+                              <Input 
+                                id="title" 
+                                name="title" 
+                                placeholder="e.g., Sarah & Michael's Wedding"
+                                required 
+                              />
                             </div>
                             <div>
-                              <Label htmlFor="location">Location</Label>
-                              <Input id="location" name="location" required />
+                              <Label htmlFor="description">Description</Label>
+                              <Textarea 
+                                id="description" 
+                                name="description" 
+                                placeholder="Brief description of the shoot..."
+                                rows={3}
+                              />
                             </div>
                           </div>
-                          <div>
-                            <Label htmlFor="notes">Notes</Label>
-                            <Textarea id="notes" name="notes" />
+
+                          {/* Shoot Details */}
+                          <div className="space-y-4">
+                            <h3 className="text-lg font-semibold text-gold">Shoot Details</h3>
+                            <div className="grid md:grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="shootDate">Shoot Date *</Label>
+                                <Input id="shootDate" name="shootDate" type="date" required />
+                              </div>
+                              <div>
+                                <Label htmlFor="location">Location *</Label>
+                                <Input 
+                                  id="location" 
+                                  name="location" 
+                                  placeholder="e.g., Cape Town Waterfront"
+                                  required 
+                                />
+                              </div>
+                            </div>
                           </div>
-                          <Button type="submit" disabled={createShootMutation.isPending} className="bg-gold text-black hover:bg-gold-muted">
-                            {createShootMutation.isPending ? 'Creating...' : 'Create Shoot'}
+
+                          {/* Gallery Settings */}
+                          <div className="space-y-4">
+                            <h3 className="text-lg font-semibold text-gold">Gallery Settings</h3>
+                            <div className="grid md:grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="customTitle">Custom Gallery Title</Label>
+                                <Input 
+                                  id="customTitle" 
+                                  name="customTitle" 
+                                  placeholder="Leave empty to use shoot title"
+                                />
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  This will be displayed as the main gallery heading
+                                </p>
+                              </div>
+                              <div>
+                                <Label htmlFor="customSlug">Custom URL Slug</Label>
+                                <Input 
+                                  id="customSlug" 
+                                  name="customSlug" 
+                                  placeholder="e.g., sarah-michael-wedding-2024"
+                                />
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  URL: /gallery/[slug] - leave empty for auto-generation
+                                </p>
+                              </div>
+                            </div>
+                            <div>
+                              <Label htmlFor="seoTags">SEO Tags</Label>
+                              <Input 
+                                id="seoTags" 
+                                name="seoTags" 
+                                placeholder="wedding photography, cape town, romantic, outdoor"
+                              />
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Comma-separated tags for SEO optimization
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Privacy & Settings */}
+                          <div className="space-y-4">
+                            <h3 className="text-lg font-semibold text-gold">Privacy & Settings</h3>
+                            <div className="flex items-center space-x-2">
+                              <input 
+                                type="checkbox" 
+                                id="isPrivate" 
+                                name="isPrivate" 
+                                className="rounded border-border"
+                              />
+                              <Label htmlFor="isPrivate" className="text-sm">
+                                Make gallery private (requires login to view)
+                              </Label>
+                            </div>
+                            <div>
+                              <Label htmlFor="notes">Internal Notes</Label>
+                              <Textarea 
+                                id="notes" 
+                                name="notes" 
+                                placeholder="Internal notes for staff reference..."
+                                rows={3}
+                              />
+                            </div>
+                          </div>
+
+                          <Button type="submit" disabled={createShootMutation.isPending} className="w-full bg-gold text-black hover:bg-gold-muted">
+                            {createShootMutation.isPending ? 'Creating Shoot...' : 'Create Shoot'}
                           </Button>
                         </form>
                       </DialogContent>
@@ -477,13 +656,16 @@ export function AdminContent() {
                     <Card key={shoot.id} className="bg-black border-border">
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start">
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2">
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <h3 className="text-lg font-semibold text-gold">{shoot.title}</h3>
-                              {shoot.isPrivate && <Badge variant="outline" className="text-xs">Private</Badge>}
+                              <Badge variant="outline" className="text-xs capitalize">
+                                {shoot.shootType}
+                              </Badge>
+                              {shoot.isPrivate && <Badge variant="outline" className="text-xs bg-red-900/20 text-red-300 border-red-700">Private</Badge>}
                             </div>
                             <p className="text-muted-foreground">{shoot.description}</p>
-                            <div className="flex gap-4 text-sm text-muted-foreground">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground">
                               <div className="flex items-center gap-1">
                                 <Calendar className="w-4 h-4 icon-cyan" />
                                 {new Date(shoot.shootDate).toLocaleDateString()}
@@ -496,10 +678,25 @@ export function AdminContent() {
                                 <Eye className="w-4 h-4 icon-cyan" />
                                 {shoot.viewCount} views
                               </div>
+                              <div className="flex items-center gap-1">
+                                <Camera className="w-4 h-4 icon-salmon" />
+                                Gallery: /{shoot.customSlug}
+                              </div>
                             </div>
+                            {shoot.seoTags && (
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <span>Tags:</span>
+                                <span className="italic">{shoot.seoTags}</span>
+                              </div>
+                            )}
                           </div>
                           <div className="flex gap-2">
-                            <Button size="sm" variant="outline" className="border-border hover:border-gold">
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="border-border hover:border-gold"
+                              onClick={() => setEditingShoot(shoot)}
+                            >
                               <Edit className="w-4 h-4" />
                             </Button>
                             <Button size="sm" variant="outline" className="border-border hover:border-red-500">
@@ -589,6 +786,195 @@ export function AdminContent() {
           )}
         </div>
       </section>
+
+      {/* Edit Shoot Dialog */}
+      <Dialog open={!!editingShoot} onOpenChange={(open) => !open && setEditingShoot(null)}>
+        <DialogContent className="bg-charcoal border-border max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-gold">Edit Shoot: {editingShoot?.title}</DialogTitle>
+          </DialogHeader>
+          {editingShoot && (
+            <form onSubmit={handleUpdateShoot} className="space-y-6">
+              {/* Basic Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gold">Basic Information</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-clientId">Client *</Label>
+                    <Select name="clientId" defaultValue={editingShoot.clientId.toString()} required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select client" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {clients.map(client => (
+                          <SelectItem key={client.id} value={client.id.toString()}>
+                            {client.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-shootType">Shoot Type *</Label>
+                    <Select name="shootType" defaultValue={editingShoot.shootType} required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select shoot type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="wedding">Wedding</SelectItem>
+                        <SelectItem value="portrait">Portrait</SelectItem>
+                        <SelectItem value="corporate">Corporate</SelectItem>
+                        <SelectItem value="event">Event</SelectItem>
+                        <SelectItem value="family">Family</SelectItem>
+                        <SelectItem value="maternity">Maternity</SelectItem>
+                        <SelectItem value="engagement">Engagement</SelectItem>
+                        <SelectItem value="commercial">Commercial</SelectItem>
+                        <SelectItem value="lifestyle">Lifestyle</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="edit-title">Shoot Title *</Label>
+                  <Input 
+                    id="edit-title" 
+                    name="title" 
+                    defaultValue={editingShoot.title}
+                    placeholder="e.g., Sarah & Michael's Wedding"
+                    required 
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-description">Description</Label>
+                  <Textarea 
+                    id="edit-description" 
+                    name="description" 
+                    defaultValue={editingShoot.description}
+                    placeholder="Brief description of the shoot..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+
+              {/* Shoot Details */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gold">Shoot Details</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-shootDate">Shoot Date *</Label>
+                    <Input 
+                      id="edit-shootDate" 
+                      name="shootDate" 
+                      type="date" 
+                      defaultValue={editingShoot.shootDate.split('T')[0]}
+                      required 
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-location">Location *</Label>
+                    <Input 
+                      id="edit-location" 
+                      name="location" 
+                      defaultValue={editingShoot.location}
+                      placeholder="e.g., Cape Town Waterfront"
+                      required 
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Gallery Settings */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gold">Gallery Settings</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-customTitle">Custom Gallery Title</Label>
+                    <Input 
+                      id="edit-customTitle" 
+                      name="customTitle" 
+                      defaultValue={editingShoot.customTitle}
+                      placeholder="Leave empty to use shoot title"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      This will be displayed as the main gallery heading
+                    </p>
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-customSlug">Custom URL Slug</Label>
+                    <Input 
+                      id="edit-customSlug" 
+                      name="customSlug" 
+                      defaultValue={editingShoot.customSlug}
+                      placeholder="e.g., sarah-michael-wedding-2024"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      URL: /gallery/[slug]
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="edit-seoTags">SEO Tags</Label>
+                  <Input 
+                    id="edit-seoTags" 
+                    name="seoTags" 
+                    defaultValue={editingShoot.seoTags}
+                    placeholder="wedding photography, cape town, romantic, outdoor"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Comma-separated tags for SEO optimization
+                  </p>
+                </div>
+              </div>
+
+              {/* Privacy & Settings */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gold">Privacy & Settings</h3>
+                <div className="flex items-center space-x-2">
+                  <input 
+                    type="checkbox" 
+                    id="edit-isPrivate" 
+                    name="isPrivate" 
+                    defaultChecked={editingShoot.isPrivate}
+                    className="rounded border-border"
+                  />
+                  <Label htmlFor="edit-isPrivate" className="text-sm">
+                    Make gallery private (requires login to view)
+                  </Label>
+                </div>
+                <div>
+                  <Label htmlFor="edit-notes">Internal Notes</Label>
+                  <Textarea 
+                    id="edit-notes" 
+                    name="notes" 
+                    defaultValue={editingShoot.notes}
+                    placeholder="Internal notes for staff reference..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button 
+                  type="submit" 
+                  disabled={updateShootMutation.isPending} 
+                  className="flex-1 bg-gold text-black hover:bg-gold-muted"
+                >
+                  {updateShootMutation.isPending ? 'Updating Shoot...' : 'Update Shoot'}
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setEditingShoot(null)}
+                  className="border-border hover:border-gold"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

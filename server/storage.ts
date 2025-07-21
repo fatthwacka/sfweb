@@ -158,7 +158,8 @@ export class MemStorage implements IStorage {
     const user: User = {
       ...insertUser,
       id: this.currentUserId++,
-      createdAt: new Date()
+      createdAt: new Date(),
+      role: insertUser.role || 'client'
     };
     this.users.set(user.id, user);
     return user;
@@ -190,7 +191,8 @@ export class MemStorage implements IStorage {
     const client: Client = {
       ...insertClient,
       id: this.currentClientId++,
-      createdAt: new Date()
+      createdAt: new Date(),
+      address: insertClient.address || null
     };
     this.clients.set(client.id, client);
     return client;
@@ -226,7 +228,8 @@ export class MemStorage implements IStorage {
     const shoot: Shoot = {
       ...insertShoot,
       id: this.currentShootId++,
-      createdAt: new Date()
+      createdAt: new Date(),
+      viewCount: insertShoot.viewCount || 0
     };
     this.shoots.set(shoot.id, shoot);
     return shoot;
@@ -253,14 +256,15 @@ export class MemStorage implements IStorage {
   async getImagesByShoot(shootId: number): Promise<Image[]> {
     return Array.from(this.images.values())
       .filter(image => image.shootId === shootId)
-      .sort((a, b) => a.uploadOrder - b.uploadOrder);
+      .sort((a, b) => a.sequence - b.sequence);
   }
 
   async createImage(insertImage: InsertImage): Promise<Image> {
     const image: Image = {
       ...insertImage,
       id: this.currentImageId++,
-      createdAt: new Date()
+      createdAt: new Date(),
+      downloadCount: insertImage.downloadCount || 0
     };
     this.images.set(image.id, image);
     return image;
@@ -310,7 +314,8 @@ export class MemStorage implements IStorage {
     const analytics: Analytics = {
       ...insertAnalytics,
       id: this.currentAnalyticsId++,
-      timestamp: new Date()
+      timestamp: new Date(),
+      shootId: insertAnalytics.shootId || null
     };
     this.analytics.set(analytics.id, analytics);
     return analytics;
@@ -350,7 +355,8 @@ export class MemStorage implements IStorage {
     const booking: Booking = {
       ...insertBooking,
       id: this.currentBookingId++,
-      createdAt: new Date()
+      createdAt: new Date(),
+      status: insertBooking.status || 'pending'
     };
     this.bookings.set(booking.id, booking);
     return booking;
