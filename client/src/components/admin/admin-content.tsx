@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -568,6 +568,9 @@ export function AdminContent() {
                     <DialogContent className="bg-charcoal border-border max-w-md">
                       <DialogHeader>
                         <DialogTitle className="text-gold">Add New Client</DialogTitle>
+                        <DialogDescription className="text-muted-foreground">
+                          Add a new client to manage their gallery access and information.
+                        </DialogDescription>
                       </DialogHeader>
                       <form onSubmit={handleCreateClient} className="space-y-4">
                         <div>
@@ -666,6 +669,79 @@ export function AdminContent() {
                         Add Shoot
                       </Button>
                     </DialogTrigger>
+                    <DialogContent className="bg-charcoal border-border max-w-2xl max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle className="text-gold">Create New Shoot</DialogTitle>
+                        <DialogDescription className="text-muted-foreground">
+                          Create a new photography or videography shoot with all necessary details.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <form onSubmit={handleCreateShoot} className="space-y-6">
+                        {/* Basic Information */}
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-semibold text-gold">Basic Information</h3>
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="title">Shoot Title *</Label>
+                              <Input id="title" name="title" required placeholder="Sarah & Michael's Wedding" />
+                            </div>
+                            <div>
+                              <Label htmlFor="shootType">Shoot Type *</Label>
+                              <select id="shootType" name="shootType" required className="w-full px-3 py-2 bg-background border border-border rounded-md">
+                                <option value="">Select type...</option>
+                                <option value="wedding">Wedding</option>
+                                <option value="portrait">Portrait</option>
+                                <option value="event">Event</option>
+                                <option value="corporate">Corporate</option>
+                                <option value="lifestyle">Lifestyle</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div>
+                            <Label htmlFor="description">Description</Label>
+                            <Textarea id="description" name="description" placeholder="Brief description of the shoot..." rows={3} />
+                          </div>
+                        </div>
+
+                        {/* Location & Date */}
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-semibold text-gold">Location & Date</h3>
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="shootDate">Shoot Date *</Label>
+                              <Input id="shootDate" name="shootDate" type="date" required />
+                            </div>
+                            <div>
+                              <Label htmlFor="location">Location *</Label>
+                              <Input id="location" name="location" required placeholder="Cape Town, South Africa" />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* SEO & Settings */}
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-semibold text-gold">SEO & Settings</h3>
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="customSlug">Custom URL Slug</Label>
+                              <Input id="customSlug" name="customSlug" placeholder="sarah-michael-wedding-2024" />
+                            </div>
+                            <div>
+                              <Label htmlFor="seoTags">SEO Tags</Label>
+                              <Input id="seoTags" name="seoTags" placeholder="wedding, cape town, photography" />
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input type="checkbox" id="isPrivate" name="isPrivate" className="rounded" />
+                            <Label htmlFor="isPrivate">Make gallery private</Label>
+                          </div>
+                        </div>
+
+                        <Button type="submit" disabled={createShootMutation.isPending} className="w-full bg-gold text-black hover:bg-gold/80">
+                          {createShootMutation.isPending ? 'Creating Shoot...' : 'Create Shoot'}
+                        </Button>
+                      </form>
+                    </DialogContent>
                   </Dialog>
                 </div>
               </div>
@@ -755,7 +831,7 @@ export function AdminContent() {
                   <p className="text-muted-foreground mb-4">
                     Upload your first images to get started with gallery management.
                   </p>
-                  <Button className="bg-gold text-black hover:bg-gold-muted">
+                  <Button className="bg-gold text-black hover:bg-gold/80">
                     <Plus className="w-4 h-4 mr-2" />
                     Upload Images
                   </Button>
@@ -818,6 +894,9 @@ export function AdminContent() {
         <DialogContent className="bg-charcoal border-border max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-gold">Edit Shoot: {editingShoot?.title}</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Update the shoot details and settings for this gallery.
+            </DialogDescription>
           </DialogHeader>
           {editingShoot && (
             <form onSubmit={handleUpdateShoot} className="space-y-6">
