@@ -7,6 +7,7 @@ SlyFox Studios is a professional photography and videography business based in C
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Technical approach: Always fix everything at the root cause, never patch, workaround, or temporary fix.
 
 ## System Architecture
 
