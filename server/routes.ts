@@ -1,6 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from './storage';
+import { seedCompleteDatabase } from './seed-database.js';
+import { createSupabaseUser, type CreateUserData } from './supabase-auth.js';
+import { populateWithExistingAuth } from './populate-with-existing-auth.js';
 import { 
   insertUserSchema, insertClientSchema, insertShootSchema, 
   insertImageSchema, insertBookingSchema, insertAnalyticsSchema,
@@ -147,6 +150,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ success: true });
   });
   
+  // Admin endpoint to populate database with realistic dummy data (no auth dependency)
+  app.post("/api/admin/populate-database", async (req, res) => {
+    try {
+      console.log("🌱 Starting database population...");
+      const result = await populateWithExistingAuth();
+      res.json({ 
+        message: "Database populated successfully", 
+        data: result 
+      });
+    } catch (error) {
+      console.error("Database population error:", error);
+      res.status(500).json({ 
+        message: "Database population failed", 
+        error: error.message 
+      });
+    }
+  });
+
+  // Admin endpoint to seed database with comprehensive dummy data (requires Supabase auth)
+  app.post("/api/admin/seed-database", async (req, res) => {
+    try {
+      console.log("🌱 Starting database seeding...");
+      const result = await seedCompleteDatabase();
+      res.json({ 
+        message: "Database seeded successfully", 
+        data: result 
+      });
+    } catch (error) {
+      console.error("Database seeding error:", error);
+      res.status(500).json({ 
+        message: "Database seeding failed", 
+        error: error.message 
+      });
+    }
+  });
+
+  // Admin endpoint to create new users
+  app.post("/api/admin/create-user", async (req, res) => {
+    try {
+      const userData: CreateUserData = req.body;
+      
+      if (!userData.email || !userData.password || !userData.fullName || !userData.role) {
+        return res.status(400).json({ 
+          message: "Missing required fields: email, password, fullName, role" 
+        });
+      }
+
+      if (!['staff', 'client'].includes(userData.role)) {
+        return res.status(400).json({ 
+          message: "Role must be 'staff' or 'client'" 
+        });
+      }
+
+      const result = await createSupabaseUser(userData);
+      res.json({ 
+        message: "User created successfully", 
+        user: {
+          id: result.authUser.id,
+          email: result.authUser.email,
+          profile: result.profile
+        }
+      });
+    } catch (error) {
+      console.error("User creation error:", error);
+      res.status(500).json({ 
+        message: "User creation failed", 
+        error: error.message 
+      });
+    }
+  });
+
   // Contact form endpoint
   app.post("/api/contact", async (req, res) => {
     try {
