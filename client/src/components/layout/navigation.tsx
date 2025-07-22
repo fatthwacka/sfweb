@@ -121,9 +121,7 @@ export function Navigation() {
             <Link href="/contact" className="text-cyan-muted hover:text-cyan transition-colors duration-300">
               Contact
             </Link>
-            <Link href="/my-gallery" className="text-cyan-muted hover:text-cyan transition-colors duration-300">
-              My Gallery
-            </Link>
+
           </div>
 
           {/* Right side controls */}

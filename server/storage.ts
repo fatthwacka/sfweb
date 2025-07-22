@@ -101,7 +101,7 @@ export class MemStorage implements IStorage {
 
     const clientUser: User = {
       id: this.currentUserId++,
-      email: "client@example.com",
+      email: "demo@slyfox.co.za",
       password: "hashedpassword123",
       role: "client",
       profileImage: null,
@@ -445,6 +445,7 @@ export class MemStorage implements IStorage {
       layoutType: insertShoot.layoutType || "masonry",
       borderRadius: insertShoot.borderRadius || 8,
       imagePadding: insertShoot.imagePadding || 4,
+      isPrivate: insertShoot.isPrivate ?? false,
       viewCount: 0,
       createdAt: new Date()
     };

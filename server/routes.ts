@@ -179,7 +179,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .replace(/-+/g, '-')
         .replace(/^-|-$/g, '');
       
-      const client = await storage.createClient({ ...data, slug });
+      const client = await storage.createClient(data);
       res.json(client);
     } catch (error) {
       console.error("Create client error:", error);

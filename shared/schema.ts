@@ -109,6 +109,10 @@ export const insertShootSchema = createInsertSchema(shoots).omit({
   id: true,
   createdAt: true,
   viewCount: true,
+}).extend({
+  shootDate: z.union([z.string(), z.date()]).transform((val) => 
+    typeof val === 'string' ? new Date(val) : val
+  ).optional(),
 });
 
 export const insertImageSchema = createInsertSchema(images).omit({
