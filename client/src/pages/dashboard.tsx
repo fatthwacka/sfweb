@@ -28,8 +28,7 @@ import {
   MapPin,
   Palette
 } from "lucide-react";
-import { GalleryCustomization } from "@/components/gallery/gallery-customization";
-import { GalleryPreview } from "@/components/gallery/gallery-preview";
+import { GalleryContainer } from "@/components/gallery/gallery-container";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -363,9 +362,7 @@ export default function Dashboard() {
 
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {userShoots.map((shoot) => (
-                  <Dialog key={shoot.id}>
-                    <DialogTrigger asChild>
-                      <Card className="bg-salmon-dark border border-salmon/30 hover:border-salmon shadow-lg transition-colors group cursor-pointer">
+                  <Card key={shoot.id} className="bg-salmon-dark border border-salmon/30 hover:border-salmon shadow-lg transition-colors group cursor-pointer">
                         <CardHeader>
                           <div className="flex items-start justify-between">
                             <div>
@@ -405,100 +402,11 @@ export default function Dashboard() {
                             </div>
                             
                             <div className="flex gap-2 pt-2">
-                              <Button size="sm" className="flex-1 bg-salmon text-white hover:bg-salmon-muted">
-                                <Palette className="w-4 h-4 mr-2" />
-                                Customize Gallery
-                              </Button>
+                              <GalleryContainer shoot={shoot} />
                             </div>
                           </div>
                         </CardContent>
                       </Card>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle className="text-2xl font-saira font-bold">
-                          {shoot.title} - Gallery Customization
-                        </DialogTitle>
-                        <DialogDescription>
-                          Customize the appearance and layout of your photo gallery
-                        </DialogDescription>
-                      </DialogHeader>
-                      
-                      <Tabs defaultValue="customize" className="mt-6">
-                        <TabsList className="grid w-full grid-cols-2">
-                          <TabsTrigger value="customize">Customize</TabsTrigger>
-                          <TabsTrigger value="preview">Preview</TabsTrigger>
-                        </TabsList>
-                        
-                        <TabsContent value="customize" className="mt-6">
-                          <div className="grid lg:grid-cols-2 gap-6">
-                            <GalleryCustomization 
-                              shoot={{
-                                ...shoot,
-                                backgroundColor: shoot.backgroundColor || 'white',
-                                layoutType: shoot.layoutType || 'masonry',
-                                borderRadius: shoot.borderRadius || 8,
-                                imagePadding: shoot.imagePadding || 4,
-                              }}
-                              images={[
-                                // Mock images for now
-                                { id: 1, filename: 'image1.jpg', storagePath: '/api/placeholder/400/600', sequence: 0, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
-                                { id: 2, filename: 'image2.jpg', storagePath: '/api/placeholder/600/400', sequence: 1, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
-                                { id: 3, filename: 'image3.jpg', storagePath: '/api/placeholder/400/500', sequence: 2, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
-                                { id: 4, filename: 'image4.jpg', storagePath: '/api/placeholder/500/600', sequence: 3, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
-                              ]}
-                              onUpdate={(updatedShoot) => {
-                                console.log('Gallery updated:', updatedShoot);
-                              }}
-                            />
-                            <div className="space-y-4">
-                              <h3 className="text-lg font-semibold">Live Preview</h3>
-                              <div className="border rounded-lg overflow-hidden bg-muted/10 p-4 max-h-96 overflow-y-auto">
-                                <GalleryPreview 
-                                  shoot={{
-                                    ...shoot,
-                                    backgroundColor: shoot.backgroundColor || 'white',
-                                    layoutType: shoot.layoutType || 'masonry',
-                                    borderRadius: shoot.borderRadius || 8,
-                                    imagePadding: shoot.imagePadding || 4,
-                                  }}
-                                  images={[
-                                    { id: 1, filename: 'image1.jpg', storagePath: '/api/placeholder/400/600', sequence: 0, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
-                                    { id: 2, filename: 'image2.jpg', storagePath: '/api/placeholder/600/400', sequence: 1, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
-                                    { id: 3, filename: 'image3.jpg', storagePath: '/api/placeholder/400/500', sequence: 2, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
-                                    { id: 4, filename: 'image4.jpg', storagePath: '/api/placeholder/500/600', sequence: 3, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
-                                  ]}
-                                  className="scale-75 origin-top-left transform"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </TabsContent>
-                        
-                        <TabsContent value="preview" className="mt-6">
-                          <div className="border rounded-lg overflow-hidden">
-                            <GalleryPreview 
-                              shoot={{
-                                ...shoot,
-                                backgroundColor: shoot.backgroundColor || 'white',
-                                layoutType: shoot.layoutType || 'masonry',
-                                borderRadius: shoot.borderRadius || 8,
-                                imagePadding: shoot.imagePadding || 4,
-                              }}
-                              images={[
-                                { id: 1, filename: 'image1.jpg', storagePath: '/api/placeholder/400/600', sequence: 0, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
-                                { id: 2, filename: 'image2.jpg', storagePath: '/api/placeholder/600/400', sequence: 1, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
-                                { id: 3, filename: 'image3.jpg', storagePath: '/api/placeholder/400/500', sequence: 2, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
-                                { id: 4, filename: 'image4.jpg', storagePath: '/api/placeholder/500/600', sequence: 3, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
-                                { id: 5, filename: 'image5.jpg', storagePath: '/api/placeholder/600/800', sequence: 4, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
-                                { id: 6, filename: 'image6.jpg', storagePath: '/api/placeholder/500/400', sequence: 5, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
-                              ]}
-                            />
-                          </div>
-                        </TabsContent>
-                      </Tabs>
-                    </DialogContent>
-                  </Dialog>
                 ))}
               </div>
             </div>

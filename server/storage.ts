@@ -82,8 +82,191 @@ export class MemStorage implements IStorage {
   private currentBookingId = 1;
 
   constructor() {
-    this.seedData();
+    this.initializeTestData();
   }
+
+  private async initializeTestData() {
+    // Create test users
+    const staffUser: User = {
+      id: this.currentUserId++,
+      email: "admin@slyfoxstudios.co.za",
+      password: "hashedpassword123", // In real app this would be hashed
+      role: "staff",
+      createdAt: new Date()
+    };
+    this.users.set(staffUser.id, staffUser);
+
+    const clientUser: User = {
+      id: this.currentUserId++,
+      email: "client@example.com",
+      password: "hashedpassword123",
+      role: "client", 
+      createdAt: new Date()
+    };
+    this.users.set(clientUser.id, clientUser);
+
+    // Create test clients
+    const testClient1: Client = {
+      id: this.currentClientId++,
+      name: "Sarah Johnson",
+      email: "sarah@example.com",
+      phone: "+27 83 123 4567",
+      address: "123 Main Street, Cape Town, 8001",
+      slug: "sarah-johnson",
+      userId: clientUser.id,
+      createdAt: new Date()
+    };
+    this.clients.set(testClient1.id, testClient1);
+
+    const testClient2: Client = {
+      id: this.currentClientId++,
+      name: "Michael Smith", 
+      email: "michael@example.com",
+      phone: "+27 82 987 6543",
+      address: "456 Oak Avenue, Stellenbosch, 7600",
+      slug: "michael-smith",
+      userId: clientUser.id,
+      createdAt: new Date()
+    };
+    this.clients.set(testClient2.id, testClient2);
+
+    // Create test shoots with different customization settings
+    const portraitShoot: Shoot = {
+      id: this.currentShootId++,
+      clientId: testClient1.id,
+      title: "Sarah's Portrait Session",
+      description: "A beautiful outdoor portrait session in Kirstenbosch Gardens",
+      shootType: "photography",
+      shootDate: new Date("2024-01-15"),
+      location: "Kirstenbosch Botanical Gardens, Cape Town",
+      notes: "Golden hour session with natural lighting",
+      customSlug: "sarah-portraits-2024",
+      customTitle: "Golden Hour Portraits",
+      isPrivate: false,
+      backgroundColor: "white",
+      layoutType: "masonry",
+      borderRadius: 12,
+      imagePadding: 8,
+      albumCoverId: null,
+      seoTags: "portrait photography cape town kirstenbosch natural light",
+      createdAt: new Date()
+    };
+    this.shoots.set(portraitShoot.id, portraitShoot);
+
+    const weddingShoot: Shoot = {
+      id: this.currentShootId++,
+      clientId: testClient2.id,
+      title: "Michael & Emma's Wedding",
+      description: "A romantic wedding celebration at La Paris Estate",
+      shootType: "photography",
+      shootDate: new Date("2024-02-20"),
+      location: "La Paris Estate, Franschhoek",
+      notes: "Full day coverage from prep to reception",
+      customSlug: "michael-emma-wedding", 
+      customTitle: "A Love Story in Franschhoek",
+      isPrivate: false,
+      backgroundColor: "black",
+      layoutType: "square",
+      borderRadius: 6,
+      imagePadding: 4,
+      albumCoverId: null,
+      seoTags: "wedding photography franschhoek la paris estate",
+      createdAt: new Date()
+    };
+    this.shoots.set(weddingShoot.id, weddingShoot);
+
+    const familyShoot: Shoot = {
+      id: this.currentShootId++,
+      clientId: testClient1.id,
+      title: "Johnson Family Photos",
+      description: "Annual family portrait session at the beach",
+      shootType: "photography",
+      shootDate: new Date("2024-03-10"),
+      location: "Camps Bay Beach, Cape Town", 
+      notes: "Beach session during sunset",
+      customSlug: "johnson-family-2024",
+      customTitle: "Family Moments by the Sea",
+      isPrivate: false,
+      backgroundColor: "dark-grey",
+      layoutType: "masonry",
+      borderRadius: 20,
+      imagePadding: 12,
+      albumCoverId: null,
+      seoTags: "family photography camps bay beach sunset cape town",
+      createdAt: new Date()
+    };
+    this.shoots.set(familyShoot.id, familyShoot);
+
+    // Create sample images using Picsum for realistic placeholder images
+    const sampleImages = [
+      // Portrait shoot images
+      { shootId: portraitShoot.id, filename: "sarah-portrait-01.jpg", storagePath: "https://picsum.photos/400/600?random=1", sequence: 0 },
+      { shootId: portraitShoot.id, filename: "sarah-portrait-02.jpg", storagePath: "https://picsum.photos/600/400?random=2", sequence: 1 },
+      { shootId: portraitShoot.id, filename: "sarah-portrait-03.jpg", storagePath: "https://picsum.photos/500/700?random=3", sequence: 2 },
+      { shootId: portraitShoot.id, filename: "sarah-portrait-04.jpg", storagePath: "https://picsum.photos/450/600?random=4", sequence: 3 },
+      
+      // Wedding shoot images
+      { shootId: weddingShoot.id, filename: "wedding-ceremony-01.jpg", storagePath: "https://picsum.photos/800/600?random=5", sequence: 0 },
+      { shootId: weddingShoot.id, filename: "wedding-ceremony-02.jpg", storagePath: "https://picsum.photos/600/800?random=6", sequence: 1 },
+      { shootId: weddingShoot.id, filename: "wedding-reception-01.jpg", storagePath: "https://picsum.photos/700/500?random=7", sequence: 2 },
+      { shootId: weddingShoot.id, filename: "wedding-couples-01.jpg", storagePath: "https://picsum.photos/600/900?random=8", sequence: 3 },
+      { shootId: weddingShoot.id, filename: "wedding-details-01.jpg", storagePath: "https://picsum.photos/500/500?random=9", sequence: 4 },
+      { shootId: weddingShoot.id, filename: "wedding-dance-01.jpg", storagePath: "https://picsum.photos/750/600?random=10", sequence: 5 },
+
+      // Family shoot images  
+      { shootId: familyShoot.id, filename: "family-group-01.jpg", storagePath: "https://picsum.photos/800/550?random=11", sequence: 0 },
+      { shootId: familyShoot.id, filename: "family-candid-01.jpg", storagePath: "https://picsum.photos/600/800?random=12", sequence: 1 },
+      { shootId: familyShoot.id, filename: "family-beach-01.jpg", storagePath: "https://picsum.photos/900/600?random=13", sequence: 2 },
+      { shootId: familyShoot.id, filename: "family-sunset-01.jpg", storagePath: "https://picsum.photos/700/700?random=14", sequence: 3 }
+    ];
+
+    // Add images to storage
+    for (const imgData of sampleImages) {
+      const image: Image = {
+        id: this.currentImageId++,
+        shootId: imgData.shootId,
+        filename: imgData.filename,
+        storagePath: imgData.storagePath,
+        thumbnailPath: imgData.storagePath.replace("?random=", "?thumb&random="),
+        sequence: imgData.sequence,
+        isPrivate: false,
+        downloadCount: Math.floor(Math.random() * 20),
+        createdAt: new Date()
+      };
+      this.images.set(image.id, image);
+    }
+
+    // Set cover images for shoots
+    const portraitImages = Array.from(this.images.values()).filter(img => img.shootId === portraitShoot.id);
+    const weddingImages = Array.from(this.images.values()).filter(img => img.shootId === weddingShoot.id);
+    const familyImages = Array.from(this.images.values()).filter(img => img.shootId === familyShoot.id);
+
+    if (portraitImages[0]) {
+      portraitShoot.albumCoverId = portraitImages[0].id;
+      this.shoots.set(portraitShoot.id, portraitShoot);
+    }
+    if (weddingImages[0]) {
+      weddingShoot.albumCoverId = weddingImages[0].id;
+      this.shoots.set(weddingShoot.id, weddingShoot);
+    }
+    if (familyImages[0]) {
+      familyShoot.albumCoverId = familyImages[0].id;
+      this.shoots.set(familyShoot.id, familyShoot);
+    }
+
+    // Create sample packages with correct price format (string)
+    const packages = [
+      { id: this.currentPackageId++, name: "Essential", description: "Perfect for couples and small gatherings", price: "1500.00", features: ["2 hour session", "50 edited photos", "Online gallery", "Print release"], category: "photography", createdAt: new Date() },
+      { id: this.currentPackageId++, name: "Premium", description: "Comprehensive coverage for your special day", price: "3500.00", features: ["6 hour session", "150 edited photos", "Online gallery", "Print release", "USB drive"], category: "photography", createdAt: new Date() },
+      { id: this.currentPackageId++, name: "Luxury", description: "Full-day premium experience with all extras", price: "5500.00", features: ["8 hour session", "300+ edited photos", "Online gallery", "Print release", "USB drive", "Photo album"], category: "photography", createdAt: new Date() }
+    ];
+
+    packages.forEach(pkg => this.packages.set(pkg.id, pkg));
+
+    console.log("✅ Test data initialized with realistic galleries and customization settings");
+  }
+
+
 
   private seedData() {
     // Create staff users
