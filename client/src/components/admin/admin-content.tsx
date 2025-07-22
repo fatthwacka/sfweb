@@ -26,7 +26,8 @@ import {
   Mail,
   Phone,
   Home,
-  Palette
+  Palette,
+  User
 } from "lucide-react";
 import { GalleryCustomization } from "@/components/gallery/gallery-customization";
 
@@ -613,11 +614,13 @@ export function AdminContent() {
                         <div className="flex justify-between items-start">
                           <div className="space-y-2">
                             <h3 className="text-lg font-semibold text-salmon">{client.name}</h3>
-                            <div className="space-y-1 text-sm text-muted-foreground">
-                              <div className="flex items-center gap-2">
-                                <Mail className="w-4 h-4 icon-cyan" />
-                                {client.email}
-                              </div>
+                                <div className="space-y-1 text-sm text-muted-foreground">
+                              {client.email && (
+                                <div className="flex items-center gap-2">
+                                  <Mail className="w-4 h-4 icon-cyan" />
+                                  {client.email}
+                                </div>
+                              )}
                               {client.phone && (
                                 <div className="flex items-center gap-2">
                                   <Phone className="w-4 h-4 icon-salmon" />
@@ -630,15 +633,115 @@ export function AdminContent() {
                                   {client.address}
                                 </div>
                               )}
+                              <div className="flex items-center gap-2">
+                                <User className="w-4 h-4 icon-salmon" />
+                                Slug: /{client.slug}
+                              </div>
                             </div>
                           </div>
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="outline" className="border-border hover:border-salmon text-white">
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button size="sm" variant="outline" className="border-border hover:border-red-500 text-white">
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                          <div className="space-y-2">
+                            <div className="flex gap-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button size="sm" className="bg-salmon text-white hover:bg-salmon-muted flex-1">
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Add Shoot
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="bg-cyan-dark border border-cyan/30 shadow-lg max-w-2xl max-h-[90vh] overflow-y-auto">
+                                  <DialogHeader>
+                                    <DialogTitle className="text-salmon">Create New Shoot for {client.name}</DialogTitle>
+                                    <DialogDescription className="text-muted-foreground">
+                                      Create a new photography or videography shoot for this client.
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <form onSubmit={(e) => {
+                                    e.preventDefault();
+                                    const formData = new FormData(e.currentTarget);
+                                    const title = formData.get('title') as string;
+                                    const autoSlug = title
+                                      .toLowerCase()
+                                      .replace(/[^a-z0-9\s-]/g, '')
+                                      .replace(/\s+/g, '-')
+                                      .replace(/-+/g, '-')
+                                      .trim();
+                                    
+                                    const data = {
+                                      clientId: client.id,
+                                      title: title,
+                                      description: formData.get('description') as string || '',
+                                      shootType: formData.get('shootType') as string,
+                                      shootDate: formData.get('shootDate') as string,
+                                      location: formData.get('location') as string,
+                                      notes: formData.get('notes') as string || '',
+                                      customSlug: `${autoSlug}-${new Date().getFullYear()}`,
+                                      customTitle: formData.get('customTitle') as string || title,
+                                      seoTags: formData.get('seoTags') as string || '',
+                                      isPrivate: formData.get('isPrivate') === 'on'
+                                    };
+                                    
+                                    createShootMutation.mutate(data);
+                                  }} className="space-y-4">
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                      <div>
+                                        <Label htmlFor={`title-${client.id}`}>Shoot Title *</Label>
+                                        <Input id={`title-${client.id}`} name="title" required placeholder="Portrait Session" />
+                                      </div>
+                                      <div>
+                                        <Label htmlFor={`shootType-${client.id}`}>Shoot Type *</Label>
+                                        <select id={`shootType-${client.id}`} name="shootType" required className="w-full px-3 py-2 bg-background border border-border rounded-md">
+                                          <option value="">Select type...</option>
+                                          <option value="wedding">Wedding</option>
+                                          <option value="portrait">Portrait</option>
+                                          <option value="family">Family</option>
+                                          <option value="corporate">Corporate</option>
+                                          <option value="event">Event</option>
+                                          <option value="maternity">Maternity</option>
+                                          <option value="engagement">Engagement</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <Label htmlFor={`description-${client.id}`}>Description</Label>
+                                      <Textarea id={`description-${client.id}`} name="description" placeholder="Brief description of the shoot..." rows={2} />
+                                    </div>
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                      <div>
+                                        <Label htmlFor={`shootDate-${client.id}`}>Shoot Date *</Label>
+                                        <Input id={`shootDate-${client.id}`} name="shootDate" type="date" required />
+                                      </div>
+                                      <div>
+                                        <Label htmlFor={`location-${client.id}`}>Location *</Label>
+                                        <Input id={`location-${client.id}`} name="location" required placeholder="Cape Town, South Africa" />
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <Label htmlFor={`customTitle-${client.id}`}>Custom Gallery Title</Label>
+                                      <Input id={`customTitle-${client.id}`} name="customTitle" placeholder="Leave blank to use shoot title" />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor={`seoTags-${client.id}`}>SEO Keywords</Label>
+                                      <Input id={`seoTags-${client.id}`} name="seoTags" placeholder="portrait photography cape town" />
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <input type="checkbox" id={`isPrivate-${client.id}`} name="isPrivate" />
+                                      <Label htmlFor={`isPrivate-${client.id}`}>Private Gallery (requires login to view)</Label>
+                                    </div>
+                                    <Button type="submit" disabled={createShootMutation.isPending} className="w-full bg-salmon text-white hover:bg-salmon-muted">
+                                      {createShootMutation.isPending ? 'Creating...' : 'Create Shoot'}
+                                    </Button>
+                                  </form>
+                                </DialogContent>
+                              </Dialog>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline" className="border-border hover:border-salmon text-white">
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button size="sm" variant="outline" className="border-border hover:border-red-500 text-white">
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </CardContent>

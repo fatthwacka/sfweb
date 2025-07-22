@@ -102,6 +102,7 @@ export const insertUserSchema = createInsertSchema(users).omit({
 export const insertClientSchema = createInsertSchema(clients).omit({
   id: true,
   createdAt: true,
+  slug: true,
 });
 
 export const insertShootSchema = createInsertSchema(shoots).omit({

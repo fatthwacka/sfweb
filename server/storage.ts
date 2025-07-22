@@ -92,6 +92,9 @@ export class MemStorage implements IStorage {
       email: "admin@slyfoxstudios.co.za",
       password: "hashedpassword123", // In real app this would be hashed
       role: "staff",
+      profileImage: null,
+      bannerImage: null,
+      themePreference: "dark",
       createdAt: new Date()
     };
     this.users.set(staffUser.id, staffUser);
@@ -100,7 +103,10 @@ export class MemStorage implements IStorage {
       id: this.currentUserId++,
       email: "client@example.com",
       password: "hashedpassword123",
-      role: "client", 
+      role: "client",
+      profileImage: null,
+      bannerImage: null,
+      themePreference: "dark",
       createdAt: new Date()
     };
     this.users.set(clientUser.id, clientUser);
@@ -148,6 +154,7 @@ export class MemStorage implements IStorage {
       borderRadius: 12,
       imagePadding: 8,
       albumCoverId: null,
+      viewCount: 0,
       seoTags: "portrait photography cape town kirstenbosch natural light",
       createdAt: new Date()
     };
@@ -170,6 +177,7 @@ export class MemStorage implements IStorage {
       borderRadius: 6,
       imagePadding: 4,
       albumCoverId: null,
+      viewCount: 0,
       seoTags: "wedding photography franschhoek la paris estate",
       createdAt: new Date()
     };
@@ -192,32 +200,33 @@ export class MemStorage implements IStorage {
       borderRadius: 20,
       imagePadding: 12,
       albumCoverId: null,
+      viewCount: 0,
       seoTags: "family photography camps bay beach sunset cape town",
       createdAt: new Date()
     };
     this.shoots.set(familyShoot.id, familyShoot);
 
-    // Create sample images using Picsum for realistic placeholder images
+    // Create sample images using Unsplash for realistic photography
     const sampleImages = [
       // Portrait shoot images
-      { shootId: portraitShoot.id, filename: "sarah-portrait-01.jpg", storagePath: "https://picsum.photos/400/600?random=1", sequence: 0 },
-      { shootId: portraitShoot.id, filename: "sarah-portrait-02.jpg", storagePath: "https://picsum.photos/600/400?random=2", sequence: 1 },
-      { shootId: portraitShoot.id, filename: "sarah-portrait-03.jpg", storagePath: "https://picsum.photos/500/700?random=3", sequence: 2 },
-      { shootId: portraitShoot.id, filename: "sarah-portrait-04.jpg", storagePath: "https://picsum.photos/450/600?random=4", sequence: 3 },
+      { shootId: portraitShoot.id, filename: "sarah-portrait-01.jpg", storagePath: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=600&fit=crop&crop=face", sequence: 0 },
+      { shootId: portraitShoot.id, filename: "sarah-portrait-02.jpg", storagePath: "https://images.unsplash.com/photo-1506863530036-1efeddceb993?w=600&h=400&fit=crop&crop=face", sequence: 1 },
+      { shootId: portraitShoot.id, filename: "sarah-portrait-03.jpg", storagePath: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=500&h=700&fit=crop&crop=face", sequence: 2 },
+      { shootId: portraitShoot.id, filename: "sarah-portrait-04.jpg", storagePath: "https://images.unsplash.com/photo-1494790108755-2616b612b8aa?w=450&h=600&fit=crop&crop=face", sequence: 3 },
       
       // Wedding shoot images
-      { shootId: weddingShoot.id, filename: "wedding-ceremony-01.jpg", storagePath: "https://picsum.photos/800/600?random=5", sequence: 0 },
-      { shootId: weddingShoot.id, filename: "wedding-ceremony-02.jpg", storagePath: "https://picsum.photos/600/800?random=6", sequence: 1 },
-      { shootId: weddingShoot.id, filename: "wedding-reception-01.jpg", storagePath: "https://picsum.photos/700/500?random=7", sequence: 2 },
-      { shootId: weddingShoot.id, filename: "wedding-couples-01.jpg", storagePath: "https://picsum.photos/600/900?random=8", sequence: 3 },
-      { shootId: weddingShoot.id, filename: "wedding-details-01.jpg", storagePath: "https://picsum.photos/500/500?random=9", sequence: 4 },
-      { shootId: weddingShoot.id, filename: "wedding-dance-01.jpg", storagePath: "https://picsum.photos/750/600?random=10", sequence: 5 },
+      { shootId: weddingShoot.id, filename: "wedding-ceremony-01.jpg", storagePath: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop", sequence: 0 },
+      { shootId: weddingShoot.id, filename: "wedding-ceremony-02.jpg", storagePath: "https://images.unsplash.com/photo-1606800052052-a08af7148866?w=600&h=800&fit=crop", sequence: 1 },
+      { shootId: weddingShoot.id, filename: "wedding-reception-01.jpg", storagePath: "https://images.unsplash.com/photo-1545291730-faff8ca1d4b0?w=700&h=500&fit=crop", sequence: 2 },
+      { shootId: weddingShoot.id, filename: "wedding-couples-01.jpg", storagePath: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&h=900&fit=crop", sequence: 3 },
+      { shootId: weddingShoot.id, filename: "wedding-details-01.jpg", storagePath: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=500&h=500&fit=crop", sequence: 4 },
+      { shootId: weddingShoot.id, filename: "wedding-dance-01.jpg", storagePath: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=750&h=600&fit=crop", sequence: 5 },
 
       // Family shoot images  
-      { shootId: familyShoot.id, filename: "family-group-01.jpg", storagePath: "https://picsum.photos/800/550?random=11", sequence: 0 },
-      { shootId: familyShoot.id, filename: "family-candid-01.jpg", storagePath: "https://picsum.photos/600/800?random=12", sequence: 1 },
-      { shootId: familyShoot.id, filename: "family-beach-01.jpg", storagePath: "https://picsum.photos/900/600?random=13", sequence: 2 },
-      { shootId: familyShoot.id, filename: "family-sunset-01.jpg", storagePath: "https://picsum.photos/700/700?random=14", sequence: 3 }
+      { shootId: familyShoot.id, filename: "family-group-01.jpg", storagePath: "https://images.unsplash.com/photo-1511895426328-dc8714efa2d8?w=800&h=550&fit=crop", sequence: 0 },
+      { shootId: familyShoot.id, filename: "family-candid-01.jpg", storagePath: "https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=600&h=800&fit=crop", sequence: 1 },
+      { shootId: familyShoot.id, filename: "family-beach-01.jpg", storagePath: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=900&h=600&fit=crop", sequence: 2 },
+      { shootId: familyShoot.id, filename: "family-sunset-01.jpg", storagePath: "https://images.unsplash.com/photo-1609220136736-443140cffec6?w=700&h=700&fit=crop", sequence: 3 }
     ];
 
     // Add images to storage
@@ -227,7 +236,7 @@ export class MemStorage implements IStorage {
         shootId: imgData.shootId,
         filename: imgData.filename,
         storagePath: imgData.storagePath,
-        thumbnailPath: imgData.storagePath.replace("?random=", "?thumb&random="),
+        thumbnailPath: imgData.storagePath + "&thumb=true",
         sequence: imgData.sequence,
         isPrivate: false,
         downloadCount: Math.floor(Math.random() * 20),
@@ -343,6 +352,9 @@ export class MemStorage implements IStorage {
     const user: User = {
       ...insertUser,
       id: this.currentUserId++,
+      profileImage: insertUser.profileImage || null,
+      bannerImage: insertUser.bannerImage || null,
+      themePreference: insertUser.themePreference || null,
       createdAt: new Date(),
       role: insertUser.role || 'client'
     };
@@ -373,11 +385,20 @@ export class MemStorage implements IStorage {
   }
 
   async createClient(insertClient: InsertClient): Promise<Client> {
+    const slug = insertClient.name.toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+
     const client: Client = {
       ...insertClient,
       id: this.currentClientId++,
-      createdAt: new Date(),
-      address: insertClient.address || null
+      slug,
+      email: insertClient.email || null,
+      phone: insertClient.phone || null,
+      address: insertClient.address || null,
+      userId: insertClient.userId || null,
+      createdAt: new Date()
     };
     this.clients.set(client.id, client);
     return client;
@@ -413,8 +434,19 @@ export class MemStorage implements IStorage {
     const shoot: Shoot = {
       ...insertShoot,
       id: this.currentShootId++,
-      createdAt: new Date(),
-      viewCount: insertShoot.viewCount || 0
+      description: insertShoot.description || null,
+      shootDate: insertShoot.shootDate || null,
+      location: insertShoot.location || null,
+      notes: insertShoot.notes || null,
+      customTitle: insertShoot.customTitle || null,
+      albumCoverId: insertShoot.albumCoverId || null,
+      seoTags: insertShoot.seoTags || null,
+      backgroundColor: insertShoot.backgroundColor || "white",
+      layoutType: insertShoot.layoutType || "masonry",
+      borderRadius: insertShoot.borderRadius || 8,
+      imagePadding: insertShoot.imagePadding || 4,
+      viewCount: 0,
+      createdAt: new Date()
     };
     this.shoots.set(shoot.id, shoot);
     return shoot;
@@ -457,8 +489,11 @@ export class MemStorage implements IStorage {
     const image: Image = {
       ...insertImage,
       id: this.currentImageId++,
-      createdAt: new Date(),
-      downloadCount: insertImage.downloadCount || 0
+      thumbnailPath: insertImage.thumbnailPath || null,
+      isPrivate: insertImage.isPrivate || false,
+      sequence: insertImage.sequence || 0,
+      downloadCount: 0,
+      createdAt: new Date()
     };
     this.images.set(image.id, image);
     return image;
@@ -508,8 +543,9 @@ export class MemStorage implements IStorage {
     const analytics: Analytics = {
       ...insertAnalytics,
       id: this.currentAnalyticsId++,
-      timestamp: new Date(),
-      shootId: insertAnalytics.shootId || null
+      userId: insertAnalytics.userId || null,
+      shootId: insertAnalytics.shootId || null,
+      timestamp: new Date()
     };
     this.analytics.set(analytics.id, analytics);
     return analytics;
@@ -549,8 +585,11 @@ export class MemStorage implements IStorage {
     const booking: Booking = {
       ...insertBooking,
       id: this.currentBookingId++,
-      createdAt: new Date(),
-      status: insertBooking.status || 'pending'
+      clientId: insertBooking.clientId || null,
+      packageId: insertBooking.packageId || null,
+      inquiryData: insertBooking.inquiryData || null,
+      status: insertBooking.status || 'pending',
+      createdAt: new Date()
     };
     this.bookings.set(booking.id, booking);
     return booking;
