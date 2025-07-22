@@ -25,135 +25,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email and password required" });
       }
 
-      // Try Supabase authentication first
-      try {
-        const supabase = createClient(
-          process.env.VITE_SUPABASE_URL!,
-          process.env.VITE_SUPABASE_ANON_KEY!
-        );
+      // Supabase authentication
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL!,
+        process.env.VITE_SUPABASE_ANON_KEY!
+      );
 
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
-        if (data.user && !error) {
-          // Get user profile from our profiles table
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('id, email, full_name, role')
-            .eq('id', data.user.id)
-            .single();
-
-          const user = {
-            id: data.user.id,
-            email: data.user.email!,
-            role: profile?.role || 'client',
-            fullName: profile?.full_name
-          };
-          
-          return res.json({ user });
-        }
-      } catch (supabaseError) {
-        console.log('Supabase auth failed, trying legacy system...');
+      if (error || !data.user) {
+        return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      // Fallback to legacy users table (for backwards compatibility)
-      const legacyUser = await storage.getUserByEmail(email);
-      if (legacyUser && legacyUser.password === password) {
-        // Return legacy user data in expected format
-        const responseUser = {
-          id: legacyUser.id,
-          email: legacyUser.email,
-          role: legacyUser.role
-        };
-        return res.json({ user: responseUser });
-      }
+      // Get user profile from our profiles table
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id, email, full_name, role')
+        .eq('id', data.user.id)
+        .single();
 
-      return res.status(401).json({ message: "Invalid credentials" });
+      const user = {
+        id: data.user.id,
+        email: data.user.email!,
+        role: profile?.role || 'client',
+        fullName: profile?.full_name
+      };
+      
+      return res.json({ user });
     } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
 
-  // User management endpoints (super_admin only)
-  app.get("/api/users", async (req, res) => {
+  // Profile management endpoints (using Supabase auth)
+  app.get("/api/profiles", async (req, res) => {
     try {
-      const users = await storage.getAllUsers();
-      // Don't send passwords in response
-      const safeUsers = users.map(user => ({
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        profileImage: user.profileImage,
-        bannerImage: user.bannerImage,
-        themePreference: user.themePreference,
-        createdAt: user.createdAt
-      }));
-      res.json(safeUsers);
+      const profiles = await storage.getAllProfiles();
+      res.json(profiles);
     } catch (error) {
-      console.error("Get users error:", error);
-      res.status(500).json({ message: "Failed to fetch users" });
-    }
-  });
-
-  app.post("/api/users", async (req, res) => {
-    try {
-      const validatedData = insertUserSchema.parse(req.body);
-      const user = await storage.createUser(validatedData);
-      // Don't send password in response
-      const safeUser = {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        profileImage: user.profileImage,
-        bannerImage: user.bannerImage,
-        themePreference: user.themePreference,
-        createdAt: user.createdAt
-      };
-      res.json(safeUser);
-    } catch (error) {
-      console.error("Create user error:", error);
-      res.status(500).json({ message: "Failed to create user" });
-    }
-  });
-
-  app.patch("/api/users/:id", async (req, res) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const user = await storage.updateUser(userId, req.body);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      // Don't send password in response
-      const safeUser = {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        profileImage: user.profileImage,
-        bannerImage: user.bannerImage,
-        themePreference: user.themePreference,
-        createdAt: user.createdAt
-      };
-      res.json(safeUser);
-    } catch (error) {
-      console.error("Update user error:", error);
-      res.status(500).json({ message: "Failed to update user" });
-    }
-  });
-
-  app.delete("/api/users/:id", async (req, res) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const success = await storage.deleteUser(userId);
-      if (!success) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      res.json({ message: "User deleted successfully" });
-    } catch (error) {
-      console.error("Delete user error:", error);
-      res.status(500).json({ message: "Failed to delete user" });
+      console.error("Get profiles error:", error);
+      res.status(500).json({ message: "Failed to fetch profiles" });
     }
   });
 

@@ -21,13 +21,7 @@ export interface IStorage {
   updateProfile(id: string, updates: Partial<InsertProfile>): Promise<Profile | undefined>;
   deleteProfile(id: string): Promise<boolean>;
   
-  // Legacy Users (for backwards compatibility)
-  getUser(id: number): Promise<User | undefined>;
-  getUserByEmail(email: string): Promise<User | undefined>;
-  getAllUsers(): Promise<User[]>;
-  createUser(user: InsertUser): Promise<User>;
-  updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined>;
-  deleteUser(id: number): Promise<boolean>;
+  // Legacy Users (removed - using Supabase auth only)
   
   // Clients (integers)
   getClient(id: number): Promise<Client | undefined>;
