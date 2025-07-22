@@ -111,6 +111,19 @@ export class MemStorage implements IStorage {
     };
     this.users.set(clientUser.id, clientUser);
 
+    // Create demo client record
+    const demoClient: Client = {
+      id: this.currentClientId++,
+      name: "Demo Client",
+      email: "demo@slyfox.co.za",
+      phone: "+27 82 555 0123",
+      address: "123 Demo Street, Cape Town, 8001",
+      slug: "demo-client",
+      userId: clientUser.id,
+      createdAt: new Date()
+    };
+    this.clients.set(demoClient.id, demoClient);
+
     // Create test clients
     const testClient1: Client = {
       id: this.currentClientId++,
@@ -131,10 +144,34 @@ export class MemStorage implements IStorage {
       phone: "+27 82 987 6543",
       address: "456 Oak Avenue, Stellenbosch, 7600",
       slug: "michael-smith",
-      userId: clientUser.id,
+      userId: null, // No associated user account
       createdAt: new Date()
     };
     this.clients.set(testClient2.id, testClient2);
+
+    // Create demo client shoot
+    const demoShoot: Shoot = {
+      id: this.currentShootId++,
+      clientId: demoClient.id,
+      title: "Demo Portfolio Session",
+      description: "A sample gallery showcasing SlyFox Studios' photography work",
+      shootType: "photography",
+      shootDate: new Date("2024-01-20"),
+      location: "V&A Waterfront, Cape Town",
+      notes: "Demo shoot for client gallery testing",
+      customSlug: "demo-portfolio-2024",
+      customTitle: "SlyFox Demo Gallery",
+      isPrivate: false,
+      backgroundColor: "white",
+      layoutType: "masonry",
+      borderRadius: 12,
+      imagePadding: 8,
+      albumCoverId: null,
+      viewCount: 0,
+      seoTags: "demo portfolio photography cape town slyfox studios",
+      createdAt: new Date()
+    };
+    this.shoots.set(demoShoot.id, demoShoot);
 
     // Create test shoots with different customization settings
     const portraitShoot: Shoot = {

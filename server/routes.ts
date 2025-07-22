@@ -124,7 +124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const packages = await storage.getPackages();
       console.log(`Found ${packages.length} total packages`);
       res.json(packages);
-    } catch (error) {
+    } catch (error: any) {
       console.error("All packages fetch error:", error);
       res.status(500).json({ message: "Failed to fetch packages", error: error.message });
     }
@@ -137,7 +137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const packages = await storage.getPackagesByCategory(category);
       console.log(`Found ${packages.length} packages`);
       res.json(packages);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Package fetch error:", error);
       res.status(500).json({ message: "Failed to fetch packages", error: error.message });
     }
