@@ -33,7 +33,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async createProfile(insertProfile: InsertProfile): Promise<Profile> {
-    const result = await db.insert(profiles).values(insertProfile).returning();
+    const result = await db.insert(profiles).values([insertProfile]).returning();
     return result[0];
   }
 
@@ -101,10 +101,10 @@ export class SupabaseStorage implements IStorage {
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '');
     
-    const result = await db.insert(clients).values({
+    const result = await db.insert(clients).values([{
       ...insertClient,
       slug
-    }).returning();
+    }]).returning();
     return result[0];
   }
 
@@ -133,7 +133,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async createShoot(insertShoot: InsertShoot): Promise<Shoot> {
-    const result = await db.insert(shoots).values(insertShoot).returning();
+    const result = await db.insert(shoots).values([insertShoot]).returning();
     return result[0];
   }
 
