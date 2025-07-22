@@ -716,6 +716,5 @@ import { PostgreSQLStorage } from "./pg-storage";
 // Import Supabase storage
 import { SupabaseStorage } from "./supabase-storage";
 
-// Switch back to memory storage due to UUID/integer schema mismatch
-// Need to fix schema compatibility before using Supabase
-export const storage = new MemStorage();
+// Now that we understand the schema, let's switch to Supabase storage
+export const storage = new SupabaseStorage();
