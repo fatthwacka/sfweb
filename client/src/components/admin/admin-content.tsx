@@ -84,6 +84,8 @@ export function AdminContent({ userRole }: AdminContentProps) {
   const [selectedClient, setSelectedClient] = useState<number | null>(null);
   const [selectedShoot, setSelectedShoot] = useState<number | null>(null);
   const [editingShoot, setEditingShoot] = useState<Shoot | null>(null);
+  const [newUserOpen, setNewUserOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
 
   // Fetch data
   const { data: clients = [], isLoading: clientsLoading } = useQuery<Client[]>({
@@ -92,6 +94,11 @@ export function AdminContent({ userRole }: AdminContentProps) {
 
   const { data: shoots = [], isLoading: shootsLoading } = useQuery<Shoot[]>({
     queryKey: ["/api/shoots"]
+  });
+
+  const { data: users = [], isLoading: usersLoading } = useQuery<any[]>({
+    queryKey: ["/api/users"],
+    enabled: userRole === 'super_admin'
   });
 
   // Mutations
@@ -230,6 +237,95 @@ export function AdminContent({ userRole }: AdminContentProps) {
     };
     
     updateShootMutation.mutate(data);
+  };
+
+  // User management mutations (super_admin only)
+  const createUserMutation = useMutation({
+    mutationFn: (data: any) => apiRequest("POST", "/api/users", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      setNewUserOpen(false);
+      toast({
+        title: "Success",
+        description: "User created successfully"
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create user",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const updateUserMutation = useMutation({
+    mutationFn: (data: any) => apiRequest("PATCH", `/api/users/${data.id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      setEditingUser(null);
+      toast({
+        title: "Success",
+        description: "User updated successfully"
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update user",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: (userId: number) => apiRequest("DELETE", `/api/users/${userId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      toast({
+        title: "Success",
+        description: "User deleted successfully"
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete user",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const handleCreateUser = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    
+    const data = {
+      email: formData.get('email') as string,
+      password: formData.get('password') as string,
+      role: formData.get('role') as string,
+      profileImage: null,
+      bannerImage: null,
+      themePreference: "dark"
+    };
+    
+    createUserMutation.mutate(data);
+  };
+
+  const handleUpdateUser = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!editingUser) return;
+    
+    const formData = new FormData(event.currentTarget);
+    
+    const data = {
+      id: editingUser.id,
+      email: formData.get('email') as string,
+      role: formData.get('role') as string,
+      ...(formData.get('password') && { password: formData.get('password') as string })
+    };
+    
+    updateUserMutation.mutate(data);
   };
 
   const filteredClients = clients.filter(client =>
@@ -457,7 +553,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                 <Input 
                                   id="location" 
                                   name="location" 
-                                  placeholder="e.g., Cape Town Waterfront"
+                                  placeholder="Durban, KZN"
                                   required 
                                 />
                               </div>
@@ -496,10 +592,10 @@ export function AdminContent({ userRole }: AdminContentProps) {
                               <Input 
                                 id="seoTags" 
                                 name="seoTags" 
-                                placeholder="wedding photography, cape town, romantic, outdoor"
+                                placeholder="photography durban, professional photographer, wedding photography"
                               />
                               <p className="text-xs text-muted-foreground mt-1">
-                                Comma-separated tags for SEO optimization
+                                Auto-generated based on shoot type and location, edit as needed
                               </p>
                             </div>
                           </div>
@@ -717,7 +813,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                       </div>
                                       <div>
                                         <Label htmlFor={`location-${client.id}`}>Location *</Label>
-                                        <Input id={`location-${client.id}`} name="location" required placeholder="Cape Town, South Africa" />
+                                        <Input id={`location-${client.id}`} name="location" required placeholder="Durban, KZN" />
                                       </div>
                                     </div>
                                     <div>
@@ -726,7 +822,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                     </div>
                                     <div>
                                       <Label htmlFor={`seoTags-${client.id}`}>SEO Keywords</Label>
-                                      <Input id={`seoTags-${client.id}`} name="seoTags" placeholder="portrait photography cape town" />
+                                      <Input id={`seoTags-${client.id}`} name="seoTags" placeholder="photography durban, professional photographer, portrait photography" />
                                     </div>
                                     <div className="flex items-center gap-2">
                                       <input type="checkbox" id={`isPrivate-${client.id}`} name="isPrivate" />
@@ -993,6 +1089,147 @@ export function AdminContent({ userRole }: AdminContentProps) {
                   </CardContent>
                 </Card>
               )}
+            </div>
+          )}
+
+          {activeTab === 'users' && userRole === 'super_admin' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-saira font-bold text-salmon">User Management</h2>
+                <Dialog open={newUserOpen} onOpenChange={setNewUserOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-salmon text-white hover:bg-salmon-muted">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add User
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-cyan-dark border border-cyan/30 shadow-lg max-w-md">
+                    <DialogHeader>
+                      <DialogTitle className="text-salmon">Add New User</DialogTitle>
+                      <DialogDescription className="text-muted-foreground">
+                        Create a new user account with role-based access.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleCreateUser} className="space-y-4">
+                      <div>
+                        <Label htmlFor="userEmail">Email *</Label>
+                        <Input id="userEmail" name="email" type="email" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="userPassword">Password *</Label>
+                        <Input id="userPassword" name="password" type="password" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="userRole">Role *</Label>
+                        <Select name="role" required>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="client">Client</SelectItem>
+                            <SelectItem value="staff">Staff</SelectItem>
+                            <SelectItem value="super_admin">Super Admin</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button type="submit" disabled={createUserMutation.isPending} className="w-full bg-salmon text-white hover:bg-salmon-muted">
+                        {createUserMutation.isPending ? 'Creating...' : 'Create User'}
+                      </Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <div className="grid gap-4">
+                {usersLoading ? (
+                  <div className="text-center py-8">Loading users...</div>
+                ) : users.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No users found.
+                  </div>
+                ) : (
+                  users.map(user => (
+                    <Card key={user.id} className="bg-salmon-dark border border-salmon/30 shadow-lg">
+                      <CardContent className="p-6">
+                        <div className="flex justify-between items-start">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-3">
+                              <h3 className="text-lg font-semibold text-salmon">{user.email}</h3>
+                              <Badge variant={user.role === 'super_admin' ? 'destructive' : user.role === 'staff' ? 'default' : 'secondary'}>
+                                {user.role === 'super_admin' ? 'Super Admin' : 
+                                 user.role === 'staff' ? 'Staff' : 'Client'}
+                              </Badge>
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              Created: {new Date(user.createdAt).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="border-border hover:border-salmon text-white"
+                                  onClick={() => setEditingUser(user)}
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="bg-cyan-dark border border-cyan/30 shadow-lg max-w-md">
+                                <DialogHeader>
+                                  <DialogTitle className="text-salmon">Edit User: {user.email}</DialogTitle>
+                                  <DialogDescription className="text-muted-foreground">
+                                    Update user information and permissions.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <form onSubmit={handleUpdateUser} className="space-y-4">
+                                  <div>
+                                    <Label htmlFor="editUserEmail">Email *</Label>
+                                    <Input id="editUserEmail" name="email" type="email" defaultValue={user.email} required />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="editUserPassword">New Password (leave blank to keep current)</Label>
+                                    <Input id="editUserPassword" name="password" type="password" />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="editUserRole">Role *</Label>
+                                    <Select name="role" defaultValue={user.role} required>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select role" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="client">Client</SelectItem>
+                                        <SelectItem value="staff">Staff</SelectItem>
+                                        <SelectItem value="super_admin">Super Admin</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <Button type="submit" disabled={updateUserMutation.isPending} className="w-full bg-salmon text-white hover:bg-salmon-muted">
+                                    {updateUserMutation.isPending ? 'Updating...' : 'Update User'}
+                                  </Button>
+                                </form>
+                              </DialogContent>
+                            </Dialog>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="border-border hover:border-red-500 text-white"
+                              onClick={() => {
+                                if (confirm(`Are you sure you want to delete user ${user.email}?`)) {
+                                  deleteUserMutation.mutate(user.id);
+                                }
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </div>
             </div>
           )}
         </div>

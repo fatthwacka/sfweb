@@ -45,6 +45,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User management endpoints (super_admin only)
+  app.get("/api/users", async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      // Don't send passwords in response
+      const safeUsers = users.map(user => ({
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        profileImage: user.profileImage,
+        bannerImage: user.bannerImage,
+        themePreference: user.themePreference,
+        createdAt: user.createdAt
+      }));
+      res.json(safeUsers);
+    } catch (error) {
+      console.error("Get users error:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.post("/api/users", async (req, res) => {
+    try {
+      const validatedData = insertUserSchema.parse(req.body);
+      const user = await storage.createUser(validatedData);
+      // Don't send password in response
+      const safeUser = {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        profileImage: user.profileImage,
+        bannerImage: user.bannerImage,
+        themePreference: user.themePreference,
+        createdAt: user.createdAt
+      };
+      res.json(safeUser);
+    } catch (error) {
+      console.error("Create user error:", error);
+      res.status(500).json({ message: "Failed to create user" });
+    }
+  });
+
+  app.patch("/api/users/:id", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const user = await storage.updateUser(userId, req.body);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      // Don't send password in response
+      const safeUser = {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        profileImage: user.profileImage,
+        bannerImage: user.bannerImage,
+        themePreference: user.themePreference,
+        createdAt: user.createdAt
+      };
+      res.json(safeUser);
+    } catch (error) {
+      console.error("Update user error:", error);
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
+  app.delete("/api/users/:id", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const success = await storage.deleteUser(userId);
+      if (!success) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      console.error("Delete user error:", error);
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
   app.post("/api/auth/register", async (req, res) => {
     try {
       const { email, password } = req.body;

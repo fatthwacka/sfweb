@@ -15,8 +15,10 @@ export interface IStorage {
   // Users
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined>;
+  deleteUser(id: number): Promise<boolean>;
   
   // Clients
   getClient(id: number): Promise<Client | undefined>;
@@ -129,7 +131,7 @@ export class MemStorage implements IStorage {
     const clientUser: User = {
       id: this.currentUserId++,
       email: "demo@slyfox.co.za",
-      password: "client123",
+      password: "slyfox2025",
       role: "client",
       profileImage: null,
       bannerImage: null,
@@ -426,6 +428,10 @@ export class MemStorage implements IStorage {
     return user;
   }
 
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+
   async updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined> {
     const user = this.users.get(id);
     if (!user) return undefined;
@@ -433,6 +439,10 @@ export class MemStorage implements IStorage {
     const updatedUser = { ...user, ...updates };
     this.users.set(id, updatedUser);
     return updatedUser;
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    return this.users.delete(id);
   }
 
   // Client methods
