@@ -4,8 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   ArrowUp,
   ArrowDown,
@@ -15,16 +17,17 @@ import {
   Download,
   Image as ImageIcon,
   Link as LinkIcon,
-  Crown
+  Crown,
+  Palette
 } from "lucide-react";
 
 interface GalleryImage {
   id: number;
   shootId: number;
   filename: string;
-  storagePath: string;
+  imagePath: string;
   thumbnailPath: string | null;
-  sequence: number;
+  sequenceOrder: number;
   downloadCount: number;
   createdAt: string;
 }
@@ -35,22 +38,49 @@ interface GalleryEditorProps {
 
 export function GalleryEditor({ shootId }: GalleryEditorProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [editMode, setEditMode] = useState(false);
   const [customTitle, setCustomTitle] = useState('');
   const [customSlug, setCustomSlug] = useState('');
-  const [selectedCover, setSelectedCover] = useState<number | null>(null);
+  const [backgroundColor, setBackgroundColor] = useState('white');
   
-  // Demo data - would be replaced with actual API calls
-  const demoImages: GalleryImage[] = [
-    { id: 1, shootId, filename: "wedding-1.jpg", storagePath: "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 1, downloadCount: 5, createdAt: new Date().toISOString() },
-    { id: 2, shootId, filename: "wedding-2.jpg", storagePath: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 2, downloadCount: 3, createdAt: new Date().toISOString() },
-    { id: 3, shootId, filename: "wedding-3.jpg", storagePath: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 3, downloadCount: 8, createdAt: new Date().toISOString() },
-    { id: 4, shootId, filename: "wedding-4.jpg", storagePath: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 4, downloadCount: 2, createdAt: new Date().toISOString() },
-    { id: 5, shootId, filename: "wedding-5.jpg", storagePath: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 5, downloadCount: 6, createdAt: new Date().toISOString() },
-    { id: 6, shootId, filename: "wedding-6.jpg", storagePath: "https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 6, downloadCount: 4, createdAt: new Date().toISOString() },
-  ];
+  // Fetch shoot data
+  const { data: shoot } = useQuery({
+    queryKey: ['/api/shoots', shootId],
+    queryFn: async () => {
+      const response = await fetch(`/api/shoots/${shootId}`);
+      if (!response.ok) throw new Error('Failed to fetch shoot');
+      return response.json();
+    }
+  });
 
-  const [images, setImages] = useState(demoImages);
+  // Fetch images for this shoot
+  const { data: images = [], isLoading } = useQuery({
+    queryKey: ['/api/images', shootId],
+    queryFn: async () => {
+      const response = await fetch(`/api/images?shootId=${shootId}`);
+      if (!response.ok) throw new Error('Failed to fetch images');
+      return response.json();
+    }
+  });
+
+  // Update shoot customization
+  const updateShootMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await fetch(`/api/shoots/${shootId}/customization`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Failed to update shoot');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
+      toast({ title: "Gallery settings updated successfully!" });
+      setEditMode(false);
+    }
+  });
   
   const moveImage = (imageId: number, direction: 'up' | 'down') => {
     const currentIndex = images.findIndex(img => img.id === imageId);
@@ -72,14 +102,18 @@ export function GalleryEditor({ shootId }: GalleryEditorProps) {
   };
 
   const setAlbumCover = (imageId: number) => {
-    setSelectedCover(imageId);
-    toast({ title: "Album cover updated" });
+    updateShootMutation.mutate({
+      albumCoverId: imageId,
+      backgroundColor: backgroundColor,
+    });
   };
 
   const updateGallerySettings = () => {
-    // Would make API call here
-    setEditMode(false);
-    toast({ title: "Gallery settings updated successfully!" });
+    updateShootMutation.mutate({
+      customTitle: customTitle || null,
+      customSlug: customSlug || null,
+      backgroundColor: backgroundColor,
+    });
   };
 
   return (

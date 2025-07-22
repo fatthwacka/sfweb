@@ -16,6 +16,7 @@ export function AuthButton() {
   const [, setLocation] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -137,12 +138,19 @@ export function AuthButton() {
           </div>
           <Button 
             type="submit" 
-            className={`w-full ${isSignUp ? "btn-cyan" : "btn-salmon"}`}
+            className={`w-full ${isSignUp ? "bg-cyan text-white hover:bg-cyan-muted" : "bg-salmon text-white hover:bg-salmon-muted"}`}
             disabled={loading}
           >
             {loading ? "Loading..." : (isSignUp ? "Create Account" : "Sign In")}
           </Button>
-          <div className="text-center">
+          <div className="text-center space-y-2">
+            <button
+              type="button"
+              onClick={() => setShowForgotPassword(!showForgotPassword)}
+              className="text-sm text-cyan hover:text-salmon transition-colors duration-300 block w-full"
+            >
+              Forgot your password?
+            </button>
             <button
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
@@ -152,6 +160,28 @@ export function AuthButton() {
             </button>
           </div>
         </form>
+        
+        {showForgotPassword && (
+          <div className="mt-4 p-4 bg-cyan-dark/20 border border-cyan/30 rounded-lg">
+            <h3 className="text-sm font-semibold text-salmon mb-2">Reset Password</h3>
+            <p className="text-xs text-muted-foreground mb-3">
+              Contact our support team to reset your password. Please include your email address and we'll help you regain access.
+            </p>
+            <div className="space-y-2 text-xs">
+              <p><strong className="text-salmon">Email:</strong> support@slyfoxstudios.co.za</p>
+              <p><strong className="text-salmon">Phone:</strong> +27 31 123 4567</p>
+              <p><strong className="text-salmon">WhatsApp:</strong> +27 82 987 6543</p>
+            </div>
+            <Button 
+              onClick={() => setShowForgotPassword(false)}
+              variant="outline"
+              size="sm"
+              className="mt-3 w-full border-border hover:border-salmon text-white"
+            >
+              Got it, thanks
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
