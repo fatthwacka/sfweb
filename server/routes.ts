@@ -5,6 +5,7 @@ import { seedCompleteDatabase } from './seed-database.js';
 import { createSupabaseUser, type CreateUserData } from './supabase-auth.js';
 import { populateWithExistingAuth } from './populate-with-existing-auth.js';
 import { initializeAdmin } from './init-admin.js';
+import { createClient } from '@supabase/supabase-js';
 import { 
   insertUserSchema, insertClientSchema, insertShootSchema, 
   insertImageSchema, insertBookingSchema, insertAnalyticsSchema,
@@ -24,7 +25,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email and password required" });
       }
 
-      // First try legacy users table (for backwards compatibility)
+      // Try Supabase authentication first
+      try {
+        const supabase = createClient(
+          process.env.VITE_SUPABASE_URL!,
+          process.env.VITE_SUPABASE_ANON_KEY!
+        );
+
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        if (data.user && !error) {
+          // Get user profile from our profiles table
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id, email, full_name, role')
+            .eq('id', data.user.id)
+            .single();
+
+          const user = {
+            id: data.user.id,
+            email: data.user.email!,
+            role: profile?.role || 'client',
+            fullName: profile?.full_name
+          };
+          
+          return res.json({ user });
+        }
+      } catch (supabaseError) {
+        console.log('Supabase auth failed, trying legacy system...');
+      }
+
+      // Fallback to legacy users table (for backwards compatibility)
       const legacyUser = await storage.getUserByEmail(email);
       if (legacyUser && legacyUser.password === password) {
         // Return legacy user data in expected format
@@ -36,9 +70,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json({ user: responseUser });
       }
 
-      // For now, if no legacy user found, return error
-      // Once Supabase users are created, we'll integrate with Supabase auth properly
-      return res.status(401).json({ message: "Invalid credentials - please create users in Supabase dashboard first" });
+      return res.status(401).json({ message: "Invalid credentials" });
     } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ message: "Internal server error" });
