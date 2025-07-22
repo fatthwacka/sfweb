@@ -254,7 +254,7 @@ export function AdminContent() {
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 pb-4 border-b-2 transition-colors ${
                 activeTab === tab.id
-                  ? 'border-gold text-gold'
+                  ? 'border-salmon text-salmon'
                   : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -266,13 +266,13 @@ export function AdminContent() {
       </div>
 
       {/* Content */}
-      <section className="py-12 bg-charcoal min-h-screen">
+      <section className="py-12 bg-gradient-to-br from-slate-50 via-background to-slate-100 min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {activeTab === 'overview' && (
             <div className="space-y-8">
               {/* Stats Grid */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card className="bg-black border-border">
+                <Card className="bg-white border border-salmon/20 shadow-lg">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                       <Users className="w-4 h-4 icon-cyan" />
@@ -280,11 +280,11 @@ export function AdminContent() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-gold">{clients.length}</div>
+                    <div className="text-2xl font-bold text-salmon">{clients.length}</div>
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-black border-border">
+                <Card className="bg-white border border-salmon/20 shadow-lg">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                       <Camera className="w-4 h-4 icon-salmon" />
@@ -292,11 +292,11 @@ export function AdminContent() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-gold">{shoots.length}</div>
+                    <div className="text-2xl font-bold text-salmon">{shoots.length}</div>
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-black border-border">
+                <Card className="bg-white border border-salmon/20 shadow-lg">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                       <FileImage className="w-4 h-4 icon-cyan" />
@@ -304,11 +304,11 @@ export function AdminContent() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-gold">0</div>
+                    <div className="text-2xl font-bold text-salmon">0</div>
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-black border-border">
+                <Card className="bg-white border border-salmon/20 shadow-lg">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                       <Eye className="w-4 h-4 icon-salmon" />
@@ -316,7 +316,7 @@ export function AdminContent() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-gold">
+                    <div className="text-2xl font-bold text-salmon">
                       {shoots.reduce((total, shoot) => total + shoot.viewCount, 0)}
                     </div>
                   </CardContent>
@@ -324,22 +324,22 @@ export function AdminContent() {
               </div>
 
               {/* Quick Actions */}
-              <Card className="bg-black border-border">
+              <Card className="bg-white border border-salmon/20 shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-xl font-saira font-bold text-gold">Quick Actions</CardTitle>
+                  <CardTitle className="text-xl font-saira font-bold text-salmon">Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <Dialog open={newClientOpen} onOpenChange={setNewClientOpen}>
                       <DialogTrigger asChild>
-                        <Button className="h-20 flex-col gap-2 bg-gold text-black hover:bg-gold-muted">
+                        <Button className="h-20 flex-col gap-2 bg-salmon text-white hover:bg-salmon-muted">
                           <Plus className="w-6 h-6 icon-salmon" />
                           <span className="text-sm">Add Client</span>
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="bg-charcoal border-border">
+                      <DialogContent className="bg-white border border-cyan/20 shadow-lg">
                         <DialogHeader>
-                          <DialogTitle className="text-gold">Add New Client</DialogTitle>
+                          <DialogTitle className="text-salmon">Add New Client</DialogTitle>
                         </DialogHeader>
                         <form onSubmit={handleCreateClient} className="space-y-4">
                           <div>
@@ -358,7 +358,7 @@ export function AdminContent() {
                             <Label htmlFor="address">Address</Label>
                             <Textarea id="address" name="address" />
                           </div>
-                          <Button type="submit" disabled={createClientMutation.isPending} className="bg-gold text-black hover:bg-gold-muted">
+                          <Button type="submit" disabled={createClientMutation.isPending} className="bg-salmon text-white hover:bg-salmon-muted">
                             {createClientMutation.isPending ? 'Creating...' : 'Create Client'}
                           </Button>
                         </form>
@@ -367,19 +367,19 @@ export function AdminContent() {
 
                     <Dialog open={newShootOpen} onOpenChange={setNewShootOpen}>
                       <DialogTrigger asChild>
-                        <Button className="h-20 flex-col gap-2 bg-gold text-black hover:bg-gold-muted">
+                        <Button className="h-20 flex-col gap-2 bg-salmon text-white hover:bg-salmon-muted">
                           <Camera className="w-6 h-6 icon-cyan" />
                           <span className="text-sm">Add Shoot</span>
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="bg-charcoal border-border max-w-4xl max-h-[90vh] overflow-y-auto">
+                      <DialogContent className="bg-white border border-cyan/20 shadow-lg max-w-4xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
-                          <DialogTitle className="text-gold">Add New Shoot</DialogTitle>
+                          <DialogTitle className="text-salmon">Add New Shoot</DialogTitle>
                         </DialogHeader>
                         <form onSubmit={handleCreateShoot} className="space-y-6">
                           {/* Basic Information */}
                           <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-gold">Basic Information</h3>
+                            <h3 className="text-lg font-semibold text-salmon">Basic Information</h3>
                             <div className="grid md:grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="clientId">Client *</Label>
@@ -439,7 +439,7 @@ export function AdminContent() {
 
                           {/* Shoot Details */}
                           <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-gold">Shoot Details</h3>
+                            <h3 className="text-lg font-semibold text-salmon">Shoot Details</h3>
                             <div className="grid md:grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="shootDate">Shoot Date *</Label>
@@ -459,7 +459,7 @@ export function AdminContent() {
 
                           {/* Gallery Settings */}
                           <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-gold">Gallery Settings</h3>
+                            <h3 className="text-lg font-semibold text-salmon">Gallery Settings</h3>
                             <div className="grid md:grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="customTitle">Custom Gallery Title</Label>
@@ -499,7 +499,7 @@ export function AdminContent() {
 
                           {/* Privacy & Settings */}
                           <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-gold">Privacy & Settings</h3>
+                            <h3 className="text-lg font-semibold text-salmon">Privacy & Settings</h3>
                             <div className="flex items-center space-x-2">
                               <input 
                                 type="checkbox" 
@@ -522,19 +522,19 @@ export function AdminContent() {
                             </div>
                           </div>
 
-                          <Button type="submit" disabled={createShootMutation.isPending} className="w-full bg-gold text-black hover:bg-gold/80">
+                          <Button type="submit" disabled={createShootMutation.isPending} className="w-full bg-salmon text-white hover:bg-salmon-muted">
                             {createShootMutation.isPending ? 'Creating Shoot...' : 'Create Shoot'}
                           </Button>
                         </form>
                       </DialogContent>
                     </Dialog>
 
-                    <Button className="h-20 flex-col gap-2 bg-charcoal border-border hover:border-gold text-white">
+                    <Button className="h-20 flex-col gap-2 bg-white border border-cyan/20 shadow-lg hover:border-salmon text-white">
                       <FileImage className="w-6 h-6 icon-salmon" />
                       <span className="text-sm">Upload Images</span>
                     </Button>
 
-                    <Button className="h-20 flex-col gap-2 bg-charcoal border-border hover:border-gold text-white">
+                    <Button className="h-20 flex-col gap-2 bg-white border border-cyan/20 shadow-lg hover:border-salmon text-white">
                       <BarChart3 className="w-6 h-6 icon-cyan" />
                       <span className="text-sm">View Analytics</span>
                     </Button>
@@ -547,7 +547,7 @@ export function AdminContent() {
           {activeTab === 'clients' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-saira font-bold text-gold">Clients Management</h2>
+                <h2 className="text-2xl font-saira font-bold text-salmon">Clients Management</h2>
                 <div className="flex gap-4">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -560,14 +560,14 @@ export function AdminContent() {
                   </div>
                   <Dialog open={newClientOpen} onOpenChange={setNewClientOpen}>
                     <DialogTrigger asChild>
-                      <Button className="bg-gold text-black hover:bg-gold/80">
+                      <Button className="bg-salmon text-white hover:bg-salmon-muted">
                         <Plus className="w-4 h-4 mr-2" />
                         Add Client
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="bg-charcoal border-border max-w-md">
+                    <DialogContent className="bg-white border border-cyan/20 shadow-lg max-w-md">
                       <DialogHeader>
-                        <DialogTitle className="text-gold">Add New Client</DialogTitle>
+                        <DialogTitle className="text-salmon">Add New Client</DialogTitle>
                         <DialogDescription className="text-muted-foreground">
                           Add a new client to manage their gallery access and information.
                         </DialogDescription>
@@ -589,7 +589,7 @@ export function AdminContent() {
                           <Label htmlFor="clientAddress">Address</Label>
                           <Input id="clientAddress" name="address" />
                         </div>
-                        <Button type="submit" disabled={createClientMutation.isPending} className="w-full bg-gold text-black hover:bg-gold/80">
+                        <Button type="submit" disabled={createClientMutation.isPending} className="w-full bg-salmon text-white hover:bg-salmon-muted">
                           {createClientMutation.isPending ? 'Creating...' : 'Create Client'}
                         </Button>
                       </form>
@@ -607,11 +607,11 @@ export function AdminContent() {
                   </div>
                 ) : (
                   filteredClients.map(client => (
-                    <Card key={client.id} className="bg-black border-border">
+                    <Card key={client.id} className="bg-white border border-salmon/20 shadow-lg">
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start">
                           <div className="space-y-2">
-                            <h3 className="text-lg font-semibold text-gold">{client.name}</h3>
+                            <h3 className="text-lg font-semibold text-salmon">{client.name}</h3>
                             <div className="space-y-1 text-sm text-muted-foreground">
                               <div className="flex items-center gap-2">
                                 <Mail className="w-4 h-4 icon-cyan" />
@@ -632,7 +632,7 @@ export function AdminContent() {
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            <Button size="sm" variant="outline" className="border-border hover:border-gold text-white">
+                            <Button size="sm" variant="outline" className="border-border hover:border-salmon text-white">
                               <Edit className="w-4 h-4" />
                             </Button>
                             <Button size="sm" variant="outline" className="border-border hover:border-red-500 text-white">
@@ -651,7 +651,7 @@ export function AdminContent() {
           {activeTab === 'shoots' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-saira font-bold text-gold">Shoots Management</h2>
+                <h2 className="text-2xl font-saira font-bold text-salmon">Shoots Management</h2>
                 <div className="flex gap-4">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -664,14 +664,14 @@ export function AdminContent() {
                   </div>
                   <Dialog open={newShootOpen} onOpenChange={setNewShootOpen}>
                     <DialogTrigger asChild>
-                      <Button className="bg-gold text-black hover:bg-gold/80">
+                      <Button className="bg-salmon text-white hover:bg-salmon-muted">
                         <Plus className="w-4 h-4 mr-2" />
                         Add Shoot
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="bg-charcoal border-border max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogContent className="bg-white border border-cyan/20 shadow-lg max-w-2xl max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
-                        <DialogTitle className="text-gold">Create New Shoot</DialogTitle>
+                        <DialogTitle className="text-salmon">Create New Shoot</DialogTitle>
                         <DialogDescription className="text-muted-foreground">
                           Create a new photography or videography shoot with all necessary details.
                         </DialogDescription>
@@ -679,7 +679,7 @@ export function AdminContent() {
                       <form onSubmit={handleCreateShoot} className="space-y-6">
                         {/* Basic Information */}
                         <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-gold">Basic Information</h3>
+                          <h3 className="text-lg font-semibold text-salmon">Basic Information</h3>
                           <div className="grid md:grid-cols-2 gap-4">
                             <div>
                               <Label htmlFor="title">Shoot Title *</Label>
@@ -705,7 +705,7 @@ export function AdminContent() {
 
                         {/* Location & Date */}
                         <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-gold">Location & Date</h3>
+                          <h3 className="text-lg font-semibold text-salmon">Location & Date</h3>
                           <div className="grid md:grid-cols-2 gap-4">
                             <div>
                               <Label htmlFor="shootDate">Shoot Date *</Label>
@@ -720,7 +720,7 @@ export function AdminContent() {
 
                         {/* SEO & Settings */}
                         <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-gold">SEO & Settings</h3>
+                          <h3 className="text-lg font-semibold text-salmon">SEO & Settings</h3>
                           <div className="grid md:grid-cols-2 gap-4">
                             <div>
                               <Label htmlFor="customSlug">Custom URL Slug</Label>
@@ -737,7 +737,7 @@ export function AdminContent() {
                           </div>
                         </div>
 
-                        <Button type="submit" disabled={createShootMutation.isPending} className="w-full bg-gold text-black hover:bg-gold/80">
+                        <Button type="submit" disabled={createShootMutation.isPending} className="w-full bg-salmon text-white hover:bg-salmon-muted">
                           {createShootMutation.isPending ? 'Creating Shoot...' : 'Create Shoot'}
                         </Button>
                       </form>
@@ -755,12 +755,12 @@ export function AdminContent() {
                   </div>
                 ) : (
                   filteredShoots.map(shoot => (
-                    <Card key={shoot.id} className="bg-black border-border">
+                    <Card key={shoot.id} className="bg-white border border-salmon/20 shadow-lg">
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start">
                           <div className="space-y-3">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <h3 className="text-lg font-semibold text-gold">{shoot.title}</h3>
+                              <h3 className="text-lg font-semibold text-salmon">{shoot.title}</h3>
                               <Badge variant="outline" className="text-xs capitalize">
                                 {shoot.shootType}
                               </Badge>
@@ -796,7 +796,7 @@ export function AdminContent() {
                             <Button 
                               size="sm" 
                               variant="outline" 
-                              className="border-border hover:border-gold text-white"
+                              className="border-border hover:border-salmon text-white"
                               onClick={() => setEditingShoot(shoot)}
                             >
                               <Edit className="w-4 h-4" />
@@ -817,21 +817,21 @@ export function AdminContent() {
           {activeTab === 'images' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-saira font-bold text-gold">Images Management</h2>
-                <Button className="bg-gold text-black hover:bg-gold-muted">
+                <h2 className="text-2xl font-saira font-bold text-salmon">Images Management</h2>
+                <Button className="bg-salmon text-white hover:bg-salmon-muted">
                   <Plus className="w-4 h-4 mr-2" />
                   Upload Images
                 </Button>
               </div>
 
-              <Card className="bg-black border-border">
+              <Card className="bg-white border border-salmon/20 shadow-lg">
                 <CardContent className="p-8 text-center">
                   <FileImage className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-xl font-semibold mb-2">No Images Yet</h3>
                   <p className="text-muted-foreground mb-4">
                     Upload your first images to get started with gallery management.
                   </p>
-                  <Button className="bg-gold text-black hover:bg-gold/80">
+                  <Button className="bg-salmon text-white hover:bg-salmon-muted">
                     <Plus className="w-4 h-4 mr-2" />
                     Upload Images
                   </Button>
@@ -843,13 +843,13 @@ export function AdminContent() {
           {activeTab === 'galleries' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-saira font-bold text-gold">Gallery Management</h2>
+                <h2 className="text-2xl font-saira font-bold text-salmon">Gallery Management</h2>
               </div>
 
               {/* Shoot Selection */}
-              <Card className="bg-black border-border">
+              <Card className="bg-white border border-salmon/20 shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-gold">Select Shoot to Manage</CardTitle>
+                  <CardTitle className="text-salmon">Select Shoot to Manage</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Select 
@@ -874,7 +874,7 @@ export function AdminContent() {
               {selectedShoot && <GalleryEditor shootId={selectedShoot} />}
 
               {!selectedShoot && (
-                <Card className="bg-black border-border">
+                <Card className="bg-white border border-salmon/20 shadow-lg">
                   <CardContent className="p-8 text-center">
                     <Palette className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-xl font-semibold mb-2">Select a Shoot</h3>
@@ -891,9 +891,9 @@ export function AdminContent() {
 
       {/* Edit Shoot Dialog */}
       <Dialog open={!!editingShoot} onOpenChange={(open) => !open && setEditingShoot(null)}>
-        <DialogContent className="bg-charcoal border-border max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-white border border-cyan/20 shadow-lg max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-gold">Edit Shoot: {editingShoot?.title}</DialogTitle>
+            <DialogTitle className="text-salmon">Edit Shoot: {editingShoot?.title}</DialogTitle>
             <DialogDescription className="text-muted-foreground">
               Update the shoot details and settings for this gallery.
             </DialogDescription>
@@ -902,7 +902,7 @@ export function AdminContent() {
             <form onSubmit={handleUpdateShoot} className="space-y-6">
               {/* Basic Information */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gold">Basic Information</h3>
+                <h3 className="text-lg font-semibold text-salmon">Basic Information</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="edit-clientId">Client *</Label>
@@ -964,7 +964,7 @@ export function AdminContent() {
 
               {/* Shoot Details */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gold">Shoot Details</h3>
+                <h3 className="text-lg font-semibold text-salmon">Shoot Details</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="edit-shootDate">Shoot Date *</Label>
@@ -991,7 +991,7 @@ export function AdminContent() {
 
               {/* Gallery Settings */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gold">Gallery Settings</h3>
+                <h3 className="text-lg font-semibold text-salmon">Gallery Settings</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="edit-customTitle">Custom Gallery Title</Label>
@@ -1034,7 +1034,7 @@ export function AdminContent() {
 
               {/* Privacy & Settings */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gold">Privacy & Settings</h3>
+                <h3 className="text-lg font-semibold text-salmon">Privacy & Settings</h3>
                 <div className="flex items-center space-x-2">
                   <input 
                     type="checkbox" 
@@ -1063,7 +1063,7 @@ export function AdminContent() {
                 <Button 
                   type="submit" 
                   disabled={updateShootMutation.isPending} 
-                  className="flex-1 bg-gold text-black hover:bg-gold/80"
+                  className="flex-1 bg-salmon text-white hover:bg-salmon-muted"
                 >
                   {updateShootMutation.isPending ? 'Updating Shoot...' : 'Update Shoot'}
                 </Button>
@@ -1071,7 +1071,7 @@ export function AdminContent() {
                   type="button" 
                   variant="outline" 
                   onClick={() => setEditingShoot(null)}
-                  className="border-border hover:border-gold"
+                  className="border-border hover:border-salmon"
                 >
                   Cancel
                 </Button>

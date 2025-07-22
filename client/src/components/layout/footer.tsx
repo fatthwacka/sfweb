@@ -29,7 +29,7 @@ const companyLinks = [
 
 export function Footer() {
   return (
-    <footer className="bg-black py-16">
+    <footer className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-4 gap-8 mb-8">
           {/* Brand */}

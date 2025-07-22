@@ -40,21 +40,21 @@ export default function Admin() {
       <Navigation />
       
       {/* Header */}
-      <section className="pt-32 pb-8 bg-gradient-to-br from-black via-charcoal to-black">
+      <section className="pt-32 pb-8 bg-gradient-to-br from-slate-50 via-background to-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Shield className="w-12 h-12 icon-salmon" />
               <div>
                 <h1 className="text-3xl font-saira font-black">
-                  Admin <span className="text-gold">Panel</span>
+                  Admin <span className="text-salmon">Panel</span>
                 </h1>
                 <p className="text-muted-foreground">Manage clients, shoots, and content</p>
               </div>
             </div>
             
             <Link href="/dashboard">
-              <Button variant="outline" className="border-border hover:border-gold">
+              <Button variant="outline" className="border-salmon/30 text-salmon hover:border-salmon hover:bg-salmon hover:text-white">
                 Back to Dashboard
               </Button>
             </Link>

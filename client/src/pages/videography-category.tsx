@@ -353,7 +353,7 @@ export default function VideographyCategory() {
                 alt={`${data.name} example`}
                 className="w-full rounded-2xl shadow-2xl"
               />
-              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-2xl opacity-0 hover:opacity-100 transition-opacity duration-300 cursor-pointer">
+              <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-50 rounded-2xl opacity-0 hover:opacity-100 transition-opacity duration-300 cursor-pointer">
                 <Play className="w-16 h-16 text-gold" />
               </div>
               <div className="absolute -bottom-6 -right-6 bg-gold text-black p-4 rounded-xl">
@@ -433,7 +433,7 @@ export default function VideographyCategory() {
                     alt={`${data.name} example ${index + 1}`}
                     className="w-full h-80 object-cover"
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-white bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                     <Play className="w-12 h-12 text-gold" />
                   </div>
                 </div>

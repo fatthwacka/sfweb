@@ -84,7 +84,7 @@ export default function Videography() {
           <div className="grid lg:grid-cols-2 gap-8">
             {videographyCategories.map((category, index) => (
               <Link key={category.slug} href={`/videography/${category.slug}`}>
-                <div className="group cursor-pointer bg-black rounded-2xl overflow-hidden shadow-2xl hover:shadow-gold/20 transition-all duration-500 transform hover:scale-[1.02]">
+                <div className="group cursor-pointer bg-white rounded-2xl overflow-hidden shadow-2xl hover:shadow-gold/20 transition-all duration-500 transform hover:scale-[1.02]">
                   <div className="relative h-64 overflow-hidden">
                     <img 
                       src={category.image}

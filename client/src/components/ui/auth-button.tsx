@@ -66,7 +66,7 @@ export function AuthButton() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-salmon/20">
             <Avatar className="h-10 w-10 border-2 border-salmon/40">
-              <AvatarFallback className="bg-salmon text-black font-bold">
+              <AvatarFallback className="bg-salmon text-white font-bold">
                 {user.email.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -102,7 +102,7 @@ export function AuthButton() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-salmon text-black hover:bg-salmon-muted">
+        <Button className="bg-salmon text-white hover:bg-salmon-muted">
           Account
         </Button>
       </DialogTrigger>

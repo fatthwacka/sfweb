@@ -266,7 +266,7 @@ export default function MyGallery() {
 
       {/* Fullscreen Modal */}
       {selectedImage !== null && (
-        <div className="gallery-modal fixed inset-0 bg-black z-50 flex items-center justify-center">
+        <div className="gallery-modal fixed inset-0 bg-black/90 z-50 flex items-center justify-center">
           {/* Close Button */}
           <Button
             variant="ghost"

@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 export default {
-  darkMode: ["class"],
+
   content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
@@ -65,7 +65,8 @@ export default {
         "salmon-muted": "var(--salmon-muted)",
         cyan: "var(--cyan)",
         "cyan-muted": "var(--cyan-muted)",
-        charcoal: "var(--charcoal)",
+        gold: "var(--gold)",
+        "gold-muted": "var(--gold-muted)",
       },
       keyframes: {
         "accordion-down": {

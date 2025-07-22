@@ -61,11 +61,11 @@ export function PortfolioShowcase() {
     : portfolioItems.filter(item => item.category === activeFilter);
 
   return (
-    <section className="py-20 bg-black">
+    <section className="py-20 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl lg:text-5xl font-saira font-black mb-6">
-            Featured <span className="text-gold">Work</span>
+            Featured <span className="text-salmon">Work</span>
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
             A glimpse into our creative journey - showcasing moments that matter, stories that inspire, and memories that last forever.

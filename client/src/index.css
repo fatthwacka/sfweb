@@ -5,22 +5,22 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(260, 25%, 6%);
-  --foreground: hsl(0, 0%, 100%);
-  --muted: hsl(260, 20%, 12%);
-  --muted-foreground: hsl(240, 5%, 65%);
-  --popover: hsl(260, 25%, 6%);
-  --popover-foreground: hsl(0, 0%, 100%);
-  --card: hsl(260, 20%, 10%);
-  --card-foreground: hsl(0, 0%, 100%);
-  --border: hsl(260, 15%, 20%);
-  --input: hsl(260, 15%, 20%);
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(0, 0%, 20%);
+  --muted: hsl(0, 0%, 96%);
+  --muted-foreground: hsl(0, 0%, 45%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(0, 0%, 20%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(0, 0%, 20%);
+  --border: hsl(0, 0%, 90%);
+  --input: hsl(0, 0%, 95%);
   --primary: hsl(16, 100%, 73%);
-  --primary-foreground: hsl(0, 0%, 0%);
-  --secondary: hsl(260, 15%, 15%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(180, 100%, 50%);
   --secondary-foreground: hsl(0, 0%, 100%);
   --accent: hsl(180, 50%, 65%);
-  --accent-foreground: hsl(0, 0%, 0%);
+  --accent-foreground: hsl(0, 0%, 100%);
   --destructive: hsl(0, 84%, 60%);
   --destructive-foreground: hsl(0, 0%, 100%);
   --ring: hsl(16, 100%, 73%);
@@ -28,44 +28,14 @@
   
   /* Custom colors */
   --salmon: hsl(16, 100%, 73%);
-  --salmon-muted: hsl(16, 60%, 65%);
+  --salmon-muted: hsl(16, 80%, 65%);
   --cyan: hsl(180, 100%, 50%);
-  --cyan-muted: hsl(180, 35%, 55%);
-  --charcoal: hsl(260, 15%, 12%);
+  --cyan-muted: hsl(180, 80%, 60%);
+  --gold: hsl(45, 100%, 50%);
+  --gold-muted: hsl(45, 80%, 60%);
 }
 
-.light {
-  --background: hsl(0, 0%, 100%);
-  --foreground: hsl(20, 14%, 4%);
-  --muted: hsl(60, 5%, 96%);
-  --muted-foreground: hsl(25, 5%, 45%);
-  --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(20, 14%, 4%);
-  --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(20, 14%, 4%);
-  --border: hsl(20, 6%, 90%);
-  --input: hsl(20, 6%, 90%);
-  --primary: hsl(16, 100%, 73%);
-  --primary-foreground: hsl(0, 0%, 0%);
-  --secondary: hsl(60, 5%, 96%);
-  --secondary-foreground: hsl(24, 10%, 10%);
-  --accent: hsl(60, 5%, 96%);
-  --accent-foreground: hsl(24, 10%, 10%);
-  --destructive: hsl(0, 84%, 60%);
-  --destructive-foreground: hsl(60, 9%, 98%);
-  --ring: hsl(20, 14%, 4%);
-  
-  /* Custom colors for light mode */
-  --gold: hsl(45, 75%, 45%);
-  --gold-muted: hsl(45, 40%, 55%);
-  --charcoal: hsl(0, 0%, 20%);
-  
-  /* Salmon and Cyan color variables */
-  --salmon: 16 100% 73%;
-  --salmon-muted: 16 80% 65%;
-  --cyan: 180 100% 50%;
-  --cyan-muted: 180 80% 60%;
-}
+
 
 @layer base {
   * {
@@ -75,11 +45,11 @@
   body {
     @apply bg-background text-foreground font-saira antialiased;
     background: 
-      radial-gradient(ellipse at 20% 30%, hsla(280, 80%, 50%, 0.4) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 70%, hsla(16, 90%, 60%, 0.35) 0%, transparent 50%),
-      radial-gradient(ellipse at 60% 10%, hsla(180, 80%, 50%, 0.3) 0%, transparent 50%),
-      radial-gradient(ellipse at 10% 80%, hsla(220, 70%, 40%, 0.4) 0%, transparent 50%),
-      hsl(260, 30%, 8%);
+      radial-gradient(ellipse at 20% 30%, hsla(280, 80%, 50%, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, hsla(16, 90%, 60%, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 10%, hsla(180, 80%, 50%, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 10% 80%, hsla(220, 70%, 40%, 0.15) 0%, transparent 50%),
+      hsl(0, 0%, 100%);
     background-attachment: fixed;
     min-height: 100vh;
   }
@@ -220,16 +190,16 @@
   /* Card System Classes */
   .studio-card {
     @apply rounded-2xl p-8 shadow-2xl transition-all duration-500 transform hover:scale-[1.02];
-    background: linear-gradient(135deg, rgba(64, 64, 64, 0.9) 0%, rgba(32, 32, 32, 0.9) 100%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 248, 248, 0.95) 100%);
     border: 1px solid rgba(255, 107, 107, 0.3);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 107, 107, 0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1), 0 0 20px rgba(255, 107, 107, 0.1);
   }
 
   /* Universal Button Classes - replace all inline button styling */
   .btn-salmon {
     @apply px-8 py-4 rounded-full font-barlow font-semibold text-lg transition-all duration-300;
     background: linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(16, 80%, 65%) 100%);
-    color: hsl(260, 30%, 8%);
+    color: white;
     border: none;
   }
   
@@ -242,7 +212,7 @@
   .btn-cyan {
     @apply px-8 py-4 rounded-full font-barlow font-semibold text-lg transition-all duration-300;
     background: linear-gradient(135deg, hsl(180, 100%, 50%) 0%, hsl(180, 80%, 45%) 100%);
-    color: hsl(260, 30%, 8%);
+    color: white;
     border: none;
   }
   
@@ -261,7 +231,7 @@
   
   .btn-outline-salmon:hover {
     background: linear-gradient(135deg, hsl(180, 100%, 50%) 0%, hsl(180, 80%, 45%) 100%);
-    color: hsl(260, 30%, 8%);
+    color: white;
     transform: translateY(-2px);
     box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3);
   }
@@ -275,7 +245,7 @@
   
   .btn-outline-cyan:hover {
     background: linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(16, 80%, 65%) 100%);
-    color: hsl(260, 30%, 8%);
+    color: white;
     transform: translateY(-2px);
     box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
   }
@@ -284,7 +254,7 @@
   .studio-card-button {
     @apply w-full mt-auto py-4 rounded-xl font-barlow font-semibold text-lg transition-all duration-300;
     background: linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(16, 80%, 65%) 100%);
-    color: hsl(260, 30%, 8%);
+    color: white;
     border: none;
   }
   
@@ -297,7 +267,7 @@
   .studio-card-button-premium {
     @apply w-full mt-auto py-4 rounded-xl font-barlow font-semibold text-lg transition-all duration-300;
     background: linear-gradient(135deg, hsl(180, 100%, 50%) 0%, hsl(180, 80%, 45%) 100%);
-    color: hsl(260, 30%, 8%);
+    color: white;
     border: none;
   }
   
@@ -310,9 +280,9 @@
   /* Contact Section Styling */
   .contact-info-card {
     @apply rounded-xl p-6 border transition-all duration-300 hover:scale-105;
-    background: linear-gradient(135deg, rgba(45, 45, 45, 0.8) 0%, rgba(30, 30, 30, 0.9) 100%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 248, 248, 0.95) 100%);
     border-color: rgba(78, 205, 196, 0.3);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   }
   
   .contact-info-card:hover {
@@ -416,9 +386,9 @@
   
   .studio-card-premium {
     @apply rounded-2xl p-8 shadow-2xl transition-all duration-500 transform hover:scale-[1.02];
-    background: linear-gradient(135deg, rgba(0, 128, 128, 0.15) 0%, rgba(64, 64, 64, 0.9) 50%, rgba(32, 32, 32, 0.9) 100%);
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.95) 50%, rgba(248, 248, 248, 0.95) 100%);
     border: 2px solid rgba(0, 255, 255, 0.4);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 255, 255, 0.2);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 255, 255, 0.2);
   }
   
   .studio-card-premium:hover {
@@ -459,9 +429,9 @@
   
   .studio-card {
     @apply rounded-2xl border transition-all duration-300 transform hover:-translate-y-2 flex flex-col;
-    background: linear-gradient(135deg, rgba(45, 45, 45, 0.9) 0%, rgba(30, 30, 30, 0.95) 100%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 248, 248, 0.95) 100%);
     border-color: rgba(255, 107, 107, 0.4);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     min-height: 600px;
   }
   
@@ -472,7 +442,7 @@
   
   .studio-card-premium {
     @apply rounded-2xl border transition-all duration-300 transform hover:-translate-y-2 flex flex-col;
-    background: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, rgba(45, 45, 45, 0.9) 50%, rgba(30, 30, 30, 0.95) 100%);
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.95) 50%, rgba(248, 248, 248, 0.95) 100%);
     border-color: rgba(0, 255, 255, 0.5);
     box-shadow: 0 8px 30px rgba(0, 255, 255, 0.2);
     min-height: 600px;
@@ -597,9 +567,7 @@
     background-color: var(--cyan-muted);
   }
   
-  .bg-charcoal {
-    background-color: var(--charcoal);
-  }
+
   
   .border-salmon {
     border-color: var(--salmon);

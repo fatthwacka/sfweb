@@ -222,63 +222,63 @@ export default function Dashboard() {
             <div className="space-y-8">
               {/* Stats Grid */}
               <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
-                <Card className="bg-charcoal/80 border-border">
+                <Card className="bg-white border border-salmon/20 shadow-lg">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Total Albums</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-gold">{userStats.totalShoots}</div>
+                    <div className="text-2xl font-bold text-salmon">{userStats.totalShoots}</div>
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-charcoal/80 border-border">
+                <Card className="bg-white border border-cyan/20 shadow-lg">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Total Photos</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-gold">{userStats.totalImages}</div>
+                    <div className="text-2xl font-bold text-cyan">{userStats.totalImages}</div>
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-charcoal/80 border-border">
+                <Card className="bg-white border border-salmon/20 shadow-lg">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Total Views</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-gold">{userStats.totalViews.toLocaleString()}</div>
+                    <div className="text-2xl font-bold text-salmon">{userStats.totalViews.toLocaleString()}</div>
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-charcoal/80 border-border">
+                <Card className="bg-white border border-cyan/20 shadow-lg">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Downloads</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-gold">{userStats.totalDownloads}</div>
+                    <div className="text-2xl font-bold text-cyan">{userStats.totalDownloads}</div>
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-charcoal/80 border-border">
+                <Card className="bg-white border border-salmon/20 shadow-lg">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Favorites</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-gold">{userStats.favoriteImages}</div>
+                    <div className="text-2xl font-bold text-salmon">{userStats.favoriteImages}</div>
                   </CardContent>
                 </Card>
               </div>
 
               <div className="grid lg:grid-cols-2 gap-8">
                 {/* Recent Activity */}
-                <Card className="bg-charcoal/80 border-border">
+                <Card className="bg-white border border-cyan/20 shadow-lg">
                   <CardHeader>
-                    <CardTitle className="text-xl text-gold">Recent Activity</CardTitle>
+                    <CardTitle className="text-xl text-cyan">Recent Activity</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       {recentActivity.map((activity) => (
-                        <div key={activity.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/10 transition-colors">
-                          <div className="text-gold">
+                        <div key={activity.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                          <div className="text-salmon">
                             {getActivityIcon(activity.type)}
                           </div>
                           <div className="flex-1">
@@ -298,15 +298,15 @@ export default function Dashboard() {
                 </Card>
 
                 {/* Quick Actions */}
-                <Card className="bg-charcoal/80 border-border">
+                <Card className="bg-white border border-salmon/20 shadow-lg">
                   <CardHeader>
-                    <CardTitle className="text-xl text-gold">Quick Actions</CardTitle>
+                    <CardTitle className="text-xl text-salmon">Quick Actions</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 gap-4">
                       <Button 
                         variant="outline" 
-                        className="h-20 flex-col gap-2 border-border hover:border-gold hover:text-gold"
+                        className="h-20 flex-col gap-2 border-salmon/30 text-salmon hover:border-salmon hover:bg-salmon hover:text-white"
                       >
                         <Camera className="w-6 h-6" />
                         <span className="text-sm">View All Albums</span>
@@ -314,7 +314,7 @@ export default function Dashboard() {
                       
                       <Button 
                         variant="outline" 
-                        className="h-20 flex-col gap-2 border-border hover:border-gold hover:text-gold"
+                        className="h-20 flex-col gap-2 border-cyan/30 text-cyan hover:border-cyan hover:bg-cyan hover:text-white"
                       >
                         <Heart className="w-6 h-6" />
                         <span className="text-sm">My Favorites</span>
@@ -322,7 +322,7 @@ export default function Dashboard() {
                       
                       <Button 
                         variant="outline" 
-                        className="h-20 flex-col gap-2 border-border hover:border-gold hover:text-gold"
+                        className="h-20 flex-col gap-2 border-salmon/30 text-salmon hover:border-salmon hover:bg-salmon hover:text-white"
                       >
                         <Download className="w-6 h-6" />
                         <span className="text-sm">Download History</span>
@@ -330,7 +330,7 @@ export default function Dashboard() {
                       
                       <Button 
                         variant="outline" 
-                        className="h-20 flex-col gap-2 border-border hover:border-gold hover:text-gold"
+                        className="h-20 flex-col gap-2 border-cyan/30 text-cyan hover:border-cyan hover:bg-cyan hover:text-white"
                       >
                         <Settings className="w-6 h-6" />
                         <span className="text-sm">Account Settings</span>
@@ -356,11 +356,11 @@ export default function Dashboard() {
 
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {userShoots.map((shoot) => (
-                  <Card key={shoot.id} className="bg-black border-border hover:border-gold transition-colors group cursor-pointer">
+                  <Card key={shoot.id} className="bg-white border border-salmon/20 hover:border-salmon shadow-lg transition-colors group cursor-pointer">
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div>
-                          <CardTitle className="text-lg font-saira font-bold text-gold group-hover:text-gold-muted transition-colors">
+                          <CardTitle className="text-lg font-saira font-bold text-salmon group-hover:text-salmon-muted transition-colors">
                             {shoot.title}
                           </CardTitle>
                           <div className="flex items-center gap-2 mt-2">
@@ -371,7 +371,7 @@ export default function Dashboard() {
                           </div>
                         </div>
                         {shoot.isPrivate && (
-                          <Badge variant="secondary" className="bg-gold/20 text-gold border-gold/30">
+                          <Badge variant="secondary" className="bg-salmon/20 text-salmon border-salmon/30">
                             Private
                           </Badge>
                         )}
@@ -386,23 +386,23 @@ export default function Dashboard() {
                         
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div className="flex items-center gap-2">
-                            <FileImage className="w-4 h-4 text-gold" />
+                            <FileImage className="w-4 h-4 text-salmon" />
                             <span>{shoot.imageCount} photos</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Eye className="w-4 h-4 text-gold" />
+                            <Eye className="w-4 h-4 text-cyan" />
                             <span>{shoot.viewCount} views</span>
                           </div>
                         </div>
                         
                         <div className="flex gap-2 pt-2">
-                          <Button size="sm" className="flex-1 bg-gold text-black hover:bg-gold-muted">
+                          <Button size="sm" className="flex-1 bg-salmon text-white hover:bg-salmon-muted">
                             View Gallery
                           </Button>
-                          <Button size="sm" variant="outline" className="border-border hover:border-gold">
+                          <Button size="sm" variant="outline" className="border-cyan/30 text-cyan hover:border-cyan hover:bg-cyan hover:text-white">
                             <Share2 className="w-4 h-4" />
                           </Button>
-                          <Button size="sm" variant="outline" className="border-border hover:border-gold">
+                          <Button size="sm" variant="outline" className="border-salmon/30 text-salmon hover:border-salmon hover:bg-salmon hover:text-white">
                             <Download className="w-4 h-4" />
                           </Button>
                         </div>
