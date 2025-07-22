@@ -140,6 +140,19 @@ export class MemStorage implements IStorage {
     };
     this.users.set(clientUser.id, clientUser);
 
+    // Create Jessica Martinez client user
+    const jessicaUser: User = {
+      id: this.currentUserId++,
+      email: "client2@slyfox.co.za",
+      password: "slyfox2025",
+      role: "client",
+      profileImage: null,
+      bannerImage: null,
+      themePreference: "dark",
+      createdAt: new Date()
+    };
+    this.users.set(jessicaUser.id, jessicaUser);
+
     // Create demo client record
     const demoClient: Client = {
       id: this.currentClientId++,
@@ -152,6 +165,19 @@ export class MemStorage implements IStorage {
       createdAt: new Date()
     };
     this.clients.set(demoClient.id, demoClient);
+
+    // Create Jessica Martinez client record
+    const jessicaClient: Client = {
+      id: this.currentClientId++,
+      name: "Jessica Martinez",
+      email: "client2@slyfox.co.za",
+      phone: "+27 82 456 7890",
+      address: "123 Beach Road, Umhlanga, Durban",
+      slug: "jessica-martinez",
+      userId: jessicaUser.id,
+      createdAt: new Date()
+    };
+    this.clients.set(jessicaClient.id, jessicaClient);
 
     // Create test clients
     const testClient1: Client = {
@@ -690,5 +716,6 @@ import { PostgreSQLStorage } from "./pg-storage";
 // Import Supabase storage
 import { SupabaseStorage } from "./supabase-storage";
 
-// Temporarily use MemStorage until Supabase connection is resolved
+// Switch back to memory storage due to UUID/integer schema mismatch
+// Need to fix schema compatibility before using Supabase
 export const storage = new MemStorage();
