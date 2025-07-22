@@ -20,25 +20,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email and password required" });
       }
 
-      // Check against database users
-      const user = await storage.getUserByEmail(email);
-      if (!user) {
-        return res.status(401).json({ message: "Invalid credentials" });
+      // First try legacy users table (for backwards compatibility)
+      const legacyUser = await storage.getUserByEmail(email);
+      if (legacyUser && legacyUser.password === password) {
+        // Return legacy user data in expected format
+        const responseUser = {
+          id: legacyUser.id,
+          email: legacyUser.email,
+          role: legacyUser.role
+        };
+        return res.json({ user: responseUser });
       }
 
-      // Simple password check (in production, use proper hashing)
-      if (user.password !== password) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-
-      // Return user data
-      const responseUser = {
-        id: user.id,
-        email: user.email,
-        role: user.role
-      };
-      
-      res.json({ user: responseUser });
+      // For now, if no legacy user found, return error
+      // Once Supabase users are created, we'll integrate with Supabase auth properly
+      return res.status(401).json({ message: "Invalid credentials - please create users in Supabase dashboard first" });
     } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ message: "Internal server error" });

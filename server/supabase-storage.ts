@@ -1,17 +1,53 @@
 import { db } from "./db";
 import { 
-  users, clients, shoots, images, packages, bookings, analytics,
-  type User, type Client, type Shoot, type Image, type Package, type Booking, type Analytics,
-  type InsertUser, type InsertClient, type InsertShoot, type InsertImage, 
-  type InsertPackage, type InsertBooking, type InsertAnalytics,
-  type UpdateImageSequence, type UpdateAlbumCover, type UpdateShootDetails, type UpdateShootCustomization
+  profiles, users, clients, shoots, images, packages, analytics, favorites, bookings,
+  type Profile, type InsertProfile,
+  type User, type InsertUser, 
+  type Client, type InsertClient,
+  type Shoot, type InsertShoot,
+  type Image, type InsertImage,
+  type Package, type InsertPackage,
+  type Analytics, type InsertAnalytics,
+  type Favorite, type InsertFavorite,
+  type Booking, type InsertBooking,
+  type UpdateShootCustomization
 } from "@shared/schema";
 import { eq, and, desc } from "drizzle-orm";
 import type { IStorage } from "./storage";
 
 export class SupabaseStorage implements IStorage {
   
-  // User methods
+  // Profile methods (main user system)
+  async getProfile(id: string): Promise<Profile | undefined> {
+    const result = await db.select().from(profiles).where(eq(profiles.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getProfileByEmail(email: string): Promise<Profile | undefined> {
+    const result = await db.select().from(profiles).where(eq(profiles.email, email)).limit(1);
+    return result[0];
+  }
+
+  async getAllProfiles(): Promise<Profile[]> {
+    return await db.select().from(profiles).orderBy(desc(profiles.createdAt));
+  }
+
+  async createProfile(insertProfile: InsertProfile): Promise<Profile> {
+    const result = await db.insert(profiles).values(insertProfile).returning();
+    return result[0];
+  }
+
+  async updateProfile(id: string, updates: Partial<InsertProfile>): Promise<Profile | undefined> {
+    const result = await db.update(profiles).set(updates).where(eq(profiles.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteProfile(id: string): Promise<boolean> {
+    const result = await db.delete(profiles).where(eq(profiles.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Legacy User methods (backwards compatibility)
   async getUser(id: number): Promise<User | undefined> {
     const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
     return result[0];
@@ -22,6 +58,10 @@ export class SupabaseStorage implements IStorage {
     return result[0];
   }
 
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const result = await db.insert(users).values(insertUser).returning();
     return result[0];
@@ -30,10 +70,6 @@ export class SupabaseStorage implements IStorage {
   async updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined> {
     const result = await db.update(users).set(updates).where(eq(users.id, id)).returning();
     return result[0];
-  }
-
-  async getAllUsers(): Promise<User[]> {
-    return await db.select().from(users).orderBy(desc(users.createdAt));
   }
 
   async deleteUser(id: number): Promise<boolean> {
@@ -83,12 +119,12 @@ export class SupabaseStorage implements IStorage {
   }
 
   // Shoot methods
-  async getShoot(id: number): Promise<Shoot | undefined> {
+  async getShoot(id: string): Promise<Shoot | undefined> {
     const result = await db.select().from(shoots).where(eq(shoots.id, id)).limit(1);
     return result[0];
   }
 
-  async getShootsByClient(clientId: number): Promise<Shoot[]> {
+  async getShootsByClient(clientId: string): Promise<Shoot[]> {
     return await db.select().from(shoots).where(eq(shoots.clientId, clientId)).orderBy(desc(shoots.createdAt));
   }
 
@@ -97,94 +133,59 @@ export class SupabaseStorage implements IStorage {
   }
 
   async createShoot(insertShoot: InsertShoot): Promise<Shoot> {
-    const result = await db.insert(shoots).values({
-      ...insertShoot,
-      isPrivate: insertShoot.isPrivate ?? false,
-      viewCount: 0
-    }).returning();
+    const result = await db.insert(shoots).values(insertShoot).returning();
     return result[0];
   }
 
-  async updateShoot(id: number, updates: Partial<InsertShoot>): Promise<Shoot | undefined> {
+  async updateShoot(id: string, updates: Partial<InsertShoot>): Promise<Shoot | undefined> {
     const result = await db.update(shoots).set(updates).where(eq(shoots.id, id)).returning();
     return result[0];
   }
 
-  async updateShootCustomization(id: number, data: UpdateShootCustomization): Promise<Shoot | undefined> {
+  async updateShootCustomization(id: string, data: UpdateShootCustomization): Promise<Shoot | undefined> {
     const result = await db.update(shoots).set(data).where(eq(shoots.id, id)).returning();
     return result[0];
   }
 
-  async deleteShoot(id: number): Promise<boolean> {
+  async deleteShoot(id: string): Promise<boolean> {
     const result = await db.delete(shoots).where(eq(shoots.id, id));
     return result.rowCount > 0;
   }
 
   // Image methods
-  async getImage(id: number): Promise<Image | undefined> {
+  async getImage(id: string): Promise<Image | undefined> {
     const result = await db.select().from(images).where(eq(images.id, id)).limit(1);
     return result[0];
   }
 
-  async getImagesByShoot(shootId: number): Promise<Image[]> {
-    return await db.select().from(images).where(eq(images.shootId, shootId)).orderBy(images.sequence);
+  async getImagesByShoot(shootId: string): Promise<Image[]> {
+    return await db.select().from(images).where(eq(images.shootId, shootId)).orderBy(images.uploadOrder);
   }
 
   async createImage(insertImage: InsertImage): Promise<Image> {
-    const result = await db.insert(images).values({
-      ...insertImage,
-      isPrivate: insertImage.isPrivate ?? false,
-      downloadCount: 0
-    }).returning();
+    const result = await db.insert(images).values(insertImage).returning();
     return result[0];
   }
 
-  async updateImage(id: number, updates: Partial<InsertImage>): Promise<Image | undefined> {
+  async updateImage(id: string, updates: Partial<InsertImage>): Promise<Image | undefined> {
     const result = await db.update(images).set(updates).where(eq(images.id, id)).returning();
     return result[0];
   }
 
-  async updateImageSequence(data: UpdateImageSequence): Promise<boolean> {
-    try {
-      await db.transaction(async (tx) => {
-        for (const item of data.updates) {
-          await tx.update(images)
-            .set({ sequence: item.sequence })
-            .where(eq(images.id, item.id));
-        }
-      });
-      return true;
-    } catch (error) {
-      console.error("Error updating image sequences:", error);
-      return false;
-    }
-  }
-
-  async updateAlbumCover(data: UpdateAlbumCover): Promise<Shoot | undefined> {
-    const result = await db.update(shoots)
-      .set({ albumCoverId: data.imageId })
-      .where(eq(shoots.id, data.shootId))
-      .returning();
-    return result[0];
-  }
-
-  async deleteImage(id: number): Promise<boolean> {
+  async deleteImage(id: string): Promise<boolean> {
     const result = await db.delete(images).where(eq(images.id, id));
     return result.rowCount > 0;
   }
 
   // Package methods
-  async getPackage(id: number): Promise<Package | undefined> {
-    const result = await db.select().from(packages).where(eq(packages.id, id)).limit(1);
-    return result[0];
-  }
-
   async getPackages(): Promise<Package[]> {
-    return await db.select().from(packages).orderBy(packages.order, packages.name);
+    return await db.select().from(packages).where(eq(packages.isActive, true)).orderBy(packages.displayOrder);
   }
 
   async getPackagesByCategory(category: string): Promise<Package[]> {
-    return await db.select().from(packages).where(eq(packages.category, category)).orderBy(packages.order, packages.name);
+    return await db.select().from(packages)
+      .where(and(eq(packages.category, category), eq(packages.isActive, true)))
+      .orderBy(packages.displayOrder);
   }
 
   async createPackage(insertPackage: InsertPackage): Promise<Package> {
@@ -192,19 +193,35 @@ export class SupabaseStorage implements IStorage {
     return result[0];
   }
 
-  async updatePackage(id: number, updates: Partial<InsertPackage>): Promise<Package | undefined> {
-    const result = await db.update(packages).set(updates).where(eq(packages.id, id)).returning();
+  // Analytics methods
+  async createAnalytics(insertAnalytics: InsertAnalytics): Promise<Analytics> {
+    const result = await db.insert(analytics).values(insertAnalytics).returning();
     return result[0];
   }
 
-  async deletePackage(id: number): Promise<boolean> {
-    const result = await db.delete(packages).where(eq(packages.id, id));
+  async getAnalyticsByUser(userId: string): Promise<Analytics[]> {
+    return await db.select().from(analytics).where(eq(analytics.userId, userId)).orderBy(desc(analytics.createdAt));
+  }
+
+  // Favorites methods
+  async getFavoritesByUser(userId: string): Promise<Favorite[]> {
+    return await db.select().from(favorites).where(eq(favorites.userId, userId)).orderBy(desc(favorites.createdAt));
+  }
+
+  async createFavorite(insertFavorite: InsertFavorite): Promise<Favorite> {
+    const result = await db.insert(favorites).values(insertFavorite).returning();
+    return result[0];
+  }
+
+  async deleteFavorite(userId: string, imageId: string): Promise<boolean> {
+    const result = await db.delete(favorites)
+      .where(and(eq(favorites.userId, userId), eq(favorites.imageId, imageId)));
     return result.rowCount > 0;
   }
 
   // Booking methods
-  async getBooking(id: number): Promise<Booking | undefined> {
-    const result = await db.select().from(bookings).where(eq(bookings.id, id)).limit(1);
+  async createBooking(insertBooking: InsertBooking): Promise<Booking> {
+    const result = await db.insert(bookings).values(insertBooking).returning();
     return result[0];
   }
 
@@ -212,38 +229,8 @@ export class SupabaseStorage implements IStorage {
     return await db.select().from(bookings).orderBy(desc(bookings.createdAt));
   }
 
-  async createBooking(insertBooking: InsertBooking): Promise<Booking> {
-    const result = await db.insert(bookings).values(insertBooking).returning();
-    return result[0];
-  }
-
   async updateBooking(id: number, updates: Partial<InsertBooking>): Promise<Booking | undefined> {
     const result = await db.update(bookings).set(updates).where(eq(bookings.id, id)).returning();
     return result[0];
-  }
-
-  async deleteBooking(id: number): Promise<boolean> {
-    const result = await db.delete(bookings).where(eq(bookings.id, id));
-    return result.rowCount > 0;
-  }
-
-  // Analytics methods
-  async getAnalytics(id: number): Promise<Analytics | undefined> {
-    const result = await db.select().from(analytics).where(eq(analytics.id, id)).limit(1);
-    return result[0];
-  }
-
-  async getAnalyticsByShoot(shootId: number): Promise<Analytics[]> {
-    return await db.select().from(analytics).where(eq(analytics.shootId, shootId)).orderBy(desc(analytics.timestamp));
-  }
-
-  async createAnalytics(insertAnalytics: InsertAnalytics): Promise<Analytics> {
-    const result = await db.insert(analytics).values(insertAnalytics).returning();
-    return result[0];
-  }
-
-  async deleteAnalytics(id: number): Promise<boolean> {
-    const result = await db.delete(analytics).where(eq(analytics.id, id));
-    return result.rowCount > 0;
   }
 }

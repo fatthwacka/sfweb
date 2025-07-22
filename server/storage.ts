@@ -1,5 +1,6 @@
 import { 
-  users, clients, shoots, images, packages, analytics, favorites, bookings,
+  profiles, users, clients, shoots, images, packages, analytics, favorites, bookings,
+  type Profile, type InsertProfile,
   type User, type InsertUser, 
   type Client, type InsertClient,
   type Shoot, type InsertShoot,
@@ -12,7 +13,15 @@ import {
 } from "@shared/schema";
 
 export interface IStorage {
-  // Users (keep as integers - compatible with Supabase)
+  // Profiles (main user system - UUIDs)
+  getProfile(id: string): Promise<Profile | undefined>;
+  getProfileByEmail(email: string): Promise<Profile | undefined>;
+  getAllProfiles(): Promise<Profile[]>;
+  createProfile(profile: InsertProfile): Promise<Profile>;
+  updateProfile(id: string, updates: Partial<InsertProfile>): Promise<Profile | undefined>;
+  deleteProfile(id: string): Promise<boolean>;
+  
+  // Legacy Users (for backwards compatibility)
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
@@ -20,15 +29,15 @@ export interface IStorage {
   updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined>;
   deleteUser(id: number): Promise<boolean>;
   
-  // Clients (now UUIDs)
-  getClient(id: string): Promise<Client | undefined>;
+  // Clients (integers)
+  getClient(id: number): Promise<Client | undefined>;
   getClientBySlug(slug: string): Promise<Client | undefined>;
   getClients(): Promise<Client[]>;
   createClient(client: InsertClient): Promise<Client>;
-  updateClient(id: string, updates: Partial<InsertClient>): Promise<Client | undefined>;
-  deleteClient(id: string): Promise<boolean>;
+  updateClient(id: number, updates: Partial<InsertClient>): Promise<Client | undefined>;
+  deleteClient(id: number): Promise<boolean>;
   
-  // Shoots (now UUIDs)
+  // Shoots (UUIDs)
   getShoot(id: string): Promise<Shoot | undefined>;
   getShootsByClient(clientId: string): Promise<Shoot[]>;
   getPublicShoots(): Promise<Shoot[]>;
@@ -37,31 +46,31 @@ export interface IStorage {
   updateShootCustomization(id: string, data: UpdateShootCustomization): Promise<Shoot | undefined>;
   deleteShoot(id: string): Promise<boolean>;
   
-  // Images (now UUIDs)
+  // Images (UUIDs)
   getImage(id: string): Promise<Image | undefined>;
   getImagesByShoot(shootId: string): Promise<Image[]>;
   createImage(image: InsertImage): Promise<Image>;
   updateImage(id: string, updates: Partial<InsertImage>): Promise<Image | undefined>;
   deleteImage(id: string): Promise<boolean>;
   
-  // Packages (keep as integers - these are not in Supabase with UUIDs)
+  // Packages (UUIDs)
   getPackages(): Promise<Package[]>;
   getPackagesByCategory(category: string): Promise<Package[]>;
   createPackage(pkg: InsertPackage): Promise<Package>;
   
-  // Analytics (now UUIDs)
+  // Analytics (UUIDs)
   createAnalytics(analytics: InsertAnalytics): Promise<Analytics>;
   getAnalyticsByUser(userId: string): Promise<Analytics[]>;
   
-  // Favorites (now UUIDs)
+  // Favorites (UUIDs)
   getFavoritesByUser(userId: string): Promise<Favorite[]>;
   createFavorite(favorite: InsertFavorite): Promise<Favorite>;
   deleteFavorite(userId: string, imageId: string): Promise<boolean>;
   
-  // Bookings (now UUIDs)
+  // Bookings (integers)
   createBooking(booking: InsertBooking): Promise<Booking>;
   getBookings(): Promise<Booking[]>;
-  updateBooking(id: string, updates: Partial<InsertBooking>): Promise<Booking | undefined>;
+  updateBooking(id: number, updates: Partial<InsertBooking>): Promise<Booking | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -716,6 +725,5 @@ import { PostgreSQLStorage } from "./pg-storage";
 // Import Supabase storage
 import { SupabaseStorage } from "./supabase-storage";
 
-// Temporarily using MemStorage while completing UUID schema migration
-// The Supabase connection works for authentication, full migration pending
-export const storage = new MemStorage();
+// Full Supabase integration - completely ditching memory storage
+export const storage = new SupabaseStorage();
