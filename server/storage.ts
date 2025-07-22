@@ -99,10 +99,37 @@ export class MemStorage implements IStorage {
     };
     this.users.set(staffUser.id, staffUser);
 
+    // Create super admin user (dax@slyfox.co.za)
+    const superAdminUser: User = {
+      id: this.currentUserId++,
+      email: "dax@slyfox.co.za",
+      password: "slyfox2025",
+      role: "super_admin",
+      profileImage: null,
+      bannerImage: null,
+      themePreference: "dark",
+      createdAt: new Date()
+    };
+    this.users.set(superAdminUser.id, superAdminUser);
+
+    // Create staff user (eben@slyfox.co.za)
+    const staffUser2: User = {
+      id: this.currentUserId++,
+      email: "eben@slyfox.co.za",
+      password: "slyfox2025",
+      role: "staff",
+      profileImage: null,
+      bannerImage: null,
+      themePreference: "dark",
+      createdAt: new Date()
+    };
+    this.users.set(staffUser2.id, staffUser2);
+
+    // Create client user (demo@slyfox.co.za)
     const clientUser: User = {
       id: this.currentUserId++,
       email: "demo@slyfox.co.za",
-      password: "hashedpassword123",
+      password: "client123",
       role: "client",
       profileImage: null,
       bannerImage: null,
@@ -650,4 +677,8 @@ export class MemStorage implements IStorage {
 import { PostgreSQLStorage } from "./pg-storage";
 
 // Use MemStorage for now - temporarily bypass database issues
+// Import Supabase storage
+import { SupabaseStorage } from "./supabase-storage";
+
+// Temporarily use MemStorage until Supabase connection is resolved
 export const storage = new MemStorage();

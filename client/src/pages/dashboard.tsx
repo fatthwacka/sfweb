@@ -179,16 +179,17 @@ export default function Dashboard() {
                   Welcome back, <span className="text-salmon">{user.email.split('@')[0]}</span>
                 </h1>
                 <p className="text-muted-foreground">
-                  {user.role === 'staff' ? 'Staff Account' : 'Client Account'}
+                  {user.role === 'super_admin' ? 'Super Administrator' : 
+                   user.role === 'staff' ? 'Staff Account' : 'Client Account'}
                 </p>
               </div>
             </div>
             
-            {user.role === 'staff' && (
+            {(user.role === 'staff' || user.role === 'super_admin') && (
               <Link href="/admin">
                 <Button className="bg-salmon text-white hover:bg-salmon-muted">
                   <Shield className="w-4 h-4 mr-2" />
-                  Admin Panel
+                  {user.role === 'super_admin' ? 'Super Admin Panel' : 'Admin Panel'}
                 </Button>
               </Link>
             )}

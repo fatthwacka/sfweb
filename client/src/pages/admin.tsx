@@ -8,8 +8,8 @@ import { AdminContent } from "@/components/admin/admin-content";
 export default function Admin() {
   const { user } = useAuth();
 
-  // Check if user is staff
-  if (!user || user.role !== 'staff') {
+  // Check if user has admin privileges
+  if (!user || (user.role !== 'staff' && user.role !== 'super_admin')) {
     return (
       <div className="min-h-screen bg-background text-foreground">
         <Navigation />
@@ -18,7 +18,7 @@ export default function Admin() {
             <Shield className="w-16 h-16 text-muted-foreground mx-auto mb-6" />
             <h1 className="text-4xl font-saira font-black mb-6">Access Denied</h1>
             <p className="text-xl text-muted-foreground mb-8">
-              You need staff privileges to access the admin panel.
+              You need staff or admin privileges to access this panel.
             </p>
             <Link href="/dashboard">
               <Button className="bg-gold text-black hover:bg-gold-muted">
@@ -60,7 +60,7 @@ export default function Admin() {
             </Link>
           </div>
           
-          <AdminContent />
+          <AdminContent userRole={user.role} />
         </div>
       </section>
     </div>

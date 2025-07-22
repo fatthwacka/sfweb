@@ -6,7 +6,7 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
-  role: text("role").notNull().default("client"), // "staff" or "client"
+  role: text("role").notNull().default("client"), // "super_admin", "staff", or "client"
   profileImage: text("profile_image"),
   bannerImage: text("banner_image"),
   themePreference: text("theme_preference").default("dark"),

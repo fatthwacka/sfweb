@@ -20,35 +20,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email and password required" });
       }
 
-      // For now, use simple hardcoded authentication for staff
-      const staffEmails = [
-        "dax.tucker@gmail.com",
-        "dax@slyfox.co.za", 
-        "eben@slyfox.co.za",
-        "kyle@slyfox.co.za"
-      ];
-      
-      if (staffEmails.includes(email) && password === "slyfox2025") {
-        const user = {
-          id: staffEmails.indexOf(email) + 1,
-          email,
-          role: "staff" as const
-        };
-        return res.json({ user });
+      // Check against database users
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ message: "Invalid credentials" });
       }
-      
-      // For clients, check against database (when implemented)
-      // For now, allow any client with password "client123"
-      if (password === "client123") {
-        const user = {
-          id: 100,
-          email,
-          role: "client" as const
-        };
-        return res.json({ user });
+
+      // Simple password check (in production, use proper hashing)
+      if (user.password !== password) {
+        return res.status(401).json({ message: "Invalid credentials" });
       }
+
+      // Return user data
+      const responseUser = {
+        id: user.id,
+        email: user.email,
+        role: user.role
+      };
       
-      res.status(401).json({ message: "Invalid credentials" });
+      res.json({ user: responseUser });
     } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ message: "Internal server error" });

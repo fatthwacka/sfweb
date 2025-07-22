@@ -70,10 +70,14 @@ interface Image {
   createdAt: string;
 }
 
-export function AdminContent() {
+interface AdminContentProps {
+  userRole: string;
+}
+
+export function AdminContent({ userRole }: AdminContentProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'shoots' | 'images' | 'galleries'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'shoots' | 'images' | 'galleries' | 'users'>('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [newClientOpen, setNewClientOpen] = useState(false);
   const [newShootOpen, setNewShootOpen] = useState(false);
@@ -247,7 +251,8 @@ export function AdminContent() {
           { id: 'clients', label: 'Clients', icon: Users },
           { id: 'shoots', label: 'Shoots', icon: Camera },
           { id: 'images', label: 'Images', icon: FileImage },
-          { id: 'galleries', label: 'Gallery Management', icon: Palette }
+          { id: 'galleries', label: 'Gallery Management', icon: Palette },
+          ...(userRole === 'super_admin' ? [{ id: 'users', label: 'User Management', icon: User }] : [])
         ].map((tab) => {
           const Icon = tab.icon;
           return (
