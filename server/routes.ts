@@ -295,13 +295,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const data = insertClientSchema.parse(req.body);
       
-      // Generate unique slug
-      const slug = data.name.toLowerCase()
-        .replace(/[^a-z0-9]/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-|-$/g, '');
+      // Add required created_by field using admin user
+      const clientData = {
+        ...data,
+        createdBy: '070dae19-d4ce-4fe0-b3d4-a090fa3ece3a' // Admin user ID
+      };
       
-      const client = await storage.createClient(data);
+      const client = await storage.createClient(clientData);
       res.json(client);
     } catch (error) {
       console.error("Create client error:", error);
@@ -384,7 +384,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/images/:id", async (req, res) => {
     try {
-      const imageId = parseInt(req.params.id);
+      const imageId = req.params.id; // UUID string
       const updates = req.body;
       
       const image = await storage.updateImage(imageId, updates);
@@ -400,7 +400,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/images/:id", async (req, res) => {
     try {
-      const imageId = parseInt(req.params.id);
+      const imageId = req.params.id; // UUID string
       const deleted = await storage.deleteImage(imageId);
       
       if (!deleted) {
@@ -498,6 +498,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Get gallery images error:", error);
       res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/populate-realistic", async (req, res) => {
+    try {
+      const { createSimpleTestData } = await import('./simple-test-data.js');
+      const result = await createSimpleTestData();
+      res.json({ 
+        message: "Test data created successfully",
+        stats: result
+      });
+    } catch (error) {
+      console.error("Test data creation error:", error);
+      res.status(500).json({ 
+        message: "Test data creation failed", 
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 
