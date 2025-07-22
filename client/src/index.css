@@ -5,16 +5,16 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(0, 0%, 100%);
-  --foreground: hsl(0, 0%, 20%);
-  --muted: hsl(0, 0%, 96%);
-  --muted-foreground: hsl(0, 0%, 45%);
-  --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(0, 0%, 20%);
-  --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(0, 0%, 20%);
-  --border: hsl(0, 0%, 90%);
-  --input: hsl(0, 0%, 95%);
+  --background: hsl(260, 30%, 8%);
+  --foreground: hsl(0, 0%, 95%);
+  --muted: hsl(260, 20%, 12%);
+  --muted-foreground: hsl(240, 5%, 65%);
+  --popover: hsl(260, 25%, 10%);
+  --popover-foreground: hsl(0, 0%, 95%);
+  --card: hsl(260, 20%, 10%);
+  --card-foreground: hsl(0, 0%, 95%);
+  --border: hsl(260, 15%, 20%);
+  --input: hsl(260, 15%, 15%);
   --primary: hsl(16, 100%, 73%);
   --primary-foreground: hsl(0, 0%, 100%);
   --secondary: hsl(180, 100%, 50%);
@@ -29,10 +29,12 @@
   /* Custom colors */
   --salmon: hsl(16, 100%, 73%);
   --salmon-muted: hsl(16, 80%, 65%);
+  --salmon-dark: hsl(16, 60%, 15%);
   --cyan: hsl(180, 100%, 50%);
   --cyan-muted: hsl(180, 80%, 60%);
-  --gold: hsl(45, 100%, 50%);
-  --gold-muted: hsl(45, 80%, 60%);
+  --cyan-dark: hsl(180, 40%, 15%);
+  --purple-dark: hsl(260, 40%, 12%);
+  --grey-dark: hsl(220, 15%, 10%);
 }
 
 
@@ -45,11 +47,11 @@
   body {
     @apply bg-background text-foreground font-saira antialiased;
     background: 
-      radial-gradient(ellipse at 20% 30%, hsla(280, 80%, 50%, 0.15) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 70%, hsla(16, 90%, 60%, 0.15) 0%, transparent 50%),
-      radial-gradient(ellipse at 60% 10%, hsla(180, 80%, 50%, 0.15) 0%, transparent 50%),
-      radial-gradient(ellipse at 10% 80%, hsla(220, 70%, 40%, 0.15) 0%, transparent 50%),
-      hsl(0, 0%, 100%);
+      radial-gradient(ellipse at 20% 30%, hsla(280, 80%, 50%, 0.4) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, hsla(16, 90%, 60%, 0.35) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 10%, hsla(180, 80%, 50%, 0.3) 0%, transparent 50%),
+      radial-gradient(ellipse at 10% 80%, hsla(220, 70%, 40%, 0.4) 0%, transparent 50%),
+      hsl(260, 30%, 8%);
     background-attachment: fixed;
     min-height: 100vh;
   }
@@ -190,9 +192,9 @@
   /* Card System Classes */
   .studio-card {
     @apply rounded-2xl p-8 shadow-2xl transition-all duration-500 transform hover:scale-[1.02];
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 248, 248, 0.95) 100%);
+    background: linear-gradient(135deg, hsl(260, 25%, 12%) 0%, hsl(220, 20%, 10%) 100%);
     border: 1px solid rgba(255, 107, 107, 0.3);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1), 0 0 20px rgba(255, 107, 107, 0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 107, 107, 0.1);
   }
 
   /* Universal Button Classes - replace all inline button styling */
@@ -280,9 +282,9 @@
   /* Contact Section Styling */
   .contact-info-card {
     @apply rounded-xl p-6 border transition-all duration-300 hover:scale-105;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 248, 248, 0.95) 100%);
+    background: linear-gradient(135deg, hsl(180, 30%, 12%) 0%, hsl(260, 25%, 10%) 100%);
     border-color: rgba(78, 205, 196, 0.3);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   }
   
   .contact-info-card:hover {
@@ -380,20 +382,20 @@
   }
   
   .studio-card:hover {
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 30px rgba(255, 107, 107, 0.2);
-    border-color: rgba(255, 107, 107, 0.5);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 107, 107, 0.3);
+    border-color: rgba(255, 107, 107, 0.7);
   }
   
   .studio-card-premium {
     @apply rounded-2xl p-8 shadow-2xl transition-all duration-500 transform hover:scale-[1.02];
-    background: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.95) 50%, rgba(248, 248, 248, 0.95) 100%);
+    background: linear-gradient(135deg, hsl(180, 40%, 15%) 0%, hsl(260, 25%, 12%) 50%, hsl(220, 20%, 10%) 100%);
     border: 2px solid rgba(0, 255, 255, 0.4);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 255, 255, 0.2);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 255, 255, 0.2);
   }
   
   .studio-card-premium:hover {
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 255, 255, 0.3);
-    border-color: rgba(0, 255, 255, 0.6);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 255, 255, 0.4);
+    border-color: rgba(0, 255, 255, 0.8);
   }
   
   .studio-card-title {
@@ -429,9 +431,9 @@
   
   .studio-card {
     @apply rounded-2xl border transition-all duration-300 transform hover:-translate-y-2 flex flex-col;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 248, 248, 0.95) 100%);
+    background: linear-gradient(135deg, hsl(16, 30%, 12%) 0%, hsl(260, 25%, 10%) 100%);
     border-color: rgba(255, 107, 107, 0.4);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     min-height: 600px;
   }
   
@@ -442,7 +444,7 @@
   
   .studio-card-premium {
     @apply rounded-2xl border transition-all duration-300 transform hover:-translate-y-2 flex flex-col;
-    background: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.95) 50%, rgba(248, 248, 248, 0.95) 100%);
+    background: linear-gradient(135deg, hsl(180, 40%, 15%) 0%, hsl(260, 25%, 12%) 50%, hsl(220, 20%, 10%) 100%);
     border-color: rgba(0, 255, 255, 0.5);
     box-shadow: 0 8px 30px rgba(0, 255, 255, 0.2);
     min-height: 600px;

@@ -63,10 +63,12 @@ export default {
         },
         salmon: "var(--salmon)",
         "salmon-muted": "var(--salmon-muted)",
+        "salmon-dark": "var(--salmon-dark)",
         cyan: "var(--cyan)",
         "cyan-muted": "var(--cyan-muted)",
-        gold: "var(--gold)",
-        "gold-muted": "var(--gold-muted)",
+        "cyan-dark": "var(--cyan-dark)",
+        "purple-dark": "var(--purple-dark)",
+        "grey-dark": "var(--grey-dark)",
       },
       keyframes: {
         "accordion-down": {

@@ -40,7 +40,7 @@ export default function Admin() {
       <Navigation />
       
       {/* Header */}
-      <section className="pt-32 pb-8 bg-gradient-to-br from-slate-50 via-background to-slate-100">
+      <section className="pt-32 pb-8 bg-gradient-to-br from-purple-dark via-background to-grey-dark">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">

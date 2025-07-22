@@ -266,13 +266,13 @@ export function AdminContent() {
       </div>
 
       {/* Content */}
-      <section className="py-12 bg-gradient-to-br from-slate-50 via-background to-slate-100 min-h-screen">
+      <section className="py-12 bg-gradient-to-br from-purple-dark via-background to-grey-dark min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {activeTab === 'overview' && (
             <div className="space-y-8">
               {/* Stats Grid */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card className="bg-white border border-salmon/20 shadow-lg">
+                <Card className="bg-salmon-dark border border-salmon/30 shadow-lg">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                       <Users className="w-4 h-4 icon-cyan" />
@@ -284,7 +284,7 @@ export function AdminContent() {
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-white border border-salmon/20 shadow-lg">
+                <Card className="bg-salmon-dark border border-salmon/30 shadow-lg">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                       <Camera className="w-4 h-4 icon-salmon" />
@@ -296,7 +296,7 @@ export function AdminContent() {
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-white border border-salmon/20 shadow-lg">
+                <Card className="bg-salmon-dark border border-salmon/30 shadow-lg">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                       <FileImage className="w-4 h-4 icon-cyan" />
@@ -308,7 +308,7 @@ export function AdminContent() {
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-white border border-salmon/20 shadow-lg">
+                <Card className="bg-salmon-dark border border-salmon/30 shadow-lg">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                       <Eye className="w-4 h-4 icon-salmon" />
@@ -324,7 +324,7 @@ export function AdminContent() {
               </div>
 
               {/* Quick Actions */}
-              <Card className="bg-white border border-salmon/20 shadow-lg">
+              <Card className="bg-salmon-dark border border-salmon/30 shadow-lg">
                 <CardHeader>
                   <CardTitle className="text-xl font-saira font-bold text-salmon">Quick Actions</CardTitle>
                 </CardHeader>
@@ -337,7 +337,7 @@ export function AdminContent() {
                           <span className="text-sm">Add Client</span>
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="bg-white border border-cyan/20 shadow-lg">
+                      <DialogContent className="bg-cyan-dark border border-cyan/30 shadow-lg">
                         <DialogHeader>
                           <DialogTitle className="text-salmon">Add New Client</DialogTitle>
                         </DialogHeader>
@@ -372,7 +372,7 @@ export function AdminContent() {
                           <span className="text-sm">Add Shoot</span>
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="bg-white border border-cyan/20 shadow-lg max-w-4xl max-h-[90vh] overflow-y-auto">
+                      <DialogContent className="bg-cyan-dark border border-cyan/30 shadow-lg max-w-4xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle className="text-salmon">Add New Shoot</DialogTitle>
                         </DialogHeader>
@@ -529,12 +529,12 @@ export function AdminContent() {
                       </DialogContent>
                     </Dialog>
 
-                    <Button className="h-20 flex-col gap-2 bg-white border border-cyan/20 shadow-lg hover:border-salmon text-white">
+                    <Button className="h-20 flex-col gap-2 bg-cyan-dark border border-cyan/30 shadow-lg hover:border-salmon text-white">
                       <FileImage className="w-6 h-6 icon-salmon" />
                       <span className="text-sm">Upload Images</span>
                     </Button>
 
-                    <Button className="h-20 flex-col gap-2 bg-white border border-cyan/20 shadow-lg hover:border-salmon text-white">
+                    <Button className="h-20 flex-col gap-2 bg-cyan-dark border border-cyan/30 shadow-lg hover:border-salmon text-white">
                       <BarChart3 className="w-6 h-6 icon-cyan" />
                       <span className="text-sm">View Analytics</span>
                     </Button>
@@ -565,7 +565,7 @@ export function AdminContent() {
                         Add Client
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="bg-white border border-cyan/20 shadow-lg max-w-md">
+                    <DialogContent className="bg-cyan-dark border border-cyan/30 shadow-lg max-w-md">
                       <DialogHeader>
                         <DialogTitle className="text-salmon">Add New Client</DialogTitle>
                         <DialogDescription className="text-muted-foreground">
@@ -607,7 +607,7 @@ export function AdminContent() {
                   </div>
                 ) : (
                   filteredClients.map(client => (
-                    <Card key={client.id} className="bg-white border border-salmon/20 shadow-lg">
+                    <Card key={client.id} className="bg-salmon-dark border border-salmon/30 shadow-lg">
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start">
                           <div className="space-y-2">
@@ -669,7 +669,7 @@ export function AdminContent() {
                         Add Shoot
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="bg-white border border-cyan/20 shadow-lg max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogContent className="bg-cyan-dark border border-cyan/30 shadow-lg max-w-2xl max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle className="text-salmon">Create New Shoot</DialogTitle>
                         <DialogDescription className="text-muted-foreground">
@@ -755,7 +755,7 @@ export function AdminContent() {
                   </div>
                 ) : (
                   filteredShoots.map(shoot => (
-                    <Card key={shoot.id} className="bg-white border border-salmon/20 shadow-lg">
+                    <Card key={shoot.id} className="bg-salmon-dark border border-salmon/30 shadow-lg">
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start">
                           <div className="space-y-3">
@@ -824,7 +824,7 @@ export function AdminContent() {
                 </Button>
               </div>
 
-              <Card className="bg-white border border-salmon/20 shadow-lg">
+              <Card className="bg-salmon-dark border border-salmon/30 shadow-lg">
                 <CardContent className="p-8 text-center">
                   <FileImage className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-xl font-semibold mb-2">No Images Yet</h3>
@@ -847,7 +847,7 @@ export function AdminContent() {
               </div>
 
               {/* Shoot Selection */}
-              <Card className="bg-white border border-salmon/20 shadow-lg">
+              <Card className="bg-salmon-dark border border-salmon/30 shadow-lg">
                 <CardHeader>
                   <CardTitle className="text-salmon">Select Shoot to Manage</CardTitle>
                 </CardHeader>
@@ -874,7 +874,7 @@ export function AdminContent() {
               {selectedShoot && <GalleryEditor shootId={selectedShoot} />}
 
               {!selectedShoot && (
-                <Card className="bg-white border border-salmon/20 shadow-lg">
+                <Card className="bg-salmon-dark border border-salmon/30 shadow-lg">
                   <CardContent className="p-8 text-center">
                     <Palette className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-xl font-semibold mb-2">Select a Shoot</h3>
@@ -891,7 +891,7 @@ export function AdminContent() {
 
       {/* Edit Shoot Dialog */}
       <Dialog open={!!editingShoot} onOpenChange={(open) => !open && setEditingShoot(null)}>
-        <DialogContent className="bg-white border border-cyan/20 shadow-lg max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-cyan-dark border border-cyan/30 shadow-lg max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-salmon">Edit Shoot: {editingShoot?.title}</DialogTitle>
             <DialogDescription className="text-muted-foreground">

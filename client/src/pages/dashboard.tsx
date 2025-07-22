@@ -222,7 +222,7 @@ export default function Dashboard() {
             <div className="space-y-8">
               {/* Stats Grid */}
               <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
-                <Card className="bg-white border border-salmon/20 shadow-lg">
+                <Card className="bg-purple-dark border border-salmon/30 shadow-lg">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Total Albums</CardTitle>
                   </CardHeader>
@@ -231,7 +231,7 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-white border border-cyan/20 shadow-lg">
+                <Card className="bg-cyan-dark border border-cyan/30 shadow-lg">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Total Photos</CardTitle>
                   </CardHeader>
@@ -240,7 +240,7 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-white border border-salmon/20 shadow-lg">
+                <Card className="bg-purple-dark border border-salmon/30 shadow-lg">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Total Views</CardTitle>
                   </CardHeader>
@@ -249,7 +249,7 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-white border border-cyan/20 shadow-lg">
+                <Card className="bg-cyan-dark border border-cyan/30 shadow-lg">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Downloads</CardTitle>
                   </CardHeader>
@@ -258,7 +258,7 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-white border border-salmon/20 shadow-lg">
+                <Card className="bg-purple-dark border border-salmon/30 shadow-lg">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Favorites</CardTitle>
                   </CardHeader>
@@ -270,14 +270,14 @@ export default function Dashboard() {
 
               <div className="grid lg:grid-cols-2 gap-8">
                 {/* Recent Activity */}
-                <Card className="bg-white border border-cyan/20 shadow-lg">
+                <Card className="bg-cyan-dark border border-cyan/30 shadow-lg">
                   <CardHeader>
                     <CardTitle className="text-xl text-cyan">Recent Activity</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       {recentActivity.map((activity) => (
-                        <div key={activity.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div key={activity.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/10 transition-colors">
                           <div className="text-salmon">
                             {getActivityIcon(activity.type)}
                           </div>
@@ -298,7 +298,7 @@ export default function Dashboard() {
                 </Card>
 
                 {/* Quick Actions */}
-                <Card className="bg-white border border-salmon/20 shadow-lg">
+                <Card className="bg-purple-dark border border-salmon/30 shadow-lg">
                   <CardHeader>
                     <CardTitle className="text-xl text-salmon">Quick Actions</CardTitle>
                   </CardHeader>
