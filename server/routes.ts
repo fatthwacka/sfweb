@@ -4,6 +4,7 @@ import { storage } from './storage';
 import { seedCompleteDatabase } from './seed-database.js';
 import { createSupabaseUser, type CreateUserData } from './supabase-auth.js';
 import { populateWithExistingAuth } from './populate-with-existing-auth.js';
+import { initializeAdmin } from './init-admin.js';
 import { 
   insertUserSchema, insertClientSchema, insertShootSchema, 
   insertImageSchema, insertBookingSchema, insertAnalyticsSchema,
@@ -150,6 +151,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ success: true });
   });
   
+  // Initialize admin user - run this first
+  app.post("/api/admin/init", async (req, res) => {
+    try {
+      console.log("🔑 Initializing admin user...");
+      const result = await initializeAdmin();
+      
+      if (result) {
+        res.json({ 
+          message: "Admin user created successfully", 
+          user: {
+            id: result.authUser.id,
+            email: result.authUser.email,
+            profile: result.profile
+          }
+        });
+      } else {
+        res.json({ 
+          message: "Admin user already exists" 
+        });
+      }
+    } catch (error) {
+      console.error("Admin initialization error:", error);
+      res.status(500).json({ 
+        message: "Admin initialization failed", 
+        error: error.message 
+      });
+    }
+  });
+
   // Admin endpoint to populate database with realistic dummy data (no auth dependency)
   app.post("/api/admin/populate-database", async (req, res) => {
     try {
