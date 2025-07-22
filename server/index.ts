@@ -37,6 +37,12 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  console.log("🔄 Initializing server...");
+  console.log("DATABASE_URL configured:", !!process.env.DATABASE_URL);
+  console.log("SUPABASE_URL configured:", !!process.env.VITE_SUPABASE_URL);
+  console.log("SUPABASE_ANON_KEY configured:", !!process.env.VITE_SUPABASE_ANON_KEY);
+  console.log("SUPABASE_SERVICE_ROLE_KEY configured:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

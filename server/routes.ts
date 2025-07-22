@@ -97,14 +97,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Create booking inquiry
       const booking = await storage.createBooking({
-        name: `${data.firstName} ${data.lastName}`,
         email: data.email,
         phone: data.phone || "",
         message: data.message,
         serviceType: data.service || "general",
         preferredDate: null,
         budgetRange: "",
-        status: "pending"
+        status: "pending",
+        inquiryData: JSON.stringify({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          fullName: `${data.firstName} ${data.lastName}`,
+          service: data.service
+        })
       });
 
       // TODO: Send email to info@slyfox.co.za using Nodemailer
