@@ -1,4 +1,5 @@
 import { pgTable, text, serial, integer, boolean, timestamp, uuid, decimal } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -14,49 +15,42 @@ export const users = pgTable("users", {
 });
 
 export const clients = pgTable("clients", {
-  id: serial("id").primaryKey(),
+  id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
-  slug: text("slug").notNull().unique(),
+  slug: text("slug").notNull(),
   email: text("email"),
-  phone: text("phone"),
-  address: text("address"),
-  userId: integer("user_id").references(() => users.id),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  userId: uuid("user_id"),
+  createdBy: uuid("created_by").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
 });
 
 export const shoots = pgTable("shoots", {
-  id: serial("id").primaryKey(),
-  clientId: integer("client_id").references(() => clients.id).notNull(),
+  id: uuid("id").defaultRandom().primaryKey(),
+  clientId: uuid("client_id").references(() => clients.id).notNull(),
   title: text("title").notNull(),
   description: text("description"),
-  shootType: text("shoot_type").notNull(), // Wedding, Portrait, Corporate, etc.
-  shootDate: timestamp("shoot_date"),
-  location: text("location"),
-  notes: text("notes"),
   isPrivate: boolean("is_private").default(false).notNull(),
-  customSlug: text("custom_slug").notNull().unique(),
-  customTitle: text("custom_title"),
-  albumCoverId: integer("album_cover_id"),
-  seoTags: text("seo_tags"),
+  bannerImageId: uuid("banner_image_id"),
+  seoTags: text("seo_tags").array(),
   viewCount: integer("view_count").default(0).notNull(),
-  // Gallery customization settings
-  backgroundColor: text("background_color").default("white").notNull(), // "white", "black", "dark-grey"
-  layoutType: text("layout_type").default("masonry").notNull(), // "masonry", "square"
-  borderRadius: integer("border_radius").default(8).notNull(), // 0-30
-  imagePadding: integer("image_padding").default(4).notNull(), // 1-30 pixels
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdBy: uuid("created_by").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
 });
 
 export const images = pgTable("images", {
-  id: serial("id").primaryKey(),
-  shootId: integer("shoot_id").references(() => shoots.id).notNull(),
+  id: uuid("id").defaultRandom().primaryKey(),
+  shootId: uuid("shoot_id").references(() => shoots.id).notNull(),
   filename: text("filename").notNull(),
   storagePath: text("storage_path").notNull(),
-  thumbnailPath: text("thumbnail_path"),
+  originalName: text("original_name"),
+  fileSize: integer("file_size"),
   isPrivate: boolean("is_private").default(false).notNull(),
-  sequence: integer("sequence").default(0).notNull(),
+  uploadOrder: integer("upload_order").default(0).notNull(),
   downloadCount: integer("download_count").default(0).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
 });
 
 export const packages = pgTable("packages", {
@@ -70,27 +64,27 @@ export const packages = pgTable("packages", {
 });
 
 export const analytics = pgTable("analytics", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
-  shootId: integer("shoot_id").references(() => shoots.id),
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id"),
+  shootId: uuid("shoot_id").references(() => shoots.id),
   actionType: text("action_type").notNull(),
-  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  timestamp: timestamp("timestamp", { withTimezone: true }).default(sql`now()`),
 });
 
 export const favorites = pgTable("favorites", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  imageId: integer("image_id").references(() => images.id).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").notNull(),
+  imageId: uuid("image_id").references(() => images.id).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
 });
 
 export const bookings = pgTable("bookings", {
-  id: serial("id").primaryKey(),
-  clientId: integer("client_id").references(() => clients.id),
+  id: uuid("id").defaultRandom().primaryKey(),
+  clientId: uuid("client_id").references(() => clients.id),
   packageId: integer("package_id").references(() => packages.id),
   status: text("status").default("pending").notNull(),
   inquiryData: text("inquiry_data"), // JSON string
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
 });
 
 // Insert schemas
@@ -102,22 +96,22 @@ export const insertUserSchema = createInsertSchema(users).omit({
 export const insertClientSchema = createInsertSchema(clients).omit({
   id: true,
   createdAt: true,
-  slug: true,
+  updatedAt: true,
+  createdBy: true,
 });
 
 export const insertShootSchema = createInsertSchema(shoots).omit({
   id: true,
   createdAt: true,
+  updatedAt: true,
   viewCount: true,
-}).extend({
-  shootDate: z.union([z.string(), z.date()]).transform((val) => 
-    typeof val === 'string' ? new Date(val) : val
-  ).optional(),
+  createdBy: true,
 });
 
 export const insertImageSchema = createInsertSchema(images).omit({
   id: true,
   createdAt: true,
+  updatedAt: true,
   downloadCount: true,
 });
 
@@ -143,11 +137,7 @@ export const insertBookingSchema = createInsertSchema(bookings).omit({
 
 // Gallery customization schema for updating shoot settings
 export const updateShootCustomizationSchema = createInsertSchema(shoots).pick({
-  albumCoverId: true,
-  backgroundColor: true,
-  layoutType: true,
-  borderRadius: true,
-  imagePadding: true,
+  bannerImageId: true,
 });
 
 // Types

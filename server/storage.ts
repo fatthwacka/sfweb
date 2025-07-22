@@ -12,7 +12,7 @@ import {
 } from "@shared/schema";
 
 export interface IStorage {
-  // Users
+  // Users (keep as integers - compatible with Supabase)
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
@@ -20,59 +20,59 @@ export interface IStorage {
   updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined>;
   deleteUser(id: number): Promise<boolean>;
   
-  // Clients
-  getClient(id: number): Promise<Client | undefined>;
+  // Clients (now UUIDs)
+  getClient(id: string): Promise<Client | undefined>;
   getClientBySlug(slug: string): Promise<Client | undefined>;
   getClients(): Promise<Client[]>;
   createClient(client: InsertClient): Promise<Client>;
-  updateClient(id: number, updates: Partial<InsertClient>): Promise<Client | undefined>;
-  deleteClient(id: number): Promise<boolean>;
+  updateClient(id: string, updates: Partial<InsertClient>): Promise<Client | undefined>;
+  deleteClient(id: string): Promise<boolean>;
   
-  // Shoots
-  getShoot(id: number): Promise<Shoot | undefined>;
-  getShootsByClient(clientId: number): Promise<Shoot[]>;
+  // Shoots (now UUIDs)
+  getShoot(id: string): Promise<Shoot | undefined>;
+  getShootsByClient(clientId: string): Promise<Shoot[]>;
   getPublicShoots(): Promise<Shoot[]>;
   createShoot(shoot: InsertShoot): Promise<Shoot>;
-  updateShoot(id: number, updates: Partial<InsertShoot>): Promise<Shoot | undefined>;
-  updateShootCustomization(id: number, data: UpdateShootCustomization): Promise<Shoot | undefined>;
-  deleteShoot(id: number): Promise<boolean>;
+  updateShoot(id: string, updates: Partial<InsertShoot>): Promise<Shoot | undefined>;
+  updateShootCustomization(id: string, data: UpdateShootCustomization): Promise<Shoot | undefined>;
+  deleteShoot(id: string): Promise<boolean>;
   
-  // Images
-  getImage(id: number): Promise<Image | undefined>;
-  getImagesByShoot(shootId: number): Promise<Image[]>;
+  // Images (now UUIDs)
+  getImage(id: string): Promise<Image | undefined>;
+  getImagesByShoot(shootId: string): Promise<Image[]>;
   createImage(image: InsertImage): Promise<Image>;
-  updateImage(id: number, updates: Partial<InsertImage>): Promise<Image | undefined>;
-  deleteImage(id: number): Promise<boolean>;
+  updateImage(id: string, updates: Partial<InsertImage>): Promise<Image | undefined>;
+  deleteImage(id: string): Promise<boolean>;
   
-  // Packages
+  // Packages (keep as integers - these are not in Supabase with UUIDs)
   getPackages(): Promise<Package[]>;
   getPackagesByCategory(category: string): Promise<Package[]>;
   createPackage(pkg: InsertPackage): Promise<Package>;
   
-  // Analytics
+  // Analytics (now UUIDs)
   createAnalytics(analytics: InsertAnalytics): Promise<Analytics>;
-  getAnalyticsByUser(userId: number): Promise<Analytics[]>;
+  getAnalyticsByUser(userId: string): Promise<Analytics[]>;
   
-  // Favorites
-  getFavoritesByUser(userId: number): Promise<Favorite[]>;
+  // Favorites (now UUIDs)
+  getFavoritesByUser(userId: string): Promise<Favorite[]>;
   createFavorite(favorite: InsertFavorite): Promise<Favorite>;
-  deleteFavorite(userId: number, imageId: number): Promise<boolean>;
+  deleteFavorite(userId: string, imageId: string): Promise<boolean>;
   
-  // Bookings
+  // Bookings (now UUIDs)
   createBooking(booking: InsertBooking): Promise<Booking>;
   getBookings(): Promise<Booking[]>;
-  updateBooking(id: number, updates: Partial<InsertBooking>): Promise<Booking | undefined>;
+  updateBooking(id: string, updates: Partial<InsertBooking>): Promise<Booking | undefined>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<number, User> = new Map();
-  private clients: Map<number, Client> = new Map();
-  private shoots: Map<number, Shoot> = new Map();
-  private images: Map<number, Image> = new Map();
+  private clients: Map<string, Client> = new Map();
+  private shoots: Map<string, Shoot> = new Map();
+  private images: Map<string, Image> = new Map();
   private packages: Map<number, Package> = new Map();
-  private analytics: Map<number, Analytics> = new Map();
-  private favorites: Map<number, Favorite> = new Map();
-  private bookings: Map<number, Booking> = new Map();
+  private analytics: Map<string, Analytics> = new Map();
+  private favorites: Map<string, Favorite> = new Map();
+  private bookings: Map<string, Booking> = new Map();
   
   private currentUserId = 1;
   private currentClientId = 1;
@@ -716,5 +716,6 @@ import { PostgreSQLStorage } from "./pg-storage";
 // Import Supabase storage
 import { SupabaseStorage } from "./supabase-storage";
 
-// Now that we understand the schema, let's switch to Supabase storage
-export const storage = new SupabaseStorage();
+// Temporarily using MemStorage while completing UUID schema migration
+// The Supabase connection works for authentication, full migration pending
+export const storage = new MemStorage();
