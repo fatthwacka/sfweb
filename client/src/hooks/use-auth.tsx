@@ -12,6 +12,7 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  signOut: () => void;
   isLoading: boolean;
 }
 
@@ -64,8 +65,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     localStorage.removeItem("user");
   };
 
+  const signOut = logout; // Alias for consistency
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, logout, signOut, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

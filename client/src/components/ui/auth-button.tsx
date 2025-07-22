@@ -8,10 +8,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LogOut, User, Settings, Shield } from "lucide-react";
+import { useLocation } from "wouter";
 
 export function AuthButton() {
   const { user, login, logout } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
@@ -78,12 +80,12 @@ export function AuthButton() {
               <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
             </div>
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setLocation("/dashboard")}>
             <Settings className="mr-2 h-4 w-4" />
             Dashboard
           </DropdownMenuItem>
           {user.role === "staff" && (
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setLocation("/admin")}>
               <Shield className="mr-2 h-4 w-4" />
               Admin Panel
             </DropdownMenuItem>
