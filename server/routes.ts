@@ -1,8 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { SupabaseStorage } from './supabase-storage';
-
-const storage = new SupabaseStorage();
+import { storage } from './storage';
 import { 
   insertUserSchema, insertClientSchema, insertShootSchema, 
   insertImageSchema, insertBookingSchema, insertAnalyticsSchema,
