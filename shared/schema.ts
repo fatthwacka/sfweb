@@ -39,6 +39,11 @@ export const shoots = pgTable("shoots", {
   albumCoverId: integer("album_cover_id"),
   seoTags: text("seo_tags"),
   viewCount: integer("view_count").default(0).notNull(),
+  // Gallery customization settings
+  backgroundColor: text("background_color").default("white").notNull(), // "white", "black", "dark-grey"
+  layoutType: text("layout_type").default("masonry").notNull(), // "masonry", "square"
+  borderRadius: integer("border_radius").default(8).notNull(), // 0-30
+  imagePadding: integer("image_padding").default(4).notNull(), // 1-30 pixels
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -131,12 +136,23 @@ export const insertBookingSchema = createInsertSchema(bookings).omit({
   createdAt: true,
 });
 
+// Gallery customization schema for updating shoot settings
+export const updateShootCustomizationSchema = createInsertSchema(shoots).pick({
+  albumCoverId: true,
+  backgroundColor: true,
+  layoutType: true,
+  borderRadius: true,
+  imagePadding: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 
 export type Client = typeof clients.$inferSelect;
 export type InsertClient = z.infer<typeof insertClientSchema>;
+
+export type UpdateShootCustomization = z.infer<typeof updateShootCustomizationSchema>;
 
 export type Shoot = typeof shoots.$inferSelect;
 export type InsertShoot = z.infer<typeof insertShootSchema>;

@@ -7,7 +7,8 @@ import {
   type Package, type InsertPackage,
   type Analytics, type InsertAnalytics,
   type Favorite, type InsertFavorite,
-  type Booking, type InsertBooking
+  type Booking, type InsertBooking,
+  type UpdateShootCustomization
 } from "@shared/schema";
 
 export interface IStorage {
@@ -31,6 +32,7 @@ export interface IStorage {
   getPublicShoots(): Promise<Shoot[]>;
   createShoot(shoot: InsertShoot): Promise<Shoot>;
   updateShoot(id: number, updates: Partial<InsertShoot>): Promise<Shoot | undefined>;
+  updateShootCustomization(id: number, data: UpdateShootCustomization): Promise<Shoot | undefined>;
   deleteShoot(id: number): Promise<boolean>;
   
   // Images
@@ -240,6 +242,15 @@ export class MemStorage implements IStorage {
     if (!shoot) return undefined;
     
     const updatedShoot = { ...shoot, ...updates };
+    this.shoots.set(id, updatedShoot);
+    return updatedShoot;
+  }
+
+  async updateShootCustomization(id: number, data: UpdateShootCustomization): Promise<Shoot | undefined> {
+    const shoot = this.shoots.get(id);
+    if (!shoot) return undefined;
+    
+    const updatedShoot = { ...shoot, ...data };
     this.shoots.set(id, updatedShoot);
     return updatedShoot;
   }

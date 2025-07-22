@@ -4,7 +4,8 @@ import { storage } from "./storage";
 import { 
   insertUserSchema, insertClientSchema, insertShootSchema, 
   insertImageSchema, insertBookingSchema, insertAnalyticsSchema,
-  updateImageSequenceSchema, updateAlbumCoverSchema, updateShootDetailsSchema
+  updateImageSequenceSchema, updateAlbumCoverSchema, updateShootDetailsSchema,
+  updateShootCustomizationSchema
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -227,6 +228,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(shoot);
     } catch (error) {
       res.status(500).json({ message: "Failed to update shoot" });
+    }
+  });
+
+  app.patch("/api/shoots/:id/customization", async (req, res) => {
+    try {
+      const shootId = parseInt(req.params.id);
+      const data = updateShootCustomizationSchema.parse(req.body);
+      
+      const shoot = await storage.updateShootCustomization(shootId, data);
+      if (!shoot) {
+        return res.status(404).json({ message: "Shoot not found" });
+      }
+      
+      res.json(shoot);
+    } catch (error) {
+      console.error("Update customization error:", error);
+      res.status(400).json({ message: "Invalid customization data" });
     }
   });
 

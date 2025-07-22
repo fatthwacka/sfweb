@@ -25,9 +25,14 @@ import {
   Shield,
   Plus,
   Eye,
-  MapPin
+  MapPin,
+  Palette
 } from "lucide-react";
+import { GalleryCustomization } from "@/components/gallery/gallery-customization";
+import { GalleryPreview } from "@/components/gallery/gallery-preview";
 import { useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface UserStats {
   totalShoots: number;
@@ -58,6 +63,8 @@ export default function Dashboard() {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState<'overview' | 'galleries' | 'settings'>('overview');
+  const [selectedShoot, setSelectedShoot] = useState<any>(null);
+  const [selectedShootImages, setSelectedShootImages] = useState<any[]>([]);
 
   // Mock data - in production, these would be real API calls
   const userStats: UserStats = {
@@ -164,13 +171,13 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Avatar className="w-16 h-16">
-                <AvatarFallback className="bg-gold text-black text-xl font-bold">
+                <AvatarFallback className="bg-salmon text-white text-xl font-bold">
                   {user.email.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <h1 className="text-3xl">
-                  Welcome back, <span className="text-gold">{user.email.split('@')[0]}</span>
+                  Welcome back, <span className="text-salmon">{user.email.split('@')[0]}</span>
                 </h1>
                 <p className="text-muted-foreground">
                   {user.role === 'staff' ? 'Staff Account' : 'Client Account'}
@@ -180,7 +187,7 @@ export default function Dashboard() {
             
             {user.role === 'staff' && (
               <Link href="/admin">
-                <Button className="bg-gold text-black hover:bg-gold-muted">
+                <Button className="bg-salmon text-white hover:bg-salmon-muted">
                   <Shield className="w-4 h-4 mr-2" />
                   Admin Panel
                 </Button>
@@ -202,7 +209,7 @@ export default function Dashboard() {
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`flex items-center gap-2 pb-4 border-b-2 transition-colors ${
                     activeTab === tab.id
-                      ? 'border-gold text-gold'
+                      ? 'border-salmon text-salmon'
                       : 'border-transparent text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -346,9 +353,9 @@ export default function Dashboard() {
             <div className="space-y-8">
               <div className="flex items-center justify-between">
                 <h2 className="text-3xl">
-                  My <span className="text-gold">Galleries</span>
+                  My <span className="text-salmon">Galleries</span>
                 </h2>
-                <Button className="bg-gold text-black hover:bg-gold-muted">
+                <Button className="bg-salmon text-white hover:bg-salmon-muted">
                   <Plus className="w-4 h-4 mr-2" />
                   Request New Shoot
                 </Button>
@@ -356,59 +363,142 @@ export default function Dashboard() {
 
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {userShoots.map((shoot) => (
-                  <Card key={shoot.id} className="bg-white border border-salmon/20 hover:border-salmon shadow-lg transition-colors group cursor-pointer">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-lg font-saira font-bold text-salmon group-hover:text-salmon-muted transition-colors">
-                            {shoot.title}
-                          </CardTitle>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Calendar className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm text-muted-foreground">
-                              {new Date(shoot.shootDate).toLocaleDateString()}
-                            </span>
+                  <Dialog key={shoot.id}>
+                    <DialogTrigger asChild>
+                      <Card className="bg-salmon-dark border border-salmon/30 hover:border-salmon shadow-lg transition-colors group cursor-pointer">
+                        <CardHeader>
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <CardTitle className="text-lg font-saira font-bold text-salmon group-hover:text-salmon-muted transition-colors">
+                                {shoot.title}
+                              </CardTitle>
+                              <div className="flex items-center gap-2 mt-2">
+                                <Calendar className="w-4 h-4 text-muted-foreground" />
+                                <span className="text-sm text-muted-foreground">
+                                  {new Date(shoot.shootDate).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+                            {shoot.isPrivate && (
+                              <Badge variant="secondary" className="bg-salmon/20 text-salmon border-salmon/30">
+                                Private
+                              </Badge>
+                            )}
                           </div>
-                        </div>
-                        {shoot.isPrivate && (
-                          <Badge variant="secondary" className="bg-salmon/20 text-salmon border-salmon/30">
-                            Private
-                          </Badge>
-                        )}
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm">{shoot.location}</span>
-                        </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <MapPin className="w-4 h-4 text-muted-foreground" />
+                              <span className="text-sm">{shoot.location}</span>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div className="flex items-center gap-2">
+                                <FileImage className="w-4 h-4 text-salmon" />
+                                <span>{shoot.imageCount} photos</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Eye className="w-4 h-4 text-cyan" />
+                                <span>{shoot.viewCount} views</span>
+                              </div>
+                            </div>
+                            
+                            <div className="flex gap-2 pt-2">
+                              <Button size="sm" className="flex-1 bg-salmon text-white hover:bg-salmon-muted">
+                                <Palette className="w-4 h-4 mr-2" />
+                                Customize Gallery
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle className="text-2xl font-saira font-bold">
+                          {shoot.title} - Gallery Customization
+                        </DialogTitle>
+                        <DialogDescription>
+                          Customize the appearance and layout of your photo gallery
+                        </DialogDescription>
+                      </DialogHeader>
+                      
+                      <Tabs defaultValue="customize" className="mt-6">
+                        <TabsList className="grid w-full grid-cols-2">
+                          <TabsTrigger value="customize">Customize</TabsTrigger>
+                          <TabsTrigger value="preview">Preview</TabsTrigger>
+                        </TabsList>
                         
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div className="flex items-center gap-2">
-                            <FileImage className="w-4 h-4 text-salmon" />
-                            <span>{shoot.imageCount} photos</span>
+                        <TabsContent value="customize" className="mt-6">
+                          <div className="grid lg:grid-cols-2 gap-6">
+                            <GalleryCustomization 
+                              shoot={{
+                                ...shoot,
+                                backgroundColor: shoot.backgroundColor || 'white',
+                                layoutType: shoot.layoutType || 'masonry',
+                                borderRadius: shoot.borderRadius || 8,
+                                imagePadding: shoot.imagePadding || 4,
+                              }}
+                              images={[
+                                // Mock images for now
+                                { id: 1, filename: 'image1.jpg', storagePath: '/api/placeholder/400/600', sequence: 0, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
+                                { id: 2, filename: 'image2.jpg', storagePath: '/api/placeholder/600/400', sequence: 1, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
+                                { id: 3, filename: 'image3.jpg', storagePath: '/api/placeholder/400/500', sequence: 2, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
+                                { id: 4, filename: 'image4.jpg', storagePath: '/api/placeholder/500/600', sequence: 3, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
+                              ]}
+                              onUpdate={(updatedShoot) => {
+                                console.log('Gallery updated:', updatedShoot);
+                              }}
+                            />
+                            <div className="space-y-4">
+                              <h3 className="text-lg font-semibold">Live Preview</h3>
+                              <div className="border rounded-lg overflow-hidden bg-muted/10 p-4 max-h-96 overflow-y-auto">
+                                <GalleryPreview 
+                                  shoot={{
+                                    ...shoot,
+                                    backgroundColor: shoot.backgroundColor || 'white',
+                                    layoutType: shoot.layoutType || 'masonry',
+                                    borderRadius: shoot.borderRadius || 8,
+                                    imagePadding: shoot.imagePadding || 4,
+                                  }}
+                                  images={[
+                                    { id: 1, filename: 'image1.jpg', storagePath: '/api/placeholder/400/600', sequence: 0, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
+                                    { id: 2, filename: 'image2.jpg', storagePath: '/api/placeholder/600/400', sequence: 1, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
+                                    { id: 3, filename: 'image3.jpg', storagePath: '/api/placeholder/400/500', sequence: 2, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
+                                    { id: 4, filename: 'image4.jpg', storagePath: '/api/placeholder/500/600', sequence: 3, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
+                                  ]}
+                                  className="scale-75 origin-top-left transform"
+                                />
+                              </div>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Eye className="w-4 h-4 text-cyan" />
-                            <span>{shoot.viewCount} views</span>
-                          </div>
-                        </div>
+                        </TabsContent>
                         
-                        <div className="flex gap-2 pt-2">
-                          <Button size="sm" className="flex-1 bg-salmon text-white hover:bg-salmon-muted">
-                            View Gallery
-                          </Button>
-                          <Button size="sm" variant="outline" className="border-cyan/30 text-cyan hover:border-cyan hover:bg-cyan hover:text-white">
-                            <Share2 className="w-4 h-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" className="border-salmon/30 text-salmon hover:border-salmon hover:bg-salmon hover:text-white">
-                            <Download className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                        <TabsContent value="preview" className="mt-6">
+                          <div className="border rounded-lg overflow-hidden">
+                            <GalleryPreview 
+                              shoot={{
+                                ...shoot,
+                                backgroundColor: shoot.backgroundColor || 'white',
+                                layoutType: shoot.layoutType || 'masonry',
+                                borderRadius: shoot.borderRadius || 8,
+                                imagePadding: shoot.imagePadding || 4,
+                              }}
+                              images={[
+                                { id: 1, filename: 'image1.jpg', storagePath: '/api/placeholder/400/600', sequence: 0, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
+                                { id: 2, filename: 'image2.jpg', storagePath: '/api/placeholder/600/400', sequence: 1, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
+                                { id: 3, filename: 'image3.jpg', storagePath: '/api/placeholder/400/500', sequence: 2, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
+                                { id: 4, filename: 'image4.jpg', storagePath: '/api/placeholder/500/600', sequence: 3, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
+                                { id: 5, filename: 'image5.jpg', storagePath: '/api/placeholder/600/800', sequence: 4, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
+                                { id: 6, filename: 'image6.jpg', storagePath: '/api/placeholder/500/400', sequence: 5, isPrivate: false, shootId: shoot.id, thumbnailPath: '', downloadCount: 0, createdAt: new Date() },
+                              ]}
+                            />
+                          </div>
+                        </TabsContent>
+                      </Tabs>
+                    </DialogContent>
+                  </Dialog>
                 ))}
               </div>
             </div>
@@ -417,14 +507,14 @@ export default function Dashboard() {
           {activeTab === 'settings' && (
             <div className="space-y-8 max-w-2xl">
               <h2 className="text-3xl font-saira font-black">
-                Account <span className="text-gold">Settings</span>
+                Account <span className="text-salmon">Settings</span>
               </h2>
 
               <div className="space-y-6">
                 {/* Profile Settings */}
                 <Card className="bg-black border-border">
                   <CardHeader>
-                    <CardTitle className="text-xl font-saira font-bold text-gold">Profile Information</CardTitle>
+                    <CardTitle className="text-xl font-saira font-bold text-salmon">Profile Information</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
@@ -443,7 +533,7 @@ export default function Dashboard() {
                 {/* Theme Settings */}
                 <Card className="bg-black border-border">
                   <CardHeader>
-                    <CardTitle className="text-xl font-saira font-bold text-gold">Appearance</CardTitle>
+                    <CardTitle className="text-xl font-saira font-bold text-salmon">Appearance</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between">
@@ -455,7 +545,7 @@ export default function Dashboard() {
                         onClick={toggleTheme}
                         variant="outline"
                         size="sm"
-                        className="border-border hover:border-gold"
+                        className="border-border hover:border-salmon"
                       >
                         {theme === 'dark' ? (
                           <>
@@ -476,7 +566,7 @@ export default function Dashboard() {
                 {/* Account Actions */}
                 <Card className="bg-black border-border">
                   <CardHeader>
-                    <CardTitle className="text-xl font-saira font-bold text-gold">Account Actions</CardTitle>
+                    <CardTitle className="text-xl font-saira font-bold text-salmon">Account Actions</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <Button 

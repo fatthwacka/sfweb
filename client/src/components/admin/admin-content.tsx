@@ -28,6 +28,7 @@ import {
   Home,
   Palette
 } from "lucide-react";
+import { GalleryCustomization } from "@/components/gallery/gallery-customization";
 
 interface Client {
   id: number;
