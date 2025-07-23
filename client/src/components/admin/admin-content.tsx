@@ -1077,12 +1077,28 @@ export function AdminContent({ userRole }: AdminContentProps) {
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground">
                               <div className="flex items-center gap-1">
-                                <Eye className="w-4 h-4 icon-cyan" />
-                                {shoot.viewCount} views
+                                <Calendar className="w-4 h-4 icon-cyan" />
+                                {(() => {
+                                  try {
+                                    if (!shoot.shootDate) return 'No date';
+                                    const date = new Date(shoot.shootDate);
+                                    return isNaN(date.getTime()) ? 'Invalid date' : date.toLocaleDateString();
+                                  } catch {
+                                    return 'Invalid date';
+                                  }
+                                })()}
                               </div>
                               <div className="flex items-center gap-1">
-                                <Mail className="w-4 h-4 icon-salmon" />
-                                {shoot.clientId}
+                                <MapPin className="w-4 h-4 icon-salmon" />
+                                {shoot.location || 'No location'}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Eye className="w-4 h-4 icon-cyan" />
+                                {shoot.viewCount || 0} views
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Camera className="w-4 h-4 icon-salmon" />
+                                {shoot.shootType || 'Unknown type'}
                               </div>
                             </div>
                             
@@ -1123,25 +1139,106 @@ export function AdminContent({ userRole }: AdminContentProps) {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-saira font-bold text-salmon">Images Management</h2>
-                <Button className="bg-salmon text-white hover:bg-salmon-muted">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Upload Images
-                </Button>
-              </div>
-
-              <Card className="bg-salmon-dark border border-salmon/30 shadow-lg">
-                <CardContent className="p-8 text-center">
-                  <FileImage className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">No Images Yet</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Upload your first images to get started with gallery management.
-                  </p>
+                <div className="flex gap-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Input
+                      placeholder="Search images..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
                   <Button className="bg-salmon text-white hover:bg-salmon-muted">
                     <Plus className="w-4 h-4 mr-2" />
                     Upload Images
                   </Button>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
+
+              {imagesLoading ? (
+                <div className="text-center py-8">Loading images...</div>
+              ) : images.length === 0 ? (
+                <Card className="bg-salmon-dark border border-salmon/30 shadow-lg">
+                  <CardContent className="p-8 text-center">
+                    <FileImage className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">No Images Yet</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Upload your first images to get started with gallery management.
+                    </p>
+                    <Button className="bg-salmon text-white hover:bg-salmon-muted">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Upload Images
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <p className="text-muted-foreground">
+                      Showing {images.length} images across all shoots
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    {images
+                      .filter(image => 
+                        !searchTerm || 
+                        image.filename.toLowerCase().includes(searchTerm.toLowerCase())
+                      )
+                      .map((image) => {
+                        const associatedShoot = shoots.find(s => s.id === image.shootId.toString());
+                        return (
+                          <Card key={image.id} className="bg-salmon-dark border border-salmon/30 shadow-lg group hover:border-salmon/60 transition-colors">
+                            <CardContent className="p-3">
+                              <div className="space-y-2">
+                                {/* Image Preview */}
+                                <div className="aspect-square bg-background rounded-md flex items-center justify-center overflow-hidden">
+                                  <img
+                                    src={image.storagePath}
+                                    alt={image.filename}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiMzNzM3MzciLz48cGF0aCBkPSJNMTIgMTVIMjhWMjVIMTJWMTVaIiBzdHJva2U9IiM5CA0OUM5IiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4K';
+                                    }}
+                                  />
+                                </div>
+                                
+                                {/* Image Info */}
+                                <div className="space-y-1">
+                                  <p className="text-sm font-medium text-salmon truncate">
+                                    {image.filename}
+                                  </p>
+                                  {associatedShoot && (
+                                    <p className="text-xs text-muted-foreground truncate">
+                                      {associatedShoot.title}
+                                    </p>
+                                  )}
+                                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                    <span>{image.downloadCount} downloads</span>
+                                    <span className={`px-2 py-1 rounded ${image.isPrivate ? 'bg-red-900/20 text-red-300' : 'bg-green-900/20 text-green-300'}`}>
+                                      {image.isPrivate ? 'Private' : 'Public'}
+                                    </span>
+                                  </div>
+                                </div>
+                                
+                                {/* Action Buttons */}
+                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <Button size="sm" variant="outline" className="flex-1 border-border hover:border-cyan text-white">
+                                    <Eye className="w-3 h-3" />
+                                  </Button>
+                                  <Button size="sm" variant="outline" className="flex-1 border-border hover:border-salmon text-white">
+                                    <Edit className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -1158,8 +1255,8 @@ export function AdminContent({ userRole }: AdminContentProps) {
                 </CardHeader>
                 <CardContent>
                   <Select 
-                    value={selectedShoot?.toString() || ""} 
-                    onValueChange={(value) => setSelectedShoot(parseInt(value))}
+                    value={selectedShoot || ""} 
+                    onValueChange={(value) => setSelectedShoot(value)}
                   >
                     <SelectTrigger className="w-full max-w-md">
                       <SelectValue placeholder="Choose a shoot to manage its gallery" />
@@ -1167,7 +1264,15 @@ export function AdminContent({ userRole }: AdminContentProps) {
                     <SelectContent>
                       {shoots.map(shoot => (
                         <SelectItem key={shoot.id} value={shoot.id.toString()}>
-                          {shoot.title} - {new Date(shoot.shootDate).toLocaleDateString()} - {shoot.location}
+                          {shoot.title} - {(() => {
+                            try {
+                              if (!shoot.shootDate) return 'No date';
+                              const date = new Date(shoot.shootDate);
+                              return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleDateString();
+                            } catch {
+                              return 'Invalid Date';
+                            }
+                          })()} - {shoot.location || 'No location'}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -1453,7 +1558,16 @@ export function AdminContent({ userRole }: AdminContentProps) {
                       id="edit-shootDate" 
                       name="shootDate" 
                       type="date" 
-                      defaultValue={editingShoot.shootDate.split('T')[0]}
+                      defaultValue={(() => {
+                        if (!editingShoot.shootDate) return '';
+                        try {
+                          const date = new Date(editingShoot.shootDate);
+                          if (isNaN(date.getTime())) return '';
+                          return date.toISOString().split('T')[0];
+                        } catch {
+                          return '';
+                        }
+                      })()}
                       required 
                     />
                   </div>
