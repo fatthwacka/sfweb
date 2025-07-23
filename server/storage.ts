@@ -40,6 +40,7 @@ export interface IStorage {
   createShoot(shoot: InsertShoot): Promise<Shoot>;
   updateShoot(id: string, updates: Partial<InsertShoot>): Promise<Shoot | undefined>;
   updateShootCustomization(id: string, data: UpdateShootCustomization): Promise<Shoot | undefined>;
+  updateImageSequence(imageId: string, sequence: number): Promise<void>;
   deleteShoot(id: string): Promise<boolean>;
   
   // Images (UUIDs)

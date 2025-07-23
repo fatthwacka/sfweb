@@ -189,6 +189,10 @@ export class SupabaseStorage implements IStorage {
     return result[0];
   }
 
+  async updateImageSequence(imageId: string, sequence: number): Promise<void> {
+    await db.update(images).set({ sequence }).where(eq(images.id, imageId));
+  }
+
   async deleteImage(id: string): Promise<boolean> {
     const result = await db.delete(images).where(eq(images.id, id));
     return result.rowCount > 0;

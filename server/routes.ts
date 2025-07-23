@@ -370,11 +370,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/shoots/:id/customization", async (req, res) => {
     try {
       const shootId = req.params.id; // Use string ID for UUID
-      const data = updateShootCustomizationSchema.parse(req.body);
+      const { imageSequences, ...customizationData } = req.body;
+      
+      const data = updateShootCustomizationSchema.parse(customizationData);
       
       const shoot = await storage.updateShootCustomization(shootId, data);
       if (!shoot) {
         return res.status(404).json({ message: "Shoot not found" });
+      }
+
+      // Update image sequences if provided
+      if (imageSequences && typeof imageSequences === 'object') {
+        for (const [imageId, sequence] of Object.entries(imageSequences)) {
+          if (typeof sequence === 'number') {
+            await storage.updateImageSequence(imageId, sequence);
+          }
+        }
       }
       
       res.json(shoot);

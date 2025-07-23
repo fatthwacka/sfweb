@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -45,14 +45,16 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   const [editMode, setEditMode] = useState(false);
   const [customSlug, setCustomSlug] = useState('');
   const [selectedCover, setSelectedCover] = useState<string | null>(null);
+  const [draggedImage, setDraggedImage] = useState<string | null>(null);
+  const [imageOrder, setImageOrder] = useState<string[]>([]);
   
-  // Gallery appearance settings matching dashboard
+  // Gallery appearance settings matching dashboard - defaults as requested
   const [gallerySettings, setGallerySettings] = useState({
-    backgroundColor: '#1a1a1a',
-    borderStyle: 'rounded',
-    padding: 'normal',
-    layoutStyle: 'masonry',
-    imageSpacing: 'normal'
+    backgroundColor: '#ffffff',
+    borderStyle: 'sharp',
+    padding: 'tight',
+    layoutStyle: 'grid',
+    imageSpacing: 'tight'
   });
   
   // Fetch shoot data
@@ -71,6 +73,68 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       setSelectedCover(shoot.bannerImageId);
     }
   }, [shoot]);
+
+  // Initialize image order from sequence
+  useEffect(() => {
+    if (images.length > 0) {
+      const sortedImages = [...images].sort((a, b) => a.sequence - b.sequence);
+      setImageOrder(sortedImages.map(img => img.id));
+    }
+  }, [images]);
+
+  // Drag and drop handlers
+  const handleDragStart = useCallback((e: React.DragEvent, imageId: string) => {
+    setDraggedImage(imageId);
+    e.dataTransfer.effectAllowed = 'move';
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent, targetImageId: string) => {
+    e.preventDefault();
+    
+    if (!draggedImage || draggedImage === targetImageId) {
+      setDraggedImage(null);
+      return;
+    }
+
+    setImageOrder(currentOrder => {
+      const newOrder = [...currentOrder];
+      const draggedIndex = newOrder.indexOf(draggedImage);
+      const targetIndex = newOrder.indexOf(targetImageId);
+      
+      // Remove dragged item and insert at new position
+      newOrder.splice(draggedIndex, 1);
+      newOrder.splice(targetIndex, 0, draggedImage);
+      
+      return newOrder;
+    });
+    
+    setDraggedImage(null);
+  }, [draggedImage]);
+
+  const handleDragEnd = useCallback(() => {
+    setDraggedImage(null);
+  }, []);
+
+  // Get ordered images for display
+  const getOrderedImages = useCallback(() => {
+    if (imageOrder.length === 0) return images;
+    
+    const imageMap = new Map(images.map(img => [img.id, img]));
+    const orderedImages = imageOrder
+      .map(id => imageMap.get(id))
+      .filter(Boolean) as GalleryImage[];
+    
+    // Add any new images not in order yet
+    const orderedIds = new Set(imageOrder);
+    const newImages = images.filter(img => !orderedIds.has(img.id));
+    
+    return [...orderedImages, ...newImages];
+  }, [images, imageOrder]);
 
   // Save customization mutation
   const saveCustomizationMutation = useMutation({
@@ -99,10 +163,16 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       return;
     }
 
+    // Update image sequences based on current order
+    const imageSequences = imageOrder.length > 0 
+      ? Object.fromEntries(imageOrder.map((id, index) => [id, index + 1]))
+      : {};
+
     const data = {
       customSlug: customSlug.trim(),
       bannerImageId: selectedCover,
-      gallerySettings: gallerySettings
+      gallerySettings: gallerySettings,
+      imageSequences
     };
 
     saveCustomizationMutation.mutate(data);
@@ -310,17 +380,24 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
             </h2>
             
             {gallerySettings.layoutStyle === 'masonry' ? (
-              <div className="columns-2 md:columns-3 lg:columns-4 gap-2 space-y-2">
-                {images.slice(0, 12).map((image) => (
+              <div className={`columns-2 md:columns-3 lg:columns-4 gap-${gallerySettings.imageSpacing === 'tight' ? '1' : gallerySettings.imageSpacing === 'loose' ? '4' : '2'} space-y-${gallerySettings.imageSpacing === 'tight' ? '1' : gallerySettings.imageSpacing === 'loose' ? '4' : '2'}`}>
+                {getOrderedImages().slice(0, 12).map((image) => (
                   <div 
                     key={image.id}
                     className={`
-                      relative group overflow-hidden break-inside-avoid mb-2
+                      relative group overflow-hidden break-inside-avoid mb-${gallerySettings.imageSpacing === 'tight' ? '1' : gallerySettings.imageSpacing === 'loose' ? '4' : '2'}
                       ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : 
                         gallerySettings.borderStyle === 'circular' ? 'rounded-full' : ''}
                       ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
+                      ${editMode ? 'cursor-move' : 'cursor-pointer'}
+                      ${draggedImage === image.id ? 'opacity-50' : ''}
                     `}
                     onClick={() => editMode && setAlbumCover(image.id)}
+                    draggable={editMode}
+                    onDragStart={editMode ? (e) => handleDragStart(e, image.id) : undefined}
+                    onDragOver={editMode ? handleDragOver : undefined}
+                    onDrop={editMode ? (e) => handleDrop(e, image.id) : undefined}
+                    onDragEnd={editMode ? handleDragEnd : undefined}
                   >
                     <img
                       src={image.storagePath}
@@ -352,7 +429,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                 grid gap-${gallerySettings.imageSpacing === 'tight' ? '1' : gallerySettings.imageSpacing === 'loose' ? '4' : '2'}
                 ${gallerySettings.layoutStyle === 'grid' ? 'grid-cols-4' : 'grid-cols-3'}
               `}>
-                {images.slice(0, 12).map((image) => (
+                {getOrderedImages().slice(0, 12).map((image) => (
                   <div 
                     key={image.id}
                     className={`
@@ -360,8 +437,15 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                       ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : 
                         gallerySettings.borderStyle === 'circular' ? 'rounded-full' : ''}
                       ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
+                      ${editMode ? 'cursor-move' : 'cursor-pointer'}
+                      ${draggedImage === image.id ? 'opacity-50' : ''}
                     `}
                     onClick={() => editMode && setAlbumCover(image.id)}
+                    draggable={editMode}
+                    onDragStart={editMode ? (e) => handleDragStart(e, image.id) : undefined}
+                    onDragOver={editMode ? handleDragOver : undefined}
+                    onDrop={editMode ? (e) => handleDrop(e, image.id) : undefined}
+                    onDragEnd={editMode ? handleDragEnd : undefined}
                   >
                     <img
                       src={image.storagePath}
@@ -403,6 +487,11 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       <Card className="bg-salmon-dark border border-salmon/30 shadow-lg">
         <CardHeader>
           <CardTitle className="text-salmon">Image Sequence & Cover Selection</CardTitle>
+          {images.length > 0 && (
+            <p className="text-muted-foreground text-sm">
+              Drag and drop images to reorder them. Changes are saved when you click "Save Changes" above.
+            </p>
+          )}
         </CardHeader>
         <CardContent>
           {images.length === 0 ? (
@@ -413,12 +502,17 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {images.map((image, index) => (
+              {getOrderedImages().map((image, index) => (
                 <div 
                   key={image.id} 
-                  className={`relative group bg-black/20 rounded-lg overflow-hidden ${
+                  className={`relative group bg-black/20 rounded-lg overflow-hidden cursor-move transition-all ${
                     selectedCover === image.id ? 'ring-2 ring-salmon' : ''
-                  }`}
+                  } ${draggedImage === image.id ? 'opacity-50 scale-95' : 'hover:scale-105'}`}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, image.id)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, image.id)}
+                  onDragEnd={handleDragEnd}
                 >
                   <img 
                     src={image.storagePath} 
