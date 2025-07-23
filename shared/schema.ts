@@ -41,7 +41,7 @@ export const clients = pgTable("clients", {
 
 export const shoots = pgTable("shoots", {
   id: uuid("id").defaultRandom().primaryKey(),
-  clientId: uuid("client_id").notNull(), // Will reference clients but not enforce FK due to type mismatch
+  clientId: text("client_id").notNull(), // Stores client email for email-based matching
   title: text("title").notNull(),
   description: text("description"),
   isPrivate: boolean("is_private").default(false).notNull(),

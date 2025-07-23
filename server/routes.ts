@@ -284,9 +284,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Client not found" });
       }
 
-      const shoots = await storage.getShootsByClient(client.id);
+      // Use email-based matching for shoots
+      const shoots = client.email ? await storage.getShootsByClientEmail(client.email) : [];
       res.json({ client, shoots });
     } catch (error) {
+      console.error("Client fetch error:", error);
       res.status(500).json({ message: "Failed to fetch client" });
     }
   });
@@ -312,7 +314,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Shoot endpoints
   app.get("/api/shoots/:id", async (req, res) => {
     try {
-      const shootId = parseInt(req.params.id);
+      const shootId = req.params.id; // Keep as string for UUID
       const shoot = await storage.getShoot(shootId);
       
       if (!shoot) {

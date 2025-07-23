@@ -125,7 +125,20 @@ export class SupabaseStorage implements IStorage {
   }
 
   async getShootsByClient(clientId: string): Promise<Shoot[]> {
-    return await db.select().from(shoots).where(eq(shoots.clientId, clientId)).orderBy(desc(shoots.createdAt));
+    // Support both integer client ID (legacy) and email-based matching
+    if (clientId.includes('@')) {
+      // Email-based matching - find shoots by client email
+      return await db.select().from(shoots).where(eq(shoots.clientId, clientId)).orderBy(desc(shoots.createdAt));
+    } else {
+      // Legacy integer ID - first find client email, then find shoots
+      const client = await this.getClient(parseInt(clientId));
+      if (!client?.email) return [];
+      return await db.select().from(shoots).where(eq(shoots.clientId, client.email)).orderBy(desc(shoots.createdAt));
+    }
+  }
+
+  async getShootsByClientEmail(email: string): Promise<Shoot[]> {
+    return await db.select().from(shoots).where(eq(shoots.clientId, email)).orderBy(desc(shoots.createdAt));
   }
 
   async getPublicShoots(): Promise<Shoot[]> {
