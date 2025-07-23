@@ -49,6 +49,9 @@ export const shoots = pgTable("shoots", {
   seoTags: text("seo_tags").array(),
   viewCount: integer("view_count").default(0).notNull(),
   createdBy: uuid("created_by").notNull().references(() => profiles.id),
+  customSlug: text("custom_slug"),
+  customTitle: text("custom_title"),
+  gallerySettings: jsonb("gallery_settings"),
   createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
 });
@@ -62,6 +65,7 @@ export const images = pgTable("images", {
   fileSize: integer("file_size"),
   isPrivate: boolean("is_private").default(false).notNull(),
   uploadOrder: integer("upload_order").default(0).notNull(),
+  sequence: integer("sequence").default(0).notNull(),
   downloadCount: integer("download_count").default(0).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
@@ -169,8 +173,11 @@ export const insertBookingSchema = createInsertSchema(bookings).omit({
 });
 
 // Gallery customization schema for updating shoot settings
-export const updateShootCustomizationSchema = createInsertSchema(shoots).pick({
-  bannerImageId: true,
+export const updateShootCustomizationSchema = z.object({
+  customSlug: z.string().optional(),
+  bannerImageId: z.string().optional(),
+  customTitle: z.string().optional(),
+  gallerySettings: z.any().optional(),
 });
 
 // Types
