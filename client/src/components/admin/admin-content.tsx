@@ -36,6 +36,8 @@ interface Client {
   name: string;
   slug: string;
   email: string;
+  phone?: string;
+  address?: string;
   userId: string | null;
   createdBy: string;
   createdAt: string;
@@ -47,9 +49,15 @@ interface Shoot {
   clientId: string; // Email address for email-based matching
   title: string;
   description: string;
+  shootType?: string;
+  shootDate?: string;
+  location?: string;
+  customTitle?: string;
+  customSlug?: string;
+  notes?: string;
   isPrivate: boolean;
   bannerImageId: string | null;
-  seoTags: string[];
+  seoTags: string[] | string;
   viewCount: number;
   createdBy: string;
   createdAt: string;
@@ -78,9 +86,10 @@ export function AdminContent({ userRole }: AdminContentProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [newClientOpen, setNewClientOpen] = useState(false);
   const [newShootOpen, setNewShootOpen] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<number | null>(null);
-  const [selectedShoot, setSelectedShoot] = useState<string | null>(null);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [editingShoot, setEditingShoot] = useState<Shoot | null>(null);
+  const [selectedShoot, setSelectedShoot] = useState<string | null>(null);
+  const [selectedClient, setSelectedClient] = useState<number | null>(null);
   const [newUserOpen, setNewUserOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
 
@@ -91,6 +100,10 @@ export function AdminContent({ userRole }: AdminContentProps) {
 
   const { data: shoots = [], isLoading: shootsLoading } = useQuery<Shoot[]>({
     queryKey: ["/api/shoots"]
+  });
+
+  const { data: images = [], isLoading: imagesLoading } = useQuery<Image[]>({
+    queryKey: ["/api/images"]
   });
 
   // Get shoots for each client via email matching
@@ -161,6 +174,25 @@ export function AdminContent({ userRole }: AdminContentProps) {
     }
   });
 
+  const updateClientMutation = useMutation({
+    mutationFn: (data: any) => apiRequest("PATCH", `/api/clients/${data.id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
+      setEditingClient(null);
+      toast({
+        title: "Success",
+        description: "Client updated successfully"
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update client",
+        variant: "destructive"
+      });
+    }
+  });
+
   const handleCreateClient = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -188,7 +220,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
       .trim();
     
     const data = {
-      clientId: parseInt(formData.get('clientId') as string),
+      clientId: formData.get('clientEmail') as string, // Use email as clientId for email-based matching
       title: title,
       description: formData.get('description') as string || '',
       shootType: formData.get('shootType') as string,
@@ -341,6 +373,24 @@ export function AdminContent({ userRole }: AdminContentProps) {
     updateUserMutation.mutate(data);
   };
 
+  const handleUpdateClient = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!editingClient) return;
+    
+    const formData = new FormData(event.currentTarget);
+    
+    const data = {
+      id: editingClient.id,
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      phone: formData.get('phone') as string,
+      address: formData.get('address') as string,
+      slug: editingClient.slug // Keep existing slug
+    };
+    
+    updateClientMutation.mutate(data);
+  };
+
 
 
   return (
@@ -412,7 +462,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-salmon">0</div>
+                    <div className="text-2xl font-bold text-salmon">{images.length}</div>
                   </CardContent>
                 </Card>
                 
@@ -720,23 +770,40 @@ export function AdminContent({ userRole }: AdminContentProps) {
                         <div className="flex justify-between items-start">
                           <div className="space-y-2">
                             <h3 className="text-lg font-semibold text-salmon">{client.name}</h3>
-                                <div className="space-y-1 text-sm text-muted-foreground">
+                            
+                            {/* Client Shoots */}
+                            <div className="space-y-2">
+                              {(() => {
+                                const clientShoots = getClientShoots(client.email);
+                                const displayShoots = clientShoots.slice(0, 3);
+                                const hasMore = clientShoots.length > 3;
+                                
+                                return (
+                                  <div className="space-y-1">
+                                    {displayShoots.map(shoot => (
+                                      <div key={shoot.id} className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <Eye className="w-4 h-4 icon-cyan" />
+                                        <span>{shoot.title}</span>
+                                      </div>
+                                    ))}
+                                    {hasMore && (
+                                      <div className="text-xs text-salmon cursor-pointer hover:underline">
+                                        + {clientShoots.length - 3} more shoots...
+                                      </div>
+                                    )}
+                                    {clientShoots.length === 0 && (
+                                      <div className="text-sm text-muted-foreground italic">No shoots yet</div>
+                                    )}
+                                  </div>
+                                );
+                              })()}
+                            </div>
+                            
+                            <div className="space-y-1 text-sm text-muted-foreground">
                               {client.email && (
                                 <div className="flex items-center gap-2">
                                   <Mail className="w-4 h-4 icon-cyan" />
                                   {client.email}
-                                </div>
-                              )}
-                              {client.phone && (
-                                <div className="flex items-center gap-2">
-                                  <Phone className="w-4 h-4 icon-salmon" />
-                                  {client.phone}
-                                </div>
-                              )}
-                              {client.address && (
-                                <div className="flex items-center gap-2">
-                                  <Home className="w-4 h-4 icon-cyan" />
-                                  {client.address}
                                 </div>
                               )}
                               <div className="flex items-center gap-2">
@@ -841,7 +908,12 @@ export function AdminContent({ userRole }: AdminContentProps) {
                               </Dialog>
                             </div>
                             <div className="flex gap-2">
-                              <Button size="sm" variant="outline" className="border-border hover:border-salmon text-white">
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="border-border hover:border-salmon text-white"
+                                onClick={() => setEditingClient(client)}
+                              >
                                 <Edit className="w-4 h-4" />
                               </Button>
                               <Button size="sm" variant="outline" className="border-border hover:border-red-500 text-white">
@@ -928,6 +1000,22 @@ export function AdminContent({ userRole }: AdminContentProps) {
                           </div>
                         </div>
 
+                        {/* Client Email Assignment */}
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-semibold text-salmon">Client Assignment</h3>
+                          <div>
+                            <Label htmlFor="clientEmail">Client Email *</Label>
+                            <select id="clientEmail" name="clientEmail" required className="w-full px-3 py-2 bg-background border border-border rounded-md">
+                              <option value="">Select client...</option>
+                              {clients.map(client => (
+                                <option key={client.id} value={client.email || ""}>
+                                  {client.name} ({client.email})
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
                         {/* SEO & Settings */}
                         <div className="space-y-4">
                           <h3 className="text-lg font-semibold text-salmon">SEO & Settings</h3>
@@ -998,10 +1086,10 @@ export function AdminContent({ userRole }: AdminContentProps) {
                               </div>
                             </div>
                             
-                            {shoot.seoTags && shoot.seoTags.length > 0 && (
+                            {shoot.seoTags && (
                               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <span>Tags:</span>
-                                <span className="italic">{shoot.seoTags.join(', ')}</span>
+                                <span className="italic">{Array.isArray(shoot.seoTags) ? shoot.seoTags.join(', ') : shoot.seoTags}</span>
                               </div>
                             )}
                           </div>
@@ -1246,6 +1334,41 @@ export function AdminContent({ userRole }: AdminContentProps) {
           )}
         </div>
       </section>
+
+      {/* Edit Client Dialog */}
+      <Dialog open={!!editingClient} onOpenChange={(open) => !open && setEditingClient(null)}>
+        <DialogContent className="bg-cyan-dark border border-cyan/30 shadow-lg max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-salmon">Edit Client: {editingClient?.name}</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Update the client information and details.
+            </DialogDescription>
+          </DialogHeader>
+          {editingClient && (
+            <form onSubmit={handleUpdateClient} className="space-y-4">
+              <div>
+                <Label htmlFor="editClientName">Client Name *</Label>
+                <Input id="editClientName" name="name" defaultValue={editingClient.name} required />
+              </div>
+              <div>
+                <Label htmlFor="editClientEmail">Email</Label>
+                <Input id="editClientEmail" name="email" type="email" defaultValue={editingClient.email || ''} />
+              </div>
+              <div>
+                <Label htmlFor="editClientPhone">Phone</Label>
+                <Input id="editClientPhone" name="phone" defaultValue={editingClient.phone || ''} />
+              </div>
+              <div>
+                <Label htmlFor="editClientAddress">Address</Label>
+                <Input id="editClientAddress" name="address" defaultValue={editingClient.address || ''} />
+              </div>
+              <Button type="submit" disabled={updateClientMutation.isPending} className="w-full bg-salmon text-white hover:bg-salmon-muted">
+                {updateClientMutation.isPending ? 'Updating...' : 'Update Client'}
+              </Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Shoot Dialog */}
       <Dialog open={!!editingShoot} onOpenChange={(open) => !open && setEditingShoot(null)}>

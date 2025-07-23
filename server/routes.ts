@@ -411,6 +411,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/images", async (req, res) => {
+    try {
+      // For admin panel, get all images from all shoots
+      const allShoots = await storage.getAllShoots();
+      let allImages: any[] = [];
+      
+      for (const shoot of allShoots) {
+        const shootImages = await storage.getImagesByShoot(shoot.id);
+        allImages = allImages.concat(shootImages);
+      }
+      
+      res.json(allImages);
+    } catch (error) {
+      console.error("Fetch images error:", error);
+      res.status(500).json({ message: "Failed to fetch images" });
+    }
+  });
+
   app.delete("/api/images/:id", async (req, res) => {
     try {
       const imageId = req.params.id; // UUID string
