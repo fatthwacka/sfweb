@@ -145,6 +145,10 @@ export class SupabaseStorage implements IStorage {
     return await db.select().from(shoots).where(eq(shoots.isPrivate, false)).orderBy(desc(shoots.createdAt));
   }
 
+  async getAllShoots(): Promise<Shoot[]> {
+    return await db.select().from(shoots).orderBy(desc(shoots.createdAt));
+  }
+
   async createShoot(insertShoot: InsertShoot): Promise<Shoot> {
     const result = await db.insert(shoots).values([insertShoot]).returning();
     return result[0];

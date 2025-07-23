@@ -36,6 +36,7 @@ export interface IStorage {
   getShootsByClient(clientId: string): Promise<Shoot[]>;
   getShootsByClientEmail(email: string): Promise<Shoot[]>;
   getPublicShoots(): Promise<Shoot[]>;
+  getAllShoots(): Promise<Shoot[]>;
   createShoot(shoot: InsertShoot): Promise<Shoot>;
   updateShoot(id: string, updates: Partial<InsertShoot>): Promise<Shoot | undefined>;
   updateShootCustomization(id: string, data: UpdateShootCustomization): Promise<Shoot | undefined>;

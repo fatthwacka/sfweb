@@ -34,29 +34,26 @@ import { GalleryCustomization } from "@/components/gallery/gallery-customization
 interface Client {
   id: number;
   name: string;
+  slug: string;
   email: string;
-  phone: string;
-  address: string;
+  userId: string | null;
+  createdBy: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 interface Shoot {
-  id: number;
-  clientId: number;
+  id: string;
+  clientId: string; // Email address for email-based matching
   title: string;
   description: string;
-  shootType: string;
-  shootDate: string;
-  location: string;
-  notes: string;
-  customSlug: string;
-  customTitle: string;
-  albumCoverId: number | null;
   isPrivate: boolean;
-  bannerImageId: number | null;
-  seoTags: string;
+  bannerImageId: string | null;
+  seoTags: string[];
   viewCount: number;
+  createdBy: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 interface Image {
@@ -82,12 +79,12 @@ export function AdminContent({ userRole }: AdminContentProps) {
   const [newClientOpen, setNewClientOpen] = useState(false);
   const [newShootOpen, setNewShootOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<number | null>(null);
-  const [selectedShoot, setSelectedShoot] = useState<number | null>(null);
+  const [selectedShoot, setSelectedShoot] = useState<string | null>(null);
   const [editingShoot, setEditingShoot] = useState<Shoot | null>(null);
   const [newUserOpen, setNewUserOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
 
-  // Fetch data
+  // Fetch data with client-shoot relationships
   const { data: clients = [], isLoading: clientsLoading } = useQuery<Client[]>({
     queryKey: ["/api/clients"]
   });
@@ -95,6 +92,11 @@ export function AdminContent({ userRole }: AdminContentProps) {
   const { data: shoots = [], isLoading: shootsLoading } = useQuery<Shoot[]>({
     queryKey: ["/api/shoots"]
   });
+
+  // Get shoots for each client via email matching
+  const getClientShoots = (clientEmail: string) => {
+    return shoots.filter(shoot => shoot.clientId === clientEmail);
+  };
 
   const { data: users = [], isLoading: usersLoading } = useQuery<any[]>({
     queryKey: ["/api/users"],
@@ -312,6 +314,17 @@ export function AdminContent({ userRole }: AdminContentProps) {
     createUserMutation.mutate(data);
   };
 
+  // Filter data based on search term
+  const filteredClients = clients.filter(client =>
+    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (client.email && client.email.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
+  const filteredShoots = shoots.filter(shoot =>
+    shoot.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (shoot.description && shoot.description.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
   const handleUpdateUser = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!editingUser) return;
@@ -328,15 +341,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
     updateUserMutation.mutate(data);
   };
 
-  const filteredClients = clients.filter(client =>
-    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
-  const filteredShoots = shoots.filter(shoot =>
-    shoot.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    shoot.location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <>
@@ -966,38 +971,48 @@ export function AdminContent({ userRole }: AdminContentProps) {
                           <div className="space-y-3">
                             <div className="flex items-center gap-2 flex-wrap">
                               <h3 className="text-lg font-semibold text-salmon">{shoot.title}</h3>
-                              <Badge variant="outline" className="text-xs capitalize">
-                                {shoot.shootType}
-                              </Badge>
                               {shoot.isPrivate && <Badge variant="outline" className="text-xs bg-red-900/20 text-red-300 border-red-700">Private</Badge>}
                             </div>
-                            <p className="text-muted-foreground">{shoot.description}</p>
+                            
+                            {/* Client Information */}
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <User className="w-4 h-4 icon-cyan" />
+                                <span>Client: {(() => {
+                                  const client = clients.find(c => c.email === shoot.clientId);
+                                  return client ? client.name : shoot.clientId;
+                                })()}</span>
+                              </div>
+                            </div>
+                            
+                            {shoot.description && <p className="text-muted-foreground">{shoot.description}</p>}
+                            
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground">
-                              <div className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4 icon-cyan" />
-                                {new Date(shoot.shootDate).toLocaleDateString()}
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <MapPin className="w-4 h-4 icon-salmon" />
-                                {shoot.location}
-                              </div>
                               <div className="flex items-center gap-1">
                                 <Eye className="w-4 h-4 icon-cyan" />
                                 {shoot.viewCount} views
                               </div>
                               <div className="flex items-center gap-1">
-                                <Camera className="w-4 h-4 icon-salmon" />
-                                Gallery: /{shoot.customSlug}
+                                <Mail className="w-4 h-4 icon-salmon" />
+                                {shoot.clientId}
                               </div>
                             </div>
-                            {shoot.seoTags && (
+                            
+                            {shoot.seoTags && shoot.seoTags.length > 0 && (
                               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <span>Tags:</span>
-                                <span className="italic">{shoot.seoTags}</span>
+                                <span className="italic">{shoot.seoTags.join(', ')}</span>
                               </div>
                             )}
                           </div>
                           <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              className="bg-salmon text-white hover:bg-salmon-muted"
+                              onClick={() => setSelectedShoot(shoot.id)}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
                             <Button 
                               size="sm" 
                               variant="outline" 
@@ -1005,9 +1020,6 @@ export function AdminContent({ userRole }: AdminContentProps) {
                               onClick={() => setEditingShoot(shoot)}
                             >
                               <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button size="sm" variant="outline" className="border-border hover:border-red-500 text-white">
-                              <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
                         </div>

@@ -312,6 +312,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Shoot endpoints
+  app.get("/api/shoots", async (req, res) => {
+    try {
+      // For admin panel, return all shoots (both public and private)
+      const shoots = await storage.getAllShoots();
+      res.json(shoots);
+    } catch (error) {
+      console.error("Fetch shoots error:", error);
+      res.status(500).json({ message: "Failed to fetch shoots" });
+    }
+  });
+
   app.get("/api/shoots/:id", async (req, res) => {
     try {
       const shootId = req.params.id; // Keep as string for UUID
