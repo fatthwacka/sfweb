@@ -309,49 +309,86 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
               {shoot.customTitle || shoot.title}
             </h2>
             
-            <div className={`
-              grid gap-${gallerySettings.imageSpacing === 'tight' ? '1' : gallerySettings.imageSpacing === 'loose' ? '4' : '2'}
-              ${gallerySettings.layoutStyle === 'grid' ? 'grid-cols-4' : 
-                gallerySettings.layoutStyle === 'columns' ? 'grid-cols-3' : 
-                'columns-2 md:columns-3 lg:columns-4'}
-            `}>
-              {images.slice(0, 12).map((image) => (
-                <div 
-                  key={image.id}
-                  className={`
-                    relative group overflow-hidden
-                    ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : 
-                      gallerySettings.borderStyle === 'circular' ? 'rounded-full aspect-square' : ''}
-                    ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
-                    ${gallerySettings.layoutStyle === 'masonry' ? 'break-inside-avoid mb-2' : 'aspect-square'}
-                  `}
-                  onClick={() => editMode && setAlbumCover(image.id)}
-                >
-                  <img
-                    src={image.storagePath}
-                    alt={image.filename}
-                    className="w-full h-full object-cover"
-                  />
-                  {selectedCover === image.id && (
-                    <div className="absolute top-2 right-2 bg-salmon text-white px-2 py-1 rounded text-xs font-bold">
-                      Cover
-                    </div>
-                  )}
-                  {editMode && (
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Button 
-                        size="sm" 
-                        variant={selectedCover === image.id ? "default" : "secondary"}
-                        onClick={() => setAlbumCover(image.id)}
-                        className={selectedCover === image.id ? "bg-salmon text-white" : ""}
-                      >
-                        {selectedCover === image.id ? <Crown className="w-4 h-4" /> : <Star className="w-4 h-4" />}
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+            {gallerySettings.layoutStyle === 'masonry' ? (
+              <div className="columns-2 md:columns-3 lg:columns-4 gap-2 space-y-2">
+                {images.slice(0, 12).map((image) => (
+                  <div 
+                    key={image.id}
+                    className={`
+                      relative group overflow-hidden break-inside-avoid mb-2
+                      ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : 
+                        gallerySettings.borderStyle === 'circular' ? 'rounded-full' : ''}
+                      ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
+                    `}
+                    onClick={() => editMode && setAlbumCover(image.id)}
+                  >
+                    <img
+                      src={image.storagePath}
+                      alt={image.filename}
+                      className="w-full h-auto object-cover"
+                    />
+                    {selectedCover === image.id && (
+                      <div className="absolute top-2 right-2 bg-salmon text-white px-2 py-1 rounded text-xs font-bold">
+                        Cover
+                      </div>
+                    )}
+                    {editMode && (
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Button 
+                          size="sm" 
+                          variant={selectedCover === image.id ? "default" : "secondary"}
+                          onClick={() => setAlbumCover(image.id)}
+                          className={selectedCover === image.id ? "bg-salmon text-white" : ""}
+                        >
+                          {selectedCover === image.id ? <Crown className="w-4 h-4" /> : <Star className="w-4 h-4" />}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className={`
+                grid gap-${gallerySettings.imageSpacing === 'tight' ? '1' : gallerySettings.imageSpacing === 'loose' ? '4' : '2'}
+                ${gallerySettings.layoutStyle === 'grid' ? 'grid-cols-4' : 'grid-cols-3'}
+              `}>
+                {images.slice(0, 12).map((image) => (
+                  <div 
+                    key={image.id}
+                    className={`
+                      relative group overflow-hidden aspect-square
+                      ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : 
+                        gallerySettings.borderStyle === 'circular' ? 'rounded-full' : ''}
+                      ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
+                    `}
+                    onClick={() => editMode && setAlbumCover(image.id)}
+                  >
+                    <img
+                      src={image.storagePath}
+                      alt={image.filename}
+                      className="w-full h-full object-cover"
+                    />
+                    {selectedCover === image.id && (
+                      <div className="absolute top-2 right-2 bg-salmon text-white px-2 py-1 rounded text-xs font-bold">
+                        Cover
+                      </div>
+                    )}
+                    {editMode && (
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Button 
+                          size="sm" 
+                          variant={selectedCover === image.id ? "default" : "secondary"}
+                          onClick={() => setAlbumCover(image.id)}
+                          className={selectedCover === image.id ? "bg-salmon text-white" : ""}
+                        >
+                          {selectedCover === image.id ? <Crown className="w-4 h-4" /> : <Star className="w-4 h-4" />}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
             
             {images.length > 12 && (
               <div className="text-center mt-4 text-muted-foreground">
