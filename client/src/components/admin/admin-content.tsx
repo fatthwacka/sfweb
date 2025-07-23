@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { GalleryEditor } from "./gallery-editor";
+import { EnhancedGalleryEditor } from "./enhanced-gallery-editor";
 import {
   BarChart3,
   Users,
@@ -29,7 +29,6 @@ import {
   Palette,
   User
 } from "lucide-react";
-import { GalleryCustomization } from "@/components/gallery/gallery-customization";
 
 interface Client {
   id: number;
@@ -781,9 +780,22 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                 return (
                                   <div className="space-y-1">
                                     {displayShoots.map(shoot => (
-                                      <div key={shoot.id} className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <Eye className="w-4 h-4 icon-cyan" />
-                                        <span>{shoot.title}</span>
+                                      <div key={shoot.id} className="flex items-center justify-between text-sm text-muted-foreground">
+                                        <div className="flex items-center gap-2">
+                                          <Eye className="w-4 h-4 icon-cyan" />
+                                          <span>{shoot.title}</span>
+                                        </div>
+                                        <Button 
+                                          size="sm" 
+                                          variant="outline" 
+                                          className="h-6 px-2 text-xs hover:border-salmon hover:text-salmon"
+                                          onClick={() => {
+                                            setActiveTab('galleries');
+                                            setSelectedShoot(shoot.id);
+                                          }}
+                                        >
+                                          View
+                                        </Button>
                                       </div>
                                     ))}
                                     {hasMore && (
@@ -1281,7 +1293,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
               </Card>
 
               {/* Gallery Editor */}
-              {selectedShoot && <GalleryEditor shootId={selectedShoot} />}
+              {selectedShoot && <EnhancedGalleryEditor shootId={selectedShoot} />}
 
               {!selectedShoot && (
                 <Card className="bg-salmon-dark border border-salmon/30 shadow-lg">

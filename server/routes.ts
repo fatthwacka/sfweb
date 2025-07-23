@@ -352,7 +352,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/shoots/:id", async (req, res) => {
     try {
-      const shootId = parseInt(req.params.id);
+      const shootId = req.params.id; // Use string ID for UUID
       const updates = req.body;
       
       const shoot = await storage.updateShoot(shootId, updates);
@@ -362,13 +362,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(shoot);
     } catch (error) {
+      console.error("Update shoot error:", error);
       res.status(500).json({ message: "Failed to update shoot" });
     }
   });
 
   app.patch("/api/shoots/:id/customization", async (req, res) => {
     try {
-      const shootId = parseInt(req.params.id);
+      const shootId = req.params.id; // Use string ID for UUID
       const data = updateShootCustomizationSchema.parse(req.body);
       
       const shoot = await storage.updateShootCustomization(shootId, data);
