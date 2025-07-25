@@ -299,10 +299,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const data = insertClientSchema.parse(req.body);
       
       // Add required created_by field using the current authenticated user
-      // For now, using a default admin ID - should be replaced with actual auth user
+      // Use the admin profile ID that exists in the database
+      const validProfileId = '070dae19-d4ce-4fe0-b3d4-a090fa3ece3a'; // admin@slyfox.co.za
+      
       const clientData = {
         ...data,
-        createdBy: '600177ef-13c9-4173-a53c-71a04a4a7d1a' // Using existing staff user ID
+        createdBy: validProfileId
       };
       
       const client = await storage.createClient(clientData);

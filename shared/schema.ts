@@ -145,7 +145,6 @@ export const insertShootSchema = createInsertSchema(shoots).omit({
   createdAt: true,
   updatedAt: true,
   viewCount: true,
-  createdBy: true,
 });
 
 export const insertImageSchema = createInsertSchema(images).omit({
