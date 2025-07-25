@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { DatePicker } from "@/components/ui/date-picker";
+// import { DatePicker } from "@/components/ui/date-picker";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { EnhancedGalleryEditor } from "./enhanced-gallery-editor";
@@ -603,17 +603,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                             <div className="grid md:grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="shootDate">Shoot Date *</Label>
-                                <DatePicker
-                                  date={undefined}
-                                  onDateChange={(date) => {
-                                    const input = document.getElementById('shootDate') as HTMLInputElement;
-                                    if (input && date) {
-                                      input.value = date.toISOString().split('T')[0];
-                                    }
-                                  }}
-                                  placeholder="Select shoot date"
-                                />
-                                <input type="hidden" id="shootDate" name="shootDate" required />
+                                <Input id="shootDate" name="shootDate" type="date" required />
                               </div>
                               <div>
                                 <Label htmlFor="location">Location *</Label>
@@ -906,17 +896,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                     <div className="grid md:grid-cols-2 gap-4">
                                       <div>
                                         <Label htmlFor={`shootDate-${client.id}`}>Shoot Date *</Label>
-                                        <DatePicker
-                                          date={undefined}
-                                          onDateChange={(date) => {
-                                            const input = document.getElementById(`shootDate-${client.id}`) as HTMLInputElement;
-                                            if (input && date) {
-                                              input.value = date.toISOString().split('T')[0];
-                                            }
-                                          }}
-                                          placeholder="Select shoot date"
-                                        />
-                                        <input type="hidden" id={`shootDate-${client.id}`} name="shootDate" required />
+                                        <Input id={`shootDate-${client.id}`} name="shootDate" type="date" required />
                                       </div>
                                       <div>
                                         <Label htmlFor={`location-${client.id}`}>Location *</Label>
