@@ -145,6 +145,20 @@ export const insertShootSchema = createInsertSchema(shoots).omit({
   createdAt: true,
   updatedAt: true,
   viewCount: true,
+}).extend({
+  // Ensure clientId accepts email strings
+  clientId: z.string(),
+  // Make optional fields properly optional
+  customSlug: z.string().optional(),
+  customTitle: z.string().optional(),
+  location: z.string().optional(),
+  description: z.string().optional(),
+  seoTitle: z.string().optional(),
+  seoDescription: z.string().optional(),
+  seoKeywords: z.array(z.string()).optional(),
+  gallerySettings: z.any().optional(),
+  isPrivate: z.boolean().optional(),
+  bannerImageId: z.string().nullable().optional(),
 });
 
 export const insertImageSchema = createInsertSchema(images).omit({
