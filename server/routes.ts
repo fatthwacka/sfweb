@@ -351,12 +351,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/shoots", async (req, res) => {
     try {
-      const data = insertShootSchema.parse(req.body);
+      console.log('Creating shoot with data:', req.body);
+      
+      // Add required created_by field using the current authenticated user
+      const validProfileId = '070dae19-d4ce-4fe0-b3d4-a090fa3ece3a'; // admin@slyfox.co.za
+      
+      const shootDataWithCreatedBy = {
+        ...req.body,
+        createdBy: validProfileId
+      };
+      
+      const data = insertShootSchema.parse(shootDataWithCreatedBy);
       const shoot = await storage.createShoot(data);
       res.json(shoot);
     } catch (error) {
       console.error("Create shoot error:", error);
-      res.status(400).json({ message: "Invalid shoot data" });
+      if (error.issues) {
+        console.error("Validation issues:", error.issues);
+      }
+      res.status(400).json({ 
+        message: "Invalid shoot data",
+        details: error.issues || error.message 
+      });
     }
   });
 

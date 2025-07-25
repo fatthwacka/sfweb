@@ -603,7 +603,16 @@ export function AdminContent({ userRole }: AdminContentProps) {
                             <div className="grid md:grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="shootDate">Shoot Date *</Label>
-                                <Input id="shootDate" name="shootDate" type="date" required />
+                                <div className="relative">
+                                  <Input 
+                                    id="shootDate" 
+                                    name="shootDate" 
+                                    type="date" 
+                                    required 
+                                    className="cursor-pointer w-full"
+                                    style={{ colorScheme: 'dark' }}
+                                  />
+                                </div>
                               </div>
                               <div>
                                 <Label htmlFor="location">Location *</Label>
@@ -896,7 +905,16 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                     <div className="grid md:grid-cols-2 gap-4">
                                       <div>
                                         <Label htmlFor={`shootDate-${client.id}`}>Shoot Date *</Label>
-                                        <Input id={`shootDate-${client.id}`} name="shootDate" type="date" required />
+                                        <div className="relative">
+                                          <Input 
+                                            id={`shootDate-${client.id}`} 
+                                            name="shootDate" 
+                                            type="date" 
+                                            required 
+                                            className="cursor-pointer w-full"
+                                            style={{ colorScheme: 'dark' }}
+                                          />
+                                        </div>
                                       </div>
                                       <div>
                                         <Label htmlFor={`location-${client.id}`}>Location *</Label>

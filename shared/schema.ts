@@ -46,7 +46,7 @@ export const shoots = pgTable("shoots", {
   description: text("description"),
   isPrivate: boolean("is_private").default(false).notNull(),
   bannerImageId: uuid("banner_image_id"),
-  seoTags: text("seo_tags").array(),
+  seoTags: text("seo_tags"),
   viewCount: integer("view_count").default(0).notNull(),
   createdBy: uuid("created_by").notNull().references(() => profiles.id),
   customSlug: text("custom_slug"),
@@ -145,6 +145,7 @@ export const insertShootSchema = createInsertSchema(shoots).omit({
   createdAt: true,
   updatedAt: true,
   viewCount: true,
+  createdBy: true,
 }).extend({
   // Ensure clientId accepts email strings
   clientId: z.string(),
@@ -155,6 +156,7 @@ export const insertShootSchema = createInsertSchema(shoots).omit({
   description: z.string().optional(),
   seoTitle: z.string().optional(),
   seoDescription: z.string().optional(),
+  seoTags: z.string().optional(), // Change from array to string
   seoKeywords: z.array(z.string()).optional(),
   gallerySettings: z.any().optional(),
   isPrivate: z.boolean().optional(),
