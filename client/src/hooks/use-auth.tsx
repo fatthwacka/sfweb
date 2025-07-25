@@ -27,12 +27,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session
+    // Immediately show app, check auth in background
+    setIsLoading(false);
+    
+    // Check for existing session after initial render
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.warn('Invalid saved user data, clearing...');
+        localStorage.removeItem("user");
+      }
     }
-    setIsLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {

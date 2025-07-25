@@ -353,7 +353,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('Creating shoot with data:', req.body);
       
-      // Add required created_by field using the current authenticated user
+      // Get authenticated user from session (for now use admin as fallback)
+      // TODO: Implement proper session management
       const validProfileId = '070dae19-d4ce-4fe0-b3d4-a090fa3ece3a'; // admin@slyfox.co.za
       
       const shootDataWithCreatedBy = {
@@ -361,7 +362,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdBy: validProfileId
       };
       
+      console.log('Shoot data with createdBy:', shootDataWithCreatedBy);
+      
       const data = insertShootSchema.parse(shootDataWithCreatedBy);
+      console.log('Validated data:', data);
+      
       const shoot = await storage.createShoot(data);
       res.json(shoot);
     } catch (error) {

@@ -145,10 +145,11 @@ export const insertShootSchema = createInsertSchema(shoots).omit({
   createdAt: true,
   updatedAt: true,
   viewCount: true,
-  createdBy: true,
 }).extend({
   // Ensure clientId accepts email strings
   clientId: z.string(),
+  // CreatedBy is required - ensure it's included
+  createdBy: z.string().uuid(),
   // Make optional fields properly optional
   customSlug: z.string().optional(),
   customTitle: z.string().optional(),

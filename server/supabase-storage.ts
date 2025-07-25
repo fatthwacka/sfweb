@@ -150,7 +150,9 @@ export class SupabaseStorage implements IStorage {
   }
 
   async createShoot(insertShoot: InsertShoot): Promise<Shoot> {
-    const result = await db.insert(shoots).values([insertShoot]).returning();
+    console.log('Supabase createShoot called with:', insertShoot);
+    const result = await db.insert(shoots).values(insertShoot).returning();
+    console.log('Supabase createShoot result:', result[0]);
     return result[0];
   }
 
