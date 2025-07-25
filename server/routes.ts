@@ -295,6 +295,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/clients", async (req, res) => {
     try {
+      console.log('Creating client with data:', req.body);
       const data = insertClientSchema.parse(req.body);
       
       // Add required created_by field using the current authenticated user
@@ -308,7 +309,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(client);
     } catch (error) {
       console.error("Create client error:", error);
-      res.status(400).json({ message: "Invalid client data" });
+      if (error.issues) {
+        console.error("Validation issues:", error.issues);
+      }
+      res.status(400).json({ 
+        message: "Invalid client data",
+        details: error.issues || error.message 
+      });
     }
   });
 

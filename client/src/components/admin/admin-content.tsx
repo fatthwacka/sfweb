@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { DatePicker } from "@/components/ui/date-picker";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { EnhancedGalleryEditor } from "./enhanced-gallery-editor";
@@ -195,11 +196,13 @@ export function AdminContent({ userRole }: AdminContentProps) {
   const handleCreateClient = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
+    const name = formData.get('name') as string;
     const data = {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      phone: formData.get('phone') as string,
-      address: formData.get('address') as string,
+      name: name.trim(),
+      slug: name.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-'),
+      email: (formData.get('email') as string) || null,
+      phone: (formData.get('phone') as string) || null,
+      address: (formData.get('address') as string) || null,
     };
     createClientMutation.mutate(data);
   };
@@ -600,7 +603,17 @@ export function AdminContent({ userRole }: AdminContentProps) {
                             <div className="grid md:grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="shootDate">Shoot Date *</Label>
-                                <Input id="shootDate" name="shootDate" type="date" required />
+                                <DatePicker
+                                  date={undefined}
+                                  onDateChange={(date) => {
+                                    const input = document.getElementById('shootDate') as HTMLInputElement;
+                                    if (input && date) {
+                                      input.value = date.toISOString().split('T')[0];
+                                    }
+                                  }}
+                                  placeholder="Select shoot date"
+                                />
+                                <input type="hidden" id="shootDate" name="shootDate" required />
                               </div>
                               <div>
                                 <Label htmlFor="location">Location *</Label>
@@ -893,7 +906,17 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                     <div className="grid md:grid-cols-2 gap-4">
                                       <div>
                                         <Label htmlFor={`shootDate-${client.id}`}>Shoot Date *</Label>
-                                        <Input id={`shootDate-${client.id}`} name="shootDate" type="date" required />
+                                        <DatePicker
+                                          date={undefined}
+                                          onDateChange={(date) => {
+                                            const input = document.getElementById(`shootDate-${client.id}`) as HTMLInputElement;
+                                            if (input && date) {
+                                              input.value = date.toISOString().split('T')[0];
+                                            }
+                                          }}
+                                          placeholder="Select shoot date"
+                                        />
+                                        <input type="hidden" id={`shootDate-${client.id}`} name="shootDate" required />
                                       </div>
                                       <div>
                                         <Label htmlFor={`location-${client.id}`}>Location *</Label>

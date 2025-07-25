@@ -134,6 +134,10 @@ export const insertClientSchema = createInsertSchema(clients).omit({
   createdAt: true,
   updatedAt: true,
   createdBy: true,
+}).extend({
+  // Make fields properly nullable to match frontend
+  email: z.string().optional(),
+  userId: z.string().nullable().optional(),
 });
 
 export const insertShootSchema = createInsertSchema(shoots).omit({
@@ -175,7 +179,7 @@ export const insertBookingSchema = createInsertSchema(bookings).omit({
 // Gallery customization schema for updating shoot settings
 export const updateShootCustomizationSchema = z.object({
   customSlug: z.string().optional(),
-  bannerImageId: z.string().optional(),
+  bannerImageId: z.string().nullable().optional(),
   customTitle: z.string().optional(),
   gallerySettings: z.any().optional(),
 });
