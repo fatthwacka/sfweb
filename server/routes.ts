@@ -295,20 +295,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/clients", async (req, res) => {
     try {
+      console.log('Creating client with data:', req.body);
       const data = insertClientSchema.parse(req.body);
       
       // Add required created_by field using the current authenticated user
-      // For now, using a default admin ID - should be replaced with actual auth user
+      // Use the admin profile ID that exists in the database
+      const validProfileId = '070dae19-d4ce-4fe0-b3d4-a090fa3ece3a'; // admin@slyfox.co.za
+      
       const clientData = {
         ...data,
-        createdBy: '600177ef-13c9-4173-a53c-71a04a4a7d1a' // Using existing staff user ID
+        createdBy: validProfileId
       };
       
       const client = await storage.createClient(clientData);
       res.json(client);
     } catch (error) {
       console.error("Create client error:", error);
-      res.status(400).json({ message: "Invalid client data" });
+      if (error.issues) {
+        console.error("Validation issues:", error.issues);
+      }
+      res.status(400).json({ 
+        message: "Invalid client data",
+        details: error.issues || error.message 
+      });
     }
   });
 
@@ -342,12 +351,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/shoots", async (req, res) => {
     try {
-      const data = insertShootSchema.parse(req.body);
+      console.log('Creating shoot with data:', req.body);
+      
+      // Get authenticated user from session (for now use admin as fallback)
+      // TODO: Implement proper session management
+      const validProfileId = '070dae19-d4ce-4fe0-b3d4-a090fa3ece3a'; // admin@slyfox.co.za
+      
+      const shootDataWithCreatedBy = {
+        ...req.body,
+        createdBy: validProfileId
+      };
+      
+      console.log('Shoot data with createdBy:', shootDataWithCreatedBy);
+      
+      const data = insertShootSchema.parse(shootDataWithCreatedBy);
+      console.log('Validated data:', data);
+      
       const shoot = await storage.createShoot(data);
       res.json(shoot);
     } catch (error) {
       console.error("Create shoot error:", error);
-      res.status(400).json({ message: "Invalid shoot data" });
+      if (error.issues) {
+        console.error("Validation issues:", error.issues);
+      }
+      res.status(400).json({ 
+        message: "Invalid shoot data",
+        details: error.issues || error.message 
+      });
     }
   });
 

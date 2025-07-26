@@ -24,15 +24,19 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false); // Start with false to prevent blocking
 
   useEffect(() => {
     // Check for existing session
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.warn('Invalid saved user data, clearing...');
+        localStorage.removeItem("user");
+      }
     }
-    setIsLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -63,6 +67,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
+    // Redirect to home page after logout
+    window.location.href = "/";
   };
 
   const signOut = logout; // Alias for consistency

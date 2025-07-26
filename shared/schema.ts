@@ -46,7 +46,7 @@ export const shoots = pgTable("shoots", {
   description: text("description"),
   isPrivate: boolean("is_private").default(false).notNull(),
   bannerImageId: uuid("banner_image_id"),
-  seoTags: text("seo_tags").array(),
+  seoTags: text("seo_tags"),
   viewCount: integer("view_count").default(0).notNull(),
   createdBy: uuid("created_by").notNull().references(() => profiles.id),
   customSlug: text("custom_slug"),
@@ -134,6 +134,10 @@ export const insertClientSchema = createInsertSchema(clients).omit({
   createdAt: true,
   updatedAt: true,
   createdBy: true,
+}).extend({
+  // Make fields properly nullable to match frontend
+  email: z.string().optional(),
+  userId: z.string().nullable().optional(),
 });
 
 export const insertShootSchema = createInsertSchema(shoots).omit({
@@ -141,7 +145,23 @@ export const insertShootSchema = createInsertSchema(shoots).omit({
   createdAt: true,
   updatedAt: true,
   viewCount: true,
-  createdBy: true,
+}).extend({
+  // Ensure clientId accepts email strings
+  clientId: z.string(),
+  // CreatedBy is required - ensure it's included
+  createdBy: z.string().uuid(),
+  // Make optional fields properly optional
+  customSlug: z.string().optional(),
+  customTitle: z.string().optional(),
+  location: z.string().optional(),
+  description: z.string().optional(),
+  seoTitle: z.string().optional(),
+  seoDescription: z.string().optional(),
+  seoTags: z.string().optional(), // Change from array to string
+  seoKeywords: z.array(z.string()).optional(),
+  gallerySettings: z.any().optional(),
+  isPrivate: z.boolean().optional(),
+  bannerImageId: z.string().nullable().optional(),
 });
 
 export const insertImageSchema = createInsertSchema(images).omit({
@@ -175,7 +195,7 @@ export const insertBookingSchema = createInsertSchema(bookings).omit({
 // Gallery customization schema for updating shoot settings
 export const updateShootCustomizationSchema = z.object({
   customSlug: z.string().optional(),
-  bannerImageId: z.string().optional(),
+  bannerImageId: z.string().nullable().optional(),
   customTitle: z.string().optional(),
   gallerySettings: z.any().optional(),
 });

@@ -8,28 +8,41 @@ declare global {
 
 // Initialize Google Analytics
 export const initGA = () => {
-  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
+  try {
+    const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
 
-  if (!measurementId) {
-    console.warn('Missing required Google Analytics key: VITE_GA_MEASUREMENT_ID');
-    return;
+    if (!measurementId) {
+      console.warn('Missing required Google Analytics key: VITE_GA_MEASUREMENT_ID');
+      return;
+    }
+
+    // Check if already initialized to prevent duplicate scripts
+    if (window.gtag) {
+      console.log('Google Analytics already initialized');
+      return;
+    }
+
+    // Add Google Analytics script to the head
+    const script1 = document.createElement('script');
+    script1.async = true;
+    script1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+    script1.onerror = (e) => console.warn('GA script failed to load:', e);
+    document.head.appendChild(script1);
+
+    // Initialize gtag
+    const script2 = document.createElement('script');
+    script2.innerHTML = `
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '${measurementId}');
+    `;
+    document.head.appendChild(script2);
+    
+    console.log('Google Analytics initialized successfully');
+  } catch (error) {
+    console.warn('Error initializing Google Analytics:', error);
   }
-
-  // Add Google Analytics script to the head
-  const script1 = document.createElement('script');
-  script1.async = true;
-  script1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
-  document.head.appendChild(script1);
-
-  // Initialize gtag
-  const script2 = document.createElement('script');
-  script2.innerHTML = `
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', '${measurementId}');
-  `;
-  document.head.appendChild(script2);
 };
 
 // Track page views - useful for single-page applications
