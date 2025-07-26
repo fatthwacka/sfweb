@@ -24,13 +24,10 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false); // Start with false to prevent blocking
 
   useEffect(() => {
-    // Immediately show app, check auth in background
-    setIsLoading(false);
-    
-    // Check for existing session after initial render
+    // Check for existing session
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
       try {
