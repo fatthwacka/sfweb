@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import {
@@ -69,6 +70,8 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   const [selectedImageModal, setSelectedImageModal] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartTime, setDragStartTime] = useState<number>(0);
+  const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
+  const [imageToDelete, setImageToDelete] = useState<string | null>(null);
   
   // All editable shoot parameters
   const [editableShoot, setEditableShoot] = useState({
@@ -170,6 +173,17 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       toast({ title: "Gallery appearance saved successfully!" });
     },
     onError: () => toast({ title: "Error", description: "Failed to save appearance", variant: "destructive" })
+  });
+
+  const deleteImageMutation = useMutation({
+    mutationFn: (imageId: string) => apiRequest('DELETE', `/api/images/${imageId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/images'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
+      toast({ title: "Image deleted successfully!" });
+    },
+    onError: () => toast({ title: "Error", description: "Failed to delete image", variant: "destructive" })
   });
   
   // Fetch shoot data
@@ -397,6 +411,19 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
   const setAlbumCover = (imageId: string) => {
     setSelectedCover(selectedCover === imageId ? null : imageId);
+  };
+
+  const handleDeleteImage = (imageId: string) => {
+    setImageToDelete(imageId);
+    setDeleteConfirmationOpen(true);
+  };
+
+  const confirmDeleteImage = () => {
+    if (imageToDelete) {
+      deleteImageMutation.mutate(imageToDelete);
+      setImageToDelete(null);
+      setDeleteConfirmationOpen(false);
+    }
   };
 
   if (isLoading) {
@@ -651,7 +678,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                           title="Delete from Database"
                           onClick={(e) => {
                             e.stopPropagation();
-                            toast({ title: "Feature Coming Soon", description: "Delete from database functionality" });
+                            handleDeleteImage(image.id);
                           }}
                         >
                           <Trash2 className="w-3 h-3" />
@@ -762,7 +789,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                           title="Delete from Database"
                           onClick={(e) => {
                             e.stopPropagation();
-                            toast({ title: "Feature Coming Soon", description: "Delete from database functionality" });
+                            handleDeleteImage(image.id);
                           }}
                         >
                           <Trash2 className="w-3 h-3" />
@@ -816,6 +843,29 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteConfirmationOpen} onOpenChange={setDeleteConfirmationOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Image Permanently</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the image from the database and remove it from Supabase storage. The image will be completely removed from all galleries and cannot be recovered.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteConfirmationOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDeleteImage}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Permanently
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

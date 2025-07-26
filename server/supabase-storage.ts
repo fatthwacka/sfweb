@@ -196,8 +196,51 @@ export class SupabaseStorage implements IStorage {
   }
 
   async deleteImage(id: string): Promise<boolean> {
-    const result = await db.delete(images).where(eq(images.id, id));
-    return result.rowCount > 0;
+    try {
+      // First get the image to extract storage path for deletion
+      const image = await this.getImage(id);
+      if (!image) {
+        return false;
+      }
+
+      // Initialize Supabase client for storage operations
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
+      // Extract storage path from public URL
+      let storagePath: string | null = null;
+      if (image.storagePath) {
+        // Extract path from public URL format
+        const urlParts = image.storagePath.split('/storage/v1/object/public/gallery-images/');
+        if (urlParts.length > 1) {
+          storagePath = urlParts[1];
+        }
+      }
+
+      // Delete from database first
+      const result = await db.delete(images).where(eq(images.id, id));
+      const deletedFromDb = result.rowCount > 0;
+
+      // If database deletion successful and we have storage path, delete from Supabase storage
+      if (deletedFromDb && storagePath) {
+        const { error: storageError } = await supabase.storage
+          .from('gallery-images')
+          .remove([storagePath]);
+
+        if (storageError) {
+          console.error('Supabase storage deletion error:', storageError);
+          // Continue even if storage deletion fails - database record is already deleted
+        }
+      }
+
+      return deletedFromDb;
+    } catch (error) {
+      console.error('Delete image error:', error);
+      return false;
+    }
   }
 
   // Package methods
