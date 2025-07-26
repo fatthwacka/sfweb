@@ -177,13 +177,37 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
   const deleteImageMutation = useMutation({
     mutationFn: (imageId: string) => apiRequest('DELETE', `/api/images/${imageId}`),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
       queryClient.invalidateQueries({ queryKey: ['/api/images'] });
       queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
-      toast({ title: "Image deleted successfully!" });
+      toast({ 
+        title: "Image deleted permanently", 
+        description: "Removed from database and storage" 
+      });
     },
-    onError: () => toast({ title: "Error", description: "Failed to delete image", variant: "destructive" })
+    onError: (error: any) => {
+      console.error("Delete error:", error);
+      const errorMessage = error?.message || "Unknown error occurred";
+      toast({ 
+        title: "Delete failed", 
+        description: errorMessage.includes("not found") 
+          ? "Image was already deleted or doesn't exist"
+          : `Error: ${errorMessage}`,
+        variant: "destructive" 
+      });
+    }
+  });
+
+  const updateImageSequencesMutation = useMutation({
+    mutationFn: (imageSequences: Record<string, number>) => 
+      apiRequest('PATCH', `/api/shoots/${shootId}`, { imageSequences }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/images'] });
+      toast({ title: "Image order updated!" });
+    },
+    onError: () => toast({ title: "Error", description: "Failed to update image order", variant: "destructive" })
   });
   
   // Fetch shoot data
@@ -257,11 +281,17 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       newOrder.splice(draggedIndex, 1);
       newOrder.splice(targetIndex, 0, draggedImage);
       
+      // Immediately save the new sequence
+      const imageSequences = Object.fromEntries(
+        newOrder.map((id, index) => [id, index + 1])
+      );
+      updateImageSequencesMutation.mutate(imageSequences);
+      
       return newOrder;
     });
     
     setDraggedImage(null);
-  }, [draggedImage]);
+  }, [draggedImage, updateImageSequencesMutation]);
 
   const handleDragEnd = useCallback(() => {
     setDraggedImage(null);

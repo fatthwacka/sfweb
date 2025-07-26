@@ -502,15 +502,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/images/:id", async (req, res) => {
     try {
       const imageId = req.params.id; // UUID string
+      console.log(`Attempting to delete image: ${imageId}`);
+      
       const deleted = await storage.deleteImage(imageId);
       
       if (!deleted) {
-        return res.status(404).json({ message: "Image not found" });
+        console.log(`Image not found in database: ${imageId}`);
+        return res.status(404).json({ message: "Image not found or already deleted" });
       }
       
-      res.json({ success: true });
+      console.log(`Successfully deleted image: ${imageId}`);
+      res.json({ success: true, message: "Image deleted successfully" });
     } catch (error) {
-      res.status(500).json({ message: "Failed to delete image" });
+      console.error("Delete image error:", error);
+      res.status(500).json({ 
+        message: "Failed to delete image", 
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 
