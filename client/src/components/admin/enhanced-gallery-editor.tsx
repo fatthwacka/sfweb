@@ -618,7 +618,17 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                           title="Make Cover"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSelectedCover(selectedCover === image.id ? null : image.id);
+                            const newCover = selectedCover === image.id ? null : image.id;
+                            setSelectedCover(newCover);
+                            
+                            // Save cover selection immediately to database
+                            saveAppearanceMutation.mutate({
+                              bannerImageId: newCover,
+                              gallerySettings,
+                              imageSequences: imageOrder.length > 0 
+                                ? Object.fromEntries(imageOrder.map((id, index) => [id, index + 1]))
+                                : {}
+                            });
                           }}
                         >
                           <Crown className="w-3 h-3" />
@@ -719,7 +729,17 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                           title="Make Cover"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSelectedCover(selectedCover === image.id ? null : image.id);
+                            const newCover = selectedCover === image.id ? null : image.id;
+                            setSelectedCover(newCover);
+                            
+                            // Save cover selection immediately to database
+                            saveAppearanceMutation.mutate({
+                              bannerImageId: newCover,
+                              gallerySettings,
+                              imageSequences: imageOrder.length > 0 
+                                ? Object.fromEntries(imageOrder.map((id, index) => [id, index + 1]))
+                                : {}
+                            });
                           }}
                         >
                           <Crown className="w-3 h-3" />
