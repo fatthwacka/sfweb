@@ -94,34 +94,15 @@ function Router() {
 }
 
 function App() {
-  const [appReady, setAppReady] = useState(false);
-
-  // Initialize app after a minimal delay to prevent white screen
+  // Initialize Google Analytics when app loads
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setAppReady(true);
-      
-      // Initialize Google Analytics
-      if (!import.meta.env.VITE_GA_MEASUREMENT_ID) {
-        console.warn('Missing required Google Analytics key: VITE_GA_MEASUREMENT_ID');
-      } else {
-        initGA();
-      }
-    }, 50); // Very minimal delay to ensure DOM is ready
-
-    return () => clearTimeout(timer);
+    // Verify required environment variable is present
+    if (!import.meta.env.VITE_GA_MEASUREMENT_ID) {
+      console.warn('Missing required Google Analytics key: VITE_GA_MEASUREMENT_ID');
+    } else {
+      initGA();
+    }
   }, []);
-
-  if (!appReady) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-orange-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-orange-400 font-medium">Loading SlyFox Studios...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <ErrorBoundary>
