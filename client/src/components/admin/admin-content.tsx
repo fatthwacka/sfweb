@@ -604,14 +604,27 @@ export function AdminContent({ userRole }: AdminContentProps) {
                             <div className="grid md:grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="shootDate">Shoot Date *</Label>
-                                <div className="relative">
+                                <div 
+                                  className="relative bg-background border border-input rounded-md cursor-pointer hover:border-salmon transition-colors"
+                                  onClick={() => {
+                                    const input = document.getElementById('shootDate') as HTMLInputElement;
+                                    input?.focus();
+                                    // Safely call showPicker - may fail in iframe environments
+                                    try {
+                                      input?.showPicker?.();
+                                    } catch (error) {
+                                      // Silently ignore cross-origin restrictions - input focus still works
+                                    }
+                                  }}
+                                >
                                   <Input 
                                     id="shootDate" 
                                     name="shootDate" 
                                     type="date" 
                                     required 
-                                    className="cursor-pointer w-full"
+                                    className="bg-transparent border-0 cursor-pointer pr-10 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                                   />
+                                  <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-salmon pointer-events-none" />
                                 </div>
                               </div>
                               <div>
@@ -914,14 +927,27 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                     <div className="grid md:grid-cols-2 gap-4">
                                       <div>
                                         <Label htmlFor={`shootDate-${client.id}`}>Shoot Date *</Label>
-                                        <div className="relative">
+                                        <div 
+                                          className="relative bg-background border border-input rounded-md cursor-pointer hover:border-salmon transition-colors"
+                                          onClick={() => {
+                                            const input = document.getElementById(`shootDate-${client.id}`) as HTMLInputElement;
+                                            input?.focus();
+                                            // Safely call showPicker - may fail in iframe environments
+                                            try {
+                                              input?.showPicker?.();
+                                            } catch (error) {
+                                              // Silently ignore cross-origin restrictions - input focus still works
+                                            }
+                                          }}
+                                        >
                                           <Input 
                                             id={`shootDate-${client.id}`} 
                                             name="shootDate" 
                                             type="date" 
                                             required 
-                                            className="cursor-pointer w-full"
+                                            className="bg-transparent border-0 cursor-pointer pr-10 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                                           />
+                                          <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-salmon pointer-events-none" />
                                         </div>
                                       </div>
                                       <div>
