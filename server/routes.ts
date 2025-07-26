@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import multer from 'multer';
 import { storage } from './storage';
 import { seedCompleteDatabase } from './seed-database.js';
 import { createSupabaseUser, type CreateUserData } from './supabase-auth.js';
@@ -13,6 +14,21 @@ import {
   updateShootCustomizationSchema
 } from "@shared/schema";
 import { z } from "zod";
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  }
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -386,6 +402,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const shootId = req.params.id; // Use string ID for UUID
       const updates = req.body;
       
+      // Handle image sequence updates if provided
+      if (updates.imageSequences) {
+        const imageSequences = updates.imageSequences;
+        for (const [imageId, sequence] of Object.entries(imageSequences)) {
+          await storage.updateImage(imageId, { sequence: sequence as number });
+        }
+        // Remove imageSequences from shoot updates since it's not a shoot field
+        delete updates.imageSequences;
+      }
+      
+      // Update the shoot with all provided data
       const shoot = await storage.updateShoot(shootId, updates);
       if (!shoot) {
         return res.status(404).json({ message: "Shoot not found" });
@@ -484,6 +511,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete image" });
+    }
+  });
+
+  // Image upload endpoint with Supabase storage
+  app.post("/api/images/upload", upload.array('images', 20), async (req, res) => {
+    try {
+      const files = req.files as Express.Multer.File[];
+      const { shootId } = req.body;
+
+      if (!files || files.length === 0) {
+        return res.status(400).json({ message: "No files provided" });
+      }
+
+      if (!shootId) {
+        return res.status(400).json({ message: "Shoot ID is required" });
+      }
+
+      // Initialize Supabase client
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY! // Use service role for admin operations
+      );
+
+      const uploadedImages = [];
+
+      for (const file of files) {
+        // Generate unique filename
+        const timestamp = Date.now();
+        const randomId = Math.random().toString(36).substring(2);
+        const fileExtension = file.originalname.split('.').pop();
+        const filename = `${timestamp}_${randomId}.${fileExtension}`;
+        const storagePath = `shoots/${shootId}/${filename}`;
+        
+        // Upload to Supabase Storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('shoot-images')
+          .upload(storagePath, file.buffer, {
+            contentType: file.mimetype,
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error('Supabase upload error:', uploadError);
+          continue; // Skip this file but continue with others
+        }
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('shoot-images')
+          .getPublicUrl(storagePath);
+
+        // Get the next sequence number for this shoot
+        const existingImages = await storage.getImagesByShoot(shootId);
+        const nextSequence = existingImages.length + 1;
+
+        // Create image record in database
+        const imageData = {
+          shootId: shootId,
+          filename: file.originalname,
+          storagePath: publicUrl,
+          originalPath: storagePath, // Store original path for future operations
+          thumbnailPath: null, // Could generate thumbnails in future
+          sequence: nextSequence,
+          title: file.originalname.replace(/\.[^/.]+$/, ""), // Remove extension
+          description: '',
+          isPrivate: false,
+          tags: [],
+          downloadCount: 0
+        };
+
+        const newImage = await storage.createImage(imageData);
+        uploadedImages.push(newImage);
+      }
+
+      res.json({ 
+        success: true, 
+        uploadedCount: uploadedImages.length,
+        images: uploadedImages,
+        message: `Successfully uploaded ${uploadedImages.length} image(s)`
+      });
+
+    } catch (error) {
+      console.error("Image upload error:", error);
+      res.status(500).json({ 
+        message: "Failed to upload images",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 
