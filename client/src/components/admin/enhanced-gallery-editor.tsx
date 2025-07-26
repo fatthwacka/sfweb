@@ -533,7 +533,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
             {/* Cover Image Strip */}
             {selectedCover && (
               <div 
-                className="relative h-32 w-full bg-cover bg-center flex items-center justify-center"
+                className="relative h-48 w-full bg-cover bg-center flex items-center justify-center"
                 style={{
                   backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${getOrderedImages().find(img => img.id === selectedCover)?.storagePath})`,
                   marginBottom: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px'
@@ -609,41 +609,44 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                     />
                     
                     {/* Hover Buttons */}
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="bg-salmon text-white hover:bg-salmon-muted"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedCover(selectedCover === image.id ? null : image.id);
-                        }}
-                      >
-                        <Crown className="w-3 h-3" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary" 
-                        className="bg-yellow-600 text-white hover:bg-yellow-700"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Remove from album (set to private or similar)
-                          toast({ title: "Feature Coming Soon", description: "Remove from album functionality" });
-                        }}
-                      >
-                        <X className="w-3 h-3" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Delete from database
-                          toast({ title: "Feature Coming Soon", description: "Delete from database functionality" });
-                        }}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
+                    <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="bg-salmon text-white hover:bg-salmon-muted"
+                          title="Make Cover"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedCover(selectedCover === image.id ? null : image.id);
+                          }}
+                        >
+                          <Crown className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary" 
+                          className="bg-yellow-600 text-white hover:bg-yellow-700"
+                          title="Remove from Album"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toast({ title: "Feature Coming Soon", description: "Remove from album functionality" });
+                          }}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          title="Delete from Database"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toast({ title: "Feature Coming Soon", description: "Delete from database functionality" });
+                          }}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
                     </div>
                     
                     {selectedCover === image.id && (
@@ -707,41 +710,44 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                     />
                     
                     {/* Hover Buttons */}
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="bg-salmon text-white hover:bg-salmon-muted"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedCover(selectedCover === image.id ? null : image.id);
-                        }}
-                      >
-                        <Crown className="w-3 h-3" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary" 
-                        className="bg-yellow-600 text-white hover:bg-yellow-700"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Remove from album (set to private or similar)
-                          toast({ title: "Feature Coming Soon", description: "Remove from album functionality" });
-                        }}
-                      >
-                        <X className="w-3 h-3" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Delete from database
-                          toast({ title: "Feature Coming Soon", description: "Delete from database functionality" });
-                        }}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
+                    <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="bg-salmon text-white hover:bg-salmon-muted"
+                          title="Make Cover"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedCover(selectedCover === image.id ? null : image.id);
+                          }}
+                        >
+                          <Crown className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary" 
+                          className="bg-yellow-600 text-white hover:bg-yellow-700"
+                          title="Remove from Album"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toast({ title: "Feature Coming Soon", description: "Remove from album functionality" });
+                          }}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          title="Delete from Database"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toast({ title: "Feature Coming Soon", description: "Delete from database functionality" });
+                          }}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
                     </div>
                     
                     {selectedCover === image.id && (
@@ -768,6 +774,10 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       {selectedImageModal && (
         <Dialog open={!!selectedImageModal} onOpenChange={() => setSelectedImageModal(null)}>
           <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+            <DialogHeader className="sr-only">
+              <DialogTitle>Image Preview</DialogTitle>
+              <DialogDescription>Full size image preview</DialogDescription>
+            </DialogHeader>
             <div className="relative">
               <img
                 src={getOrderedImages().find(img => img.id === selectedImageModal)?.storagePath}
