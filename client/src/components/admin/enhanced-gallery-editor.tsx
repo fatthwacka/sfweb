@@ -446,10 +446,8 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     saveAdvancedSettingsMutation.mutate(data);
   };
 
-  const handleUploadImages = async () => {
-    const fileInput = document.getElementById('imageUploadInput') as HTMLInputElement;
-    const files = fileInput?.files ? Array.from(fileInput.files) : [];
-    
+  const handleUploadImages = async (files: File[]) => {
+    console.log('handleUploadImages called with files:', files.length);
     if (files.length === 0) {
       toast({ title: "Error", description: "Please select images to upload", variant: "destructive" });
       return;

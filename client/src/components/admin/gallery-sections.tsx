@@ -372,6 +372,7 @@ export function AddImagesSection({ onUpload, isUploading, toast }: AddImagesSect
   const [isExpanded, setIsExpanded] = React.useState(false);
 
   const handleFileSelect = (files: File[]) => {
+    console.log('handleFileSelect called with:', files.length, 'files');
     setSelectedFiles(files);
     toast({
       title: "Images Selected",
@@ -380,6 +381,7 @@ export function AddImagesSection({ onUpload, isUploading, toast }: AddImagesSect
   };
 
   const handleUploadClick = () => {
+    console.log('handleUploadClick called with selectedFiles:', selectedFiles.length);
     if (selectedFiles.length > 0) {
       onUpload(selectedFiles);
       setSelectedFiles([]); // Clear selection after upload
