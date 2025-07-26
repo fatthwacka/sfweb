@@ -92,6 +92,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
   const [selectedClient, setSelectedClient] = useState<number | null>(null);
   const [newUserOpen, setNewUserOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
 
   // Fetch data with client-shoot relationships
   const { data: clients = [], isLoading: clientsLoading } = useQuery<Client[]>({
@@ -956,9 +957,23 @@ export function AdminContent({ userRole }: AdminContentProps) {
                               >
                                 <Edit className="w-4 h-4" />
                               </Button>
-                              <Button size="sm" variant="outline" className="border-border hover:border-red-500 text-white">
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
+                              <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="border-border hover:border-red-500 text-white"
+                              onClick={() => {
+                                if (confirm(`Are you sure you want to delete client ${client.name}?`)) {
+                                  // Add delete client mutation call here
+                                  toast({
+                                    title: "Feature Coming Soon",
+                                    description: "Client deletion will be implemented in the next update.",
+                                    variant: "destructive"
+                                  });
+                                }
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                             </div>
                           </div>
                         </div>
@@ -1153,7 +1168,10 @@ export function AdminContent({ userRole }: AdminContentProps) {
                             <Button 
                               size="sm" 
                               className="bg-salmon text-white hover:bg-salmon-muted"
-                              onClick={() => setSelectedShoot(shoot.id)}
+                              onClick={() => {
+                                setActiveTab('galleries');
+                                setSelectedShoot(shoot.id);
+                              }}
                             >
                               <Eye className="w-4 h-4" />
                             </Button>
@@ -1189,10 +1207,92 @@ export function AdminContent({ userRole }: AdminContentProps) {
                       className="pl-10"
                     />
                   </div>
-                  <Button className="bg-salmon text-white hover:bg-salmon-muted">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Upload Images
-                  </Button>
+                  <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="bg-salmon text-white hover:bg-salmon-muted">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Upload Images
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="admin-gradient-card max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle className="text-salmon">Upload Images</DialogTitle>
+                        <DialogDescription className="text-muted-foreground">
+                          Select images to upload to a specific shoot gallery.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="uploadShoot">Select Shoot *</Label>
+                          <Select name="shootId" required>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choose a shoot to upload images to" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {shoots.map(shoot => (
+                                <SelectItem key={shoot.id} value={shoot.id}>
+                                  {shoot.title} - {shoot.location}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="imageFiles">Select Images *</Label>
+                          <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+                            <FileImage className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                            <p className="text-muted-foreground mb-2">
+                              Drag and drop images here, or click to browse
+                            </p>
+                            <input
+                              type="file"
+                              multiple
+                              accept="image/*"
+                              className="hidden"
+                              id="imageFiles"
+                            />
+                            <Button 
+                              variant="outline" 
+                              className="border-salmon text-salmon hover:bg-salmon hover:text-white"
+                              onClick={() => document.getElementById('imageFiles')?.click()}
+                            >
+                              Browse Files
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          <input type="checkbox" id="uploadPrivate" className="rounded border-border" />
+                          <Label htmlFor="uploadPrivate" className="text-sm">
+                            Mark uploaded images as private
+                          </Label>
+                        </div>
+                        
+                        <div className="flex gap-3 pt-4">
+                          <Button 
+                            className="flex-1 bg-salmon text-white hover:bg-salmon-muted"
+                            onClick={() => {
+                              toast({
+                                title: "Feature In Development",
+                                description: "Image upload functionality will be available in the next release.",
+                              });
+                              setUploadDialogOpen(false);
+                            }}
+                          >
+                            Upload Images
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            onClick={() => setUploadDialogOpen(false)}
+                            className="border-border hover:border-salmon"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
 
@@ -1206,7 +1306,10 @@ export function AdminContent({ userRole }: AdminContentProps) {
                     <p className="text-muted-foreground mb-4">
                       Upload your first images to get started with gallery management.
                     </p>
-                    <Button className="bg-salmon text-white hover:bg-salmon-muted">
+                    <Button 
+                      className="bg-salmon text-white hover:bg-salmon-muted"
+                      onClick={() => setUploadDialogOpen(true)}
+                    >
                       <Plus className="w-4 h-4 mr-2" />
                       Upload Images
                     </Button>
@@ -1264,10 +1367,28 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                 
                                 {/* Action Buttons */}
                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <Button size="sm" variant="outline" className="flex-1 border-border hover:border-cyan text-white">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    className="flex-1 border-border hover:border-cyan text-white"
+                                    onClick={() => {
+                                      // Open image in new tab or lightbox
+                                      window.open(image.storagePath, '_blank');
+                                    }}
+                                  >
                                     <Eye className="w-3 h-3" />
                                   </Button>
-                                  <Button size="sm" variant="outline" className="flex-1 border-border hover:border-salmon text-white">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    className="flex-1 border-border hover:border-salmon text-white"
+                                    onClick={() => {
+                                      toast({
+                                        title: "Feature Coming Soon",
+                                        description: "Image editing will be implemented in the next update.",
+                                      });
+                                    }}
+                                  >
                                     <Edit className="w-3 h-3" />
                                   </Button>
                                 </div>
@@ -1324,7 +1445,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
               {selectedShoot && <EnhancedGalleryEditor shootId={selectedShoot} />}
 
               {!selectedShoot && (
-                <Card className="bg-salmon-dark border border-salmon/30 shadow-lg">
+                <Card className="admin-gradient-card">
                   <CardContent className="p-8 text-center">
                     <Palette className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-xl font-semibold mb-2">Select a Shoot</h3>
@@ -1394,7 +1515,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                   </div>
                 ) : (
                   users.map(user => (
-                    <Card key={user.id} className="bg-salmon-dark border border-salmon/30 shadow-lg">
+                    <Card key={user.id} className="admin-gradient-card">
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start">
                           <div className="space-y-2">
@@ -1531,15 +1652,15 @@ export function AdminContent({ userRole }: AdminContentProps) {
                 <h3 className="text-lg font-semibold text-salmon">Basic Information</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="edit-clientId">Client *</Label>
-                    <Select name="clientId" defaultValue={editingShoot.clientId.toString()} required>
+                    <Label htmlFor="edit-clientEmail">Client Email *</Label>
+                    <Select name="clientEmail" defaultValue={editingShoot.clientId} required>
                       <SelectTrigger>
                         <SelectValue placeholder="Select client" />
                       </SelectTrigger>
                       <SelectContent>
                         {clients.map(client => (
-                          <SelectItem key={client.id} value={client.id.toString()}>
-                            {client.name}
+                          <SelectItem key={client.id} value={client.email}>
+                            {client.name} ({client.email})
                           </SelectItem>
                         ))}
                       </SelectContent>
