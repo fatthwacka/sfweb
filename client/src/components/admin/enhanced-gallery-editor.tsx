@@ -281,17 +281,11 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       newOrder.splice(draggedIndex, 1);
       newOrder.splice(targetIndex, 0, draggedImage);
       
-      // Immediately save the new sequence
-      const imageSequences = Object.fromEntries(
-        newOrder.map((id, index) => [id, index + 1])
-      );
-      updateImageSequencesMutation.mutate(imageSequences);
-      
       return newOrder;
     });
     
     setDraggedImage(null);
-  }, [draggedImage, updateImageSequencesMutation]);
+  }, [draggedImage]);
 
   const handleDragEnd = useCallback(() => {
     setDraggedImage(null);
@@ -578,6 +572,30 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
             <Eye className="w-5 h-5" />
             Gallery Live Preview
           </CardTitle>
+          <div className="flex justify-end">
+            <Button 
+              onClick={() => {
+                const imageSequences = imageOrder.length > 0 
+                  ? Object.fromEntries(imageOrder.map((id, index) => [id, index + 1]))
+                  : {};
+                updateImageSequencesMutation.mutate(imageSequences);
+              }}
+              disabled={updateImageSequencesMutation.isPending}
+              className="bg-salmon hover:bg-salmon-muted text-white"
+            >
+              {updateImageSequencesMutation.isPending ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Order
+                </>
+              )}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div 
@@ -761,6 +779,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                           setImageOrder(newOrder);
                         }
                       }
+                      setDraggedImage(null);
                     }}
                     onMouseDown={(e) => setDragStartTime(Date.now())}
                     onClick={(e) => {
