@@ -121,6 +121,9 @@ The application is structured to be easily deployable to platforms like Vercel, 
 - **Gallery Appearance Controls**: Fixed border style (rounded/sharp/circular) and image spacing (tight/normal/loose) live preview functionality
 - **Enhanced Upload Feedback**: Improved success/error messages with actual upload count, better query invalidation for immediate UI updates
 - **Four-Card Gallery Editor**: Restructured into separate cards (Basic Info, Advanced Settings, Add Images, Gallery Appearance) with individual save buttons
+- **Collapsible Card Interface**: All gallery management cards now load collapsed with expand/collapse arrows for cleaner interface
+- **Date Picker Improvements**: Enhanced with fully clickable container, salmon calendar icon, and cross-origin iframe error handling
+- **Smart URL Slug Field**: Custom slug field with automatic space-to-hyphen conversion and special character removal
 
 ### July 26, 2025 - WHITE SCREEN ISSUE ACTUALLY SOLVED
 - **REAL Root Cause Found**: Runtime error plugin causing server restart cycles every 5000ms when JavaScript errors occurred

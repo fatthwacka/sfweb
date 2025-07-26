@@ -108,7 +108,12 @@ export function BasicInfoSection({
                 onClick={() => {
                   const input = document.getElementById('shootDate') as HTMLInputElement;
                   input?.focus();
-                  input?.showPicker?.();
+                  // Safely call showPicker - may fail in iframe environments
+                  try {
+                    input?.showPicker?.();
+                  } catch (error) {
+                    // Silently ignore cross-origin restrictions - input focus still works
+                  }
                 }}
               >
                 <Input
