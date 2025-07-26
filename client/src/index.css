@@ -1,4 +1,4 @@
-/* Fonts loaded asynchronously - see index.html */
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Saira+Condensed:wght@600;700;800;900&family=Great+Vibes:wght@400&family=Forum:wght@400&family=Barlow+Semi+Condensed:wght@400;500;600&family=Corinthia:wght@400;700&family=Righteous:wght@400&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -161,32 +161,6 @@
   
   html {
     scroll-behavior: smooth;
-  }
-
-  /* Fix date picker styling */
-  input[type="date"] {
-    color-scheme: dark !important;
-    background-color: hsl(var(--background)) !important;
-    border: 1px solid hsl(var(--border)) !important;
-    color: hsl(var(--foreground)) !important;
-  }
-  
-  input[type="date"]::-webkit-calendar-picker-indicator {
-    background-color: hsl(var(--salmon)) !important;
-    border-radius: 4px !important;
-    padding: 4px !important;
-    cursor: pointer !important;
-    filter: invert(1) !important;
-  }
-  
-  input[type="date"]::-webkit-inner-spin-button,
-  input[type="date"]::-webkit-outer-spin-button {
-    opacity: 1 !important;
-    height: 100% !important;
-    position: absolute !important;
-    right: 0 !important;
-    top: 0 !important;
-    cursor: pointer !important;
   }
 }
 

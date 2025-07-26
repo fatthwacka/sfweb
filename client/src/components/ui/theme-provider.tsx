@@ -11,29 +11,20 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>("dark");
-  const [isThemeReady, setIsThemeReady] = useState(false);
 
   useEffect(() => {
-    // Apply dark theme immediately on first load
-    document.documentElement.classList.remove("light");
-    document.documentElement.classList.add("dark");
-    setIsThemeReady(true);
-    
-    // Then check localStorage
+    // Get saved theme from localStorage
     const savedTheme = localStorage.getItem("slyfox-theme") as Theme;
-    if (savedTheme && savedTheme !== theme) {
+    if (savedTheme) {
       setTheme(savedTheme);
     }
   }, []);
 
   useEffect(() => {
-    // Update document class and localStorage when theme changes
-    if (isThemeReady) {
-      document.documentElement.classList.toggle("light", theme === "light");
-      document.documentElement.classList.toggle("dark", theme === "dark");
-      localStorage.setItem("slyfox-theme", theme);
-    }
-  }, [theme, isThemeReady]);
+    // Update document class and localStorage
+    document.documentElement.classList.toggle("light", theme === "light");
+    localStorage.setItem("slyfox-theme", theme);
+  }, [theme]);
 
   const toggleTheme = () => {
     setTheme(prev => prev === "dark" ? "light" : "dark");

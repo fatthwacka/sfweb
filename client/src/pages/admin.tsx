@@ -20,9 +20,9 @@ export default function Admin() {
             <p className="text-xl text-muted-foreground mb-8">
               You need staff or admin privileges to access this panel.
             </p>
-            <Link href="/">
+            <Link href="/dashboard">
               <Button className="bg-gold text-black hover:bg-gold-muted">
-                Back to Home
+                Back to Dashboard
               </Button>
             </Link>
           </div>

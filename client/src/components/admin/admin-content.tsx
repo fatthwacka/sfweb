@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-// import { DatePicker } from "@/components/ui/date-picker";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { EnhancedGalleryEditor } from "./enhanced-gallery-editor";
@@ -196,13 +195,11 @@ export function AdminContent({ userRole }: AdminContentProps) {
   const handleCreateClient = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const name = formData.get('name') as string;
     const data = {
-      name: name.trim(),
-      slug: name.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-'),
-      email: (formData.get('email') as string) || null,
-      phone: (formData.get('phone') as string) || null,
-      address: (formData.get('address') as string) || null,
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      phone: formData.get('phone') as string,
+      address: formData.get('address') as string,
     };
     createClientMutation.mutate(data);
   };
@@ -603,15 +600,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                             <div className="grid md:grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="shootDate">Shoot Date *</Label>
-                                <div className="relative">
-                                  <Input 
-                                    id="shootDate" 
-                                    name="shootDate" 
-                                    type="date" 
-                                    required 
-                                    className="cursor-pointer w-full"
-                                  />
-                                </div>
+                                <Input id="shootDate" name="shootDate" type="date" required />
                               </div>
                               <div>
                                 <Label htmlFor="location">Location *</Label>
@@ -904,15 +893,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                     <div className="grid md:grid-cols-2 gap-4">
                                       <div>
                                         <Label htmlFor={`shootDate-${client.id}`}>Shoot Date *</Label>
-                                        <div className="relative">
-                                          <Input 
-                                            id={`shootDate-${client.id}`} 
-                                            name="shootDate" 
-                                            type="date" 
-                                            required 
-                                            className="cursor-pointer w-full"
-                                          />
-                                        </div>
+                                        <Input id={`shootDate-${client.id}`} name="shootDate" type="date" required />
                                       </div>
                                       <div>
                                         <Label htmlFor={`location-${client.id}`}>Location *</Label>
