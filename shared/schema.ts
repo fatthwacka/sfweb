@@ -43,7 +43,11 @@ export const shoots = pgTable("shoots", {
   id: uuid("id").defaultRandom().primaryKey(),
   clientId: text("client_id").notNull(), // Stores client email for email-based matching
   title: text("title").notNull(),
+  location: text("location"),
+  shootDate: text("shoot_date"), // Using text to store date as YYYY-MM-DD format
+  shootType: text("shoot_type"),
   description: text("description"),
+  notes: text("notes"),
   isPrivate: boolean("is_private").default(false).notNull(),
   bannerImageId: uuid("banner_image_id"),
   seoTags: text("seo_tags"),

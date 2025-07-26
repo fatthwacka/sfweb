@@ -114,6 +114,14 @@ The application is structured to be easily deployable to platforms like Vercel, 
 
 ## Recent Changes: Latest modifications with dates
 
+### July 26, 2025 - Gallery Editor Fixes & Database Schema Updates
+- **Fixed Supabase Upload Issue**: Changed bucket name from 'shoot-images' to 'gallery-images' to match existing Supabase storage buckets
+- **Added Drag & Drop Functionality**: Implemented proper drag event handlers with visual feedback in gallery editor upload sections
+- **Database Schema Extensions**: Added missing columns to shoots table - location, shoot_date, shoot_type, notes for complete basic shoot info functionality
+- **Gallery Appearance Controls**: Fixed border style (rounded/sharp/circular) and image spacing (tight/normal/loose) live preview functionality
+- **Enhanced Upload Feedback**: Improved success/error messages with actual upload count, better query invalidation for immediate UI updates
+- **Four-Card Gallery Editor**: Restructured into separate cards (Basic Info, Advanced Settings, Add Images, Gallery Appearance) with individual save buttons
+
 ### July 26, 2025 - WHITE SCREEN ISSUE ACTUALLY SOLVED
 - **REAL Root Cause Found**: Runtime error plugin causing server restart cycles every 5000ms when JavaScript errors occurred
 - **Server Restart Loop**: @replit/vite-plugin-runtime-error-modal → Vite error handler → process.exit(1) → 5-second restart delay
