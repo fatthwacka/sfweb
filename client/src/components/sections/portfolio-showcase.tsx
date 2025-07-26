@@ -41,8 +41,22 @@ const portfolioItems = [
     id: 6,
     title: "Product Shoot",
     location: "Commercial • 2024",
-    category: "corporate",
+    category: "product",
     image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600"
+  },
+  {
+    id: 7,
+    title: "Matric Dance",
+    location: "School Event • 2024",
+    category: "matric-dance",
+    image: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600"
+  },
+  {
+    id: 8,
+    title: "Corporate Event",
+    location: "Conference • 2024",
+    category: "event",
+    image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600"
   }
 ];
 
@@ -50,7 +64,10 @@ const filterOptions = [
   { label: "All Work", value: "all" },
   { label: "Weddings", value: "weddings" },
   { label: "Portraits", value: "portraits" },
-  { label: "Corporate", value: "corporate" }
+  { label: "Corporate", value: "corporate" },
+  { label: "Product", value: "product" },
+  { label: "Matric Dance", value: "matric-dance" },
+  { label: "Event", value: "event" }
 ];
 
 export function PortfolioShowcase() {

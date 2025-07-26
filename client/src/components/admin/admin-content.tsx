@@ -432,7 +432,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
             <div className="space-y-8">
               {/* Stats Grid */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card className="bg-salmon-dark border border-salmon/30 shadow-lg">
+                <Card className="admin-gradient-card">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                       <Users className="w-4 h-4 icon-cyan" />
@@ -444,7 +444,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-salmon-dark border border-salmon/30 shadow-lg">
+                <Card className="admin-gradient-card">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                       <Camera className="w-4 h-4 icon-salmon" />
@@ -456,7 +456,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-salmon-dark border border-salmon/30 shadow-lg">
+                <Card className="admin-gradient-card">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                       <FileImage className="w-4 h-4 icon-cyan" />
@@ -468,7 +468,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-salmon-dark border border-salmon/30 shadow-lg">
+                <Card className="admin-gradient-card">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                       <Eye className="w-4 h-4 icon-salmon" />
@@ -484,7 +484,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
               </div>
 
               {/* Quick Actions */}
-              <Card className="bg-salmon-dark border border-salmon/30 shadow-lg">
+              <Card className="admin-gradient-card">
                 <CardHeader>
                   <CardTitle className="text-xl font-saira font-bold text-salmon">Quick Actions</CardTitle>
                 </CardHeader>
@@ -542,15 +542,15 @@ export function AdminContent({ userRole }: AdminContentProps) {
                             <h3 className="text-lg font-semibold text-salmon">Basic Information</h3>
                             <div className="grid md:grid-cols-2 gap-4">
                               <div>
-                                <Label htmlFor="clientId">Client *</Label>
-                                <Select name="clientId" required>
+                                <Label htmlFor="clientEmail">Client Email *</Label>
+                                <Select name="clientEmail" required>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select client" />
                                   </SelectTrigger>
                                   <SelectContent>
                                     {clients.map(client => (
-                                      <SelectItem key={client.id} value={client.id.toString()}>
-                                        {client.name}
+                                      <SelectItem key={client.id} value={client.email}>
+                                        {client.name} ({client.email})
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
@@ -697,7 +697,10 @@ export function AdminContent({ userRole }: AdminContentProps) {
                       </DialogContent>
                     </Dialog>
 
-                    <Button className="h-20 flex-col gap-2 bg-cyan-dark border border-cyan/30 shadow-lg hover:border-salmon text-white">
+                    <Button 
+                      className="h-20 flex-col gap-2 bg-cyan-dark border border-cyan/30 shadow-lg hover:border-salmon text-white"
+                      onClick={() => setActiveTab('images')}
+                    >
                       <FileImage className="w-6 h-6 icon-salmon" />
                       <span className="text-sm">Upload Images</span>
                     </Button>
@@ -775,7 +778,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                   </div>
                 ) : (
                   filteredClients.map(client => (
-                    <Card key={client.id} className="bg-salmon-dark border border-salmon/30 shadow-lg">
+                    <Card key={client.id} className="admin-gradient-card">
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start">
                           <div className="space-y-2">
@@ -793,7 +796,13 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                     {displayShoots.map(shoot => (
                                       <div key={shoot.id} className="flex items-center justify-between text-sm text-muted-foreground">
                                         <div className="flex items-center gap-2">
-                                          <Eye className="w-4 h-4 icon-cyan" />
+                                          <Eye 
+                                            className="w-4 h-4 icon-cyan cursor-pointer hover:text-salmon transition-colors" 
+                                            onClick={() => {
+                                              setActiveTab('galleries');
+                                              setSelectedShoot(shoot.id);
+                                            }}
+                                          />
                                           <span>{shoot.title}</span>
                                         </div>
                                         <Button 
@@ -1084,7 +1093,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                   </div>
                 ) : (
                   filteredShoots.map(shoot => (
-                    <Card key={shoot.id} className="bg-salmon-dark border border-salmon/30 shadow-lg">
+                    <Card key={shoot.id} className="admin-gradient-card">
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start">
                           <div className="space-y-3">
@@ -1190,7 +1199,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
               {imagesLoading ? (
                 <div className="text-center py-8">Loading images...</div>
               ) : images.length === 0 ? (
-                <Card className="bg-salmon-dark border border-salmon/30 shadow-lg">
+                <Card className="admin-gradient-card">
                   <CardContent className="p-8 text-center">
                     <FileImage className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-xl font-semibold mb-2">No Images Yet</h3>
@@ -1220,7 +1229,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                       .map((image) => {
                         const associatedShoot = shoots.find(s => s.id === image.shootId.toString());
                         return (
-                          <Card key={image.id} className="bg-salmon-dark border border-salmon/30 shadow-lg group hover:border-salmon/60 transition-colors">
+                          <Card key={image.id} className="admin-gradient-card group hover:border-salmon/60 transition-colors">
                             <CardContent className="p-3">
                               <div className="space-y-2">
                                 {/* Image Preview */}
@@ -1280,7 +1289,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
               </div>
 
               {/* Shoot Selection */}
-              <Card className="bg-salmon-dark border border-salmon/30 shadow-lg">
+              <Card className="admin-gradient-card">
                 <CardHeader>
                   <CardTitle className="text-salmon">Select Shoot to Manage</CardTitle>
                 </CardHeader>
