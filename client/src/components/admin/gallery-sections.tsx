@@ -16,7 +16,10 @@ import {
   User, 
   Edit, 
   AlertTriangle,
-  Plus 
+  Plus,
+  ChevronDown,
+  ChevronUp,
+  Calendar
 } from 'lucide-react';
 
 interface BasicInfoSectionProps {
@@ -40,56 +43,80 @@ export function BasicInfoSection({
   isSaving,
   toast 
 }: BasicInfoSectionProps) {
+  const [isExpanded, setIsExpanded] = React.useState(false);
+
   return (
     <Card className="admin-gradient-card">
-      <CardHeader>
+      <CardHeader 
+        className="cursor-pointer"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
         <div className="flex items-center justify-between">
           <CardTitle className="text-salmon flex items-center gap-2">
             <Camera className="w-5 h-5" />
             Basic Shoot Info
           </CardTitle>
-          <Button
-            onClick={onSave}
-            disabled={isSaving}
-            className="bg-salmon text-white hover:bg-salmon-muted"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            {isSaving ? 'Saving...' : 'Save Basic Info'}
-          </Button>
+          <div className="flex items-center gap-2">
+            {isExpanded && (
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSave();
+                }}
+                disabled={isSaving}
+                className="bg-salmon text-white hover:bg-salmon-muted"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {isSaving ? 'Saving...' : 'Save Basic Info'}
+              </Button>
+            )}
+            {isExpanded ? (
+              <ChevronUp className="w-5 h-5 text-salmon" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-salmon" />
+            )}
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="shootTitle">Shoot Title *</Label>
-            <Input
-              id="shootTitle"
-              value={editableShoot.title}
-              onChange={(e) => setEditableShoot(prev => ({...prev, title: e.target.value}))}
-              placeholder="Sarah & Michael's Wedding"
-              className="bg-background"
-            />
-          </div>
-          <div>
-            <Label htmlFor="shootLocation">Location *</Label>
-            <Input
-              id="shootLocation"
-              value={editableShoot.location}
-              onChange={(e) => setEditableShoot(prev => ({...prev, location: e.target.value}))}
-              placeholder="Cape Town Waterfront"
-              className="bg-background"
-            />
-          </div>
-          <div>
-            <Label htmlFor="shootDate">Shoot Date *</Label>
-            <Input
-              id="shootDate"
-              type="date"
-              value={editableShoot.shootDate}
-              onChange={(e) => setEditableShoot(prev => ({...prev, shootDate: e.target.value}))}
-              className="bg-background"
-            />
-          </div>
+      {isExpanded && (
+        <CardContent className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="shootTitle">Shoot Title *</Label>
+              <Input
+                id="shootTitle"
+                value={editableShoot.title}
+                onChange={(e) => setEditableShoot(prev => ({...prev, title: e.target.value}))}
+                placeholder="Sarah & Michael's Wedding"
+                className="bg-background"
+              />
+            </div>
+            <div>
+              <Label htmlFor="shootLocation">Location *</Label>
+              <Input
+                id="shootLocation"
+                value={editableShoot.location}
+                onChange={(e) => setEditableShoot(prev => ({...prev, location: e.target.value}))}
+                placeholder="Cape Town Waterfront"
+                className="bg-background"
+              />
+            </div>
+            <div>
+              <Label htmlFor="shootDate">Shoot Date *</Label>
+              <div 
+                className="relative bg-background border border-input rounded-md cursor-pointer hover:border-salmon transition-colors"
+                onClick={() => document.getElementById('shootDate')?.focus()}
+              >
+                <Input
+                  id="shootDate"
+                  type="date"
+                  value={editableShoot.shootDate}
+                  onChange={(e) => setEditableShoot(prev => ({...prev, shootDate: e.target.value}))}
+                  className="bg-transparent border-0 cursor-pointer pr-10"
+                />
+                <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-salmon pointer-events-none" />
+              </div>
+            </div>
           <div>
             <Label htmlFor="shootType">Shoot Type *</Label>
             <Select 
@@ -200,7 +227,8 @@ export function BasicInfoSection({
             </Dialog>
           </div>
         </div>
-      </CardContent>
+        </CardContent>
+      )}
     </Card>
   );
 }
