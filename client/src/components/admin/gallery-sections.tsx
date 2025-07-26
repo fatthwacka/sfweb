@@ -381,7 +381,6 @@ export function AddImagesSection({ onUpload, isUploading, toast }: AddImagesSect
   };
 
   const handleUploadClick = () => {
-    console.log('handleUploadClick called with selectedFiles:', selectedFiles.length);
     if (selectedFiles.length > 0) {
       onUpload(selectedFiles);
       setSelectedFiles([]); // Clear selection after upload

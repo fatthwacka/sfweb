@@ -34,7 +34,10 @@ import {
   AlertTriangle,
   Edit,
   Upload,
-  Plus
+  Plus,
+  X,
+  Trash2,
+  MousePointer
 } from 'lucide-react';
 import { 
   BasicInfoSection, 
@@ -63,6 +66,9 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   const [selectedCover, setSelectedCover] = useState<string | null>(null);
   const [draggedImage, setDraggedImage] = useState<string | null>(null);
   const [imageOrder, setImageOrder] = useState<string[]>([]);
+  const [selectedImageModal, setSelectedImageModal] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartTime, setDragStartTime] = useState<number>(0);
   
   // All editable shoot parameters
   const [editableShoot, setEditableShoot] = useState({
@@ -447,7 +453,6 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   };
 
   const handleUploadImages = async (files: File[]) => {
-    console.log('handleUploadImages called with files:', files.length);
     if (files.length === 0) {
       toast({ title: "Error", description: "Please select images to upload", variant: "destructive" });
       return;
@@ -512,32 +517,41 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       {/* Live Preview Card */}
       <Card className="admin-gradient-card">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-salmon flex items-center gap-2">
-              <Eye className="w-5 h-5" />
-              Gallery Live Preview
-            </CardTitle>
-            <div className="flex items-center gap-2">
-              <LinkIcon className="w-4 h-4 text-salmon" />
-              <span className="text-sm">URL:</span>
-              <code className="text-xs bg-muted px-2 py-1 rounded">/gallery/{shoot.customSlug || 'not-set'}</code>
-              <Button size="sm" variant="ghost" onClick={() => navigator.clipboard.writeText(`/gallery/${shoot.customSlug}`)}>
-                <Copy className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
+          <CardTitle className="text-salmon flex items-center gap-2">
+            <Eye className="w-5 h-5" />
+            Gallery Live Preview
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div 
-            className="rounded-lg p-4"
+            className="rounded-lg overflow-hidden"
             style={{ 
               backgroundColor: gallerySettings.backgroundColor,
-              minHeight: '300px'
+              minHeight: '400px'
             }}
           >
-            <h2 className="text-xl font-bold text-white mb-4 text-center">
-              {shoot.customTitle || shoot.title}
-            </h2>
+            {/* Cover Image Strip */}
+            {selectedCover && (
+              <div 
+                className="relative h-32 w-full bg-cover bg-center flex items-center justify-center"
+                style={{
+                  backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${getOrderedImages().find(img => img.id === selectedCover)?.storagePath})`,
+                  marginBottom: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px'
+                }}
+              >
+                <h2 className="text-xl font-bold text-white text-center">
+                  {shoot.customTitle || shoot.title}
+                </h2>
+              </div>
+            )}
+            
+            {/* Image Grid */}
+            <div className="p-4">
+              {!selectedCover && (
+                <h2 className="text-xl font-bold text-white mb-4 text-center">
+                  {shoot.customTitle || shoot.title}
+                </h2>
+              )}
             
             {gallerySettings.layoutStyle === 'masonry' ? (
               <div 
@@ -546,25 +560,92 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                   gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
                 }}
               >
-                {getOrderedImages().slice(0, 12).map((image) => (
+                {getOrderedImages().slice(0, 12).map((image, index) => (
                   <div 
                     key={image.id}
                     className={`
                       relative group overflow-hidden break-inside-avoid 
                       ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full aspect-square'}
                       ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
-                      cursor-pointer
+                      ${draggedImage === image.id ? 'opacity-50' : ''}
+                      cursor-pointer transition-all duration-200
                     `}
                     style={{ 
                       marginBottom: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
                     }}
-                    onClick={() => setAlbumCover(image.id)}
+                    draggable
+                    onDragStart={(e) => {
+                      setDraggedImage(image.id);
+                      e.dataTransfer.effectAllowed = 'move';
+                    }}
+                    onDragEnd={() => setDraggedImage(null)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (draggedImage && draggedImage !== image.id) {
+                        const newOrder = [...imageOrder];
+                        const draggedIndex = newOrder.indexOf(draggedImage);
+                        const targetIndex = newOrder.indexOf(image.id);
+                        
+                        if (draggedIndex !== -1 && targetIndex !== -1) {
+                          newOrder.splice(draggedIndex, 1);
+                          newOrder.splice(targetIndex, 0, draggedImage);
+                          setImageOrder(newOrder);
+                        }
+                      }
+                    }}
+                    onMouseDown={(e) => setDragStartTime(Date.now())}
+                    onClick={(e) => {
+                      const clickDuration = Date.now() - dragStartTime;
+                      if (clickDuration < 200) { // Quick click = modal
+                        setSelectedImageModal(image.id);
+                      }
+                    }}
                   >
                     <img
                       src={image.storagePath}
                       alt={image.filename}
                       className={`w-full object-cover ${gallerySettings.borderStyle === 'circular' ? 'h-full aspect-square' : 'h-auto'}`}
                     />
+                    
+                    {/* Hover Buttons */}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="bg-salmon text-white hover:bg-salmon-muted"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedCover(selectedCover === image.id ? null : image.id);
+                        }}
+                      >
+                        <Crown className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary" 
+                        className="bg-yellow-600 text-white hover:bg-yellow-700"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Remove from album (set to private or similar)
+                          toast({ title: "Feature Coming Soon", description: "Remove from album functionality" });
+                        }}
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Delete from database
+                          toast({ title: "Feature Coming Soon", description: "Delete from database functionality" });
+                        }}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    
                     {selectedCover === image.id && (
                       <div className="absolute top-2 right-2 bg-salmon text-white px-2 py-1 rounded text-xs font-bold">
                         Cover
@@ -580,22 +661,89 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                   gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
                 }}
               >
-                {getOrderedImages().slice(0, 12).map((image) => (
+                {getOrderedImages().slice(0, 12).map((image, index) => (
                   <div 
                     key={image.id}
                     className={`
                       relative group overflow-hidden aspect-square
                       ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full'}
                       ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
-                      cursor-pointer
+                      ${draggedImage === image.id ? 'opacity-50' : ''}
+                      cursor-pointer transition-all duration-200
                     `}
-                    onClick={() => setAlbumCover(image.id)}
+                    draggable
+                    onDragStart={(e) => {
+                      setDraggedImage(image.id);
+                      e.dataTransfer.effectAllowed = 'move';
+                    }}
+                    onDragEnd={() => setDraggedImage(null)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (draggedImage && draggedImage !== image.id) {
+                        const newOrder = [...imageOrder];
+                        const draggedIndex = newOrder.indexOf(draggedImage);
+                        const targetIndex = newOrder.indexOf(image.id);
+                        
+                        if (draggedIndex !== -1 && targetIndex !== -1) {
+                          newOrder.splice(draggedIndex, 1);
+                          newOrder.splice(targetIndex, 0, draggedImage);
+                          setImageOrder(newOrder);
+                        }
+                      }
+                    }}
+                    onMouseDown={(e) => setDragStartTime(Date.now())}
+                    onClick={(e) => {
+                      const clickDuration = Date.now() - dragStartTime;
+                      if (clickDuration < 200) { // Quick click = modal
+                        setSelectedImageModal(image.id);
+                      }
+                    }}
                   >
                     <img
                       src={image.storagePath}
                       alt={image.filename}
                       className="w-full h-full object-cover"
                     />
+                    
+                    {/* Hover Buttons */}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="bg-salmon text-white hover:bg-salmon-muted"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedCover(selectedCover === image.id ? null : image.id);
+                        }}
+                      >
+                        <Crown className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary" 
+                        className="bg-yellow-600 text-white hover:bg-yellow-700"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Remove from album (set to private or similar)
+                          toast({ title: "Feature Coming Soon", description: "Remove from album functionality" });
+                        }}
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Delete from database
+                          toast({ title: "Feature Coming Soon", description: "Delete from database functionality" });
+                        }}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    
                     {selectedCover === image.id && (
                       <div className="absolute top-2 right-2 bg-salmon text-white px-2 py-1 rounded text-xs font-bold">
                         Cover
@@ -611,9 +759,33 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                 ... and {images.length - 12} more images
               </div>
             )}
+            </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Image Modal */}
+      {selectedImageModal && (
+        <Dialog open={!!selectedImageModal} onOpenChange={() => setSelectedImageModal(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+            <div className="relative">
+              <img
+                src={getOrderedImages().find(img => img.id === selectedImageModal)?.storagePath}
+                alt="Full size preview"
+                className="w-full h-auto max-h-[85vh] object-contain"
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-2 right-2 bg-black/50 text-white hover:bg-black/70"
+                onClick={() => setSelectedImageModal(null)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
