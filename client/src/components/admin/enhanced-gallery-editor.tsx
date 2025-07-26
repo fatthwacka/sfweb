@@ -568,11 +568,11 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       {/* Live Preview Card */}
       <Card className="admin-gradient-card">
         <CardHeader>
-          <CardTitle className="text-salmon flex items-center gap-2">
-            <Eye className="w-5 h-5" />
-            Gallery Live Preview
-          </CardTitle>
-          <div className="flex justify-end">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-salmon flex items-center gap-2">
+              <Eye className="w-5 h-5" />
+              Gallery Live Preview
+            </CardTitle>
             <Button 
               onClick={() => {
                 const imageSequences = imageOrder.length > 0 

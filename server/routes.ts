@@ -412,10 +412,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         delete updates.imageSequences;
       }
       
-      // Update the shoot with all provided data
-      const shoot = await storage.updateShoot(shootId, updates);
-      if (!shoot) {
-        return res.status(404).json({ message: "Shoot not found" });
+      // Only update shoot if there are other fields to update
+      let shoot;
+      if (Object.keys(updates).length > 0) {
+        shoot = await storage.updateShoot(shootId, updates);
+        if (!shoot) {
+          return res.status(404).json({ message: "Shoot not found" });
+        }
+      } else {
+        // If only image sequences were updated, fetch the current shoot
+        shoot = await storage.getShoot(shootId);
+        if (!shoot) {
+          return res.status(404).json({ message: "Shoot not found" });
+        }
       }
       
       res.json(shoot);
