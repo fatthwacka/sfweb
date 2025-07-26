@@ -603,13 +603,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                             <div className="grid md:grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="shootDate">Shoot Date *</Label>
-                                <div 
-                                  className="relative cursor-pointer"
-                                  onClick={(e) => {
-                                    const input = e.currentTarget.querySelector('input[type="date"]') as HTMLInputElement;
-                                    if (input) input.showPicker?.();
-                                  }}
-                                >
+                                <div className="relative">
                                   <Input 
                                     id="shootDate" 
                                     name="shootDate" 
@@ -910,13 +904,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                     <div className="grid md:grid-cols-2 gap-4">
                                       <div>
                                         <Label htmlFor={`shootDate-${client.id}`}>Shoot Date *</Label>
-                                        <div 
-                                          className="relative cursor-pointer"
-                                          onClick={(e) => {
-                                            const input = e.currentTarget.querySelector('input[type="date"]') as HTMLInputElement;
-                                            if (input) input.showPicker?.();
-                                          }}
-                                        >
+                                        <div className="relative">
                                           <Input 
                                             id={`shootDate-${client.id}`} 
                                             name="shootDate" 
