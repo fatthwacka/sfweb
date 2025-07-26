@@ -58,9 +58,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(data.user);
       localStorage.setItem("user", JSON.stringify(data.user));
     } catch (error) {
-      console.error('Login failed:', error);
-      // Don't rethrow to prevent unhandled promise rejections
-      // Components should check isLoading state instead
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -69,10 +67,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
-    // Use window.location.assign instead of href to prevent some reload issues
-    setTimeout(() => {
-      window.location.assign("/");
-    }, 100); // Small delay to ensure state updates complete
+    // Redirect to home page after logout
+    window.location.href = "/";
   };
 
   const signOut = logout; // Alias for consistency

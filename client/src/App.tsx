@@ -68,8 +68,8 @@ import MyGallery from "@/pages/my-gallery";
 import NotFound from "@/pages/not-found";
 
 function Router() {
-  // Temporarily disable analytics to test if it's causing restarts
-  // useAnalytics();
+  // Track page views when routes change
+  useAnalytics();
   // Auto scroll to top on route change
   useScrollToTop();
   
@@ -94,15 +94,15 @@ function Router() {
 }
 
 function App() {
-  // Temporarily disable GA initialization to test restart issue
-  // useEffect(() => {
-  //   // Verify required environment variable is present
-  //   if (!import.meta.env.VITE_GA_MEASUREMENT_ID) {
-  //     console.warn('Missing required Google Analytics key: VITE_GA_MEASUREMENT_ID');
-  //   } else {
-  //     initGA();
-  //   }
-  // }, []);
+  // Initialize Google Analytics when app loads
+  useEffect(() => {
+    // Verify required environment variable is present
+    if (!import.meta.env.VITE_GA_MEASUREMENT_ID) {
+      console.warn('Missing required Google Analytics key: VITE_GA_MEASUREMENT_ID');
+    } else {
+      initGA();
+    }
+  }, []);
   
   return (
     <ErrorBoundary>
