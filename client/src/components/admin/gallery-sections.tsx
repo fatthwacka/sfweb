@@ -105,14 +105,18 @@ export function BasicInfoSection({
               <Label htmlFor="shootDate">Shoot Date *</Label>
               <div 
                 className="relative bg-background border border-input rounded-md cursor-pointer hover:border-salmon transition-colors"
-                onClick={() => document.getElementById('shootDate')?.focus()}
+                onClick={() => {
+                  const input = document.getElementById('shootDate') as HTMLInputElement;
+                  input?.focus();
+                  input?.showPicker?.();
+                }}
               >
                 <Input
                   id="shootDate"
                   type="date"
                   value={editableShoot.shootDate}
                   onChange={(e) => setEditableShoot(prev => ({...prev, shootDate: e.target.value}))}
-                  className="bg-transparent border-0 cursor-pointer pr-10"
+                  className="bg-transparent border-0 cursor-pointer pr-10 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                 />
                 <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-salmon pointer-events-none" />
               </div>
@@ -241,52 +245,73 @@ interface AdvancedSettingsSectionProps {
 }
 
 export function AdvancedSettingsSection({ editableShoot, setEditableShoot, onSave, isSaving }: AdvancedSettingsSectionProps) {
+  const [isExpanded, setIsExpanded] = React.useState(false);
+
   return (
     <Card className="admin-gradient-card">
-      <CardHeader>
+      <CardHeader 
+        className="cursor-pointer"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
         <div className="flex items-center justify-between">
           <CardTitle className="text-salmon flex items-center gap-2">
             <Settings className="w-5 h-5" />
             Advanced Settings
           </CardTitle>
-          <Button
-            onClick={onSave}
-            disabled={isSaving}
-            className="bg-salmon text-white hover:bg-salmon-muted"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            {isSaving ? 'Saving...' : 'Save Settings'}
-          </Button>
+          <div className="flex items-center gap-2">
+            {isExpanded && (
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSave();
+                }}
+                disabled={isSaving}
+                className="bg-salmon text-white hover:bg-salmon-muted"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {isSaving ? 'Saving...' : 'Save Settings'}
+              </Button>
+            )}
+            {isExpanded ? (
+              <ChevronUp className="w-5 h-5 text-salmon" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-salmon" />
+            )}
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="customTitle">Custom Gallery Title</Label>
-            <Input
-              id="customTitle"
-              value={editableShoot.customTitle}
-              onChange={(e) => setEditableShoot(prev => ({...prev, customTitle: e.target.value}))}
-              placeholder="Leave empty to use shoot title"
-              className="bg-background"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              This will be displayed as the main gallery heading
-            </p>
-          </div>
-          <div>
-            <Label htmlFor="customSlug">Custom URL Slug</Label>
-            <Input
-              id="customSlug"
-              value={editableShoot.customSlug}
-              onChange={(e) => setEditableShoot(prev => ({...prev, customSlug: e.target.value}))}
-              placeholder="sarah-michael-wedding-2024"
-              className="bg-background"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              Gallery will be accessible at: <code>/gallery/{editableShoot.customSlug || 'your-slug'}</code>
-            </p>
-          </div>
+      {isExpanded && (
+        <CardContent className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="customTitle">Custom Gallery Title</Label>
+              <Input
+                id="customTitle"
+                value={editableShoot.customTitle}
+                onChange={(e) => setEditableShoot(prev => ({...prev, customTitle: e.target.value}))}
+                placeholder="Leave empty to use shoot title"
+                className="bg-background"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                This will be displayed as the main gallery heading
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="customSlug">Custom URL Slug</Label>
+              <Input
+                id="customSlug"
+                value={editableShoot.customSlug}
+                onChange={(e) => {
+                  const slugValue = e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
+                  setEditableShoot(prev => ({...prev, customSlug: slugValue}));
+                }}
+                placeholder="sarah-michael-wedding-2024"
+                className="bg-background"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Gallery will be accessible at: <code>/gallery/{editableShoot.customSlug || 'your-slug'}</code>
+              </p>
+            </div>
         </div>
         
         <div>
@@ -325,7 +350,8 @@ export function AdvancedSettingsSection({ editableShoot, setEditableShoot, onSav
             className="bg-background"
           />
         </div>
-      </CardContent>
+        </CardContent>
+      )}
     </Card>
   );
 }
@@ -338,6 +364,7 @@ interface AddImagesSectionProps {
 
 export function AddImagesSection({ onUpload, isUploading, toast }: AddImagesSectionProps) {
   const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
+  const [isExpanded, setIsExpanded] = React.useState(false);
 
   const handleFileSelect = (files: File[]) => {
     setSelectedFiles(files);
@@ -356,23 +383,39 @@ export function AddImagesSection({ onUpload, isUploading, toast }: AddImagesSect
 
   return (
     <Card className="admin-gradient-card">
-      <CardHeader>
+      <CardHeader 
+        className="cursor-pointer"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
         <div className="flex items-center justify-between">
           <CardTitle className="text-salmon flex items-center gap-2">
             <Upload className="w-5 h-5" />
             Add Images
           </CardTitle>
-          <Button
-            onClick={handleUploadClick}
-            disabled={isUploading || selectedFiles.length === 0}
-            className="bg-salmon text-white hover:bg-salmon-muted"
-          >
-            <Upload className="w-4 h-4 mr-2" />
-            {isUploading ? 'Uploading...' : `Upload ${selectedFiles.length > 0 ? `${selectedFiles.length} ` : ''}Images`}
-          </Button>
+          <div className="flex items-center gap-2">
+            {isExpanded && (
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleUploadClick();
+                }}
+                disabled={isUploading || selectedFiles.length === 0}
+                className="bg-salmon text-white hover:bg-salmon-muted"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                {isUploading ? 'Uploading...' : `Upload ${selectedFiles.length > 0 ? `${selectedFiles.length} ` : ''}Images`}
+              </Button>
+            )}
+            {isExpanded ? (
+              <ChevronUp className="w-5 h-5 text-salmon" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-salmon" />
+            )}
+          </div>
         </div>
       </CardHeader>
-      <CardContent>
+      {isExpanded && (
+        <CardContent>
         <div 
           className="border-2 border-dashed border-salmon/30 rounded-lg p-8 text-center bg-background/50 transition-colors hover:border-salmon/50"
           onDragOver={(e) => {
@@ -427,7 +470,8 @@ export function AddImagesSection({ onUpload, isUploading, toast }: AddImagesSect
             Supports: JPG, PNG, WEBP • Max 10MB per image • Bulk upload supported
           </p>
         </div>
-      </CardContent>
+        </CardContent>
+      )}
     </Card>
   );
 }
@@ -451,25 +495,43 @@ export function GalleryAppearanceSection({
   onSave, 
   isSaving 
 }: GalleryAppearanceSectionProps) {
+  const [isExpanded, setIsExpanded] = React.useState(false);
+
   return (
     <Card className="admin-gradient-card">
-      <CardHeader>
+      <CardHeader 
+        className="cursor-pointer"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
         <div className="flex items-center justify-between">
           <CardTitle className="text-salmon flex items-center gap-2">
             <Palette className="w-5 h-5" />
             Gallery Appearance
           </CardTitle>
-          <Button
-            onClick={onSave}
-            disabled={isSaving}
-            className="bg-salmon text-white hover:bg-salmon-muted"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            {isSaving ? 'Saving...' : 'Save Appearance'}
-          </Button>
+          <div className="flex items-center gap-2">
+            {isExpanded && (
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSave();
+                }}
+                disabled={isSaving}
+                className="bg-salmon text-white hover:bg-salmon-muted"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {isSaving ? 'Saving...' : 'Save Appearance'}
+              </Button>
+            )}
+            {isExpanded ? (
+              <ChevronUp className="w-5 h-5 text-salmon" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-salmon" />
+            )}
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      {isExpanded && (
+        <CardContent className="space-y-4">
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <Label>Background Color</Label>
@@ -540,7 +602,8 @@ export function GalleryAppearanceSection({
             </Select>
           </div>
         </div>
-      </CardContent>
+        </CardContent>
+      )}
     </Card>
   );
 }
