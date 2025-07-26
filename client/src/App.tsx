@@ -103,7 +103,7 @@ function App() {
       initGA();
     }
   }, []);
-
+  
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
