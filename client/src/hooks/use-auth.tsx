@@ -58,7 +58,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(data.user);
       localStorage.setItem("user", JSON.stringify(data.user));
     } catch (error) {
-      throw error;
+      console.error('Login failed:', error);
+      // Don't rethrow to prevent unhandled promise rejections
+      // Components should check isLoading state instead
     } finally {
       setIsLoading(false);
     }
