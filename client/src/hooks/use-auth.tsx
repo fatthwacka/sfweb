@@ -69,8 +69,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
-    // Redirect to home page after logout
-    window.location.href = "/";
+    // Use window.location.assign instead of href to prevent some reload issues
+    setTimeout(() => {
+      window.location.assign("/");
+    }, 100); // Small delay to ensure state updates complete
   };
 
   const signOut = logout; // Alias for consistency
