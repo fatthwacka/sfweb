@@ -89,6 +89,60 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     layoutStyle: 'grid',
     imageSpacing: 'tight'
   });
+
+  // All mutations must be declared before any conditional returns (Rules of Hooks)
+  const saveBasicInfoMutation = useMutation({
+    mutationFn: (data: any) => apiRequest('PATCH', `/api/shoots/${shootId}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
+      toast({ title: "Basic information saved successfully!" });
+    },
+    onError: () => toast({ title: "Error", description: "Failed to save basic info", variant: "destructive" })
+  });
+
+  const saveAdvancedSettingsMutation = useMutation({
+    mutationFn: (data: any) => apiRequest('PATCH', `/api/shoots/${shootId}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
+      toast({ title: "Advanced settings saved successfully!" });
+    },
+    onError: () => toast({ title: "Error", description: "Failed to save advanced settings", variant: "destructive" })
+  });
+
+  const uploadImagesMutation = useMutation({
+    mutationFn: async (files: File[]) => {
+      const uploadData = new FormData();
+      uploadData.append('shootId', shootId);
+      files.forEach((file) => {
+        uploadData.append('images', file);
+      });
+      const response = await fetch('/api/images/upload', {
+        method: 'POST',
+        body: uploadData,
+      });
+      if (!response.ok) throw new Error('Upload failed');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/images'] });
+      toast({ title: "Images uploaded successfully!" });
+      const fileInput = document.getElementById('imageUploadInput') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+    },
+    onError: () => toast({ title: "Error", description: "Failed to upload images", variant: "destructive" })
+  });
+
+  const saveAppearanceMutation = useMutation({
+    mutationFn: (data: any) => apiRequest('PATCH', `/api/shoots/${shootId}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
+      toast({ title: "Gallery appearance saved successfully!" });
+    },
+    onError: () => toast({ title: "Error", description: "Failed to save appearance", variant: "destructive" })
+  });
   
   // Fetch shoot data
   const { data: shootData, isLoading } = useQuery({
@@ -102,7 +156,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   });
 
   const shoot = shootData?.shoot;
-  const images: GalleryImage[] = shootData?.images || [];
+  const images: GalleryImage[] = (shootData?.images as GalleryImage[]) || [];
 
   // Initialize settings from shoot data
   useEffect(() => {
@@ -340,60 +394,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     );
   }
 
-  // Individual save mutations for each section
-  const saveBasicInfoMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('PATCH', `/api/shoots/${shootId}`, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
-      toast({ title: "Basic information saved successfully!" });
-    },
-    onError: () => toast({ title: "Error", description: "Failed to save basic info", variant: "destructive" })
-  });
 
-  const saveAdvancedSettingsMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('PATCH', `/api/shoots/${shootId}`, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
-      toast({ title: "Advanced settings saved successfully!" });
-    },
-    onError: () => toast({ title: "Error", description: "Failed to save advanced settings", variant: "destructive" })
-  });
-
-  const uploadImagesMutation = useMutation({
-    mutationFn: async (files: File[]) => {
-      const uploadData = new FormData();
-      uploadData.append('shootId', shootId);
-      files.forEach((file) => {
-        uploadData.append('images', file);
-      });
-      const response = await fetch('/api/images/upload', {
-        method: 'POST',
-        body: uploadData,
-      });
-      if (!response.ok) throw new Error('Upload failed');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/images'] });
-      toast({ title: "Images uploaded successfully!" });
-      // Clear the file input
-      const fileInput = document.getElementById('imageUploadInput') as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
-    },
-    onError: () => toast({ title: "Error", description: "Failed to upload images", variant: "destructive" })
-  });
-
-  const saveAppearanceMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('PATCH', `/api/shoots/${shootId}`, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
-      toast({ title: "Gallery appearance saved successfully!" });
-    },
-    onError: () => toast({ title: "Error", description: "Failed to save appearance", variant: "destructive" })
-  });
 
   const handleSaveBasicInfo = () => {
     if (!editableShoot.title.trim() || !editableShoot.location.trim() || !editableShoot.shootDate) {
