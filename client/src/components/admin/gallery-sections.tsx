@@ -423,21 +423,39 @@ export function AddImagesSection({ onUpload, isUploading, toast }: AddImagesSect
         <CardContent>
         <div 
           className="border-2 border-dashed border-salmon/30 rounded-lg p-8 text-center bg-background/50 transition-colors hover:border-salmon/50"
+          onDragEnter={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
           onDragOver={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             e.currentTarget.classList.add('border-salmon', 'bg-salmon/10');
           }}
           onDragLeave={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             e.currentTarget.classList.remove('border-salmon', 'bg-salmon/10');
           }}
           onDrop={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             e.currentTarget.classList.remove('border-salmon', 'bg-salmon/10');
+            
+            // Get files from dataTransfer
             const files = Array.from(e.dataTransfer.files);
             const imageFiles = files.filter(file => file.type.startsWith('image/'));
+            
+            console.log('Dropped files:', files.length, 'Image files:', imageFiles.length);
+            
             if (imageFiles.length > 0) {
               handleFileSelect(imageFiles);
+            } else if (files.length > 0) {
+              toast({
+                title: "Invalid Files",
+                description: "Please drop image files only (JPG, PNG, WEBP)",
+                variant: "destructive"
+              });
             }
           }}
         >
