@@ -87,6 +87,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
   const [newClientOpen, setNewClientOpen] = useState(false);
   const [newShootOpen, setNewShootOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [editFormData, setEditFormData] = useState({ name: '', email: '', phone: '', address: '' });
   const [editingShoot, setEditingShoot] = useState<Shoot | null>(null);
   const [selectedShoot, setSelectedShoot] = useState<string | null>(null);
   const [selectedClient, setSelectedClient] = useState<number | null>(null);
@@ -380,14 +381,12 @@ export function AdminContent({ userRole }: AdminContentProps) {
     event.preventDefault();
     if (!editingClient) return;
     
-    const formData = new FormData(event.currentTarget);
-    
     const data = {
       id: editingClient.id,
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      phone: formData.get('phone') as string,
-      address: formData.get('address') as string,
+      name: editFormData.name,
+      email: editFormData.email,
+      phone: editFormData.phone,
+      address: editFormData.address,
       slug: editingClient.slug // Keep existing slug
     };
     
@@ -886,7 +885,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                       .trim();
                                     
                                     const data = {
-                                      clientId: client.id,
+                                      clientId: client.email, // Use email instead of numeric ID
                                       title: title,
                                       description: formData.get('description') as string || '',
                                       shootType: formData.get('shootType') as string,
@@ -979,7 +978,15 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                 size="sm" 
                                 variant="outline" 
                                 className="border-border hover:border-salmon text-white"
-                                onClick={() => setEditingClient(client)}
+                                onClick={() => {
+                                  setEditingClient(client);
+                                  setEditFormData({
+                                    name: client.name,
+                                    email: client.email || '',
+                                    phone: client.phone || '',
+                                    address: client.address || ''
+                                  });
+                                }}
                               >
                                 <Edit className="w-4 h-4" />
                               </Button>
@@ -1640,19 +1647,41 @@ export function AdminContent({ userRole }: AdminContentProps) {
             <form onSubmit={handleUpdateClient} className="space-y-4">
               <div>
                 <Label htmlFor="editClientName">Client Name *</Label>
-                <Input id="editClientName" name="name" defaultValue={editingClient.name} required />
+                <Input 
+                  id="editClientName" 
+                  name="name" 
+                  value={editFormData.name}
+                  onChange={(e) => setEditFormData(prev => ({...prev, name: e.target.value}))}
+                  required 
+                />
               </div>
               <div>
                 <Label htmlFor="editClientEmail">Email</Label>
-                <Input id="editClientEmail" name="email" type="email" defaultValue={editingClient.email || ''} />
+                <Input 
+                  id="editClientEmail" 
+                  name="email" 
+                  type="email" 
+                  value={editFormData.email}
+                  onChange={(e) => setEditFormData(prev => ({...prev, email: e.target.value}))}
+                />
               </div>
               <div>
                 <Label htmlFor="editClientPhone">Phone</Label>
-                <Input id="editClientPhone" name="phone" defaultValue={editingClient.phone || ''} />
+                <Input 
+                  id="editClientPhone" 
+                  name="phone" 
+                  value={editFormData.phone}
+                  onChange={(e) => setEditFormData(prev => ({...prev, phone: e.target.value}))}
+                />
               </div>
               <div>
                 <Label htmlFor="editClientAddress">Address</Label>
-                <Input id="editClientAddress" name="address" defaultValue={editingClient.address || ''} />
+                <Input 
+                  id="editClientAddress" 
+                  name="address" 
+                  value={editFormData.address}
+                  onChange={(e) => setEditFormData(prev => ({...prev, address: e.target.value}))}
+                />
               </div>
               <Button type="submit" disabled={updateClientMutation.isPending} className="w-full bg-salmon text-white hover:bg-salmon-muted">
                 {updateClientMutation.isPending ? 'Updating...' : 'Update Client'}
