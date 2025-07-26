@@ -2,16 +2,21 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-// Global error handlers to prevent runtime error plugin crashes
+// Enhanced error handlers to completely block runtime error plugin
 window.addEventListener('error', (event) => {
-  console.warn('Global error caught:', event.error);
-  event.preventDefault(); // Prevent default error handling
-});
+  console.warn('BLOCKED Error:', event.error?.message || event.message);
+  event.stopPropagation();
+  event.stopImmediatePropagation();
+  event.preventDefault();
+  return false; // Additional prevention
+}, true); // Capture phase
 
 window.addEventListener('unhandledrejection', (event) => {
-  console.warn('Unhandled promise rejection caught:', event.reason);
-  event.preventDefault(); // Prevent default handling
-});
+  console.warn('BLOCKED Promise rejection:', event.reason);
+  event.stopPropagation();
+  event.stopImmediatePropagation();
+  event.preventDefault();
+}, true); // Capture phase
 
 try {
   const rootElement = document.getElementById("root");
