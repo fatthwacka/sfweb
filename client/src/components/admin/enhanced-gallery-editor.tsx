@@ -125,14 +125,36 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       if (!response.ok) throw new Error('Upload failed');
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      // Invalidate multiple query patterns to ensure UI updates
       queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
       queryClient.invalidateQueries({ queryKey: ['/api/images'] });
-      toast({ title: "Images uploaded successfully!" });
+      queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
+      
+      if (result.uploadedCount > 0) {
+        toast({ 
+          title: "Upload Successful!", 
+          description: `${result.uploadedCount} image(s) uploaded successfully` 
+        });
+      } else {
+        toast({ 
+          title: "Upload Error", 
+          description: "No images were uploaded. Please check the file format.", 
+          variant: "destructive" 
+        });
+      }
+      
       const fileInput = document.getElementById('imageUploadInput') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
     },
-    onError: () => toast({ title: "Error", description: "Failed to upload images", variant: "destructive" })
+    onError: (error) => {
+      console.error("Upload error:", error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to upload images. Please try again.", 
+        variant: "destructive" 
+      });
+    }
   });
 
   const saveAppearanceMutation = useMutation({
@@ -520,21 +542,30 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
             </h2>
             
             {gallerySettings.layoutStyle === 'masonry' ? (
-              <div className="columns-2 md:columns-3 lg:columns-4 gap-2 space-y-2">
+              <div 
+                className={`columns-2 md:columns-3 lg:columns-4 space-y-${gallerySettings.imageSpacing === 'tight' ? '1' : gallerySettings.imageSpacing === 'normal' ? '2' : '4'}`}
+                style={{ 
+                  gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
+                }}
+              >
                 {getOrderedImages().slice(0, 12).map((image) => (
                   <div 
                     key={image.id}
                     className={`
-                      relative group overflow-hidden break-inside-avoid mb-2 rounded-lg
+                      relative group overflow-hidden break-inside-avoid 
+                      ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full aspect-square'}
                       ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
                       cursor-pointer
                     `}
+                    style={{ 
+                      marginBottom: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
+                    }}
                     onClick={() => setAlbumCover(image.id)}
                   >
                     <img
                       src={image.storagePath}
                       alt={image.filename}
-                      className="w-full h-auto object-cover"
+                      className={`w-full object-cover ${gallerySettings.borderStyle === 'circular' ? 'h-full aspect-square' : 'h-auto'}`}
                     />
                     {selectedCover === image.id && (
                       <div className="absolute top-2 right-2 bg-salmon text-white px-2 py-1 rounded text-xs font-bold">
@@ -545,12 +576,18 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-4 gap-2">
+              <div 
+                className="grid grid-cols-4"
+                style={{ 
+                  gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
+                }}
+              >
                 {getOrderedImages().slice(0, 12).map((image) => (
                   <div 
                     key={image.id}
                     className={`
-                      relative group overflow-hidden aspect-square rounded-lg
+                      relative group overflow-hidden aspect-square
+                      ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full'}
                       ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
                       cursor-pointer
                     `}

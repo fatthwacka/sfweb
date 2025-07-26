@@ -303,12 +303,29 @@ export function AdvancedSettingsSection({ editableShoot, setEditableShoot, onSav
 }
 
 interface AddImagesSectionProps {
-  onUpload: () => void;
+  onUpload: (files: File[]) => void;
   isUploading: boolean;
   toast: any;
 }
 
 export function AddImagesSection({ onUpload, isUploading, toast }: AddImagesSectionProps) {
+  const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
+
+  const handleFileSelect = (files: File[]) => {
+    setSelectedFiles(files);
+    toast({
+      title: "Images Selected",
+      description: `${files.length} image(s) ready for upload. Click "Upload Images" to proceed.`,
+    });
+  };
+
+  const handleUploadClick = () => {
+    if (selectedFiles.length > 0) {
+      onUpload(selectedFiles);
+      setSelectedFiles([]); // Clear selection after upload
+    }
+  };
+
   return (
     <Card className="admin-gradient-card">
       <CardHeader>
@@ -318,17 +335,36 @@ export function AddImagesSection({ onUpload, isUploading, toast }: AddImagesSect
             Add Images
           </CardTitle>
           <Button
-            onClick={onUpload}
-            disabled={isUploading}
+            onClick={handleUploadClick}
+            disabled={isUploading || selectedFiles.length === 0}
             className="bg-salmon text-white hover:bg-salmon-muted"
           >
             <Upload className="w-4 h-4 mr-2" />
-            {isUploading ? 'Uploading...' : 'Upload Selected'}
+            {isUploading ? 'Uploading...' : `Upload ${selectedFiles.length > 0 ? `${selectedFiles.length} ` : ''}Images`}
           </Button>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="border-2 border-dashed border-salmon/30 rounded-lg p-8 text-center bg-background/50">
+        <div 
+          className="border-2 border-dashed border-salmon/30 rounded-lg p-8 text-center bg-background/50 transition-colors hover:border-salmon/50"
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.currentTarget.classList.add('border-salmon', 'bg-salmon/10');
+          }}
+          onDragLeave={(e) => {
+            e.preventDefault();
+            e.currentTarget.classList.remove('border-salmon', 'bg-salmon/10');
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            e.currentTarget.classList.remove('border-salmon', 'bg-salmon/10');
+            const files = Array.from(e.dataTransfer.files);
+            const imageFiles = files.filter(file => file.type.startsWith('image/'));
+            if (imageFiles.length > 0) {
+              handleFileSelect(imageFiles);
+            }
+          }}
+        >
           <Upload className="w-12 h-12 text-salmon mx-auto mb-4" />
           <p className="text-muted-foreground mb-4">
             Drag and drop images here, or click to browse
@@ -342,10 +378,7 @@ export function AddImagesSection({ onUpload, isUploading, toast }: AddImagesSect
             onChange={(e) => {
               const files = Array.from(e.target.files || []);
               if (files.length > 0) {
-                toast({
-                  title: "Images Selected",
-                  description: `${files.length} image(s) ready for upload. Click "Upload Selected" to proceed.`,
-                });
+                handleFileSelect(files);
               }
             }}
           />
@@ -357,6 +390,11 @@ export function AddImagesSection({ onUpload, isUploading, toast }: AddImagesSect
             <Plus className="w-4 h-4 mr-2" />
             Select Images to Upload
           </Button>
+          {selectedFiles.length > 0 && (
+            <div className="mt-4 text-sm text-muted-foreground">
+              {selectedFiles.length} image(s) selected: {selectedFiles.map(f => f.name).join(', ')}
+            </div>
+          )}
           <p className="text-xs text-muted-foreground mt-2">
             Supports: JPG, PNG, WEBP • Max 10MB per image • Bulk upload supported
           </p>

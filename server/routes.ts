@@ -546,7 +546,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Upload to Supabase Storage
         const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('shoot-images')
+          .from('gallery-images')
           .upload(storagePath, file.buffer, {
             contentType: file.mimetype,
             upsert: false
@@ -559,7 +559,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Get public URL
         const { data: { publicUrl } } = supabase.storage
-          .from('shoot-images')
+          .from('gallery-images')
           .getPublicUrl(storagePath);
 
         // Get the next sequence number for this shoot
