@@ -3,7 +3,6 @@ import { Footer } from "@/components/layout/footer";
 import { Hero } from "@/components/sections/hero";
 import { ServicesOverview } from "@/components/sections/services-overview";
 import { PortfolioShowcase } from "@/components/sections/portfolio-showcase";
-import { PricingSection } from "@/components/sections/pricing-section";
 import { ClientGalleryAccess } from "@/components/sections/client-gallery-access";
 import { AboutSection } from "@/components/sections/about-section";
 import { Testimonials } from "@/components/sections/testimonials";
@@ -16,7 +15,6 @@ export default function Home() {
       <Hero />
       <ServicesOverview />
       <PortfolioShowcase />
-      <PricingSection />
       <ClientGalleryAccess />
       <AboutSection />
       <Testimonials />
