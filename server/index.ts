@@ -45,6 +45,12 @@ app.use((req, res, next) => {
   console.log("SUPABASE_SERVICE_ROLE_KEY configured:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
   
   const server = await registerRoutes(app);
+  
+  // Serve static files from public directory BEFORE vite setup
+  if (app.get("env") === "development") {
+    const path = await import("path");
+    app.use(express.static(path.resolve(import.meta.dirname, "..", "public")));
+  }
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
