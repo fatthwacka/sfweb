@@ -41,6 +41,7 @@ interface Client {
   email: string;
   phone?: string;
   address?: string;
+  secondaryEmail?: string;
   userId: string | null;
   createdBy: string;
   createdAt: string;
@@ -90,7 +91,13 @@ export function AdminContent({ userRole }: AdminContentProps) {
   const [newClientOpen, setNewClientOpen] = useState(false);
   const [newShootOpen, setNewShootOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
-  const [editFormData, setEditFormData] = useState({ name: '', email: '', phone: '', address: '' });
+  const [editFormData, setEditFormData] = useState({ 
+    name: '', 
+    email: '', 
+    phone: '', 
+    address: '', 
+    secondaryEmail: '' 
+  });
   const [editingShoot, setEditingShoot] = useState<Shoot | null>(null);
   const [selectedShoot, setSelectedShoot] = useState<string | null>(null);
   const [selectedClient, setSelectedClient] = useState<number | null>(null);
@@ -403,6 +410,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
       email: editFormData.email,
       phone: editFormData.phone,
       address: editFormData.address,
+      secondaryEmail: editFormData.secondaryEmail,
       slug: editingClient.slug // Keep existing slug
     };
     
@@ -1019,7 +1027,8 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                     name: client.name,
                                     email: client.email || '',
                                     phone: client.phone || '',
-                                    address: client.address || ''
+                                    address: client.address || '',
+                                    secondaryEmail: client.secondaryEmail || ''
                                   });
                                 }}
                               >
@@ -1670,18 +1679,20 @@ export function AdminContent({ userRole }: AdminContentProps) {
                         id="secondaryEmail" 
                         type="email" 
                         placeholder="backup@email.com"
+                        value={editFormData.secondaryEmail}
+                        onChange={(e) => setEditFormData(prev => ({...prev, secondaryEmail: e.target.value}))}
                       />
                       <Button 
                         variant="outline" 
                         className="border-border hover:border-salmon text-white"
                         onClick={() => {
                           toast({
-                            title: "Feature Coming Soon",
-                            description: "Secondary email support will be added in the next release."
+                            title: "Secondary Email Updated",
+                            description: "Secondary email will be saved with next update.",
                           });
                         }}
                       >
-                        Add
+                        Save
                       </Button>
                     </div>
                   </div>

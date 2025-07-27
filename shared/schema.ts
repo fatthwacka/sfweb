@@ -33,6 +33,9 @@ export const clients = pgTable("clients", {
   name: text("name").notNull(),
   slug: text("slug").notNull(),
   email: text("email"),
+  phone: text("phone"),
+  address: text("address"),
+  secondaryEmail: text("secondary_email"),
   userId: uuid("user_id").references(() => profiles.id),
   createdBy: uuid("created_by").notNull().references(() => profiles.id),
   createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
@@ -141,6 +144,9 @@ export const insertClientSchema = createInsertSchema(clients).omit({
 }).extend({
   // Make fields properly nullable to match frontend
   email: z.string().optional(),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  secondaryEmail: z.string().optional(),
   userId: z.string().nullable().optional(),
 });
 
