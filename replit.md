@@ -138,6 +138,15 @@ The application is structured to be easily deployable to platforms like Vercel, 
 
 ## Recent Changes: Latest modifications with dates
 
+### July 27, 2025 - Large Album Support & Remove Button Fix ✅
+- **Remove Button Fixed**: Corrected API request parameter order causing fetch errors - now properly reassigns images to SlyFox archive
+- **Large Album Pagination**: Extended support for albums up to 100 images with proper "Load More" button functionality
+- **Smart Load More Logic**: Button shows exact count of remaining images and disappears when reaching 100-image limit
+- **Performance Protection**: Drag reordering automatically disabled for albums >100 images to maintain responsiveness
+- **Large Album Notice**: Amber warning displays for albums >100 images explaining pagination limits and disabled reordering
+- **Type Safety Improvements**: Fixed TypeScript errors with proper null-safe query data handling
+- **API Parameter Fix**: All API requests now use correct `apiRequest(method, url, data)` format consistently
+
 ### July 27, 2025 - Complete Admin Panel Enhancements & Performance Optimization ✅
 - **Futuristic Upload Progress Indicator**: Added gradient overlay with spinning animations during image uploads
 - **Missing 4th Button Added**: Purple "View Full Res" button now appears in all gallery management hover states

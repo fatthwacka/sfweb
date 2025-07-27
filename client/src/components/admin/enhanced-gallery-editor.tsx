@@ -227,7 +227,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   });
 
   const shoot = shootData?.shoot || null;
-  const images: GalleryImage[] = (shootData?.images as GalleryImage[]) || [];
+  const images: GalleryImage[] = shootData?.images ? (shootData.images as GalleryImage[]) : [];
 
   // Initialize settings from shoot data
   useEffect(() => {
@@ -488,8 +488,11 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   };
 
   const loadMoreImages = () => {
-    setVisibleImageCount(prev => prev + 20); // Load 20 more images (4 more rows)
+    setVisibleImageCount(prev => Math.min(prev + 20, 100)); // Load 20 more images, max 100 total
   };
+
+  // Disable drag reordering for albums with more than 100 images
+  const isDragReorderingEnabled = images.length <= 100;
 
   if (isLoading) {
     return (
@@ -689,14 +692,19 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                     style={{ 
                       marginBottom: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
                     }}
-                    draggable
+                    draggable={isDragReorderingEnabled}
                     onDragStart={(e) => {
+                      if (!isDragReorderingEnabled) {
+                        e.preventDefault();
+                        return;
+                      }
                       setDraggedImage(image.id);
                       e.dataTransfer.effectAllowed = 'move';
                     }}
                     onDragEnd={() => setDraggedImage(null)}
-                    onDragOver={(e) => e.preventDefault()}
+                    onDragOver={(e) => isDragReorderingEnabled && e.preventDefault()}
                     onDrop={(e) => {
+                      if (!isDragReorderingEnabled) return;
                       e.preventDefault();
                       if (draggedImage && draggedImage !== image.id) {
                         const newOrder = [...imageOrder];
@@ -813,14 +821,19 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                       ${draggedImage === image.id ? 'opacity-50' : ''}
                       cursor-pointer transition-all duration-200
                     `}
-                    draggable
+                    draggable={isDragReorderingEnabled}
                     onDragStart={(e) => {
+                      if (!isDragReorderingEnabled) {
+                        e.preventDefault();
+                        return;
+                      }
                       setDraggedImage(image.id);
                       e.dataTransfer.effectAllowed = 'move';
                     }}
                     onDragEnd={() => setDraggedImage(null)}
-                    onDragOver={(e) => e.preventDefault()}
+                    onDragOver={(e) => isDragReorderingEnabled && e.preventDefault()}
                     onDrop={(e) => {
+                      if (!isDragReorderingEnabled) return;
                       e.preventDefault();
                       if (draggedImage && draggedImage !== image.id) {
                         const newOrder = [...imageOrder];
@@ -923,15 +936,27 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
               </div>
             )}
             
-            {images.length > visibleImageCount && (
+            {images.length > visibleImageCount && visibleImageCount < 100 && (
               <div className="text-center mt-6">
                 <Button
                   variant="outline"
                   onClick={loadMoreImages}
                   className="px-8 py-2"
                 >
-                  Load More Images ({Math.min(20, images.length - visibleImageCount)} more)
+                  Load More Images ({Math.min(20, Math.min(100, images.length) - visibleImageCount)} more)
                 </Button>
+              </div>
+            )}
+            
+            {images.length > 100 && (
+              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mt-4">
+                <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span className="font-medium">Large Album Notice</span>
+                </div>
+                <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                  This album has {images.length} images. For performance, only the first 100 images are shown with drag reordering disabled.
+                </p>
               </div>
             )}
             </div>
