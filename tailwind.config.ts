@@ -67,6 +67,7 @@ export default {
         cyan: "var(--cyan)",
         "cyan-muted": "var(--cyan-muted)",
         "cyan-dark": "var(--cyan-dark)",
+        "cyan-bright": "var(--cyan-bright)",
         "purple-dark": "var(--purple-dark)",
         "grey-dark": "var(--grey-dark)",
       },

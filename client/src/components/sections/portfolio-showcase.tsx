@@ -94,11 +94,11 @@ export function PortfolioShowcase() {
               <Button
                 key={option.value}
                 onClick={() => setActiveFilter(option.value)}
-                variant={activeFilter === option.value ? "default" : "outline"}
+                variant="outline"
                 className={`px-6 py-3 font-barlow font-semibold rounded-full transition-all duration-300 ${
                   activeFilter === option.value
-                    ? "bg-gold text-black hover:bg-gold-muted"
-                    : "border-border text-muted-foreground hover:border-gold hover:text-gold"
+                    ? "border-salmon bg-gradient-to-r from-salmon-dark to-salmon text-white hover:from-salmon hover:to-salmon-muted"
+                    : "border-cyan bg-gradient-to-r from-cyan-dark/30 to-cyan-dark/10 text-cyan hover:border-cyan-bright hover:from-cyan/20 hover:to-cyan-bright/10 hover:text-cyan-bright"
                 }`}
               >
                 {option.label}
