@@ -67,7 +67,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: data.user.id,
         email: data.user.email!,
         role: profile?.role || 'client',
-        fullName: profile?.full_name
+        fullName: profile?.full_name || profile?.email?.split('@')[0]
       };
       
       return res.json({ user });
@@ -720,6 +720,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Test data creation failed", 
         error: error instanceof Error ? error.message : String(error)
       });
+    }
+  });
+
+  // Client Registration API endpoint (staff/super_admin only)
+  app.post("/api/client/register", async (req, res) => {
+    try {
+      const { email, fullName, password, associatedShoots } = req.body;
+      
+      if (!email || !fullName || !password || !associatedShoots) {
+        return res.status(400).json({ 
+          message: "Missing required fields: email, fullName, password, associatedShoots" 
+        });
+      }
+
+      // Create user using the existing Supabase auth system
+      const userData: CreateUserData = {
+        email,
+        password,
+        fullName,
+        role: 'client'
+      };
+      
+      const result = await createSupabaseUser(userData);
+      
+      // Update associated shoots to use client's email
+      for (const shootId of associatedShoots) {
+        await storage.updateShoot(shootId, { clientId: email });
+      }
+      
+      res.json({ 
+        message: "Client account created successfully", 
+        user: {
+          id: result.authUser.id,
+          email: result.authUser.email,
+          profile: result.profile
+        },
+        associatedShoots: associatedShoots.length
+      });
+    } catch (error) {
+      console.error("Client registration error:", error);
+      res.status(500).json({ 
+        message: "Client registration failed", 
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Client Portal API endpoints
+  app.get("/api/client/shoots/:email", async (req, res) => {
+    try {
+      const { email } = req.params;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email parameter required" });
+      }
+
+      const shoots = await storage.getShootsByClientEmail(email);
+      res.json(shoots);
+    } catch (error) {
+      console.error("Get client shoots error:", error);
+      res.status(500).json({ message: "Failed to fetch client shoots" });
+    }
+  });
+
+  app.get("/api/client/shoots", async (req, res) => {
+    try {
+      const { email } = req.query;
+      
+      if (!email || typeof email !== 'string') {
+        return res.status(400).json({ message: "Email query parameter required" });
+      }
+
+      const shoots = await storage.getShootsByClientEmail(email);
+      res.json(shoots);
+    } catch (error) {
+      console.error("Get client shoots error:", error);
+      res.status(500).json({ message: "Failed to fetch client shoots" });
     }
   });
 

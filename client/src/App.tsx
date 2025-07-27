@@ -63,6 +63,8 @@ import Pricing from "@/pages/pricing";
 import Contact from "@/pages/contact";
 import ClientGallery from "@/pages/client-gallery";
 import Dashboard from "@/pages/dashboard";
+import ClientDashboard from "@/pages/client-dashboard";
+import Login from "@/pages/login";
 import Admin from "@/pages/admin";
 import MyGallery from "@/pages/my-gallery";
 import NotFound from "@/pages/not-found";
@@ -84,7 +86,9 @@ function Router() {
       <Route path="/pricing" component={Pricing} />
       <Route path="/contact" component={Contact} />
       <Route path="/clients/:slug" component={ClientGallery} />
+      <Route path="/login" component={Login} />
       <Route path="/dashboard" component={Dashboard} />
+      <Route path="/client-portal" component={ClientDashboard} />
       <Route path="/admin" component={Admin} />
       <Route path="/my-gallery" component={MyGallery} />
       <Route path="/gallery/:slug" component={MyGallery} />

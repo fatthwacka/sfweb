@@ -1,9 +1,10 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from "react";
 
 interface User {
-  id: number;
+  id: string;
   email: string;
-  role: "staff" | "client";
+  role: "super_admin" | "staff" | "client";
+  fullName?: string;
   profileImage?: string | null;
   themePreference?: string;
 }

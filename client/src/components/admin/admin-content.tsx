@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { EnhancedGalleryEditor } from "./enhanced-gallery-editor";
 import { StaffManagement } from "./staff-management";
+import { ClientRegistration } from "./client-registration";
 import {
   BarChart3,
   Users,
@@ -30,7 +31,8 @@ import {
   Home,
   Palette,
   User,
-  Shield
+  Shield,
+  UserPlus
 } from "lucide-react";
 
 interface Client {
@@ -407,6 +409,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
           { id: 'shoots', label: 'Shoots', icon: Camera },
           { id: 'images', label: 'Images', icon: FileImage },
           { id: 'galleries', label: 'Gallery Management', icon: Palette },
+          { id: 'client-registration', label: 'Client Registration', icon: UserPlus },
           ...(userRole === 'super_admin' ? [
             { id: 'staff', label: 'Staff Management', icon: Shield },
             { id: 'users', label: 'User Management', icon: User }
@@ -1395,6 +1398,10 @@ export function AdminContent({ userRole }: AdminContentProps) {
                 </Card>
               )}
             </div>
+          )}
+
+          {activeTab === 'client-registration' && (
+            <ClientRegistration />
           )}
 
           {activeTab === 'staff' && userRole === 'super_admin' && (
