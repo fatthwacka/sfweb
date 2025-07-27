@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ImageUrl } from "@/lib/image-utils";
+import { useAuth } from "@/hooks/use-auth";
 import { 
   Camera, 
   Calendar, 
@@ -16,7 +17,9 @@ import {
   Share2,
   Filter,
   Grid3X3,
-  List
+  List,
+  LogOut,
+  User
 } from "lucide-react";
 
 interface Shoot {
@@ -49,6 +52,7 @@ interface ClientPortalProps {
 }
 
 export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
+  const { logout } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedShoot, setSelectedShoot] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -63,6 +67,7 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
   // Fetch images for selected shoot
   const { data: images = [], isLoading: imagesLoading } = useQuery<Image[]>({
     queryKey: ["/api/shoots", selectedShoot, "images"],
+    queryFn: () => fetch(`/api/shoots/${selectedShoot}/images`).then(res => res.json()),
     enabled: !!selectedShoot,
   });
 
@@ -140,14 +145,47 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
     <div className="min-h-screen bg-gradient-to-br from-purple-dark via-background to-grey-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        {/* Header */}
+        {/* Header with User Menu */}
         <div className="mb-8">
-          <h1 className="text-3xl font-saira font-bold text-salmon mb-2">
-            Welcome back{userName ? `, ${userName}` : ''}
-          </h1>
-          <p className="text-muted-foreground">
-            Access your private galleries and download your photos
-          </p>
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h1 className="text-3xl font-saira font-bold text-salmon mb-2">
+                Welcome back{userName ? `, ${userName}` : ''}
+              </h1>
+              <p className="text-muted-foreground">
+                Access your private galleries and download your photos
+              </p>
+            </div>
+            
+            {/* User Menu */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 px-3 py-2 bg-background/50 rounded-lg border border-border">
+                <User className="w-4 h-4 text-cyan" />
+                <span className="text-sm">{userEmail}</span>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={logout}
+                className="border-border hover:border-salmon"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            </div>
+          </div>
+          
+          {/* Quick Stats */}
+          <div className="flex gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <Camera className="w-4 h-4 text-cyan" />
+              <span>{shoots.length} galleries available</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Eye className="w-4 h-4 text-salmon" />
+              <span>{shoots.reduce((total, shoot) => total + shoot.viewCount, 0)} total views</span>
+            </div>
+          </div>
         </div>
 
         {/* Gallery Selection */}
