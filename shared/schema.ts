@@ -143,10 +143,10 @@ export const insertClientSchema = createInsertSchema(clients).omit({
   createdBy: true,
 }).extend({
   // Make fields properly nullable to match frontend
-  email: z.string().optional(),
-  phone: z.string().optional(),
-  address: z.string().optional(),
-  secondaryEmail: z.string().optional(),
+  email: z.string().nullable().optional(),
+  phone: z.string().nullable().optional(),
+  address: z.string().nullable().optional(),
+  secondaryEmail: z.string().nullable().optional(),
   userId: z.string().nullable().optional(),
 });
 

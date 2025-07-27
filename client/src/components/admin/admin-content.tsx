@@ -191,15 +191,17 @@ export function AdminContent({ userRole }: AdminContentProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
       setEditingClient(null);
+      setEditFormData({ name: '', email: '', phone: '', address: '', secondaryEmail: '' });
       toast({
         title: "Success",
         description: "Client updated successfully"
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('Update client error:', error);
       toast({
         title: "Error",
-        description: "Failed to update client",
+        description: error?.message || "Failed to update client",
         variant: "destructive"
       });
     }
@@ -225,8 +227,9 @@ export function AdminContent({ userRole }: AdminContentProps) {
       name: name.trim(),
       slug: name.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-'),
       email: email.trim(),
-      phone: (formData.get('phone') as string) || null,
-      address: (formData.get('address') as string) || null,
+      phone: (formData.get('phone') as string)?.trim() || null,
+      address: (formData.get('address') as string)?.trim() || null,
+      secondaryEmail: null, // Initialize as null for new clients
       password: password.trim() || null, // Include password if provided
     };
     createClientMutation.mutate(data);
@@ -406,11 +409,11 @@ export function AdminContent({ userRole }: AdminContentProps) {
     
     const data = {
       id: editingClient.id,
-      name: editFormData.name,
-      email: editFormData.email,
-      phone: editFormData.phone,
-      address: editFormData.address,
-      secondaryEmail: editFormData.secondaryEmail,
+      name: editFormData.name.trim(),
+      email: editFormData.email.trim() || null,
+      phone: editFormData.phone.trim() || null,
+      address: editFormData.address.trim() || null,
+      secondaryEmail: editFormData.secondaryEmail.trim() || null,
       slug: editingClient.slug // Keep existing slug
     };
     
