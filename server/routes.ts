@@ -312,7 +312,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/clients", async (req, res) => {
     try {
       console.log('Creating client with data:', req.body);
-      const data = insertClientSchema.parse(req.body);
+      const { password, ...clientRequestData } = req.body;
+      const data = insertClientSchema.parse(clientRequestData);
       
       // Add required created_by field using the current authenticated user
       // Use the admin profile ID that exists in the database
@@ -323,8 +324,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdBy: validProfileId
       };
       
+      // Create client record first
       const client = await storage.createClient(clientData);
-      res.json(client);
+      
+      // If password provided, create portal account
+      if (password && data.email) {
+        try {
+          const userData: CreateUserData = {
+            email: data.email,
+            password: password,
+            fullName: data.name,
+            role: 'client'
+          };
+          
+          await createSupabaseUser(userData);
+          
+          res.json({ 
+            ...client, 
+            portalAccess: true,
+            message: "Client created with portal access"
+          });
+        } catch (authError) {
+          console.error("Portal account creation failed:", authError);
+          res.json({ 
+            ...client, 
+            portalAccess: false,
+            message: "Client created but portal access setup failed"
+          });
+        }
+      } else {
+        res.json({ 
+          ...client, 
+          portalAccess: false,
+          message: "Client created without portal access"
+        });
+      }
     } catch (error) {
       console.error("Create client error:", error);
       if (error.issues) {

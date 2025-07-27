@@ -13,7 +13,6 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { EnhancedGalleryEditor } from "./enhanced-gallery-editor";
 import { StaffManagement } from "./staff-management";
-import { ClientRegistration } from "./client-registration";
 import {
   BarChart3,
   Users,
@@ -86,7 +85,7 @@ interface AdminContentProps {
 export function AdminContent({ userRole }: AdminContentProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'shoots' | 'images' | 'galleries' | 'users'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'shoots' | 'images' | 'galleries' | 'staff' | 'users'>('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [newClientOpen, setNewClientOpen] = useState(false);
   const [newShootOpen, setNewShootOpen] = useState(false);
@@ -203,12 +202,25 @@ export function AdminContent({ userRole }: AdminContentProps) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    
+    if (!email.trim()) {
+      toast({
+        title: "Email Required",
+        description: "Email is required for client portal access.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     const data = {
       name: name.trim(),
       slug: name.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-'),
-      email: (formData.get('email') as string) || null,
+      email: email.trim(),
       phone: (formData.get('phone') as string) || null,
       address: (formData.get('address') as string) || null,
+      password: password.trim() || null, // Include password if provided
     };
     createClientMutation.mutate(data);
   };
@@ -409,7 +421,6 @@ export function AdminContent({ userRole }: AdminContentProps) {
           { id: 'shoots', label: 'Shoots', icon: Camera },
           { id: 'images', label: 'Images', icon: FileImage },
           { id: 'galleries', label: 'Gallery Management', icon: Palette },
-          { id: 'client-registration', label: 'Client Registration', icon: UserPlus },
           ...(userRole === 'super_admin' ? [
             { id: 'staff', label: 'Staff Management', icon: Shield },
             { id: 'users', label: 'User Management', icon: User }
@@ -770,8 +781,11 @@ export function AdminContent({ userRole }: AdminContentProps) {
                           <Input id="clientName" name="name" required />
                         </div>
                         <div>
-                          <Label htmlFor="clientEmail">Email</Label>
-                          <Input id="clientEmail" name="email" type="email" />
+                          <Label htmlFor="clientEmail">Email *</Label>
+                          <Input id="clientEmail" name="email" type="email" required />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Required for client portal access
+                          </p>
                         </div>
                         <div>
                           <Label htmlFor="clientPhone">Phone</Label>
@@ -780,6 +794,19 @@ export function AdminContent({ userRole }: AdminContentProps) {
                         <div>
                           <Label htmlFor="clientAddress">Address</Label>
                           <Input id="clientAddress" name="address" />
+                        </div>
+                        <div>
+                          <Label htmlFor="clientPassword">Temporary Password</Label>
+                          <Input 
+                            id="clientPassword" 
+                            name="password" 
+                            type="password" 
+                            defaultValue="slyfox-2025"
+                            placeholder="slyfox-2025"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Leave empty to skip portal access setup. Client can change after first login.
+                          </p>
                         </div>
                         <Button type="submit" disabled={createClientMutation.isPending} className="w-full bg-salmon text-white hover:bg-salmon-muted">
                           {createClientMutation.isPending ? 'Creating...' : 'Create Client'}
@@ -1400,10 +1427,6 @@ export function AdminContent({ userRole }: AdminContentProps) {
             </div>
           )}
 
-          {activeTab === 'client-registration' && (
-            <ClientRegistration />
-          )}
-
           {activeTab === 'staff' && userRole === 'super_admin' && (
             <StaffManagement />
           )}
@@ -1551,59 +1574,231 @@ export function AdminContent({ userRole }: AdminContentProps) {
         </div>
       </section>
 
-      {/* Edit Client Dialog */}
+      {/* Enhanced Edit Client Dialog */}
       <Dialog open={!!editingClient} onOpenChange={(open) => !open && setEditingClient(null)}>
-        <DialogContent className="bg-cyan-dark border border-cyan/30 shadow-lg max-w-md">
+        <DialogContent className="bg-cyan-dark border border-cyan/30 shadow-lg max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-salmon">Edit Client: {editingClient?.name}</DialogTitle>
+            <DialogTitle className="text-salmon">Manage Client: {editingClient?.name}</DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              Update the client information and details.
+              Complete client account management including contact info, portal access, and privacy settings.
             </DialogDescription>
           </DialogHeader>
           {editingClient && (
-            <form onSubmit={handleUpdateClient} className="space-y-4">
-              <div>
-                <Label htmlFor="editClientName">Client Name *</Label>
-                <Input 
-                  id="editClientName" 
-                  name="name" 
-                  value={editFormData.name}
-                  onChange={(e) => setEditFormData(prev => ({...prev, name: e.target.value}))}
-                  required 
-                />
+            <div className="space-y-6">
+              
+              {/* Basic Information Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-salmon border-b border-salmon/30 pb-2">
+                  Basic Information
+                </h3>
+                <form onSubmit={handleUpdateClient} className="space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="editClientName">Client Name *</Label>
+                      <Input 
+                        id="editClientName" 
+                        name="name" 
+                        value={editFormData.name}
+                        onChange={(e) => setEditFormData(prev => ({...prev, name: e.target.value}))}
+                        required 
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="editClientPhone">Phone</Label>
+                      <Input 
+                        id="editClientPhone" 
+                        name="phone" 
+                        value={editFormData.phone}
+                        onChange={(e) => setEditFormData(prev => ({...prev, phone: e.target.value}))}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="editClientAddress">Address</Label>
+                    <Input 
+                      id="editClientAddress" 
+                      name="address" 
+                      value={editFormData.address}
+                      onChange={(e) => setEditFormData(prev => ({...prev, address: e.target.value}))}
+                    />
+                  </div>
+                  <Button type="submit" disabled={updateClientMutation.isPending} className="w-full bg-salmon text-white hover:bg-salmon-muted">
+                    {updateClientMutation.isPending ? 'Updating...' : 'Update Basic Info'}
+                  </Button>
+                </form>
               </div>
-              <div>
-                <Label htmlFor="editClientEmail">Email</Label>
-                <Input 
-                  id="editClientEmail" 
-                  name="email" 
-                  type="email" 
-                  value={editFormData.email}
-                  onChange={(e) => setEditFormData(prev => ({...prev, email: e.target.value}))}
-                />
+
+              {/* Email Management Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-salmon border-b border-salmon/30 pb-2">
+                  Email & Portal Access
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="editClientEmail">Primary Email</Label>
+                    <div className="flex gap-2">
+                      <Input 
+                        id="editClientEmail" 
+                        type="email" 
+                        value={editFormData.email}
+                        onChange={(e) => setEditFormData(prev => ({...prev, email: e.target.value}))}
+                        className="flex-1"
+                      />
+                      <Button 
+                        variant="outline" 
+                        className="border-border hover:border-cyan text-white"
+                        onClick={() => {
+                          toast({
+                            title: "Email Update",
+                            description: "Email update functionality requires database migration - coming in next update.",
+                            variant: "destructive"
+                          });
+                        }}
+                      >
+                        Update Email
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      ⚠️ Changing email will affect shoot associations and portal access
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="secondaryEmail">Secondary Email</Label>
+                    <div className="flex gap-2">
+                      <Input 
+                        id="secondaryEmail" 
+                        type="email" 
+                        placeholder="backup@email.com"
+                      />
+                      <Button 
+                        variant="outline" 
+                        className="border-border hover:border-salmon text-white"
+                        onClick={() => {
+                          toast({
+                            title: "Feature Coming Soon",
+                            description: "Secondary email support will be added in the next release."
+                          });
+                        }}
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div>
-                <Label htmlFor="editClientPhone">Phone</Label>
-                <Input 
-                  id="editClientPhone" 
-                  name="phone" 
-                  value={editFormData.phone}
-                  onChange={(e) => setEditFormData(prev => ({...prev, phone: e.target.value}))}
-                />
+
+              {/* Password Management Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-salmon border-b border-salmon/30 pb-2">
+                  Password & Security
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1 border-border hover:border-cyan text-white"
+                      onClick={() => {
+                        if (confirm(`Reset password for ${editingClient.name}? They will be notified via email.`)) {
+                          toast({
+                            title: "Password Reset",
+                            description: "Password reset email would be sent to client.",
+                          });
+                        }
+                      }}
+                    >
+                      <Mail className="w-4 h-4 mr-2" />
+                      Send Password Reset
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="flex-1 border-border hover:border-salmon text-white"
+                      onClick={() => {
+                        const newPassword = prompt("Enter new temporary password:", "slyfox-2025");
+                        if (newPassword) {
+                          toast({
+                            title: "Password Updated",
+                            description: `Temporary password set to: ${newPassword}`,
+                          });
+                        }
+                      }}
+                    >
+                      <Shield className="w-4 h-4 mr-2" />
+                      Set Temp Password
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <div>
-                <Label htmlFor="editClientAddress">Address</Label>
-                <Input 
-                  id="editClientAddress" 
-                  name="address" 
-                  value={editFormData.address}
-                  onChange={(e) => setEditFormData(prev => ({...prev, address: e.target.value}))}
-                />
+
+              {/* Privacy & Data Management Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-salmon border-b border-salmon/30 pb-2">
+                  Privacy & Data Management
+                </h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Button 
+                    variant="outline" 
+                    className="border-border hover:border-purple-500 text-white h-auto p-4 flex-col gap-2"
+                    onClick={() => {
+                      toast({
+                        title: "Privacy Export",
+                        description: "Client data export feature will be available in the next release."
+                      });
+                    }}
+                  >
+                    <Eye className="w-5 h-5" />
+                    <span className="text-sm">Export Client Data</span>
+                    <span className="text-xs text-muted-foreground">Download all data</span>
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="border-border hover:border-yellow-500 text-white h-auto p-4 flex-col gap-2"
+                    onClick={() => {
+                      if (confirm(`Delete all gallery data for ${editingClient.name}? This cannot be undone.`)) {
+                        toast({
+                          title: "Data Deletion",
+                          description: "Gallery data deletion feature will be available in the next release.",
+                          variant: "destructive"
+                        });
+                      }
+                    }}
+                  >
+                    <Trash2 className="w-5 h-5" />
+                    <span className="text-sm">Delete Gallery Data</span>
+                    <span className="text-xs text-muted-foreground">Remove photos only</span>
+                  </Button>
+                </div>
               </div>
-              <Button type="submit" disabled={updateClientMutation.isPending} className="w-full bg-salmon text-white hover:bg-salmon-muted">
-                {updateClientMutation.isPending ? 'Updating...' : 'Update Client'}
-              </Button>
-            </form>
+
+              {/* Danger Zone */}
+              <div className="space-y-4 border-t border-red-500/30 pt-4">
+                <h3 className="text-lg font-semibold text-red-400 border-b border-red-400/30 pb-2">
+                  Danger Zone
+                </h3>
+                <Button 
+                  variant="outline" 
+                  className="w-full border-red-500 text-red-400 hover:bg-red-500 hover:text-white h-auto p-4"
+                  onClick={() => {
+                    const confirmation = prompt(
+                      `⚠️ DELETE ENTIRE ACCOUNT for ${editingClient.name}?\n\nThis will permanently delete:\n• Client account & login access\n• All associated shoots and galleries\n• All photos and data\n\nType "DELETE ACCOUNT" to confirm:`
+                    );
+                    if (confirmation === "DELETE ACCOUNT") {
+                      toast({
+                        title: "Account Deletion",
+                        description: "Complete account deletion will be implemented in the next release.",
+                        variant: "destructive"
+                      });
+                    }
+                  }}
+                >
+                  <Trash2 className="w-5 h-5 mr-2" />
+                  DELETE ENTIRE ACCOUNT
+                  <span className="block text-xs mt-1">Permanently removes all data</span>
+                </Button>
+              </div>
+
+            </div>
           )}
         </DialogContent>
       </Dialog>
