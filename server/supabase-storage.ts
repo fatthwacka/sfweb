@@ -197,9 +197,14 @@ export class SupabaseStorage implements IStorage {
 
   async deleteImage(id: string): Promise<boolean> {
     try {
+      console.log(`🔍 deleteImage: Looking for image with ID: ${id}`);
+      
       // First get the image to extract storage path for deletion
       const image = await this.getImage(id);
+      console.log(`🔍 deleteImage: Found image:`, image ? 'YES' : 'NO');
+      
       if (!image) {
+        console.log(`❌ deleteImage: Image ${id} not found in database, returning false`);
         return false;
       }
 
@@ -221,21 +226,29 @@ export class SupabaseStorage implements IStorage {
       }
 
       // Delete from database first
+      console.log(`🗄️ deleteImage: Attempting database deletion for ${id}`);
       const result = await db.delete(images).where(eq(images.id, id));
       const deletedFromDb = result.rowCount > 0;
+      console.log(`🗄️ deleteImage: Database deletion result:`, deletedFromDb ? 'SUCCESS' : 'FAILED', `(rowCount: ${result.rowCount})`);
 
       // If database deletion successful and we have storage path, delete from Supabase storage
       if (deletedFromDb && storagePath) {
+        console.log(`🗂️ deleteImage: Deleting from storage: ${storagePath}`);
         const { error: storageError } = await supabase.storage
           .from('gallery-images')
           .remove([storagePath]);
 
         if (storageError) {
-          console.error('Supabase storage deletion error:', storageError);
+          console.error('❌ Supabase storage deletion error:', storageError);
           // Continue even if storage deletion fails - database record is already deleted
+        } else {
+          console.log(`✅ deleteImage: Storage deletion successful for ${storagePath}`);
         }
+      } else if (deletedFromDb && !storagePath) {
+        console.log(`⚠️ deleteImage: Database deleted but no storage path found`);
       }
 
+      console.log(`🏁 deleteImage: Final result for ${id}:`, deletedFromDb ? 'SUCCESS' : 'FAILED');
       return deletedFromDb;
     } catch (error) {
       console.error('Delete image error:', error);
