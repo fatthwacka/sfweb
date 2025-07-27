@@ -25,21 +25,26 @@ export function getOptimizedImageUrl(
     return originalUrl;
   }
 
+  // If no transformations specified, return original
+  if (Object.keys(options).length === 0) return originalUrl;
+
+  // Extract the path after /storage/v1/object/public/
+  const publicPathMatch = originalUrl.match(/\/storage\/v1\/object\/public\/(.+)$/);
+  if (!publicPathMatch) return originalUrl;
+  
+  const imagePath = publicPathMatch[1];
+  const baseUrl = originalUrl.replace(/\/storage\/v1\/object\/public\/.+$/, '');
+  
   // Build transformation parameters
   const params = new URLSearchParams();
-  
   if (options.width) params.append('width', options.width.toString());
   if (options.height) params.append('height', options.height.toString());
   if (options.quality) params.append('quality', options.quality.toString());
   if (options.format) params.append('format', options.format);
   if (options.resize) params.append('resize', options.resize);
 
-  // If no transformations specified, return original
-  if (params.toString() === '') return originalUrl;
-
-  // Append parameters to URL
-  const separator = originalUrl.includes('?') ? '&' : '?';
-  return `${originalUrl}${separator}${params.toString()}`;
+  // Use Supabase render API for transformations
+  return `${baseUrl}/storage/v1/render/image/public/${imagePath}?${params.toString()}`;
 }
 
 /**

@@ -223,12 +223,12 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     queryKey: ['/api/clients']
   });
 
-  const shoot = shootData?.shoot || {};
+  const shoot = shootData?.shoot || null;
   const images: GalleryImage[] = (shootData?.images as GalleryImage[]) || [];
 
   // Initialize settings from shoot data
   useEffect(() => {
-    if (shoot) {
+    if (shoot && shoot.id && !editableShoot.title) {
       setCustomSlug(shoot.customSlug || '');
       setSelectedCover(shoot.bannerImageId);
       setEditableShoot({
@@ -245,7 +245,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
         seoTags: Array.isArray(shoot.seoTags) ? shoot.seoTags.join(', ') : (shoot.seoTags || '')
       });
     }
-  }, [shoot]);
+  }, [shoot?.id]);
 
   // Initialize image order from sequence
   useEffect(() => {
@@ -687,6 +687,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                       src={ImageUrl.forViewing(image.storagePath)}
                       alt={image.filename}
                       className={`w-full object-cover ${gallerySettings.borderStyle === 'circular' ? 'h-full aspect-square' : 'h-auto'}`}
+
                     />
                     
                     {/* Hover Buttons */}
@@ -811,6 +812,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                       src={ImageUrl.forViewing(image.storagePath)}
                       alt={image.filename}
                       className="w-full h-full object-cover"
+
                     />
                     
                     {/* Hover Buttons */}
