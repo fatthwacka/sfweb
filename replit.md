@@ -119,6 +119,15 @@ The application is structured to be easily deployable to platforms like Vercel, 
 
 ## Recent Changes: Latest modifications with dates
 
+### July 27, 2025 - Staff Management System Implementation
+- **Complete Staff Management Interface**: Created comprehensive CRUD system for staff/super_admin accounts
+- **Role-Based Access Control**: Staff Management tab only visible to super_admin users
+- **Database Schema Fix**: Updated profiles table constraint to allow super_admin, staff, and client roles
+- **Super Admin Setup**: Updated dax@slyfox.co.za from staff to super_admin role for testing
+- **API Endpoints**: Full REST API for staff operations (create, read, update, delete) with proper validation
+- **Security Features**: Super admin accounts cannot be deleted, role validation, proper error handling
+- **Search & Filter**: Real-time search functionality for staff member management
+
 ### July 26, 2025 - Gallery Editor Fixes & Database Schema Updates
 - **Fixed Supabase Upload Issue**: Changed bucket name from 'shoot-images' to 'gallery-images' to match existing Supabase storage buckets
 - **Added Drag & Drop Functionality**: Implemented proper drag event handlers with visual feedback in gallery editor upload sections
