@@ -723,6 +723,127 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Staff Management API endpoints (super_admin only)
+  app.get("/api/staff", async (req, res) => {
+    try {
+      // Get all profiles with staff or super_admin roles
+      const allProfiles = await storage.getAllProfiles();
+      const staffMembers = allProfiles.filter(profile => 
+        profile.role === 'staff' || profile.role === 'super_admin'
+      );
+      res.json(staffMembers);
+    } catch (error) {
+      console.error("Get staff members error:", error);
+      res.status(500).json({ message: "Failed to fetch staff members" });
+    }
+  });
+
+  app.post("/api/staff", async (req, res) => {
+    try {
+      const { email, fullName, role, password } = req.body;
+      
+      if (!email || !fullName || !role || !password) {
+        return res.status(400).json({ 
+          message: "Missing required fields: email, fullName, role, password" 
+        });
+      }
+
+      if (!['staff', 'super_admin'].includes(role)) {
+        return res.status(400).json({ 
+          message: "Role must be 'staff' or 'super_admin'" 
+        });
+      }
+
+      // Create user using the existing Supabase auth system
+      const userData: CreateUserData = {
+        email,
+        password,
+        fullName,
+        role
+      };
+      
+      const result = await createSupabaseUser(userData);
+      res.json({ 
+        message: "Staff member created successfully", 
+        user: {
+          id: result.authUser.id,
+          email: result.authUser.email,
+          profile: result.profile
+        }
+      });
+    } catch (error) {
+      console.error("Staff creation error:", error);
+      res.status(500).json({ 
+        message: "Staff member creation failed", 
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  app.patch("/api/staff/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { fullName, role } = req.body;
+      
+      const updates: any = {};
+      if (fullName !== undefined) updates.fullName = fullName;
+      if (role !== undefined) {
+        if (!['staff', 'super_admin'].includes(role)) {
+          return res.status(400).json({ 
+            message: "Role must be 'staff' or 'super_admin'" 
+          });
+        }
+        updates.role = role;
+      }
+      
+      const updatedProfile = await storage.updateProfile(id, updates);
+      
+      if (!updatedProfile) {
+        return res.status(404).json({ message: "Staff member not found" });
+      }
+      
+      res.json(updatedProfile);
+    } catch (error) {
+      console.error("Staff update error:", error);
+      res.status(500).json({ 
+        message: "Failed to update staff member", 
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  app.delete("/api/staff/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Check if the profile exists and is not a super_admin
+      const profile = await storage.getProfile(id);
+      if (!profile) {
+        return res.status(404).json({ message: "Staff member not found" });
+      }
+      
+      if (profile.role === 'super_admin') {
+        return res.status(403).json({ 
+          message: "Cannot delete super admin accounts" 
+        });
+      }
+      
+      const deleted = await storage.deleteProfile(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Staff member not found" });
+      }
+      
+      res.json({ message: "Staff member deleted successfully" });
+    } catch (error) {
+      console.error("Staff deletion error:", error);
+      res.status(500).json({ 
+        message: "Failed to delete staff member", 
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

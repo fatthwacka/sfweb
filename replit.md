@@ -112,6 +112,11 @@ The application uses the following core entities:
 
 The application is structured to be easily deployable to platforms like Vercel, Railway, or traditional VPS hosting, with the frontend and backend bundled as a single Node.js application.
 
+## Development Strategy Decision (July 27, 2025)
+**Approach**: Complete functionality first, then add security/performance layers
+**Rationale**: Test core business logic with real workflows before over-engineering theoretical solutions
+**Order**: Core features → Production deployment → Security/monitoring → Performance optimization
+
 ## Recent Changes: Latest modifications with dates
 
 ### July 26, 2025 - Gallery Editor Fixes & Database Schema Updates
