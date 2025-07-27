@@ -90,8 +90,7 @@ function Router() {
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/client-portal" component={ClientDashboard} />
       <Route path="/admin" component={Admin} />
-      <Route path="/my-gallery" component={MyGallery} />
-      <Route path="/gallery/:slug" component={MyGallery} />
+      {/* Removed old demo galleries - use /client-portal for client access */}
       <Route component={NotFound} />
     </Switch>
   );
