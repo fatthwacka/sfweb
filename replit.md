@@ -124,36 +124,17 @@ The application is structured to be easily deployable to platforms like Vercel, 
 **Average Album**: 20-30 images (40-60MB total)
 **Performance**: Fast loading times, no user complaints
 
-**Optimization Options Evaluated**:
+**Selected Approach**: Supabase Built-in Image Transformation API
+- Keep original 2MB images in Supabase Storage
+- Use URL parameters to generate optimized sizes on-demand
+- Examples: `?width=1200&quality=80` for gallery, `?width=400&height=300` for thumbnails
+- Benefits: No storage duplication, CDN caching, automatic format optimization (WebP/AVIF)
+- Implementation: Simple URL modifications when performance optimization becomes necessary
 
-1. **On-Demand Transformation (Recommended for Phase 2)**
-   - Use Supabase's built-in image transformation API
-   - Generate sizes via URL parameters: `?width=1200&quality=80`
-   - No storage duplication, CDN caching
-   - Implementation: Single-line URL changes
-
-2. **Multi-Size Storage Strategy**
-   - Pre-generate thumbnail (400px), gallery (1200px), original (2MB)
-   - Fastest loading but 3x storage costs
-   - Complex upload pipeline
-
-3. **Hybrid Approach**
-   - Generate thumbnails on upload for admin interface
-   - On-demand transformation for client galleries
-   - Originals only for downloads
-
-**Implementation Timeline**:
-- **Phase 1 (Current)**: Continue with originals, monitor performance metrics
-- **Phase 2 (If needed)**: Implement URL-based transformations when hitting performance thresholds
-- **Phase 3 (High traffic)**: Consider CDN with intelligent optimization
-
-**Decision Triggers**: Implement optimization when experiencing:
-- Albums regularly exceed 50 images
-- Mobile loading complaints
-- High bandwidth costs
-- International user performance issues
-
-**Recommendation**: Maintain current approach until concrete performance issues arise, then implement Supabase transformations as minimal-complexity solution.
+**Implementation Plan**:
+- **Phase 1 (Current)**: Continue with originals, monitor bandwidth and performance
+- **Phase 2 (When needed)**: Add transformation parameters to image URLs for bandwidth reduction
+- Minimal code changes required - primarily frontend URL modifications
 
 ## Recent Changes: Latest modifications with dates
 
