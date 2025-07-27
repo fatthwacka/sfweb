@@ -24,16 +24,16 @@ interface GalleryData {
   images: GalleryImage[];
 }
 
-// Demo data - will be replaced with API calls
+// DEPRECATED: This page is no longer used. Use /client-portal for client access.
 const demoGallery: GalleryData = {
   id: 1,
-  clientName: "Sarah & Michael",
-  shootType: "Wedding Photography",
+  clientName: "DEPRECATED - Use /client-portal",
+  shootType: "DEPRECATED",
   shootDate: "2024-06-15",
-  location: "Cape Town",
+  location: "DEPRECATED",
   albumCover: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
-  customTitle: "Sarah & Michael's Dream Wedding",
-  customSlug: "sarah-michael_SlyFox_wedding_2024-06-15",
+  customTitle: "DEPRECATED - Use /client-portal",
+  customSlug: "deprecated",
   images: [
     { id: 1, url: "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 1 },
     { id: 2, url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", sequence: 2 },

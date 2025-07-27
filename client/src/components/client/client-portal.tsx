@@ -81,7 +81,7 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
     return matchesSearch && matchesFilter;
   });
 
-  const uniqueShootTypes = [...new Set(shoots.map(shoot => shoot.shootType))];
+  const uniqueShootTypes = Array.from(new Set(shoots.map(shoot => shoot.shootType)));
 
   const handleDownloadImage = async (image: Image) => {
     try {
