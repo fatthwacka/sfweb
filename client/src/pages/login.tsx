@@ -29,7 +29,8 @@ export default function Login() {
       if (savedUser) {
         const user = JSON.parse(savedUser);
         if (user.role === "client") {
-          setLocation("/client-portal");
+          // Force client portal redirect
+          window.location.href = "/client-portal";
         } else if (user.role === "staff" || user.role === "super_admin") {
           setLocation("/dashboard");
         } else {

@@ -65,6 +65,12 @@ export default function Dashboard() {
   const [selectedShoot, setSelectedShoot] = useState<any>(null);
   const [selectedShootImages, setSelectedShootImages] = useState<any[]>([]);
 
+  // Redirect clients to their proper portal
+  if (user && user.role === "client") {
+    window.location.href = "/client-portal";
+    return null;
+  }
+
   // Mock data - in production, these would be real API calls
   const userStats: UserStats = {
     totalShoots: 3,
@@ -95,35 +101,8 @@ export default function Dashboard() {
     }
   ];
 
-  const userShoots: Shoot[] = [
-    {
-      id: 1,
-      title: 'Wedding Day Photos',
-      shootDate: '2024-01-15',
-      location: 'Cape Town Vineyards',
-      isPrivate: false,
-      viewCount: 245,
-      imageCount: 128
-    },
-    {
-      id: 2,
-      title: 'Engagement Session',
-      shootDate: '2023-12-10',
-      location: 'Camps Bay Beach',
-      isPrivate: true,
-      viewCount: 89,
-      imageCount: 67
-    },
-    {
-      id: 3,
-      title: 'Family Portrait',
-      shootDate: '2023-11-22',
-      location: 'Studio Session',
-      isPrivate: false,
-      viewCount: 156,
-      imageCount: 52
-    }
-  ];
+  // This is the STAFF dashboard - clients should use /client-portal
+  const userShoots: Shoot[] = [];
 
   if (!user) {
     return (
