@@ -4,7 +4,8 @@ import { AuthButton } from "@/components/ui/auth-button";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import logoPath from "@assets/Head-only-black_1752749907547.png";
+// Logo now served from organized public directory
+const logoPath = "/images/logos/slyfox-logo-black.png";
 
 const photographyCategories = [
   { name: "Weddings", slug: "weddings" },

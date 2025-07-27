@@ -63,7 +63,7 @@ export default function Photography() {
       <section className="relative h-screen overflow-hidden flex items-center justify-center">
         <div 
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2069&h=1380')` }}
+          style={{ backgroundImage: `url('/images/backgrounds/photography-category-hero.jpg')` }}
         >
           <div className="absolute inset-0 hero-gradient"></div>
         </div>

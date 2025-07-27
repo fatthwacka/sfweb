@@ -8,7 +8,7 @@ export function Hero() {
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat" 
         style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2069&h=1380')`
+          backgroundImage: `url('/images/backgrounds/hero-wedding-photography.jpg')`
         }}
       >
         <div className="hero-gradient absolute inset-0"></div>
