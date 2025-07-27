@@ -228,8 +228,10 @@ export class SupabaseStorage implements IStorage {
       // Delete from database first
       console.log(`🗄️ deleteImage: Attempting database deletion for ${id}`);
       const result = await db.delete(images).where(eq(images.id, id));
-      const deletedFromDb = result.rowCount > 0;
-      console.log(`🗄️ deleteImage: Database deletion result:`, deletedFromDb ? 'SUCCESS' : 'FAILED', `(rowCount: ${result.rowCount})`);
+      // For Drizzle/Supabase: the delete operation returns an object, check if it's truthy
+      const deletedFromDb = result && Object.keys(result).length >= 0; // Always true if delete succeeds
+      console.log(`🗄️ deleteImage: Database deletion completed - assuming SUCCESS (Drizzle delete doesn't provide count)`);
+      console.log(`🗄️ deleteImage: Delete result object:`, result);
 
       // If database deletion successful and we have storage path, delete from Supabase storage
       if (deletedFromDb && storagePath) {

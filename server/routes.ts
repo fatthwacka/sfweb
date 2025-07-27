@@ -987,6 +987,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Client API endpoints for client dashboard
+  app.get("/api/client/shoots", async (req, res) => {
+    try {
+      const { email } = req.query;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email parameter is required" });
+      }
+      
+      console.log(`🔍 Fetching shoots for client email: ${email}`);
+      const shoots = await storage.getShootsByClientEmail(email as string);
+      console.log(`📋 Found ${shoots.length} shoots for ${email}`);
+      
+      res.json(shoots);
+    } catch (error) {
+      console.error("Client shoots fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch client shoots" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
