@@ -14,7 +14,7 @@ export function AboutSection() {
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div className="order-2 lg:order-1">
             <img 
-              src="https://images.unsplash.com/photo-1556075798-4825dfaaf498?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&h=700" 
+              src="/images/services/about-photographer-portrait.jpg" 
               alt="SlyFox Studios team at work" 
               className="w-full rounded-2xl shadow-2xl"
             />

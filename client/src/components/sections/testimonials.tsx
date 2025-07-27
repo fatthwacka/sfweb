@@ -5,21 +5,21 @@ const testimonials = [
     id: 1,
     name: "Sarah Mitchell",
     role: "Wedding Client",
-    image: "https://images.unsplash.com/photo-1488716820095-cbe80883c496?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100",
+    image: "/images/testimonials/client-sarah-jones.jpg",
     quote: "SlyFox Studios made our wedding day absolutely magical. The attention to detail and artistic vision exceeded all our expectations. Our photos are truly works of art."
   },
   {
     id: 2,
     name: "Michael Thompson",
     role: "Corporate Client",
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100",
+    image: "/images/testimonials/client-mike-johnson.jpg",
     quote: "Professional, creative, and incredibly talented. The corporate headshots they took for our team elevated our brand image significantly. Highly recommended!"
   },
   {
     id: 3,
     name: "Emma Rodriguez",
     role: "Family Portrait Client",
-    image: "https://images.unsplash.com/photo-1494790108755-2616b612b8c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100",
+    image: "/images/testimonials/client-emma-davis.jpg",
     quote: "The family portrait session was comfortable and fun. They captured our personalities perfectly, and the online gallery made sharing with relatives so easy."
   }
 ];

@@ -9,42 +9,42 @@ const photographyCategories = [
     name: "Weddings",
     slug: "weddings",
     description: "Capturing your special day with timeless elegance and emotion",
-    image: "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+    image: "/images/portfolio/wedding-couple-1.jpg",
     features: ["Engagement sessions", "Ceremony coverage", "Reception photography", "Bridal portraits"]
   },
   {
     name: "Portraits",
     slug: "portraits",
     description: "Professional headshots and personal portraits that tell your story",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+    image: "/images/portfolio/portrait-professional-1.jpg",
     features: ["Executive headshots", "Family portraits", "Personal branding", "Studio sessions"]
   },
   {
     name: "Corporate",
     slug: "corporate",
     description: "Elevate your business image with professional corporate photography",
-    image: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+    image: "/images/portfolio/wedding-couple-2.jpg",
     features: ["Team headshots", "Office photography", "Corporate events", "Brand documentation"]
   },
   {
     name: "Events",
     slug: "events",
     description: "Documenting memorable moments at conferences, parties, and gatherings",
-    image: "https://images.unsplash.com/photo-1511578314322-379afb476865?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+    image: "/images/portfolio/portrait-professional-2.jpg",
     features: ["Conference photography", "Party coverage", "Award ceremonies", "Networking events"]
   },
   {
     name: "Products",
     slug: "products",
     description: "Showcase your products with stunning commercial photography",
-    image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+    image: "/images/portfolio/wedding-couple-3.jpg",
     features: ["E-commerce photography", "Catalog shoots", "Lifestyle product shots", "360° product views"]
   },
   {
     name: "Graduation",
     slug: "graduation",
     description: "Celebrate academic achievements with memorable graduation photos",
-    image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+    image: "/images/portfolio/portrait-professional-3.jpg",
     features: ["Graduation ceremonies", "Individual portraits", "Family group shots", "Campus photography"]
   }
 ];

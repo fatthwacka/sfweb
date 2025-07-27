@@ -7,56 +7,56 @@ const portfolioItems = [
     title: "Garden Wedding",
     location: "Cape Town • 2024",
     category: "weddings",
-    image: "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600"
+    image: "/images/portfolio/wedding-couple-1.jpg"
   },
   {
     id: 2,
     title: "Executive Portrait",
     location: "Corporate • 2024",
     category: "portraits",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600"
+    image: "/images/portfolio/portrait-professional-1.jpg"
   },
   {
     id: 3,
     title: "Tech Conference",
     location: "Event • 2024",
     category: "corporate",
-    image: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600"
+    image: "/images/portfolio/wedding-couple-2.jpg"
   },
   {
     id: 4,
     title: "Beach Wedding",
     location: "Cape Town • 2024",
     category: "weddings",
-    image: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600"
+    image: "/images/portfolio/portrait-professional-2.jpg"
   },
   {
     id: 5,
     title: "Family Session",
     location: "Portrait • 2024",
     category: "portraits",
-    image: "https://images.unsplash.com/photo-1511895426328-dc8714191300?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600"
+    image: "/images/portfolio/wedding-couple-3.jpg"
   },
   {
     id: 6,
     title: "Product Shoot",
     location: "Commercial • 2024",
     category: "product",
-    image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600"
+    image: "/images/portfolio/portrait-professional-3.jpg"
   },
   {
     id: 7,
     title: "Matric Dance",
     location: "School Event • 2024",
     category: "matric-dance",
-    image: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600"
+    image: "/images/portfolio/matric-dance-1.jpg"
   },
   {
     id: 8,
     title: "Corporate Event",
     location: "Conference • 2024",
     category: "event",
-    image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600"
+    image: "/images/portfolio/corporate-event-1.jpg"
   }
 ];
 

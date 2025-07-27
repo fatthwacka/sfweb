@@ -28,7 +28,7 @@ export function ServicesOverview() {
             <div className="group cursor-pointer">
               <div className="relative overflow-hidden rounded-2xl shadow-2xl image-hover-effect">
                 <img 
-                  src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&h=600" 
+                  src="/images/services/photography-service-showcase.jpg" 
                   alt="Professional photography services" 
                   className="w-full h-96 object-cover"
                 />
@@ -68,7 +68,7 @@ export function ServicesOverview() {
             <div className="group cursor-pointer">
               <div className="relative overflow-hidden rounded-2xl shadow-2xl image-hover-effect">
                 <img 
-                  src="https://images.unsplash.com/photo-1556075798-4825dfaaf498?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&h=600" 
+                  src="/images/services/photography-service-showcase.jpg" 
                   alt="Professional videography services" 
                   className="w-full h-96 object-cover"
                 />

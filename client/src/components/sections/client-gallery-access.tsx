@@ -64,7 +64,7 @@ export function ClientGalleryAccess() {
 
           <div className="relative">
             <img 
-              src="https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&h=600" 
+              src="/images/gallery/wedding-gallery-1.jpg" 
               alt="Client gallery interface mockup" 
               className="w-full rounded-2xl shadow-2xl"
             />
@@ -73,17 +73,17 @@ export function ClientGalleryAccess() {
             <div className="absolute -bottom-10 -left-10 bg-charcoal rounded-xl p-4 shadow-2xl glass-effect">
               <div className="grid grid-cols-3 gap-2 mb-3">
                 <img 
-                  src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" 
+                  src="/images/gallery/wedding-gallery-2.jpg" 
                   alt="Gallery thumbnail 1" 
                   className="w-12 h-12 rounded object-cover"
                 />
                 <img 
-                  src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" 
+                  src="/images/gallery/wedding-gallery-3.jpg" 
                   alt="Gallery thumbnail 2" 
                   className="w-12 h-12 rounded object-cover"
                 />
                 <img 
-                  src="https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" 
+                  src="/images/gallery/wedding-gallery-4.jpg" 
                   alt="Gallery thumbnail 3" 
                   className="w-12 h-12 rounded object-cover"
                 />

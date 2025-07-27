@@ -26,7 +26,7 @@ const categoryData: Record<string, {
     title: "Wedding Photography Cape Town",
     description: "Capture your special day with timeless elegance and emotion. Professional wedding photography services in Cape Town.",
     longDescription: "Your wedding day is one of the most important days of your life, and we're here to ensure every precious moment is captured with artistic vision and emotional depth. Our wedding photography approach combines candid storytelling with stunning portraits, creating a comprehensive visual narrative of your celebration.",
-    heroImage: "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=800",
+    heroImage: "/images/backgrounds/wedding-hero-background.jpg",
     features: [
       "Engagement session included",
       "Full ceremony coverage",
@@ -58,9 +58,9 @@ const categoryData: Record<string, {
       }
     ],
     gallery: [
-      "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-      "https://images.unsplash.com/photo-1583939003579-730e3918a45a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-      "https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+      "/images/gallery/wedding-gallery-1.jpg",
+      "/images/gallery/wedding-gallery-2.jpg",
+      "/images/gallery/wedding-gallery-3.jpg"
     ],
     seoKeywords: "Cape Town wedding photographer, wedding photography Cape Town, South African wedding photographer, bridal photography, wedding ceremony photography"
   },
@@ -69,7 +69,7 @@ const categoryData: Record<string, {
     title: "Professional Portrait Photography Cape Town",
     description: "Professional headshots and personal portraits that tell your story with confidence and style.",
     longDescription: "Whether you need professional headshots for your career or personal portraits that capture your essence, our portrait sessions are designed to make you look and feel your best. We specialize in creating images that reflect your personality and professional brand.",
-    heroImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=800",
+    heroImage: "/images/backgrounds/portrait-hero-background.jpg",
     features: [
       "Professional lighting setup",
       "Multiple outfit changes",
