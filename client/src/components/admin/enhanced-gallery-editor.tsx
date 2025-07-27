@@ -47,6 +47,7 @@ import {
   AddImagesSection, 
   GalleryAppearanceSection 
 } from './gallery-sections';
+import { GalleryImageCard } from './gallery-image-card';
 
 interface GalleryImage {
   id: string;
@@ -222,7 +223,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     queryKey: ['/api/clients']
   });
 
-  const shoot = shootData?.shoot;
+  const shoot = (shootData?.shoot as any) || {};
   const images: GalleryImage[] = (shootData?.images as GalleryImage[]) || [];
 
   // Initialize settings from shoot data
@@ -536,7 +537,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       <BasicInfoSection
         editableShoot={editableShoot}
         setEditableShoot={setEditableShoot}
-        clients={clients}
+        clients={clients as any[]}
         clientReassignDialogOpen={clientReassignDialogOpen}
         setClientReassignDialogOpen={setClientReassignDialogOpen}
         onSave={handleSaveBasicInfo}
@@ -615,7 +616,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
               <div 
                 className="relative h-48 w-full bg-cover bg-center flex items-center justify-center"
                 style={{
-                  backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${getOrderedImages().find(img => img.id === selectedCover)?.storagePath})`,
+                  backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${ImageUrl.forViewing(getOrderedImages().find(img => img.id === selectedCover)?.storagePath || '')})`,
                   marginBottom: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px'
                 }}
               >
