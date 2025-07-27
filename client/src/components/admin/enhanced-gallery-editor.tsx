@@ -223,7 +223,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     queryKey: ['/api/clients']
   });
 
-  const shoot = (shootData?.shoot as any) || {};
+  const shoot = shootData?.shoot || {};
   const images: GalleryImage[] = (shootData?.images as GalleryImage[]) || [];
 
   // Initialize settings from shoot data
@@ -249,11 +249,11 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
   // Initialize image order from sequence
   useEffect(() => {
-    if (images.length > 0) {
+    if (images.length > 0 && imageOrder.length === 0) {
       const sortedImages = [...images].sort((a, b) => a.sequence - b.sequence);
       setImageOrder(sortedImages.map(img => img.id));
     }
-  }, [images]);
+  }, [images.length]);
 
   // Drag and drop handlers
   const handleDragStart = useCallback((e: React.DragEvent, imageId: string) => {
@@ -445,7 +445,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   };
 
   const handleViewFullRes = (storagePath: string) => {
-    window.open(ImageUrl.forFullSize(storagePath), '_blank');
+    window.open(ImageUrl.forDownload(storagePath), '_blank');
   };
 
   const confirmDeleteImage = () => {
@@ -691,7 +691,19 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                     
                     {/* Hover Buttons */}
                     <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-2">
+                      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="bg-purple-600 text-white hover:bg-purple-700"
+                          title="View Full Resolution"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewFullRes(image.storagePath);
+                          }}
+                        >
+                          <Eye className="w-3 h-3" />
+                        </Button>
                         <Button
                           size="sm"
                           variant="secondary"
@@ -803,7 +815,19 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                     
                     {/* Hover Buttons */}
                     <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-2">
+                      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="bg-purple-600 text-white hover:bg-purple-700"
+                          title="View Full Resolution"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewFullRes(image.storagePath);
+                          }}
+                        >
+                          <Eye className="w-3 h-3" />
+                        </Button>
                         <Button
                           size="sm"
                           variant="secondary"

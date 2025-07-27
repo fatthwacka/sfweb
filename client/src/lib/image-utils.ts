@@ -70,4 +70,5 @@ export const ImageUrl = {
   
   // For downloads and full resolution inspection (original 5MB)
   forFullSize: (url: string) => url,
+  forDownload: (url: string) => url,
 } as const;
