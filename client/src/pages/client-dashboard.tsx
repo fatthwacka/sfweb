@@ -6,6 +6,9 @@ import { useEffect } from "react";
 export default function ClientDashboard() {
   const { user, isLoading } = useAuth();
   const [, setLocation] = useLocation();
+  
+  // Debug logging
+  console.log('ClientDashboard - User:', user?.email, 'Role:', user?.role);
 
   useEffect(() => {
     if (!isLoading && !user) {

@@ -58,6 +58,9 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filterType, setFilterType] = useState<string>('all');
 
+  // Debug logging to help identify loading issues
+  console.log('ClientPortal loading for:', userEmail);
+
   // Fetch client's shoots based on email
   const { data: shoots = [], isLoading: shootsLoading } = useQuery<Shoot[]>({
     queryKey: ["/api/client/shoots"],

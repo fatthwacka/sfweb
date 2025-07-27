@@ -66,7 +66,7 @@ import Dashboard from "@/pages/dashboard";
 import ClientDashboard from "@/pages/client-dashboard";
 import Login from "@/pages/login";
 import Admin from "@/pages/admin";
-import MyGallery from "@/pages/my-gallery";
+// Removed old demo MyGallery - clients use /client-portal
 import NotFound from "@/pages/not-found";
 
 function Router() {

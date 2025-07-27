@@ -67,35 +67,16 @@ export default function Dashboard() {
 
   // This is the STAFF dashboard - clients should use /client-portal
 
-  // Mock data - in production, these would be real API calls
+  // This is the STAFF dashboard - empty data for now
   const userStats: UserStats = {
-    totalShoots: 3,
-    totalImages: 247,
-    totalViews: 1284,
-    totalDownloads: 89,
-    favoriteImages: 12
+    totalShoots: 0,
+    totalImages: 0,
+    totalViews: 0,
+    totalDownloads: 0,
+    favoriteImages: 0
   };
 
-  const recentActivity: RecentActivity[] = [
-    {
-      id: 1,
-      type: 'view',
-      shootTitle: 'Wedding Album',
-      timestamp: '2 hours ago'
-    },
-    {
-      id: 2,
-      type: 'download',
-      shootTitle: 'Portrait Session',
-      timestamp: '1 day ago'
-    },
-    {
-      id: 3,
-      type: 'share',
-      shootTitle: 'Family Photos',
-      timestamp: '3 days ago'
-    }
-  ];
+  const recentActivity: RecentActivity[] = [];
 
   // This is the STAFF dashboard - clients should use /client-portal
   const userShoots: Shoot[] = [];
