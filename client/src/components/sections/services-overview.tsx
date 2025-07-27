@@ -11,7 +11,7 @@ const videographyServices = [
 
 export function ServicesOverview() {
   return (
-    <section className="py-20 bg-charcoal">
+    <section className="py-20 bg-gradient-to-br from-salmon-dark/40 via-background to-pink-900/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="salmon text-4xl lg:text-5xl mb-6">

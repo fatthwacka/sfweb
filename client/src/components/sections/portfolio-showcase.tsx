@@ -78,7 +78,7 @@ export function PortfolioShowcase() {
     : portfolioItems.filter(item => item.category === activeFilter);
 
   return (
-    <section className="py-20 bg-black">
+    <section className="py-20 bg-gradient-to-br from-slate-900/60 via-background to-grey-800/40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="cyan text-4xl lg:text-5xl mb-6">
