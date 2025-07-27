@@ -51,8 +51,8 @@ export function getOptimizedImageUrl(
  * Predefined image size presets for consistent usage across the app
  */
 export const IMAGE_PRESETS = {
-  // Optimized viewing size for all interfaces (targeting ~150KB for faster loading)
-  optimized: { width: 1200, height: 1200, quality: 60, resize: 'contain' as const },
+  // Optimized viewing size for all interfaces (targeting 500-600KB as requested)
+  optimized: { width: 2400, height: 2400, quality: 80, resize: 'contain' as const },
   
   // Full size for downloads and detailed inspection (no transformation)
   fullSize: {} as ImageTransformOptions,
@@ -70,7 +70,7 @@ export function getImageUrl(originalUrl: string, preset: keyof typeof IMAGE_PRES
  * Simplified to just two use cases: optimized viewing and full resolution
  */
 export const ImageUrl = {
-  // For all viewing contexts (admin, galleries, client portal) - ~80KB optimized
+  // For all viewing contexts (admin, galleries, client portal) - ~364KB optimized
   forViewing: (url: string) => getImageUrl(url, 'optimized'),
   
   // For downloads and full resolution inspection (original 4.4MB)
