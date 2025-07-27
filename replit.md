@@ -149,6 +149,8 @@ The application is structured to be easily deployable to platforms like Vercel, 
 - **Browser Console Verification**: All images now load with `/render/image/` URLs and proper transformation parameters
 - **Size Verification**: curl tests confirm 364KB optimized vs 4.4MB original files being served correctly
 - **MODAL BUG FIXED**: Admin gallery modal was showing full 6MB images instead of 364KB optimized - now fixed to use forViewing() instead of forFullSize()
+- **PAGINATION ENHANCED**: Extended from 3 rows (12 images) to 4 rows (20 images) initially, with "Load More" button for additional 20 images per click
+- **REMOVE BUTTON IMPLEMENTED**: Yellow "Remove from Album" button now functional with confirmation dialog - moves images to SlyFox archive ('676d656f-4c38-4530-97f8-415742188acf') instead of deletion
 
 ### July 27, 2025 - Client Management System Complete
 - **Fixed Missing PATCH Endpoint**: Added complete app.patch("/api/clients/:id") route that was causing edit failures

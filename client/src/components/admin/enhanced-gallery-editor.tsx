@@ -73,6 +73,9 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartTime, setDragStartTime] = useState<number>(0);
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
+  const [removeConfirmationOpen, setRemoveConfirmationOpen] = useState(false);
+  const [imageToRemove, setImageToRemove] = useState<string | null>(null);
+  const [visibleImageCount, setVisibleImageCount] = useState(20); // Show 20 images initially (4 rows of 5)
   const [imageToDelete, setImageToDelete] = useState<string | null>(null);
   
   // All editable shoot parameters
@@ -456,6 +459,41 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     }
   };
 
+  // Remove image from current album by reassigning to SlyFox bin
+  const removeImageMutation = useMutation({
+    mutationFn: async (imageId: string) => {
+      return apiRequest(`/api/images/${imageId}`, {
+        method: 'PATCH',
+        body: { shootId: '676d656f-4c38-4530-97f8-415742188acf' }
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/images'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
+      toast({ title: "Success", description: "Image moved to SlyFox archive" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to remove image from album", variant: "destructive" });
+    }
+  });
+
+  const handleRemoveImage = (imageId: string) => {
+    setImageToRemove(imageId);
+    setRemoveConfirmationOpen(true);
+  };
+
+  const confirmRemoveImage = () => {
+    if (imageToRemove) {
+      removeImageMutation.mutate(imageToRemove);
+      setImageToRemove(null);
+      setRemoveConfirmationOpen(false);
+    }
+  };
+
+  const loadMoreImages = () => {
+    setVisibleImageCount(prev => prev + 20); // Load 20 more images (4 more rows)
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -641,7 +679,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                   gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
                 }}
               >
-                {getOrderedImages().slice(0, 12).map((image, index) => (
+                {getOrderedImages().slice(0, visibleImageCount).map((image, index) => (
                   <div 
                     key={image.id}
                     className={`
@@ -734,7 +772,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                           title="Remove from Album"
                           onClick={(e) => {
                             e.stopPropagation();
-                            toast({ title: "Feature Coming Soon", description: "Remove from album functionality" });
+                            handleRemoveImage(image.id);
                           }}
                         >
                           <X className="w-3 h-3" />
@@ -768,7 +806,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                   gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
                 }}
               >
-                {getOrderedImages().slice(0, 12).map((image, index) => (
+                {getOrderedImages().slice(0, visibleImageCount).map((image, index) => (
                   <div 
                     key={image.id}
                     className={`
@@ -859,7 +897,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                           title="Remove from Album"
                           onClick={(e) => {
                             e.stopPropagation();
-                            toast({ title: "Feature Coming Soon", description: "Remove from album functionality" });
+                            handleRemoveImage(image.id);
                           }}
                         >
                           <X className="w-3 h-3" />
@@ -888,9 +926,15 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
               </div>
             )}
             
-            {images.length > 12 && (
-              <div className="text-center mt-4 text-muted-foreground">
-                ... and {images.length - 12} more images
+            {images.length > visibleImageCount && (
+              <div className="text-center mt-6">
+                <Button
+                  variant="outline"
+                  onClick={loadMoreImages}
+                  className="px-8 py-2"
+                >
+                  Load More Images ({Math.min(20, images.length - visibleImageCount)} more)
+                </Button>
               </div>
             )}
             </div>
@@ -924,6 +968,29 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Remove Confirmation Dialog */}
+      <AlertDialog open={removeConfirmationOpen} onOpenChange={setRemoveConfirmationOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Image from Album</AlertDialogTitle>
+            <AlertDialogDescription>
+              This image will be removed from the current album and moved to the SlyFox archive. The image will remain in the database and can be reassigned to other albums later. This action does not permanently delete the image.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setRemoveConfirmationOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmRemoveImage}
+              className="bg-yellow-600 text-white hover:bg-yellow-700"
+            >
+              Remove from Album
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteConfirmationOpen} onOpenChange={setDeleteConfirmationOpen}>
