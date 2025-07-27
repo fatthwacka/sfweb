@@ -148,6 +148,7 @@ The application is structured to be easily deployable to platforms like Vercel, 
 - **Performance Optimization**: Reduced bandwidth usage in admin panels while maintaining full resolution access via "View Full Res" button
 - **Browser Console Verification**: All images now load with `/render/image/` URLs and proper transformation parameters
 - **Size Verification**: curl tests confirm 364KB optimized vs 4.4MB original files being served correctly
+- **MODAL BUG FIXED**: Admin gallery modal was showing full 6MB images instead of 364KB optimized - now fixed to use forViewing() instead of forFullSize()
 
 ### July 27, 2025 - Client Management System Complete
 - **Fixed Missing PATCH Endpoint**: Added complete app.patch("/api/clients/:id") route that was causing edit failures

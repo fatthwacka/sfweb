@@ -904,12 +904,12 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
           <DialogContent className="max-w-4xl max-h-[90vh] p-0">
             <DialogHeader className="sr-only">
               <DialogTitle>Image Preview</DialogTitle>
-              <DialogDescription>Full size image preview</DialogDescription>
+              <DialogDescription>Gallery-optimized image preview</DialogDescription>
             </DialogHeader>
             <div className="relative">
               <img
-                src={ImageUrl.forFullSize(getOrderedImages().find(img => img.id === selectedImageModal)?.storagePath || '')}
-                alt="Full size preview"
+                src={ImageUrl.forViewing(getOrderedImages().find(img => img.id === selectedImageModal)?.storagePath || '')}
+                alt="Gallery preview"
                 className="w-full h-auto max-h-[85vh] object-contain"
               />
               <Button
