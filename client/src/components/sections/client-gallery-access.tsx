@@ -21,7 +21,7 @@ const features = [
 
 export function ClientGalleryAccess() {
   return (
-    <section className="py-20 bg-gradient-to-br from-cyan-dark/80 via-slate-900/60 to-teal-900/70">
+    <section className="py-20 bg-gradient-to-br from-slate-900/40 via-background to-gray-900/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
