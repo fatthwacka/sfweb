@@ -106,7 +106,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
   // All mutations must be declared before any conditional returns (Rules of Hooks)
   const saveBasicInfoMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('PATCH', `/api/shoots/${shootId}`, data),
+    mutationFn: (data: any) => apiRequest(`/api/shoots/${shootId}`, 'PATCH', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
       queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
@@ -116,7 +116,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   });
 
   const saveAdvancedSettingsMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('PATCH', `/api/shoots/${shootId}`, data),
+    mutationFn: (data: any) => apiRequest(`/api/shoots/${shootId}`, 'PATCH', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
       queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
@@ -172,7 +172,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   });
 
   const saveAppearanceMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('PATCH', `/api/shoots/${shootId}`, data),
+    mutationFn: (data: any) => apiRequest(`/api/shoots/${shootId}`, 'PATCH', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
       toast({ title: "Gallery appearance saved successfully!" });
@@ -181,7 +181,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   });
 
   const deleteImageMutation = useMutation({
-    mutationFn: (imageId: string) => apiRequest('DELETE', `/api/images/${imageId}`),
+    mutationFn: (imageId: string) => apiRequest(`/api/images/${imageId}`, 'DELETE'),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
       queryClient.invalidateQueries({ queryKey: ['/api/images'] });
@@ -206,7 +206,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
   const updateImageSequencesMutation = useMutation({
     mutationFn: (imageSequences: Record<string, number>) => 
-      apiRequest('PATCH', `/api/shoots/${shootId}`, { imageSequences }),
+      apiRequest(`/api/shoots/${shootId}`, 'PATCH', { imageSequences }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
       queryClient.invalidateQueries({ queryKey: ['/api/images'] });
@@ -314,7 +314,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
   // Save comprehensive shoot updates
   const saveCustomizationMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('PATCH', `/api/shoots/${shootId}`, data),
+    mutationFn: (data: any) => apiRequest(`/api/shoots/${shootId}`, 'PATCH', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
       queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
@@ -462,10 +462,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   // Remove image from current album by reassigning to SlyFox bin
   const removeImageMutation = useMutation({
     mutationFn: async (imageId: string) => {
-      return apiRequest(`/api/images/${imageId}`, {
-        method: 'PATCH',
-        body: { shootId: '676d656f-4c38-4530-97f8-415742188acf' }
-      });
+      return apiRequest(`/api/images/${imageId}`, 'PATCH', { shootId: '676d656f-4c38-4530-97f8-415742188acf' });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/images'] });
