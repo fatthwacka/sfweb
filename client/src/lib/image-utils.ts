@@ -70,10 +70,10 @@ export function getImageUrl(originalUrl: string, preset: keyof typeof IMAGE_PRES
  * Simplified to just two use cases: optimized viewing and full resolution
  */
 export const ImageUrl = {
-  // For all viewing contexts (admin, galleries, client portal) - ~600KB target
+  // For all viewing contexts (admin, galleries, client portal) - ~300KB optimized
   forViewing: (url: string) => getImageUrl(url, 'optimized'),
   
-  // For downloads and full resolution inspection (original 5MB)
+  // For downloads and full resolution inspection (original 4.4MB)
   forFullSize: (url: string) => url,
   forDownload: (url: string) => url,
 } as const;
