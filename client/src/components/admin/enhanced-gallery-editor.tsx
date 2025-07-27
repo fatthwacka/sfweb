@@ -194,13 +194,24 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     onError: (error: any) => {
       console.error("Delete error:", error);
       const errorMessage = error?.message || "Unknown error occurred";
-      toast({ 
-        title: "Delete failed", 
-        description: errorMessage.includes("not found") 
-          ? "Image was already deleted or doesn't exist"
-          : `Error: ${errorMessage}`,
-        variant: "destructive" 
-      });
+      
+      // If image not found, refresh the data to remove stale images from UI
+      if (errorMessage.includes("not found") || errorMessage.includes("404")) {
+        queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
+        queryClient.invalidateQueries({ queryKey: ['/api/images'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
+        toast({ 
+          title: "Image already removed", 
+          description: "The image was already deleted. Refreshing gallery...",
+          variant: "default"
+        });
+      } else {
+        toast({ 
+          title: "Delete failed", 
+          description: `Error: ${errorMessage}`,
+          variant: "destructive" 
+        });
+      }
     }
   });
 
@@ -491,8 +502,8 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     setVisibleImageCount(prev => Math.min(prev + 20, 100)); // Load 20 more images, max 100 total
   };
 
-  // Disable drag reordering for albums with more than 100 images
-  const isDragReorderingEnabled = images.length <= 100;
+  // Always enable drag reordering for visible images (first 100)
+  const isDragReorderingEnabled = true;
 
   if (isLoading) {
     return (
@@ -955,7 +966,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                   <span className="font-medium">Large Album Notice</span>
                 </div>
                 <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                  This album has {images.length} images. For performance, only the first 100 images are shown with drag reordering disabled.
+                  This album has {images.length} images. For performance, only the first 100 images are shown in the preview. You can still reorder the visible images.
                 </p>
               </div>
             )}
