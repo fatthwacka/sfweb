@@ -181,7 +181,11 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   });
 
   const deleteImageMutation = useMutation({
-    mutationFn: (imageId: string) => apiRequest('DELETE', `/api/images/${imageId}`),
+    mutationFn: (imageId: string) => {
+      console.log('Attempting to delete image with ID:', imageId);
+      console.log('Full API URL:', `/api/images/${imageId}`);
+      return apiRequest('DELETE', `/api/images/${imageId}`);
+    },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
       queryClient.invalidateQueries({ queryKey: ['/api/images'] });
@@ -195,14 +199,17 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       console.error("Delete error:", error);
       const errorMessage = error?.message || "Unknown error occurred";
       
-      // If image not found, refresh the data to remove stale images from UI
+      // If image not found, it might have been moved to archive - refresh data
       if (errorMessage.includes("not found") || errorMessage.includes("404")) {
+        // Force refetch to get latest data
         queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
         queryClient.invalidateQueries({ queryKey: ['/api/images'] });
         queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
+        queryClient.refetchQueries({ queryKey: ['/api/shoots', shootId] });
+        
         toast({ 
-          title: "Image already removed", 
-          description: "The image was already deleted. Refreshing gallery...",
+          title: "Image not available", 
+          description: "This image may have been moved or deleted. Gallery refreshed.",
           variant: "default"
         });
       } else {
@@ -476,8 +483,14 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       return apiRequest('PATCH', `/api/images/${imageId}`, { shootId: '676d656f-4c38-4530-97f8-415742188acf' });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/images'] });
+      // Invalidate all relevant queries to refresh the UI immediately
       queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/images'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
+      
+      // Also refetch the current shoot data immediately
+      queryClient.refetchQueries({ queryKey: ['/api/shoots', shootId] });
+      
       toast({ title: "Success", description: "Image moved to SlyFox archive" });
     },
     onError: () => {
