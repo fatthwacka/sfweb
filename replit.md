@@ -117,7 +117,51 @@ The application is structured to be easily deployable to platforms like Vercel, 
 **Rationale**: Test core business logic with real workflows before over-engineering theoretical solutions
 **Order**: Core features → Production deployment → Security/monitoring → Performance optimization
 
+## Planned Updates: Future scalability considerations
+
+### Image Optimization Strategy (Evaluated July 27, 2025)
+**Current Status**: 2MB original images serving directly - performing excellently
+**Average Album**: 20-30 images (40-60MB total)
+**Performance**: Fast loading times, no user complaints
+
+**Optimization Options Evaluated**:
+
+1. **On-Demand Transformation (Recommended for Phase 2)**
+   - Use Supabase's built-in image transformation API
+   - Generate sizes via URL parameters: `?width=1200&quality=80`
+   - No storage duplication, CDN caching
+   - Implementation: Single-line URL changes
+
+2. **Multi-Size Storage Strategy**
+   - Pre-generate thumbnail (400px), gallery (1200px), original (2MB)
+   - Fastest loading but 3x storage costs
+   - Complex upload pipeline
+
+3. **Hybrid Approach**
+   - Generate thumbnails on upload for admin interface
+   - On-demand transformation for client galleries
+   - Originals only for downloads
+
+**Implementation Timeline**:
+- **Phase 1 (Current)**: Continue with originals, monitor performance metrics
+- **Phase 2 (If needed)**: Implement URL-based transformations when hitting performance thresholds
+- **Phase 3 (High traffic)**: Consider CDN with intelligent optimization
+
+**Decision Triggers**: Implement optimization when experiencing:
+- Albums regularly exceed 50 images
+- Mobile loading complaints
+- High bandwidth costs
+- International user performance issues
+
+**Recommendation**: Maintain current approach until concrete performance issues arise, then implement Supabase transformations as minimal-complexity solution.
+
 ## Recent Changes: Latest modifications with dates
+
+### July 27, 2025 - Client Management System Complete
+- **Fixed Missing PATCH Endpoint**: Added complete app.patch("/api/clients/:id") route that was causing edit failures
+- **Enhanced Client Edit Modal**: All fields (phone, address, secondaryEmail) now save properly to Supabase
+- **Zod Schema Updates**: Fixed nullable field validation for proper null handling in database
+- **Real-time UI Updates**: Client cards now refresh immediately after edit operations with proper query invalidation
 
 ### July 27, 2025 - Staff Management System Implementation
 - **Complete Staff Management Interface**: Created comprehensive CRUD system for staff/super_admin accounts
