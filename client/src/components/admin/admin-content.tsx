@@ -1022,113 +1022,14 @@ export function AdminContent({ userRole }: AdminContentProps) {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-saira font-bold text-salmon">Shoots Management</h2>
-                <div className="flex gap-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <Input
-                      placeholder="Search shoots..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                  <Dialog open={newShootOpen} onOpenChange={setNewShootOpen}>
-                    <DialogTrigger asChild>
-                      <Button className="bg-salmon text-white hover:bg-salmon-muted">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Shoot
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-cyan-dark border border-cyan/30 shadow-lg max-w-2xl max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle className="text-salmon">Create New Shoot</DialogTitle>
-                        <DialogDescription className="text-muted-foreground">
-                          Create a new photography or videography shoot with all necessary details.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <form onSubmit={handleCreateShoot} className="space-y-6">
-                        {/* Basic Information */}
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-salmon">Basic Information</h3>
-                          <div className="grid md:grid-cols-2 gap-4">
-                            <div>
-                              <Label htmlFor="title">Shoot Title *</Label>
-                              <Input id="title" name="title" required placeholder="Sarah & Michael's Wedding" />
-                            </div>
-                            <div>
-                              <Label htmlFor="shootType">Shoot Type *</Label>
-                              <select id="shootType" name="shootType" required className="w-full px-3 py-2 bg-background border border-border rounded-md">
-                                <option value="">Select type...</option>
-                                <option value="wedding">Wedding</option>
-                                <option value="portrait">Portrait</option>
-                                <option value="event">Event</option>
-                                <option value="corporate">Corporate</option>
-                                <option value="lifestyle">Lifestyle</option>
-                              </select>
-                            </div>
-                          </div>
-                          <div>
-                            <Label htmlFor="description">Description</Label>
-                            <Textarea id="description" name="description" placeholder="Brief description of the shoot..." rows={3} />
-                          </div>
-                        </div>
-
-                        {/* Location & Date */}
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-salmon">Location & Date</h3>
-                          <div className="grid md:grid-cols-2 gap-4">
-                            <div>
-                              <Label htmlFor="shootDate">Shoot Date *</Label>
-                              <Input id="shootDate" name="shootDate" type="date" required />
-                            </div>
-                            <div>
-                              <Label htmlFor="location">Location *</Label>
-                              <Input id="location" name="location" required placeholder="Cape Town, South Africa" />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Client Email Assignment */}
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-salmon">Client Assignment</h3>
-                          <div>
-                            <Label htmlFor="clientEmail">Client Email *</Label>
-                            <select id="clientEmail" name="clientEmail" required className="w-full px-3 py-2 bg-background border border-border rounded-md">
-                              <option value="">Select client...</option>
-                              {clients.map(client => (
-                                <option key={client.id} value={client.email || ""}>
-                                  {client.name} ({client.email})
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-
-                        {/* SEO & Settings */}
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-salmon">SEO & Settings</h3>
-                          <div className="grid md:grid-cols-2 gap-4">
-                            <div>
-                              <Label htmlFor="customSlug">Custom URL Slug</Label>
-                              <Input id="customSlug" name="customSlug" placeholder="sarah-michael-wedding-2024" />
-                            </div>
-                            <div>
-                              <Label htmlFor="seoTags">SEO Tags</Label>
-                              <Input id="seoTags" name="seoTags" placeholder="wedding, cape town, photography" />
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input type="checkbox" id="isPrivate" name="isPrivate" className="rounded" />
-                            <Label htmlFor="isPrivate">Make gallery private</Label>
-                          </div>
-                        </div>
-
-                        <Button type="submit" disabled={createShootMutation.isPending} className="w-full bg-salmon text-white hover:bg-salmon-muted">
-                          {createShootMutation.isPending ? 'Creating Shoot...' : 'Create Shoot'}
-                        </Button>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
+                <div className="relative w-80">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Input
+                    placeholder="Search shoots..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 w-full"
+                  />
                 </div>
               </div>
 
