@@ -71,7 +71,21 @@ export function getImageUrl(originalUrl: string, preset: keyof typeof IMAGE_PRES
  */
 export const ImageUrl = {
   // For all viewing contexts (admin, galleries, client portal) - ~364KB optimized
-  forViewing: (url: string) => getImageUrl(url, 'optimized'),
+  forViewing: (url: string) => {
+    console.log('🔴 INPUT URL:', url);
+    const optimized = getImageUrl(url, 'optimized');
+    console.log('🟢 OUTPUT URL:', optimized);
+    console.log('🔍 IS DIFFERENT:', url !== optimized);
+    console.log('🎯 HAS RENDER PATH:', optimized.includes('/render/image/'));
+    
+    // Show one alert per page load to demonstrate the issue
+    if (!window.debugShown) {
+      window.debugShown = true;
+      setTimeout(() => alert(`ACTUAL URL BEING USED: ${optimized}`), 1000);
+    }
+    
+    return optimized;
+  },
   
   // For downloads and full resolution inspection (original 4.4MB)
   forFullSize: (url: string) => url,
