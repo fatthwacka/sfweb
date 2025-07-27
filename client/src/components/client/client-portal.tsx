@@ -24,15 +24,29 @@ import {
 
 interface Shoot {
   id: string;
+  clientId: string;
   title: string;
-  description: string;
-  shootType: string;
-  shootDate: string;
   location: string;
-  customTitle: string;
-  viewCount: number;
+  shootDate: string;
+  shootType: string;
+  description: string;
+  notes: string;
   isPrivate: boolean;
+  bannerImageId: string | null;
+  seoTags: string;
+  viewCount: number;
+  createdBy: string;
+  customSlug: string;
+  customTitle: string;
+  gallerySettings: {
+    padding: string;
+    borderStyle: string;
+    layoutStyle: string;
+    imageSpacing: string;
+    backgroundColor: string;
+  };
   createdAt: string;
+  updatedAt: string;
 }
 
 interface Image {
@@ -62,10 +76,17 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
   console.log('ClientPortal loading for:', userEmail);
 
   // Fetch client's shoots based on email
-  const { data: shoots = [], isLoading: shootsLoading } = useQuery<Shoot[]>({
-    queryKey: ["/api/client/shoots"],
-    queryFn: () => fetch(`/api/client/shoots?email=${encodeURIComponent(userEmail)}`).then(res => res.json()),
+  const { data: shoots = [], isLoading: shootsLoading, error } = useQuery<Shoot[]>({
+    queryKey: ["/api/client/shoots", userEmail],
+    queryFn: () => fetch(`/api/client/shoots?email=${encodeURIComponent(userEmail)}`).then(res => {
+      console.log('API Response status:', res.status);
+      return res.json();
+    }),
   });
+
+  // Debug logging
+  console.log('Shoots loading:', shootsLoading, 'Error:', error, 'Shoots count:', shoots.length);
+  console.log('Shoots data:', shoots);
 
   // Fetch images for selected shoot
   const { data: images = [], isLoading: imagesLoading } = useQuery<Image[]>({

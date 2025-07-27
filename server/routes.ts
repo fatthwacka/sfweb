@@ -431,6 +431,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get images for a specific shoot (client portal needs this)
+  app.get("/api/shoots/:id/images", async (req, res) => {
+    try {
+      const shootId = req.params.id;
+      const images = await storage.getImagesByShoot(shootId);
+      res.json(images);
+    } catch (error) {
+      console.error("Fetch shoot images error:", error);
+      res.status(500).json({ message: "Failed to fetch images" });
+    }
+  });
+
   app.post("/api/shoots", async (req, res) => {
     try {
       console.log('Creating shoot with data:', req.body);
