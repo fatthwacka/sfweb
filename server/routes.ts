@@ -371,6 +371,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/clients/:id", async (req, res) => {
+    try {
+      const clientId = parseInt(req.params.id);
+      const updates = req.body;
+      
+      console.log('Updating client:', clientId, 'with data:', updates);
+      
+      // Validate the update data
+      const validatedUpdates = insertClientSchema.partial().parse(updates);
+      
+      const client = await storage.updateClient(clientId, validatedUpdates);
+      
+      if (!client) {
+        return res.status(404).json({ message: "Client not found" });
+      }
+      
+      console.log('Client updated successfully:', client);
+      res.json(client);
+    } catch (error) {
+      console.error("Update client error:", error);
+      if (error.issues) {
+        console.error("Validation issues:", error.issues);
+        res.status(400).json({ 
+          message: "Invalid client data",
+          details: error.issues 
+        });
+      } else {
+        res.status(500).json({ message: "Failed to update client" });
+      }
+    }
+  });
+
   // Shoot endpoints
   app.get("/api/shoots", async (req, res) => {
     try {
