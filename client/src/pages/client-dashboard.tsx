@@ -33,6 +33,9 @@ export default function ClientDashboard() {
     return null;
   }
 
+  // Debug logging
+  console.log('ClientDashboard rendering for user:', user.email, user.role);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navigation />
