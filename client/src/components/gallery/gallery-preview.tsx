@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { X, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Download, Eye } from "lucide-react";
+import { ImageUrl } from "@/lib/image-utils";
 import type { Image as ImageType, Shoot } from "@shared/schema";
 
 interface GalleryPreviewProps {
@@ -72,7 +73,7 @@ export function GalleryPreview({ images, shoot, className = "" }: GalleryPreview
                 onClick={() => setSelectedImage(image.id)}
               >
                 <img
-                  src={image.storagePath}
+                  src={ImageUrl.forViewing(image.storagePath)}
                   alt={`Gallery image ${index + 1}`}
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   loading="lazy"
@@ -98,7 +99,7 @@ export function GalleryPreview({ images, shoot, className = "" }: GalleryPreview
                 onClick={() => setSelectedImage(image.id)}
               >
                 <img
-                  src={image.storagePath}
+                  src={ImageUrl.forViewing(image.storagePath)}
                   alt={`Gallery image ${index + 1}`}
                   className="w-full h-auto transition-transform duration-300 group-hover:scale-105"
                   loading="lazy"
@@ -151,7 +152,7 @@ export function GalleryPreview({ images, shoot, className = "" }: GalleryPreview
               const currentImage = visibleImages.find(img => img.id === selectedImage);
               return currentImage ? (
                 <img
-                  src={currentImage.storagePath}
+                  src={ImageUrl.forViewing(currentImage.storagePath)}
                   alt="Full size gallery image"
                   className="max-w-full max-h-full object-contain"
                 />
@@ -159,23 +160,40 @@ export function GalleryPreview({ images, shoot, className = "" }: GalleryPreview
             })()}
           </div>
 
-          {/* Download Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute bottom-4 right-4 text-white hover:bg-white/20 z-10"
-            onClick={() => {
-              const currentImage = visibleImages.find(img => img.id === selectedImage);
-              if (currentImage) {
-                const link = document.createElement('a');
-                link.href = currentImage.storagePath;
-                link.download = currentImage.filename;
-                link.click();
-              }
-            }}
-          >
-            <Download className="w-6 h-6" />
-          </Button>
+          {/* Action Buttons */}
+          <div className="absolute bottom-4 right-4 flex gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-white/20 z-10"
+              onClick={() => {
+                const currentImage = visibleImages.find(img => img.id === selectedImage);
+                if (currentImage) {
+                  window.open(ImageUrl.forFullSize(currentImage.storagePath), '_blank');
+                }
+              }}
+              title="View Full Resolution"
+            >
+              <Eye className="w-6 h-6" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-white/20 z-10"
+              onClick={() => {
+                const currentImage = visibleImages.find(img => img.id === selectedImage);
+                if (currentImage) {
+                  const link = document.createElement('a');
+                  link.href = ImageUrl.forFullSize(currentImage.storagePath);
+                  link.download = currentImage.filename;
+                  link.click();
+                }
+              }}
+              title="Download Original"
+            >
+              <Download className="w-6 h-6" />
+            </Button>
+          </div>
 
           {/* Image Counter */}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white bg-black/50 px-4 py-2 rounded-full">

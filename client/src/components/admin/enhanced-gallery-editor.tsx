@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import { ImageUrl } from '@/lib/image-utils';
 import {
   Settings,
   Save,
@@ -442,6 +443,10 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     setDeleteConfirmationOpen(true);
   };
 
+  const handleViewFullRes = (storagePath: string) => {
+    window.open(ImageUrl.forFullSize(storagePath), '_blank');
+  };
+
   const confirmDeleteImage = () => {
     if (imageToDelete) {
       deleteImageMutation.mutate(imageToDelete);
@@ -678,7 +683,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                     }}
                   >
                     <img
-                      src={image.storagePath}
+                      src={ImageUrl.forViewing(image.storagePath)}
                       alt={image.filename}
                       className={`w-full object-cover ${gallerySettings.borderStyle === 'circular' ? 'h-full aspect-square' : 'h-auto'}`}
                     />
@@ -790,7 +795,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                     }}
                   >
                     <img
-                      src={image.storagePath}
+                      src={ImageUrl.forViewing(image.storagePath)}
                       alt={image.filename}
                       className="w-full h-full object-cover"
                     />
@@ -876,7 +881,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
             </DialogHeader>
             <div className="relative">
               <img
-                src={getOrderedImages().find(img => img.id === selectedImageModal)?.storagePath}
+                src={ImageUrl.forFullSize(getOrderedImages().find(img => img.id === selectedImageModal)?.storagePath || '')}
                 alt="Full size preview"
                 className="w-full h-auto max-h-[85vh] object-contain"
               />

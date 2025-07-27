@@ -46,23 +46,11 @@ export function getOptimizedImageUrl(
  * Predefined image size presets for consistent usage across the app
  */
 export const IMAGE_PRESETS = {
-  // Admin interface thumbnails
-  adminThumbnail: { width: 150, height: 150, quality: 80, resize: 'cover' as const },
+  // Optimized viewing size for all interfaces (targeting ~600KB)
+  optimized: { width: 2400, height: 2400, quality: 75, resize: 'contain' as const },
   
-  // Gallery grid thumbnails  
-  galleryThumbnail: { width: 400, height: 300, quality: 85, resize: 'cover' as const },
-  
-  // Main gallery viewing
-  galleryView: { width: 1200, height: 800, quality: 90, resize: 'contain' as const },
-  
-  // Client portal previews
-  clientPreview: { width: 600, height: 400, quality: 85, resize: 'cover' as const },
-  
-  // Banner/hero images
-  banner: { width: 1600, height: 600, quality: 90, resize: 'cover' as const },
-  
-  // Full size for downloads (no transformation)
-  download: {} as ImageTransformOptions,
+  // Full size for downloads and detailed inspection (no transformation)
+  fullSize: {} as ImageTransformOptions,
 } as const;
 
 /**
@@ -74,23 +62,12 @@ export function getImageUrl(originalUrl: string, preset: keyof typeof IMAGE_PRES
 
 /**
  * Get image URL for different contexts
+ * Simplified to just two use cases: optimized viewing and full resolution
  */
 export const ImageUrl = {
-  // For admin interface image management
-  forAdmin: (url: string) => getImageUrl(url, 'adminThumbnail'),
+  // For all viewing contexts (admin, galleries, client portal) - ~600KB target
+  forViewing: (url: string) => getImageUrl(url, 'optimized'),
   
-  // For gallery grid displays
-  forGallery: (url: string) => getImageUrl(url, 'galleryThumbnail'),
-  
-  // For main image viewing
-  forViewing: (url: string) => getImageUrl(url, 'galleryView'),
-  
-  // For client portal
-  forClient: (url: string) => getImageUrl(url, 'clientPreview'),
-  
-  // For banner images
-  forBanner: (url: string) => getImageUrl(url, 'banner'),
-  
-  // For downloads (original size)
-  forDownload: (url: string) => url,
+  // For downloads and full resolution inspection (original 5MB)
+  forFullSize: (url: string) => url,
 } as const;

@@ -80,7 +80,8 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
 
   const handleDownloadImage = async (image: Image) => {
     try {
-      const response = await fetch(image.storagePath);
+      // Use full resolution URL for downloads
+      const response = await fetch(ImageUrl.forFullSize(image.storagePath));
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -93,6 +94,11 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
     } catch (error) {
       console.error('Download failed:', error);
     }
+  };
+
+  const handleViewFullRes = (image: Image) => {
+    // Open full resolution image in new tab
+    window.open(ImageUrl.forFullSize(image.storagePath), '_blank');
   };
 
   const formatDate = (dateString: string) => {
@@ -342,7 +348,7 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                   <Card key={image.id} className="admin-gradient-card group overflow-hidden">
                     <div className="relative aspect-square">
                       <img
-                        src={image.storagePath}
+                        src={ImageUrl.forViewing(image.storagePath)}
                         alt={image.originalName || image.filename}
                         className="w-full h-full object-cover transition-transform group-hover:scale-105"
                       />
@@ -351,8 +357,18 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                           <Button
                             size="sm"
                             variant="secondary"
+                            onClick={() => handleViewFullRes(image)}
+                            className="bg-purple-600 text-white hover:bg-purple-700"
+                            title="View Full Resolution"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
                             onClick={() => handleDownloadImage(image)}
                             className="bg-salmon text-white hover:bg-salmon-muted"
+                            title="Download Original"
                           >
                             <Download className="w-4 h-4" />
                           </Button>
@@ -360,6 +376,7 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                             size="sm"
                             variant="secondary"
                             className="bg-cyan text-black hover:bg-cyan-muted"
+                            title="Add to Favorites"
                           >
                             <Heart className="w-4 h-4" />
                           </Button>
