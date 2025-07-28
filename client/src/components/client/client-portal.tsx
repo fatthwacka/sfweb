@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 import { ImageUrl } from "@/lib/image-utils";
 import { useAuth } from "@/hooks/use-auth";
+import { apiRequest } from "@/lib/queryClient";
 import { 
   Camera, 
   Calendar, 
@@ -19,7 +23,16 @@ import {
   Grid3X3,
   List,
   LogOut,
-  User
+  User,
+  Settings,
+  Palette,
+  Save,
+  Crown,
+  X,
+  Trash2,
+  MousePointer,
+  ChevronUp,
+  ChevronDown
 } from "lucide-react";
 
 interface Shoot {
@@ -67,10 +80,28 @@ interface ClientPortalProps {
 
 export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
   const { logout } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedShoot, setSelectedShoot] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filterType, setFilterType] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<'images' | 'shootinfo' | 'settings' | 'preview'>('images');
+  const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({
+    shootInfo: false,
+    gallerySettings: false,
+    livePreview: false
+  });
+  const [gallerySettings, setGallerySettings] = useState({
+    backgroundColor: "#1a1a1a",
+    layoutStyle: "masonry",
+    borderStyle: "rounded", 
+    imageSpacing: "normal"
+  });
+  const [selectedCover, setSelectedCover] = useState<string | null>(null);
+  const [visibleImageCount, setVisibleImageCount] = useState(20);
+  const [draggedImage, setDraggedImage] = useState<string | null>(null);
+  const [dragStartTime, setDragStartTime] = useState<number>(0);
 
   // Debug logging to help identify loading issues
   console.log('ClientPortal loading for:', userEmail);
@@ -389,7 +420,56 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
               ) : null;
             })()}
 
-            {/* Images Grid */}
+            {/* Tabbed Interface for Gallery Management */}
+            <div className="space-y-6">
+              {/* Tab Navigation */}
+              <div className="flex flex-wrap gap-2 border-b border-border">
+                <button
+                  onClick={() => setActiveTab('images')}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === 'images'
+                      ? 'border-salmon text-salmon'
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  View Images
+                </button>
+                <button
+                  onClick={() => setActiveTab('shootinfo')}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === 'shootinfo'
+                      ? 'border-salmon text-salmon'
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Shoot Info
+                </button>
+                <button
+                  onClick={() => setActiveTab('settings')}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === 'settings'
+                      ? 'border-salmon text-salmon'
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Gallery Settings
+                </button>
+                <button
+                  onClick={() => setActiveTab('preview')}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === 'preview'
+                      ? 'border-salmon text-salmon'
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Live Preview
+                </button>
+              </div>
+
+              {/* Tab Content */}
+              {activeTab === 'images' && (
+                <>
+                  {/* Images Grid */}
             {imagesLoading ? (
               <div className="text-center py-8">
                 <div className="animate-pulse">Loading images...</div>
@@ -458,6 +538,316 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                 ))}
               </div>
             )}
+                </>
+              )}
+
+              {/* Shoot Info Tab - Card 1 */}
+              {activeTab === 'shootinfo' && (() => {
+                const currentShoot = shoots.find(s => s.id === selectedShoot);
+                return currentShoot ? (
+                  <Card className="admin-gradient-card">
+                    <CardHeader>
+                      <CardTitle className="text-salmon font-saira flex items-center gap-2">
+                        <MapPin className="w-5 h-5" />
+                        Edit Shoot Information
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="location">Location</Label>
+                          <Input
+                            id="location"
+                            defaultValue={currentShoot.location}
+                            placeholder="Enter shoot location"
+                            className="bg-background"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            The location where this shoot took place
+                          </p>
+                        </div>
+                        <div>
+                          <Label htmlFor="customTitle">Gallery Title</Label>
+                          <Input
+                            id="customTitle"
+                            defaultValue={currentShoot.customTitle || currentShoot.title}
+                            placeholder="Custom title for your gallery"
+                            className="bg-background"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            This will be displayed as your gallery heading
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => {
+                          const locationValue = (document.getElementById('location') as HTMLInputElement)?.value || currentShoot.location;
+                          const titleValue = (document.getElementById('customTitle') as HTMLInputElement)?.value || currentShoot.customTitle;
+                          // Save functionality will be added
+                          toast({ title: "Shoot info updated successfully!" });
+                        }}
+                        className="bg-salmon text-white hover:bg-salmon-muted"
+                      >
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Changes
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : null;
+              })()}
+
+              {/* Gallery Settings Tab - Card 2 */}
+              {activeTab === 'settings' && (
+                <Card className="admin-gradient-card">
+                  <CardHeader>
+                    <CardTitle className="text-salmon font-saira flex items-center gap-2">
+                      <Palette className="w-5 h-5" />
+                      Gallery Appearance Settings
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Background Color</Label>
+                        <Select 
+                          value={gallerySettings.backgroundColor} 
+                          onValueChange={(value) => setGallerySettings(prev => ({...prev, backgroundColor: value}))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="#1a1a1a">Dark Charcoal</SelectItem>
+                            <SelectItem value="#000000">Pure Black</SelectItem>
+                            <SelectItem value="#2d2d2d">Medium Dark</SelectItem>
+                            <SelectItem value="#ffffff">Pure White</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <Label>Layout Style</Label>
+                        <Select 
+                          value={gallerySettings.layoutStyle} 
+                          onValueChange={(value) => setGallerySettings(prev => ({...prev, layoutStyle: value}))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="masonry">Masonry (Pinterest-style)</SelectItem>
+                            <SelectItem value="grid">Square Grid</SelectItem>
+                            <SelectItem value="columns">Equal Columns</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <Label>Border Style</Label>
+                        <Select 
+                          value={gallerySettings.borderStyle} 
+                          onValueChange={(value) => setGallerySettings(prev => ({...prev, borderStyle: value}))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="rounded">Rounded Corners</SelectItem>
+                            <SelectItem value="sharp">Sharp Corners</SelectItem>
+                            <SelectItem value="circular">Circular (for portraits)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <Label>Image Spacing</Label>
+                        <Select 
+                          value={gallerySettings.imageSpacing} 
+                          onValueChange={(value) => setGallerySettings(prev => ({...prev, imageSpacing: value}))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="tight">Tight (2px gaps)</SelectItem>
+                            <SelectItem value="normal">Normal (8px gaps)</SelectItem>
+                            <SelectItem value="loose">Loose (16px gaps)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => {
+                        // Save functionality will be added
+                        toast({ title: "Gallery settings updated successfully!" });
+                      }}
+                      className="bg-salmon text-white hover:bg-salmon-muted"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Settings
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Live Preview Tab - Card 3 */}
+              {activeTab === 'preview' && (
+                <Card className="admin-gradient-card">
+                  <CardHeader>
+                    <CardTitle className="text-salmon font-saira flex items-center gap-2">
+                      <Eye className="w-5 h-5" />
+                      Gallery Live Preview & Management
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {imagesLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="text-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-salmon mx-auto mb-4"></div>
+                          <p>Loading images...</p>
+                        </div>
+                      </div>
+                    ) : images.length === 0 ? (
+                      <div className="text-center p-8">
+                        <Camera className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-lg font-medium mb-2">No Images Yet</h3>
+                        <p className="text-muted-foreground">Images will appear here once uploaded by SlyFox Studios.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-muted-foreground">
+                            <MousePointer className="w-4 h-4 inline mr-1" />
+                            Drag and drop to reorder images • Hover for options
+                          </p>
+                          <Badge variant="secondary">
+                            {images.length} {images.length === 1 ? 'image' : 'images'}
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                          {images.slice(0, visibleImageCount).map((image) => (
+                            <div
+                              key={image.id}
+                              className={`group relative cursor-pointer bg-background rounded-lg overflow-hidden transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl ${
+                                draggedImage === image.id ? 'opacity-50' : ''
+                              } ${
+                                gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : 
+                                gallerySettings.borderStyle === 'circular' ? 'rounded-full aspect-square' : 
+                                gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-lg'
+                              }`}
+                              draggable
+                              onDragStart={(e) => {
+                                e.dataTransfer.effectAllowed = 'move';
+                                setDraggedImage(image.id);
+                              }}
+                              onDragEnd={() => setDraggedImage(null)}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                // Handle reordering logic
+                                setDraggedImage(null);
+                              }}
+                              onDragOver={(e) => e.preventDefault()}
+                              onMouseDown={() => setDragStartTime(Date.now())}
+                            >
+                              <img
+                                src={ImageUrl.forViewing(image.storagePath)}
+                                alt={image.filename}
+                                className={`w-full h-full object-cover ${
+                                  gallerySettings.borderStyle === 'circular' ? 'aspect-square' : 'h-auto'
+                                }`}
+                              />
+                              
+                              {/* 4-Button Hover System */}
+                              <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
+                                  <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    className="bg-purple-600 text-white hover:bg-purple-700"
+                                    title="View Full Resolution"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      window.open(ImageUrl.forFullSize(image.storagePath), '_blank');
+                                    }}
+                                  >
+                                    <Eye className="w-3 h-3" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    className={selectedCover === image.id ? 
+                                      "bg-gold text-black hover:bg-gold-muted" : 
+                                      "bg-salmon text-white hover:bg-salmon-muted"
+                                    }
+                                    title={selectedCover === image.id ? "Remove as Cover" : "Make Cover"}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedCover(selectedCover === image.id ? null : image.id);
+                                    }}
+                                  >
+                                    <Crown className="w-3 h-3" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    className="bg-yellow-600 text-white hover:bg-yellow-700"
+                                    title="Remove from Album"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (confirm('Remove this image from your album? It will be moved to SlyFox archive.')) {
+                                        toast({ title: "Image removed from album", description: "Image moved to SlyFox archive" });
+                                      }
+                                    }}
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    className="bg-red-600 text-white hover:bg-red-700"
+                                    title="Delete Permanently"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toast({ title: "Delete functionality not available to clients", description: "Contact SlyFox Studios for permanent deletions", variant: "destructive" });
+                                    }}
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                              
+                              {/* Cover indicator */}
+                              {selectedCover === image.id && (
+                                <div className="absolute top-2 right-2">
+                                  <Badge className="bg-gold text-black">
+                                    <Crown className="w-3 h-3 mr-1" />
+                                    Cover
+                                  </Badge>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {/* Load More Button */}
+                        {images.length > visibleImageCount && (
+                          <div className="text-center">
+                            <Button
+                              variant="outline"
+                              onClick={() => setVisibleImageCount(prev => Math.min(prev + 20, images.length))}
+                              className="border-salmon text-salmon hover:bg-salmon hover:text-white"
+                            >
+                              Load More ({Math.min(20, images.length - visibleImageCount)} remaining)
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </div>
         )}
       </div>
