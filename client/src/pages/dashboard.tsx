@@ -66,6 +66,11 @@ export default function Dashboard() {
   const [selectedShootImages, setSelectedShootImages] = useState<any[]>([]);
 
   // This is the STAFF dashboard - clients should use /client-portal
+  // Redirect clients to their proper portal
+  if (user && user.role === 'client') {
+    window.location.href = '/client-portal';
+    return null;
+  }
 
   // This is the STAFF dashboard - empty data for now
   const userStats: UserStats = {

@@ -28,9 +28,12 @@ export default function Login() {
       const savedUser = localStorage.getItem("user");
       if (savedUser) {
         const user = JSON.parse(savedUser);
+        console.log('Login redirect: user role is', user.role);
         if (user.role === "client") {
+          console.log('Redirecting client to /client-portal');
           setLocation("/client-portal");
         } else if (user.role === "staff" || user.role === "super_admin") {
+          console.log('Redirecting staff to /dashboard');
           setLocation("/dashboard");
         } else {
           setLocation("/");
