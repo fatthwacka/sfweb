@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { ImageUrl } from "@/lib/image-utils";
 import { Link } from "wouter";
 import { 
   ArrowLeft, 
@@ -17,78 +18,69 @@ import {
   MapPin,
   Camera,
   Lock,
-  Unlock
+  Unlock,
+  Crown
 } from "lucide-react";
 import { useState } from "react";
 
-interface Client {
-  id: number;
-  name: string;
-  slug: string;
-  email: string;
-  phone: string;
-  address: string;
-  userId: number | null;
-  createdAt: string;
-}
-
 interface Shoot {
-  id: number;
-  clientId: number;
+  id: string;
+  clientId: string;
   title: string;
   description: string;
   shootDate: string;
   location: string;
   notes: string;
   isPrivate: boolean;
-  bannerImageId: number | null;
+  bannerImageId: string | null;
   seoTags: string;
   viewCount: number;
+  createdBy: string;
+  customSlug: string;
+  customTitle: string;
+  gallerySettings: {
+    padding: string;
+    borderStyle: string;
+    layoutStyle: string;
+    imageSpacing: string;
+    backgroundColor: string;
+  };
   createdAt: string;
+  updatedAt: string;
 }
 
 interface Image {
-  id: number;
-  shootId: number;
+  id: string;
+  shootId: string;
   filename: string;
   storagePath: string;
-  isPrivate: boolean;
-  uploadOrder: number;
+  originalName: string;
+  sequence: number;
   downloadCount: number;
   createdAt: string;
-}
-
-interface ClientGalleryData {
-  client: Client;
-  shoots: Shoot[];
-}
-
-interface ShootWithImages {
-  shoot: Shoot;
-  images: Image[];
 }
 
 export default function ClientGallery() {
   const params = useParams();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [selectedShoot, setSelectedShoot] = useState<number | null>(null);
-  const [selectedImages, setSelectedImages] = useState<Set<number>>(new Set());
+  const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
+  const [visibleImageCount, setVisibleImageCount] = useState(20);
   const slug = params.slug;
 
-  // Fetch client and shoots data
-  const { data: clientData, isLoading: clientLoading, error: clientError } = useQuery<ClientGalleryData>({
-    queryKey: ["/api/clients", slug],
+  // Fetch shoot data directly by slug - this is a public gallery for a single shoot
+  const { data: shoot, isLoading: shootLoading, error: shootError } = useQuery<Shoot>({
+    queryKey: ["/api/public/shoots", slug],
     enabled: !!slug
   });
 
-  // Fetch shoot images when a shoot is selected
-  const { data: shootData, isLoading: shootLoading } = useQuery<ShootWithImages>({
-    queryKey: ["/api/shoots", selectedShoot],
-    enabled: !!selectedShoot
+  // Fetch shoot images
+  const { data: images = [], isLoading: imagesLoading } = useQuery<Image[]>({
+    queryKey: ["/api/shoots", shoot?.id, "images"],
+    enabled: !!shoot?.id
   });
 
-  if (clientLoading) {
+  if (shootLoading) {
     return (
       <div className="min-h-screen bg-background text-foreground">
         <Navigation />
@@ -106,7 +98,7 @@ export default function ClientGallery() {
     );
   }
 
-  if (clientError || !clientData) {
+  if (shootError || !shoot) {
     return (
       <div className="min-h-screen bg-background text-foreground">
         <Navigation />
@@ -114,9 +106,9 @@ export default function ClientGallery() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h1 className="text-4xl mb-4">Gallery Not Found</h1>
-              <p className="text-muted-foreground mb-8">This client gallery doesn't exist or has been removed.</p>
+              <p className="text-muted-foreground mb-8">This gallery doesn't exist or has been removed.</p>
               <Link href="/">
-                <Button className="bg-gold text-black hover:bg-gold-muted">
+                <Button className="bg-salmon text-white hover:bg-salmon-muted">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back to Home
                 </Button>
@@ -128,15 +120,11 @@ export default function ClientGallery() {
     );
   }
 
-  const { client, shoots } = clientData;
-  const publicShoots = shoots.filter(shoot => !shoot.isPrivate);
-  const isClientOwner = user && client.userId === parseInt(user.id);
-  const isStaff = user && user.role === "staff";
-  const canViewPrivate = isClientOwner || isStaff;
+  // Apply gallery settings from the shoot
+  const { gallerySettings } = shoot;
+  const coverImage = images.find(img => img.id === shoot.bannerImageId);
 
-  const visibleShoots = canViewPrivate ? shoots : publicShoots;
-
-  const handleImageSelect = (imageId: number) => {
+  const handleImageSelect = (imageId: string) => {
     const newSelected = new Set(selectedImages);
     if (newSelected.has(imageId)) {
       newSelected.delete(imageId);
@@ -176,17 +164,27 @@ export default function ClientGallery() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* SEO Meta Tags */}
-      <title>{client.name} Gallery | SlyFox Studios</title>
-      <meta name="description" content={`View ${client.name}'s photo gallery by SlyFox Studios. Professional photography showcasing beautiful moments.`} />
+      <title>{shoot.customTitle || shoot.title} | SlyFox Studios</title>
+      <meta name="description" content={`View ${shoot.customTitle || shoot.title} gallery by SlyFox Studios. ${shoot.description || 'Professional photography showcasing beautiful moments.'}`} />
       
       <Navigation />
       
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 bg-gradient-to-br from-black via-charcoal to-black">
+      {/* Hero Section with Cover Image */}
+      <section 
+        className="relative pt-32 pb-20 bg-gradient-to-br from-black via-charcoal to-black"
+        style={{
+          backgroundColor: gallerySettings.backgroundColor || '#1a1a1a',
+          ...(coverImage && {
+            backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${ImageUrl.forViewing(coverImage.storagePath)})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          })
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <Link href="/">
-              <Button variant="ghost" className="text-gold hover:text-gold-muted mb-4">
+              <Button variant="ghost" className="text-salmon hover:text-salmon-muted mb-4">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Home
               </Button>
@@ -194,17 +192,38 @@ export default function ClientGallery() {
           </div>
           
           <div className="text-center mb-12">
-            <h1 className="text-5xl lg:text-6xl mb-6">
-              {client.name}'s <span className="text-gold">Gallery</span>
+            <h1 className="text-5xl lg:text-6xl mb-6 text-white">
+              {shoot.customTitle || shoot.title}
             </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-              Beautiful moments captured and preserved. Browse, download, and share your memories.
-            </p>
+            {shoot.description && (
+              <p className="text-xl text-gray-200 max-w-3xl mx-auto mb-4">
+                {shoot.description}
+              </p>
+            )}
+            
+            <div className="flex flex-col sm:flex-row gap-2 justify-center items-center mb-8 text-sm text-gray-300">
+              {shoot.location && (
+                <div className="flex items-center">
+                  <MapPin className="w-4 h-4 mr-1" />
+                  {shoot.location}
+                </div>
+              )}
+              {shoot.shootDate && (
+                <div className="flex items-center">
+                  <Calendar className="w-4 h-4 mr-1" />
+                  {new Date(shoot.shootDate).toLocaleDateString()}
+                </div>
+              )}
+              <div className="flex items-center">
+                <Eye className="w-4 h-4 mr-1" />
+                {shoot.viewCount} views
+              </div>
+            </div>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button 
                 onClick={handleShareGallery}
-                className="bg-gold text-black px-8 py-4 rounded-full text-lg hover:bg-gold-muted transition-all duration-300"
+                className="bg-salmon text-white px-8 py-4 rounded-full text-lg hover:bg-salmon-muted transition-all duration-300"
               >
                 <Share2 className="w-5 h-5 mr-2" />
                 Share Gallery
@@ -225,193 +244,244 @@ export default function ClientGallery() {
           {/* Gallery Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="text-center">
-              <Camera className="w-8 h-8 text-gold mx-auto mb-2" />
-              <div className="text-2xl font-saira font-bold">{visibleShoots.length}</div>
-              <p className="text-sm text-muted-foreground">Photo Albums</p>
+              <Camera className="w-8 h-8 text-salmon mx-auto mb-2" />
+              <div className="text-2xl font-saira font-bold text-white">{images.length}</div>
+              <p className="text-sm text-gray-300">Photos</p>
             </div>
             <div className="text-center">
-              <Eye className="w-8 h-8 text-gold mx-auto mb-2" />
-              <div className="text-2xl font-saira font-bold">
-                {visibleShoots.reduce((total, shoot) => total + shoot.viewCount, 0)}
+              <Eye className="w-8 h-8 text-salmon mx-auto mb-2" />
+              <div className="text-2xl font-saira font-bold text-white">{shoot.viewCount}</div>
+              <p className="text-sm text-gray-300">Views</p>
+            </div>
+            <div className="text-center">
+              <Download className="w-8 h-8 text-salmon mx-auto mb-2" />
+              <div className="text-2xl font-saira font-bold text-white">
+                {images.reduce((total, img) => total + img.downloadCount, 0)}
               </div>
-              <p className="text-sm text-muted-foreground">Total Views</p>
+              <p className="text-sm text-gray-300">Downloads</p>
             </div>
             <div className="text-center">
-              <Download className="w-8 h-8 text-gold mx-auto mb-2" />
-              <div className="text-2xl font-saira font-bold">
-                {shootData?.images.reduce((total, img) => total + img.downloadCount, 0) || 0}
-              </div>
-              <p className="text-sm text-muted-foreground">Downloads</p>
-            </div>
-            <div className="text-center">
-              <Heart className="w-8 h-8 text-gold mx-auto mb-2" />
-              <div className="text-2xl font-saira font-bold">❤️</div>
-              <p className="text-sm text-muted-foreground">Memories Made</p>
+              <Heart className="w-8 h-8 text-salmon mx-auto mb-2" />
+              <div className="text-2xl font-saira font-bold text-white">❤️</div>
+              <p className="text-sm text-gray-300">Memories</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Shoots Grid */}
-      <section className="py-20 bg-charcoal">
+      {/* Image Gallery Section */}
+      <section 
+        className="py-20"
+        style={{ backgroundColor: gallerySettings.backgroundColor || '#000000' }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {visibleShoots.length === 0 ? (
-            <div className="text-center py-16">
-              <Camera className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-2xl font-saira font-bold mb-2">No Photos Yet</h3>
-              <p className="text-muted-foreground">Photos will appear here once they're uploaded.</p>
+          <div className="mb-8 flex items-center justify-between">
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => setSelectedImages(new Set())}
+                variant="outline"
+                size="sm"
+                className="border-salmon text-salmon hover:bg-salmon hover:text-white"
+              >
+                Clear Selection
+              </Button>
+              <Button 
+                onClick={() => setSelectedImages(new Set(images.map(img => img.id)))}
+                variant="outline"
+                size="sm"
+                className="border-salmon text-salmon hover:bg-salmon hover:text-white"
+              >
+                Select All ({images.length})
+              </Button>
             </div>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {visibleShoots.map((shoot) => (
-                <div 
-                  key={shoot.id}
-                  className="bg-black rounded-2xl overflow-hidden shadow-2xl hover:shadow-gold/20 transition-all duration-300 transform hover:-translate-y-2 cursor-pointer"
-                  onClick={() => setSelectedShoot(shoot.id)}
-                >
-                  {/* Placeholder image - in production, use banner image */}
-                  <div className="relative h-64 bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center">
-                    <Camera className="w-16 h-16 text-gold/50" />
-                    {shoot.isPrivate && (
-                      <div className="absolute top-4 right-4">
-                        <Badge variant="secondary" className="bg-gold/20 text-gold border-gold/30">
-                          <Lock className="w-3 h-3 mr-1" />
-                          Private
-                        </Badge>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="p-6">
-                    <h3 className="text-xl font-saira font-bold text-gold mb-2">{shoot.title}</h3>
-                    {shoot.description && (
-                      <p className="text-muted-foreground text-sm mb-4">{shoot.description}</p>
-                    )}
-                    
-                    <div className="space-y-2 text-sm text-muted-foreground">
-                      {shoot.shootDate && (
-                        <div className="flex items-center">
-                          <Calendar className="w-4 h-4 mr-2" />
-                          {new Date(shoot.shootDate).toLocaleDateString()}
-                        </div>
-                      )}
-                      {shoot.location && (
-                        <div className="flex items-center">
-                          <MapPin className="w-4 h-4 mr-2" />
-                          {shoot.location}
-                        </div>
-                      )}
-                      <div className="flex items-center">
-                        <Eye className="w-4 h-4 mr-2" />
-                        {shoot.viewCount} views
-                      </div>
-                    </div>
-                  </div>
+          </div>
+
+          {imagesLoading ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-64 bg-muted rounded-lg"></div>
                 </div>
               ))}
             </div>
-          )}
-        </div>
-      </section>
-
-      {/* Image Gallery Modal/Section */}
-      {selectedShoot && shootData && (
-        <section className="py-20 bg-black">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mb-8 flex items-center justify-between">
-              <div>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => setSelectedShoot(null)}
-                  className="text-gold hover:text-gold-muted mb-4"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Albums
-                </Button>
-                <h2 className="text-3xl font-saira font-black">
-                  {shootData.shoot.title} <span className="text-gold">Photos</span>
-                </h2>
-              </div>
-              
-              <div className="flex gap-2">
-                <Button 
-                  onClick={() => setSelectedImages(new Set())}
-                  variant="outline"
-                  size="sm"
-                >
-                  Clear Selection
-                </Button>
-                <Button 
-                  onClick={() => setSelectedImages(new Set(shootData.images.map(img => img.id)))}
-                  variant="outline"
-                  size="sm"
-                >
-                  Select All
-                </Button>
-              </div>
+          ) : images.length === 0 ? (
+            <div className="text-center py-16">
+              <Camera className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-saira font-bold mb-2 text-white">No Images</h3>
+              <p className="text-muted-foreground">Images will appear here once uploaded.</p>
             </div>
-
-            {shootLoading ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[...Array(8)].map((_, i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="h-64 bg-muted rounded-lg"></div>
-                  </div>
-                ))}
-              </div>
-            ) : shootData.images.length === 0 ? (
-              <div className="text-center py-16">
-                <Camera className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-saira font-bold mb-2">No Images</h3>
-                <p className="text-muted-foreground">Images will appear here once uploaded.</p>
-              </div>
-            ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {shootData.images
-                  .sort((a, b) => a.uploadOrder - b.uploadOrder)
+          ) : (
+            gallerySettings.layoutStyle === 'masonry' ? (
+              <div 
+                className={`columns-2 md:columns-3 lg:columns-4 space-y-${gallerySettings.imageSpacing === 'tight' ? '1' : gallerySettings.imageSpacing === 'normal' ? '2' : '4'}`}
+                style={{ 
+                  gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
+                }}
+              >
+                {images.slice(0, visibleImageCount)
+                  .sort((a, b) => a.sequence - b.sequence)
                   .map((image) => (
-                    <div 
+                    <div
                       key={image.id}
-                      className={`relative group cursor-pointer rounded-lg overflow-hidden ${
-                        selectedImages.has(image.id) ? 'ring-2 ring-gold' : ''
-                      }`}
+                      className={`
+                        relative group overflow-hidden break-inside-avoid 
+                        ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full aspect-square'}
+                        ${selectedImages.has(image.id) ? 'ring-2 ring-salmon' : ''}
+                        cursor-pointer transition-all duration-200
+                      `}
+                      style={{ 
+                        marginBottom: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
+                      }}
                       onClick={() => handleImageSelect(image.id)}
                     >
-                      {/* Placeholder for image - in production, use actual image */}
-                      <div className="h-64 bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
-                        <Camera className="w-8 h-8 text-muted-foreground" />
-                        {image.isPrivate && (
-                          <div className="absolute top-2 right-2">
-                            <Lock className="w-4 h-4 text-gold" />
-                          </div>
-                        )}
-                      </div>
+                      <img
+                        src={ImageUrl.forViewing(image.storagePath)}
+                        alt={image.filename}
+                        className={`w-full object-cover ${gallerySettings.borderStyle === 'circular' ? 'h-full aspect-square' : 'h-auto'}`}
+                        loading="lazy"
+                      />
                       
-                      {/* Overlay */}
-                      <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      {/* Hover Overlay */}
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
                         <div className="flex gap-2">
-                          <Button size="sm" variant="ghost" className="text-white hover:text-gold">
-                            <Download className="w-4 h-4" />
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="text-white hover:text-salmon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.open(ImageUrl.forFullSize(image.storagePath), '_blank');
+                            }}
+                          >
+                            <Eye className="w-4 h-4" />
                           </Button>
-                          <Button size="sm" variant="ghost" className="text-white hover:text-gold">
-                            <Heart className="w-4 h-4" />
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="text-white hover:text-salmon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Download functionality
+                              const link = document.createElement('a');
+                              link.href = ImageUrl.forFullSize(image.storagePath);
+                              link.download = image.originalName || image.filename;
+                              link.click();
+                            }}
+                          >
+                            <Download className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
                       
                       {/* Selection indicator */}
                       {selectedImages.has(image.id) && (
-                        <div className="absolute top-2 left-2 w-6 h-6 bg-gold rounded-full flex items-center justify-center">
-                          <span className="text-black text-xs font-bold">✓</span>
+                        <div className="absolute top-2 left-2 w-6 h-6 bg-salmon rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">✓</span>
+                        </div>
+                      )}
+
+                      {/* Cover Badge */}
+                      {shoot.bannerImageId === image.id && (
+                        <div className="absolute top-2 right-2 bg-salmon text-white px-2 py-1 rounded text-xs font-bold">
+                          <Crown className="w-3 h-3 inline mr-1" />
+                          Cover
                         </div>
                       )}
                     </div>
                   ))}
               </div>
-            )}
-          </div>
-        </section>
-      )}
+            ) : (
+              <div 
+                className="grid grid-cols-4"
+                style={{ 
+                  gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
+                }}
+              >
+                {images.slice(0, visibleImageCount)
+                  .sort((a, b) => a.sequence - b.sequence)
+                  .map((image) => (
+                    <div
+                      key={image.id}
+                      className={`
+                        relative group overflow-hidden aspect-square
+                        ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full'}
+                        ${selectedImages.has(image.id) ? 'ring-2 ring-salmon' : ''}
+                        cursor-pointer transition-all duration-200
+                      `}
+                      onClick={() => handleImageSelect(image.id)}
+                    >
+                      <img
+                        src={ImageUrl.forViewing(image.storagePath)}
+                        alt={image.filename}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                      
+                      {/* Hover Overlay */}
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="text-white hover:text-salmon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.open(ImageUrl.forFullSize(image.storagePath), '_blank');
+                            }}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="text-white hover:text-salmon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Download functionality
+                              const link = document.createElement('a');
+                              link.href = ImageUrl.forFullSize(image.storagePath);
+                              link.download = image.originalName || image.filename;
+                              link.click();
+                            }}
+                          >
+                            <Download className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {/* Selection indicator */}
+                      {selectedImages.has(image.id) && (
+                        <div className="absolute top-2 left-2 w-6 h-6 bg-salmon rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">✓</span>
+                        </div>
+                      )}
+
+                      {/* Cover Badge */}
+                      {shoot.bannerImageId === image.id && (
+                        <div className="absolute top-2 right-2 bg-salmon text-white px-2 py-1 rounded text-xs font-bold">
+                          <Crown className="w-3 h-3 inline mr-1" />
+                          Cover
+                        </div>
+                      )}
+                    </div>
+                  ))}
+              </div>
+            )
+          )}
+
+          {/* Load More Button */}
+          {images.length > visibleImageCount && (
+            <div className="text-center mt-8">
+              <Button 
+                onClick={() => setVisibleImageCount(prev => Math.min(prev + 20, images.length))}
+                className="bg-salmon text-white hover:bg-salmon-muted"
+              >
+                Load More ({images.length - visibleImageCount} remaining)
+              </Button>
+            </div>
+          )}
+        </div>
+      </section>
 
       <Footer />
     </div>

@@ -12,7 +12,7 @@ import {
   type Booking, type InsertBooking,
   type UpdateShootCustomization
 } from "@shared/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 import type { IStorage } from "./storage";
 
 export class SupabaseStorage implements IStorage {
@@ -122,6 +122,15 @@ export class SupabaseStorage implements IStorage {
   async getShoot(id: string): Promise<Shoot | undefined> {
     const result = await db.select().from(shoots).where(eq(shoots.id, id)).limit(1);
     return result[0];
+  }
+
+  async getShootBySlug(slug: string): Promise<Shoot | undefined> {
+    const result = await db.select().from(shoots).where(eq(shoots.customSlug, slug)).limit(1);
+    return result[0];
+  }
+
+  async incrementShootViewCount(id: string): Promise<void> {
+    await db.update(shoots).set({ viewCount: sql`${shoots.viewCount} + 1` }).where(eq(shoots.id, id));
   }
 
   async getShootsByClient(clientId: string): Promise<Shoot[]> {

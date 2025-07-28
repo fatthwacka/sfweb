@@ -36,6 +36,7 @@ export interface IStorage {
   
   // Shoots (UUIDs)
   getShoot(id: string): Promise<Shoot | undefined>;
+  getShootBySlug(slug: string): Promise<Shoot | undefined>;
   getShootsByClient(clientId: string): Promise<Shoot[]>;
   getShootsByClientEmail(email: string): Promise<Shoot[]>;
   getPublicShoots(): Promise<Shoot[]>;
@@ -44,6 +45,7 @@ export interface IStorage {
   updateShoot(id: string, updates: Partial<InsertShoot>): Promise<Shoot | undefined>;
   updateShootCustomization(id: string, data: UpdateShootCustomization): Promise<Shoot | undefined>;
   updateImageSequence(imageId: string, sequence: number): Promise<void>;
+  incrementShootViewCount(id: string): Promise<void>;
   deleteShoot(id: string): Promise<boolean>;
   
   // Images (UUIDs)

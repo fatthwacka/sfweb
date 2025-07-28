@@ -291,6 +291,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public gallery endpoint - fetch shoot by custom slug
+  app.get("/api/public/shoots/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const shoot = await storage.getShootBySlug(slug);
+      
+      if (!shoot) {
+        return res.status(404).json({ message: "Gallery not found" });
+      }
+
+      // Only return public galleries
+      if (shoot.isPrivate) {
+        return res.status(404).json({ message: "Gallery not found" });
+      }
+
+      // Increment view count
+      await storage.incrementShootViewCount(shoot.id);
+      
+      return res.json(shoot);
+    } catch (error) {
+      console.error("Error fetching public shoot:", error);
+      return res.status(500).json({ message: "Failed to fetch gallery" });
+    }
+  });
+
   app.get("/api/clients/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
