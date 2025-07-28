@@ -8,9 +8,12 @@ import {
   Download, 
   Share2, 
   Calendar, 
-  MapPin
+  MapPin,
+  ChevronLeft,
+  ChevronRight,
+  X
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Shoot {
   id: string;
@@ -54,6 +57,7 @@ export default function ClientGallery() {
   const { toast } = useToast();
   const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
   const [visibleImageCount, setVisibleImageCount] = useState(20);
+  const [modalImageIndex, setModalImageIndex] = useState<number | null>(null);
   const slug = params.slug;
 
   // Fetch shoot data directly by slug - this is a public gallery for a single shoot
@@ -164,6 +168,59 @@ export default function ClientGallery() {
     });
   };
 
+  // Modal navigation functions
+  const openModal = (imageIndex: number) => {
+    setModalImageIndex(imageIndex);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeModal = () => {
+    setModalImageIndex(null);
+    document.body.style.overflow = 'auto';
+  };
+
+  const navigateModal = (direction: 'prev' | 'next') => {
+    if (modalImageIndex === null || images.length === 0) return;
+    
+    if (direction === 'prev') {
+      setModalImageIndex(modalImageIndex > 0 ? modalImageIndex - 1 : images.length - 1);
+    } else {
+      setModalImageIndex(modalImageIndex < images.length - 1 ? modalImageIndex + 1 : 0);
+    }
+  };
+
+  // Keyboard navigation for modal
+  useEffect(() => {
+    if (modalImageIndex === null) return;
+
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') navigateModal('prev');
+      if (e.key === 'ArrowRight') navigateModal('next');
+      if (e.key === 'Escape') closeModal();
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [modalImageIndex]);
+
+  // Share individual image
+  const handleShareImage = (imageIndex: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const imageUrl = `${window.location.origin}/galleries/${slug}?image=${imageIndex}`;
+    navigator.clipboard.writeText(imageUrl).then(() => {
+      toast({
+        title: "Image link copied!",
+        description: "Share this link to show this specific image.",
+      });
+    }).catch(() => {
+      toast({
+        title: "Failed to copy link",
+        description: "Please copy the URL manually from your browser.",
+        variant: "destructive",
+      });
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* SEO Meta Tags */}
@@ -171,15 +228,15 @@ export default function ClientGallery() {
       <meta name="description" content={`View ${shoot.customTitle || shoot.title} gallery by SlyFox Studios. ${shoot.description || 'Professional photography showcasing beautiful moments.'}`} />
       
       {/* Custom Navigation Bar for Gallery */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-b border-white/10">
-        <div className="flex items-center justify-between h-16 px-6">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/10 backdrop-blur-sm">
+        <div className="max-w-[1000px] mx-auto flex items-center justify-between h-16 px-6">
           {/* SlyFox Logo - Left Side */}
           <Link href="/">
             <img src="/images/logos/slyfox-logo-white.png" alt="SlyFox Studios" className="h-8 hover:opacity-80 transition-opacity" />
           </Link>
           
           {/* Location and Date - Center */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-6 text-sm text-gray-300">
+          <div className="flex items-center gap-6 text-sm text-gray-300">
             {shoot.location && (
               <div className="flex items-center">
                 <MapPin className="w-4 h-4 mr-1" />
@@ -205,9 +262,9 @@ export default function ClientGallery() {
         </div>
       </nav>
       
-      {/* Hero Section with Cover Image */}
+      {/* Hero Section with Cover Image - 70% height */}
       <section 
-        className="relative pt-16 pb-20 bg-gradient-to-br from-black via-charcoal to-black"
+        className="relative h-[70vh] bg-gradient-to-br from-black via-charcoal to-black flex items-center"
         style={{
           backgroundColor: gallerySettings.backgroundColor || '#1a1a1a',
           ...(coverImage && {
@@ -217,17 +274,15 @@ export default function ClientGallery() {
           })
         }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center">
-            <h1 className="text-5xl lg:text-6xl mb-6 text-white">
-              {shoot.customTitle || shoot.title}
-            </h1>
-            {shoot.description && (
-              <p className="text-xl text-gray-200 max-w-3xl mx-auto mb-4 font-corinthia">
-                {shoot.description}
-              </p>
-            )}
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center">
+          <h1 className="text-5xl lg:text-6xl mb-6 text-white">
+            {shoot.customTitle || shoot.title}
+          </h1>
+          {shoot.description && (
+            <p className="text-xl text-gray-200 max-w-3xl mx-auto mb-4 font-corinthia">
+              {shoot.description}
+            </p>
+          )}
         </div>
       </section>
 
@@ -250,7 +305,7 @@ export default function ClientGallery() {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
               {images.slice(0, visibleImageCount)
                 .sort((a, b) => a.sequence - b.sequence)
-                .map((image) => (
+                .map((image, index) => (
                   <div
                     key={image.id}
                     className={`
@@ -259,32 +314,42 @@ export default function ClientGallery() {
                       ${selectedImages.has(image.id) ? 'ring-2 ring-salmon' : ''}
                       cursor-pointer transition-all duration-200
                     `}
-                    onClick={() => handleImageSelect(image.id)}
+                    onClick={() => openModal(index)}
                   >
                     <img
                       src={ImageUrl.forViewing(image.storagePath)}
                       alt={image.filename}
-                      className={`w-full object-cover ${gallerySettings.borderStyle === 'circular' ? 'h-full aspect-square' : 'h-64'}`}
+                      className={`w-full object-cover ${gallerySettings.borderStyle === 'circular' ? 'h-full aspect-square' : 'h-64'} transition-all duration-200 group-hover:brightness-90`}
                       loading="lazy"
                     />
                     
                     {/* Selection indicator */}
                     {selectedImages.has(image.id) && (
-                      <div className="absolute top-2 right-2 w-6 h-6 bg-salmon rounded-full flex items-center justify-center">
+                      <div className="absolute top-2 right-2 w-6 h-6 bg-salmon rounded-full flex items-center justify-center z-10">
                         <div className="w-3 h-3 bg-white rounded-full"></div>
                       </div>
                     )}
                     
-                    {/* Hover overlay with download */}
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                      <a
-                        href={ImageUrl.forFullSize(image.storagePath)}
-                        download={image.originalName}
-                        onClick={(e) => e.stopPropagation()}
-                        className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                      >
-                        <Download className="w-5 h-5 text-white" />
-                      </a>
+                    {/* Hover overlay with buttons at bottom */}
+                    <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <div className="absolute bottom-2 left-2 right-2 flex justify-center gap-2">
+                        <a
+                          href={ImageUrl.forFullSize(image.storagePath)}
+                          download={image.originalName}
+                          onClick={(e) => e.stopPropagation()}
+                          className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
+                          title="Download Image"
+                        >
+                          <Download className="w-4 h-4 text-white" />
+                        </a>
+                        <button
+                          onClick={(e) => handleShareImage(index, e)}
+                          className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
+                          title="Share Image"
+                        >
+                          <Share2 className="w-4 h-4 text-white" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -318,6 +383,58 @@ export default function ClientGallery() {
           )}
         </div>
       </section>
+
+      {/* Image Modal */}
+      {modalImageIndex !== null && (
+        <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center">
+          {/* Close button */}
+          <button
+            onClick={closeModal}
+            className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-10"
+          >
+            <X className="w-8 h-8" />
+          </button>
+
+          {/* Navigation arrows */}
+          <button
+            onClick={() => navigateModal('prev')}
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors z-10"
+          >
+            <ChevronLeft className="w-8 h-8" />
+          </button>
+          
+          <button
+            onClick={() => navigateModal('next')}
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors z-10"
+          >
+            <ChevronRight className="w-8 h-8" />
+          </button>
+
+          {/* Modal image */}
+          <div className="max-w-screen-lg max-h-screen p-4 flex items-center justify-center">
+            <img
+              src={ImageUrl.forFullSize(images[modalImageIndex]?.storagePath)}
+              alt={images[modalImageIndex]?.filename}
+              className="max-w-full max-h-full object-contain"
+            />
+          </div>
+
+          {/* Image info bar */}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-4 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full text-white text-sm">
+            <span>{modalImageIndex + 1} of {images.length}</span>
+            <span>•</span>
+            <span>{images[modalImageIndex]?.originalName}</span>
+            <span>•</span>
+            <a
+              href={ImageUrl.forFullSize(images[modalImageIndex]?.storagePath)}
+              download={images[modalImageIndex]?.originalName}
+              className="hover:text-salmon transition-colors"
+            >
+              <Download className="w-4 h-4" />
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
