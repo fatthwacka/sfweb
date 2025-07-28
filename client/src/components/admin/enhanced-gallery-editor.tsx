@@ -240,11 +240,25 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   const shoot = (shootData as any)?.shoot || null;
   const images: GalleryImage[] = (shootData as any)?.images ? ((shootData as any).images as GalleryImage[]) : [];
 
+  // Clear stale state when switching galleries
+  useEffect(() => {
+    if (shoot?.id) {
+      // Clear selected cover when switching to a different gallery
+      setSelectedCover(null);
+    }
+  }, [shoot?.id]);
+
   // Initialize settings from shoot data
   useEffect(() => {
     if (shoot && shoot.id && !editableShoot.title) {
       setCustomSlug(shoot.customSlug || '');
-      setSelectedCover(shoot.bannerImageId);
+      
+      // Only set cover if the bannerImageId exists in the current gallery's images
+      if (shoot.bannerImageId && images.some(img => img.id === shoot.bannerImageId)) {
+        setSelectedCover(shoot.bannerImageId);
+      } else {
+        setSelectedCover(null);
+      }
       
       // Initialize gallery settings from shoot data
       if (shoot.gallerySettings) {
@@ -697,16 +711,6 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
             {selectedCover && (() => {
               const orderedImages = getOrderedImages();
               const coverImage = orderedImages.find(img => img.id === selectedCover);
-              
-              // Debug logging
-              console.log('Cover debug:', {
-                selectedCover,
-                orderedImagesCount: orderedImages.length,
-                orderedImageIds: orderedImages.map(img => img.id),
-                coverImageFound: !!coverImage,
-                coverImagePath: coverImage?.storagePath
-              });
-              
               const coverImageUrl = coverImage?.storagePath ? ImageUrl.forViewing(coverImage.storagePath) : null;
               
               return coverImageUrl ? (
