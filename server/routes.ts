@@ -308,7 +308,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Only return public galleries
       if (shoot.isPrivate) {
         console.log(`❌ Gallery is private: ${slug}`);
-        return res.status(404).json({ message: "Gallery not found" });
+        return res.status(403).json({ message: "Private gallery", type: "private" });
       }
 
       console.log(`✅ Returning public gallery: ${shoot.title}`);

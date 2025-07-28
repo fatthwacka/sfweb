@@ -11,7 +11,8 @@ import {
   MapPin,
   ChevronLeft,
   ChevronRight,
-  X
+  X,
+  Eye
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -195,6 +196,10 @@ export default function ClientGallery() {
   }
 
   if (shootError || !shoot) {
+    // Check if it's a private gallery error
+    const isPrivateGallery = shootError?.message?.includes('status code 403') || 
+                              (shootError as any)?.response?.status === 403;
+    
     return (
       <div className="min-h-screen bg-background text-foreground">
         {/* Simple navbar for error state */}
@@ -208,8 +213,22 @@ export default function ClientGallery() {
         <div className="pt-32 pb-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
-              <h1 className="text-4xl mb-4">Gallery Not Found</h1>
-              <p className="text-muted-foreground mb-8">This gallery doesn't exist or has been removed.</p>
+              {isPrivateGallery ? (
+                <>
+                  <h1 className="text-4xl mb-4 text-salmon">Private Gallery</h1>
+                  <p className="text-muted-foreground mb-8">
+                    Only this album owner may view this gallery.{" "}
+                    <Link href="/login" className="text-salmon hover:underline">
+                      Login here
+                    </Link>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h1 className="text-4xl mb-4">Gallery Not Found</h1>
+                  <p className="text-muted-foreground mb-8">This gallery doesn't exist or has been removed.</p>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -354,6 +373,16 @@ export default function ClientGallery() {
                         >
                           <Share2 className="w-4 h-4 text-white" />
                         </button>
+                        <a
+                          href={ImageUrl.forFullSize(image.storagePath)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
+                          title="View Full Resolution"
+                        >
+                          <Eye className="w-4 h-4 text-white" />
+                        </a>
                       </div>
                     </div>
                   </div>
