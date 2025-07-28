@@ -143,6 +143,7 @@ The application is structured to be easily deployable to platforms like Vercel, 
 - **Identical Gallery Logic**: Cover image handling, gallery settings, and state management now match admin exactly
 - **Schema Compatibility Fix**: Added proper handling for galleries with null gallerySettings from different creation times
 - **State Management**: Proper initialization and cleanup when switching between galleries to prevent stale state issues
+- **Critical Bug Fix**: Client save button now uses `imageOrder` state instead of original `images` array, preventing image shuffling on save
 - **Future-Proof Architecture**: Both admin and client use identical data structures, making maintenance and updates simple
 
 ### July 27, 2025 - Image Asset Organization System Complete ✅

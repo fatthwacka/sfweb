@@ -148,6 +148,9 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
         layoutStyle: settings.layoutStyle || 'masonry',
         imageSpacing: settings.imageSpacing || 'normal'
       });
+    } else {
+      // Clear state when switching galleries to prevent stale state
+      setSelectedCover(null);
     }
   }, [shoot?.id, images.length]);
 
@@ -692,9 +695,9 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                     <Button 
                       onClick={async () => {
                         try {
-                          // Save image order and cover selection
-                          const imageSequences = images.length > 0 
-                            ? Object.fromEntries(images.map((img, index) => [img.id, index + 1]))
+                          // CRITICAL FIX: Use imageOrder state, not original images array
+                          const imageSequences = imageOrder.length > 0 
+                            ? Object.fromEntries(imageOrder.map((id, index) => [id, index + 1]))
                             : {};
                           
                           await apiRequest('PATCH', `/api/shoots/${selectedShoot}`, {
