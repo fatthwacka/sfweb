@@ -293,25 +293,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Public gallery endpoint - fetch shoot by custom slug
   app.get("/api/galleries/:slug", async (req, res) => {
+    console.log(`🔍 Gallery API endpoint hit: ${req.params.slug}`);
     try {
       const { slug } = req.params;
+      console.log(`🔍 Looking for shoot with slug: ${slug}`);
       const shoot = await storage.getShootBySlug(slug);
+      console.log(`🔍 Found shoot:`, shoot ? 'YES' : 'NO');
       
       if (!shoot) {
+        console.log(`❌ Gallery not found: ${slug}`);
         return res.status(404).json({ message: "Gallery not found" });
       }
 
       // Only return public galleries
       if (shoot.isPrivate) {
+        console.log(`❌ Gallery is private: ${slug}`);
         return res.status(404).json({ message: "Gallery not found" });
       }
 
+      console.log(`✅ Returning public gallery: ${shoot.title}`);
+      
       // Increment view count
       await storage.incrementShootViewCount(shoot.id);
       
+      // Ensure we're returning JSON
+      res.setHeader('Content-Type', 'application/json');
       return res.json(shoot);
     } catch (error) {
-      console.error("Error fetching public shoot:", error);
+      console.error("❌ Error fetching public shoot:", error);
       return res.status(500).json({ message: "Failed to fetch gallery" });
     }
   });
