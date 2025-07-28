@@ -196,9 +196,15 @@ export default function ClientGallery() {
   }
 
   if (shootError || !shoot) {
-    // Check if it's a private gallery error
-    const isPrivateGallery = shootError?.message?.includes('status code 403') || 
-                              (shootError as any)?.response?.status === 403;
+    // Debug: Log the error structure
+    console.log("Gallery error details:", shootError);
+    
+    // Check if it's a private gallery error - TanStack Query wraps fetch errors
+    const isPrivateGallery = 
+      shootError?.message?.includes('status code 403') || 
+      shootError?.message?.includes('403') ||
+      (shootError as any)?.response?.status === 403 ||
+      (shootError as any)?.status === 403;
     
     return (
       <div className="min-h-screen bg-background text-foreground">
