@@ -438,12 +438,22 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                         const currentShoot = shoots.find(s => s.id === selectedShoot);
                         return (
                           <Button
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation();
                               const locationValue = (document.getElementById('location') as HTMLInputElement)?.value || currentShoot?.location;
                               const titleValue = (document.getElementById('customTitle') as HTMLInputElement)?.value || currentShoot?.customTitle;
-                              // Save functionality will be added
-                              toast({ title: "Shoot info updated successfully!" });
+                              
+                              try {
+                                await apiRequest('PATCH', `/api/shoots/${selectedShoot}`, {
+                                  location: locationValue,
+                                  customTitle: titleValue
+                                });
+                                queryClient.invalidateQueries({ queryKey: ['/api/client/shoots'] });
+                                queryClient.invalidateQueries({ queryKey: ['/api/shoots', selectedShoot] });
+                                toast({ title: "Shoot info updated successfully!" });
+                              } catch (error) {
+                                toast({ title: "Error", description: "Failed to save shoot info", variant: "destructive" });
+                              }
                             }}
                             className="bg-salmon text-white hover:bg-salmon-muted"
                           >
@@ -509,9 +519,18 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                     <div className="flex items-center gap-2">
                       {expandedCards.gallerySettings && (
                         <Button
-                          onClick={(e) => {
+                          onClick={async (e) => {
                             e.stopPropagation();
-                            toast({ title: "Gallery settings updated successfully!" });
+                            try {
+                              await apiRequest('PATCH', `/api/shoots/${selectedShoot}`, {
+                                gallerySettings: gallerySettings
+                              });
+                              queryClient.invalidateQueries({ queryKey: ['/api/client/shoots'] });
+                              queryClient.invalidateQueries({ queryKey: ['/api/shoots', selectedShoot] });
+                              toast({ title: "Gallery settings updated successfully!" });
+                            } catch (error) {
+                              toast({ title: "Error", description: "Failed to save gallery settings", variant: "destructive" });
+                            }
                           }}
                           className="bg-salmon text-white hover:bg-salmon-muted"
                         >
@@ -612,8 +631,23 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                       Gallery Live Preview & Management
                     </CardTitle>
                     <Button 
-                      onClick={() => {
-                        toast({ title: "Image order saved successfully!" });
+                      onClick={async () => {
+                        try {
+                          // Save image order and cover selection
+                          const imageSequences = images.length > 0 
+                            ? Object.fromEntries(images.map((img, index) => [img.id, index + 1]))
+                            : {};
+                          
+                          await apiRequest('PATCH', `/api/shoots/${selectedShoot}`, {
+                            bannerImageId: selectedCover,
+                            imageSequences: imageSequences
+                          });
+                          queryClient.invalidateQueries({ queryKey: ['/api/client/shoots'] });
+                          queryClient.invalidateQueries({ queryKey: ['/api/shoots', selectedShoot] });
+                          toast({ title: "Image order and cover saved successfully!" });
+                        } catch (error) {
+                          toast({ title: "Error", description: "Failed to save image order", variant: "destructive" });
+                        }
                       }}
                       className="bg-salmon hover:bg-salmon-muted text-white"
                     >
@@ -751,9 +785,23 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                                         variant="secondary"
                                         className="bg-salmon text-white hover:bg-salmon-muted"
                                         title="Make Cover"
-                                        onClick={(e) => {
+                                        onClick={async (e) => {
                                           e.stopPropagation();
-                                          setSelectedCover(selectedCover === image.id ? null : image.id);
+                                          const newCover = selectedCover === image.id ? null : image.id;
+                                          setSelectedCover(newCover);
+                                          
+                                          // Save cover selection immediately
+                                          try {
+                                            await apiRequest('PATCH', `/api/shoots/${selectedShoot}`, {
+                                              bannerImageId: newCover
+                                            });
+                                            queryClient.invalidateQueries({ queryKey: ['/api/client/shoots'] });
+                                            toast({ title: "Cover image updated!", description: newCover ? "New cover set" : "Cover removed" });
+                                          } catch (error) {
+                                            toast({ title: "Error", description: "Failed to update cover", variant: "destructive" });
+                                            // Revert on error
+                                            setSelectedCover(selectedCover);
+                                          }
                                         }}
                                       >
                                         <Crown className="w-3 h-3" />
@@ -855,9 +903,23 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                                         variant="secondary"
                                         className="bg-salmon text-white hover:bg-salmon-muted"
                                         title="Make Cover"
-                                        onClick={(e) => {
+                                        onClick={async (e) => {
                                           e.stopPropagation();
-                                          setSelectedCover(selectedCover === image.id ? null : image.id);
+                                          const newCover = selectedCover === image.id ? null : image.id;
+                                          setSelectedCover(newCover);
+                                          
+                                          // Save cover selection immediately
+                                          try {
+                                            await apiRequest('PATCH', `/api/shoots/${selectedShoot}`, {
+                                              bannerImageId: newCover
+                                            });
+                                            queryClient.invalidateQueries({ queryKey: ['/api/client/shoots'] });
+                                            toast({ title: "Cover image updated!", description: newCover ? "New cover set" : "Cover removed" });
+                                          } catch (error) {
+                                            toast({ title: "Error", description: "Failed to update cover", variant: "destructive" });
+                                            // Revert on error
+                                            setSelectedCover(selectedCover);
+                                          }
                                         }}
                                       >
                                         <Crown className="w-3 h-3" />
