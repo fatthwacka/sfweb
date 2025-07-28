@@ -120,20 +120,54 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
   console.log('Shoots loading:', shootsLoading, 'Error:', error, 'Shoots count:', shoots.length);
   console.log('Shoots data:', shoots);
 
-  // Fetch images for selected shoot
-  const { data: images = [], isLoading: imagesLoading } = useQuery<Image[]>({
-    queryKey: ["/api/shoots", selectedShoot, "images"],
-    queryFn: () => fetch(`/api/shoots/${selectedShoot}/images`).then(res => res.json()),
+  // Fetch shoot data with images (same as admin approach)
+  const { data: shootData, isLoading: imagesLoading } = useQuery({
+    queryKey: ["/api/shoots", selectedShoot],
+    queryFn: () => fetch(`/api/shoots/${selectedShoot}`).then(res => res.json()),
     enabled: !!selectedShoot,
   });
 
-  // Initialize image order when images load
+  const shoot = (shootData as any)?.shoot || null;
+  const images: Image[] = (shootData as any)?.images ? ((shootData as any).images as Image[]) : [];
+
+  // Initialize all settings from shoot data when shoot changes (same as admin)
   useEffect(() => {
-    if (images.length > 0 && imageOrder.length === 0) {
-      const sortedImages = [...images].sort((a, b) => a.sequence - b.sequence);
-      setImageOrder(sortedImages.map(img => img.id));
+    if (shoot && shoot.id && images.length > 0) {
+      // Set cover: use bannerImageId if valid, otherwise use first image as fallback
+      if (shoot.bannerImageId && images.some(img => img.id === shoot.bannerImageId)) {
+        setSelectedCover(shoot.bannerImageId);
+      } else {
+        setSelectedCover(images[0].id);
+      }
+      
+      // Initialize gallery settings from shoot data (provide defaults for null gallerySettings)
+      const settings = shoot.gallerySettings || {};
+      setGallerySettings({
+        backgroundColor: settings.backgroundColor || '#1a1a1a',
+        borderStyle: settings.borderStyle || 'rounded',
+        layoutStyle: settings.layoutStyle || 'masonry',
+        imageSpacing: settings.imageSpacing || 'normal'
+      });
     }
-  }, [images]);
+  }, [shoot?.id, images.length]);
+
+  // Initialize image order from sequence - fix blank gaps issue
+  useEffect(() => {
+    if (images.length > 0) {
+      const sortedImages = [...images].sort((a, b) => a.sequence - b.sequence);
+      const newOrder = sortedImages.map(img => img.id);
+      
+      // Only update if the order actually changed to prevent unnecessary re-renders
+      if (JSON.stringify(newOrder) !== JSON.stringify(imageOrder)) {
+        setImageOrder(newOrder);
+      }
+    } else {
+      // Clear order when no images
+      if (imageOrder.length > 0) {
+        setImageOrder([]);
+      }
+    }
+  }, [images.length, images.map(img => `${img.id}-${img.sequence}`).join(',')]);
 
   // Get ordered images for display
   const getOrderedImages = () => {

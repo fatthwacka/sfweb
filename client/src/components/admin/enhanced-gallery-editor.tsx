@@ -242,24 +242,13 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
   // Initialize all settings from shoot data when shoot changes
   useEffect(() => {
-    console.log('Gallery init debug:', {
-      shootId: shoot?.id,
-      shootTitle: shoot?.title,
-      bannerImageId: shoot?.bannerImageId,
-      gallerySettings: shoot?.gallerySettings,
-      imagesLength: images.length,
-      firstImageId: images[0]?.id
-    });
-    
     if (shoot && shoot.id && images.length > 0) {
       setCustomSlug(shoot.customSlug || '');
       
       // Set cover: use bannerImageId if valid, otherwise use first image as fallback
       if (shoot.bannerImageId && images.some(img => img.id === shoot.bannerImageId)) {
-        console.log('Setting cover to bannerImageId:', shoot.bannerImageId);
         setSelectedCover(shoot.bannerImageId);
       } else {
-        console.log('Setting cover to first image:', images[0].id);
         setSelectedCover(images[0].id);
       }
       
@@ -710,14 +699,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
             }}
           >
             {/* Cover Image Strip */}
-            {(() => {
-              console.log('Cover strip debug:', {
-                selectedCover,
-                hasSelectedCover: !!selectedCover,
-                orderedImagesCount: getOrderedImages().length
-              });
-              return selectedCover;
-            })() && (() => {
+            {selectedCover && (() => {
               const orderedImages = getOrderedImages();
               const coverImage = orderedImages.find(img => img.id === selectedCover);
               const coverImageUrl = coverImage?.storagePath ? ImageUrl.forViewing(coverImage.storagePath) : null;
