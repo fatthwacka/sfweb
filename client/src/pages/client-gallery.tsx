@@ -62,7 +62,7 @@ export default function ClientGallery() {
 
   // Fetch shoot data directly by slug - this is a public gallery for a single shoot
   const { data: shoot, isLoading: shootLoading, error: shootError } = useQuery<Shoot>({
-    queryKey: ["/api/galleries", slug],
+    queryKey: ["/api/gallery", slug],
     enabled: !!slug
   });
 
@@ -154,7 +154,7 @@ export default function ClientGallery() {
   // Share individual image
   const handleShareImage = (imageIndex: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    const imageUrl = `${window.location.origin}/galleries/${slug}?image=${imageIndex}`;
+    const imageUrl = `${window.location.origin}/gallery/${slug}?image=${imageIndex}`;
     navigator.clipboard.writeText(imageUrl).then(() => {
       toast({
         title: "Image link copied!",
