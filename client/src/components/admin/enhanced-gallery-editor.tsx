@@ -263,16 +263,15 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
         setSelectedCover(null);
       }
       
-      // Initialize gallery settings from shoot data
-      if (shoot.gallerySettings) {
-        setGallerySettings({
-          backgroundColor: shoot.gallerySettings.backgroundColor || '#ffffff',
-          borderStyle: shoot.gallerySettings.borderStyle || 'sharp',
-          padding: shoot.gallerySettings.padding || 'tight',
-          layoutStyle: shoot.gallerySettings.layoutStyle || 'grid',
-          imageSpacing: shoot.gallerySettings.imageSpacing || 'tight'
-        });
-      }
+      // Initialize gallery settings from shoot data (provide defaults for null gallerySettings)
+      const settings = shoot.gallerySettings || {};
+      setGallerySettings({
+        backgroundColor: settings.backgroundColor || '#ffffff',
+        borderStyle: settings.borderStyle || 'sharp',
+        padding: settings.padding || 'tight',
+        layoutStyle: settings.layoutStyle || 'grid',
+        imageSpacing: settings.imageSpacing || 'tight'
+      });
       
       setEditableShoot({
         title: shoot.title || '',
