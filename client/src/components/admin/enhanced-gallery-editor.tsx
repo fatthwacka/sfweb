@@ -174,7 +174,10 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   const saveAppearanceMutation = useMutation({
     mutationFn: (data: any) => apiRequest('PATCH', `/api/shoots/${shootId}`, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
+      // Don't invalidate queries immediately to prevent reordering during save
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
+      }, 100);
       toast({ title: "Gallery appearance saved successfully!" });
     },
     onError: () => toast({ title: "Error", description: "Failed to save appearance", variant: "destructive" })
@@ -270,17 +273,24 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     }
   }, [shoot?.id]);
 
-  // Initialize image order from sequence
+  // Initialize image order from sequence - only on first load or when images change significantly
   useEffect(() => {
-    if (images.length > 0) {
+    if (images.length > 0 && imageOrder.length === 0) {
       const sortedImages = [...images].sort((a, b) => a.sequence - b.sequence);
-      const newOrder = sortedImages.map(img => img.id);
-      // Only update if the order has actually changed
-      if (JSON.stringify(newOrder) !== JSON.stringify(imageOrder)) {
-        setImageOrder(newOrder);
+      setImageOrder(sortedImages.map(img => img.id));
+    } else if (images.length > 0 && imageOrder.length > 0) {
+      // Only add new images that aren't in the current order
+      const currentIds = new Set(imageOrder);
+      const newImages = images.filter(img => !currentIds.has(img.id));
+      if (newImages.length > 0) {
+        const newImageIds = newImages.map(img => img.id);
+        setImageOrder(prev => [...prev, ...newImageIds]);
       }
+      // Remove deleted images from order
+      const existingIds = new Set(images.map(img => img.id));
+      setImageOrder(prev => prev.filter(id => existingIds.has(id)));
     }
-  }, [images]);
+  }, [images.length]);
 
   // Drag and drop handlers
   const handleDragStart = useCallback((e: React.DragEvent, imageId: string) => {
@@ -737,16 +747,21 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                       if (!isDragReorderingEnabled) return;
                       e.preventDefault();
                       if (draggedImage && draggedImage !== image.id) {
-                        const newOrder = [...imageOrder];
-                        const draggedIndex = newOrder.indexOf(draggedImage);
-                        const targetIndex = newOrder.indexOf(image.id);
-                        
-                        if (draggedIndex !== -1 && targetIndex !== -1) {
-                          newOrder.splice(draggedIndex, 1);
-                          newOrder.splice(targetIndex, 0, draggedImage);
-                          setImageOrder(newOrder);
-                        }
+                        setImageOrder(currentOrder => {
+                          const newOrder = [...currentOrder];
+                          const draggedIndex = newOrder.indexOf(draggedImage);
+                          const targetIndex = newOrder.indexOf(image.id);
+                          
+                          if (draggedIndex !== -1 && targetIndex !== -1) {
+                            // Remove from old position
+                            newOrder.splice(draggedIndex, 1);
+                            // Insert at new position  
+                            newOrder.splice(targetIndex, 0, draggedImage);
+                          }
+                          return newOrder;
+                        });
                       }
+                      setDraggedImage(null);
                     }}
                     onMouseDown={(e) => setDragStartTime(Date.now())}
                     onClick={(e) => {
@@ -836,7 +851,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
               </div>
             ) : (
               <div 
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
                 style={{ 
                   gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
                 }}
@@ -866,15 +881,19 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                       if (!isDragReorderingEnabled) return;
                       e.preventDefault();
                       if (draggedImage && draggedImage !== image.id) {
-                        const newOrder = [...imageOrder];
-                        const draggedIndex = newOrder.indexOf(draggedImage);
-                        const targetIndex = newOrder.indexOf(image.id);
-                        
-                        if (draggedIndex !== -1 && targetIndex !== -1) {
-                          newOrder.splice(draggedIndex, 1);
-                          newOrder.splice(targetIndex, 0, draggedImage);
-                          setImageOrder(newOrder);
-                        }
+                        setImageOrder(currentOrder => {
+                          const newOrder = [...currentOrder];
+                          const draggedIndex = newOrder.indexOf(draggedImage);
+                          const targetIndex = newOrder.indexOf(image.id);
+                          
+                          if (draggedIndex !== -1 && targetIndex !== -1) {
+                            // Remove from old position
+                            newOrder.splice(draggedIndex, 1);
+                            // Insert at new position
+                            newOrder.splice(targetIndex, 0, draggedImage);
+                          }
+                          return newOrder;
+                        });
                       }
                       setDraggedImage(null);
                     }}
