@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ImageUrl } from "@/lib/image-utils";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest } from "@/lib/queryClient";
+import { GalleryLivePreview } from "@/components/shared/gallery-live-preview";
 import { 
   Camera, 
   Calendar, 
@@ -221,6 +222,28 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
   const handleViewFullRes = (image: Image) => {
     // Open full resolution image in new tab
     window.open(ImageUrl.forFullSize(image.storagePath), '_blank');
+  };
+
+  // Client-specific save order handler
+  const handleSaveOrder = async () => {
+    if (!selectedShoot) return;
+    
+    try {
+      const imageSequences = imageOrder.length > 0 
+        ? Object.fromEntries(imageOrder.map((id, index) => [id, index + 1]))
+        : {};
+      
+      await apiRequest('PATCH', `/api/shoots/${selectedShoot}`, {
+        bannerImageId: selectedCover,
+        imageSequences: imageSequences
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/client/shoots'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/shoots', selectedShoot] });
+      toast({ title: "Image order and cover saved successfully!" });
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to save image order", variant: "destructive" });
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -684,400 +707,21 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                 )}
               </Card>
 
-              {/* Gallery Live Preview Card - Exact Admin Panel Clone */}
-              <Card className="admin-gradient-card">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-salmon font-saira flex items-center gap-2">
-                      <Eye className="w-5 h-5" />
-                      Gallery Live Preview & Management
-                    </CardTitle>
-                    <Button 
-                      onClick={async () => {
-                        try {
-                          // CRITICAL FIX: Use imageOrder state, not original images array
-                          const imageSequences = imageOrder.length > 0 
-                            ? Object.fromEntries(imageOrder.map((id, index) => [id, index + 1]))
-                            : {};
-                          
-                          await apiRequest('PATCH', `/api/shoots/${selectedShoot}`, {
-                            bannerImageId: selectedCover,
-                            imageSequences: imageSequences
-                          });
-                          queryClient.invalidateQueries({ queryKey: ['/api/client/shoots'] });
-                          queryClient.invalidateQueries({ queryKey: ['/api/shoots', selectedShoot] });
-                          toast({ title: "Image order and cover saved successfully!" });
-                        } catch (error) {
-                          toast({ title: "Error", description: "Failed to save image order", variant: "destructive" });
-                        }
-                      }}
-                      className="bg-salmon hover:bg-salmon-muted text-white"
-                    >
-                      <Save className="w-4 h-4 mr-2" />
-                      Save Order
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div 
-                    className="rounded-lg overflow-hidden"
-                    style={{ 
-                      backgroundColor: gallerySettings.backgroundColor,
-                      minHeight: '400px'
-                    }}
-                  >
-                    {/* Cover Image Strip */}
-                    {selectedCover && (() => {
-                      const coverImage = images.find(img => img.id === selectedCover);
-                      const currentShoot = shoots.find(s => s.id === selectedShoot);
-                      return coverImage && currentShoot ? (
-                        <div 
-                          className="relative h-48 w-full bg-cover bg-center flex items-center justify-center"
-                          style={{
-                            backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${ImageUrl.forViewing(coverImage.storagePath)})`,
-                            marginBottom: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px'
-                          }}
-                        >
-                          <h2 className="text-xl font-bold text-white text-center">
-                            {currentShoot.customTitle || currentShoot.title}
-                          </h2>
-                        </div>
-                      ) : null;
-                    })()}
-                    
-                    {/* Image Grid */}
-                    <div className="p-4">
-                      {!selectedCover && (() => {
-                        const currentShoot = shoots.find(s => s.id === selectedShoot);
-                        return currentShoot ? (
-                          <h2 className="text-xl font-bold text-white mb-4 text-center">
-                            {currentShoot.customTitle || currentShoot.title}
-                          </h2>
-                        ) : null;
-                      })()}
-                    
-                      {imagesLoading ? (
-                        <div className="flex items-center justify-center py-8">
-                          <div className="text-center">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-salmon mx-auto mb-4"></div>
-                            <p>Loading images...</p>
-                          </div>
-                        </div>
-                      ) : images.length === 0 ? (
-                        <div className="text-center p-8">
-                          <Camera className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                          <h3 className="text-lg font-medium mb-2">No Images Yet</h3>
-                          <p className="text-muted-foreground">Images will appear here once uploaded by SlyFox Studios.</p>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="flex items-center justify-between mb-4">
-                            <p className="text-sm text-muted-foreground">
-                              <MousePointer className="w-4 h-4 inline mr-1" />
-                              Drag and drop to reorder images • Hover for options
-                            </p>
-                            <Badge variant="secondary">
-                              {images.length} {images.length === 1 ? 'image' : 'images'}
-                            </Badge>
-                          </div>
-                          
-                          {gallerySettings.layoutStyle === 'masonry' ? (
-                            <div 
-                              className={`columns-2 md:columns-3 lg:columns-4 space-y-${gallerySettings.imageSpacing === 'tight' ? '1' : gallerySettings.imageSpacing === 'normal' ? '2' : '4'}`}
-                              style={{ 
-                                gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
-                              }}
-                            >
-                              {getOrderedImages().slice(0, visibleImageCount).map((image) => (
-                                <div
-                                  key={image.id}
-                                  className={`
-                                    relative group overflow-hidden break-inside-avoid 
-                                    ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full aspect-square'}
-                                    ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
-                                    ${draggedImage === image.id ? 'opacity-50' : ''}
-                                    cursor-pointer transition-all duration-200
-                                  `}
-                                  style={{ 
-                                    marginBottom: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
-                                  }}
-                                  draggable
-                                  onDragStart={(e) => {
-                                    setDraggedImage(image.id);
-                                    e.dataTransfer.effectAllowed = 'move';
-                                  }}
-                                  onDragEnd={() => setDraggedImage(null)}
-                                  onDragOver={(e) => e.preventDefault()}
-                                  onDrop={(e) => {
-                                    e.preventDefault();
-                                    if (draggedImage && draggedImage !== image.id) {
-                                      // Update image order state for masonry layout
-                                      setImageOrder(currentOrder => {
-                                        const newOrder = [...currentOrder];
-                                        const draggedIndex = newOrder.indexOf(draggedImage);
-                                        const targetIndex = newOrder.indexOf(image.id);
-                                        
-                                        if (draggedIndex !== -1 && targetIndex !== -1) {
-                                          // Remove from old position and insert at new position
-                                          newOrder.splice(draggedIndex, 1);
-                                          newOrder.splice(targetIndex, 0, draggedImage);
-                                          console.log('Masonry reordered images from', draggedIndex, 'to', targetIndex);
-                                        }
-                                        return newOrder;
-                                      });
-                                    }
-                                    setDraggedImage(null);
-                                  }}
-                                  onMouseDown={() => setDragStartTime(Date.now())}
-                                  onClick={(e) => {
-                                    const clickDuration = Date.now() - dragStartTime;
-                                    if (clickDuration < 200) {
-                                      // Quick click - could open modal
-                                    }
-                                  }}
-                                >
-                                  <img
-                                    src={ImageUrl.forViewing(image.storagePath)}
-                                    alt={image.filename}
-                                    className={`w-full object-cover ${gallerySettings.borderStyle === 'circular' ? 'h-full aspect-square' : 'h-auto'}`}
-                                  />
-                                  
-                                  {/* 4-Button Hover System - Exact Admin Panel Clone */}
-                                  <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                    <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
-                                      <Button
-                                        size="sm"
-                                        variant="secondary"
-                                        className="bg-purple-600 text-white hover:bg-purple-700"
-                                        title="View Full Resolution"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          window.open(ImageUrl.forFullSize(image.storagePath), '_blank');
-                                        }}
-                                      >
-                                        <Eye className="w-3 h-3" />
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="secondary"
-                                        className="bg-salmon text-white hover:bg-salmon-muted"
-                                        title="Make Cover"
-                                        onClick={async (e) => {
-                                          e.stopPropagation();
-                                          const newCover = selectedCover === image.id ? null : image.id;
-                                          setSelectedCover(newCover);
-                                          
-                                          // Save cover selection immediately
-                                          try {
-                                            await apiRequest('PATCH', `/api/shoots/${selectedShoot}`, {
-                                              bannerImageId: newCover
-                                            });
-                                            queryClient.invalidateQueries({ queryKey: ['/api/client/shoots'] });
-                                            toast({ title: "Cover image updated!", description: newCover ? "New cover set" : "Cover removed" });
-                                          } catch (error) {
-                                            toast({ title: "Error", description: "Failed to update cover", variant: "destructive" });
-                                            // Revert on error
-                                            setSelectedCover(selectedCover);
-                                          }
-                                        }}
-                                      >
-                                        <Crown className="w-3 h-3" />
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="secondary" 
-                                        className="bg-yellow-600 text-white hover:bg-yellow-700"
-                                        title="Remove from Album"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          if (confirm('Remove this image from your album? It will be moved to SlyFox archive.')) {
-                                            toast({ title: "Image removed from album", description: "Image moved to SlyFox archive" });
-                                          }
-                                        }}
-                                      >
-                                        <X className="w-3 h-3" />
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="destructive"
-                                        title="Delete Permanently (Client Restricted)"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          toast({ 
-                                            title: "Delete functionality not available to clients", 
-                                            description: "Contact SlyFox Studios for permanent deletions", 
-                                            variant: "destructive" 
-                                          });
-                                        }}
-                                      >
-                                        <Trash2 className="w-3 h-3" />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                  
-                                  {/* Cover Badge */}
-                                  {selectedCover === image.id && (
-                                    <div className="absolute top-2 right-2 bg-salmon text-white px-2 py-1 rounded text-xs font-bold">
-                                      Cover
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div 
-                              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
-                              style={{ 
-                                gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
-                              }}
-                            >
-                              {getOrderedImages().slice(0, visibleImageCount).map((image) => (
-                                <div
-                                  key={image.id}
-                                  className={`
-                                    relative group overflow-hidden aspect-square
-                                    ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full'}
-                                    ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
-                                    ${draggedImage === image.id ? 'opacity-50' : ''}
-                                    cursor-pointer transition-all duration-200
-                                  `}
-                                  draggable
-                                  onDragStart={(e) => {
-                                    setDraggedImage(image.id);
-                                    e.dataTransfer.effectAllowed = 'move';
-                                  }}
-                                  onDragEnd={() => setDraggedImage(null)}
-                                  onDragOver={(e) => e.preventDefault()}
-                                  onDrop={(e) => {
-                                    e.preventDefault();
-                                    if (draggedImage && draggedImage !== image.id) {
-                                      // Update image order state for grid layout
-                                      setImageOrder(currentOrder => {
-                                        const newOrder = [...currentOrder];
-                                        const draggedIndex = newOrder.indexOf(draggedImage);
-                                        const targetIndex = newOrder.indexOf(image.id);
-                                        
-                                        if (draggedIndex !== -1 && targetIndex !== -1) {
-                                          // Remove from old position and insert at new position
-                                          newOrder.splice(draggedIndex, 1);
-                                          newOrder.splice(targetIndex, 0, draggedImage);
-                                          console.log('Grid reordered images from', draggedIndex, 'to', targetIndex);
-                                        }
-                                        return newOrder;
-                                      });
-                                    }
-                                    setDraggedImage(null);
-                                  }}
-                                  onMouseDown={() => setDragStartTime(Date.now())}
-                                >
-                                  <img
-                                    src={ImageUrl.forViewing(image.storagePath)}
-                                    alt={image.filename}
-                                    className="w-full h-full object-cover"
-                                  />
-                                  
-                                  {/* 4-Button Hover System */}
-                                  <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                    <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
-                                      <Button
-                                        size="sm"
-                                        variant="secondary"
-                                        className="bg-purple-600 text-white hover:bg-purple-700"
-                                        title="View Full Resolution"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          window.open(ImageUrl.forFullSize(image.storagePath), '_blank');
-                                        }}
-                                      >
-                                        <Eye className="w-3 h-3" />
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="secondary"
-                                        className="bg-salmon text-white hover:bg-salmon-muted"
-                                        title="Make Cover"
-                                        onClick={async (e) => {
-                                          e.stopPropagation();
-                                          const newCover = selectedCover === image.id ? null : image.id;
-                                          setSelectedCover(newCover);
-                                          
-                                          // Save cover selection immediately
-                                          try {
-                                            await apiRequest('PATCH', `/api/shoots/${selectedShoot}`, {
-                                              bannerImageId: newCover
-                                            });
-                                            queryClient.invalidateQueries({ queryKey: ['/api/client/shoots'] });
-                                            toast({ title: "Cover image updated!", description: newCover ? "New cover set" : "Cover removed" });
-                                          } catch (error) {
-                                            toast({ title: "Error", description: "Failed to update cover", variant: "destructive" });
-                                            // Revert on error
-                                            setSelectedCover(selectedCover);
-                                          }
-                                        }}
-                                      >
-                                        <Crown className="w-3 h-3" />
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="secondary" 
-                                        className="bg-yellow-600 text-white hover:bg-yellow-700"
-                                        title="Remove from Album"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          if (confirm('Remove this image from your album? It will be moved to SlyFox archive.')) {
-                                            toast({ title: "Image removed from album", description: "Image moved to SlyFox archive" });
-                                          }
-                                        }}
-                                      >
-                                        <X className="w-3 h-3" />
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="destructive"
-                                        title="Delete Permanently (Client Restricted)"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          toast({ 
-                                            title: "Delete functionality not available to clients", 
-                                            description: "Contact SlyFox Studios for permanent deletions", 
-                                            variant: "destructive" 
-                                          });
-                                        }}
-                                      >
-                                        <Trash2 className="w-3 h-3" />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                  
-                                  {/* Cover Badge */}
-                                  {selectedCover === image.id && (
-                                    <div className="absolute top-2 right-2 bg-salmon text-white px-2 py-1 rounded text-xs font-bold">
-                                      Cover
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          
-                          {/* Load More Button */}
-                          {images.length > visibleImageCount && (
-                            <div className="text-center mt-6">
-                              <Button
-                                variant="outline"
-                                onClick={() => setVisibleImageCount(prev => Math.min(prev + 20, images.length))}
-                                className="border-salmon text-salmon hover:bg-salmon hover:text-white"
-                              >
-                                Load More ({Math.min(20, images.length - visibleImageCount)} remaining)
-                              </Button>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Gallery Live Preview - Using Shared Component */}
+              <GalleryLivePreview
+                shoot={shoot}
+                images={images}
+                gallerySettings={gallerySettings}
+                selectedCover={selectedCover}
+                setSelectedCover={setSelectedCover}
+                imageOrder={imageOrder}
+                setImageOrder={setImageOrder}
+                visibleImageCount={visibleImageCount}
+                setVisibleImageCount={setVisibleImageCount}
+                getOrderedImages={getOrderedImages}
+                onSaveOrder={handleSaveOrder}
+                isSaving={false}
+              />
             </div>
 
 
