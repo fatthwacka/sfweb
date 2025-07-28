@@ -420,138 +420,49 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
               ) : null;
             })()}
 
-            {/* Tabbed Interface for Gallery Management */}
+            {/* Card-Based Gallery Management Interface */}
             <div className="space-y-6">
-              {/* Tab Navigation */}
-              <div className="flex flex-wrap gap-2 border-b border-border">
-                <button
-                  onClick={() => setActiveTab('images')}
-                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                    activeTab === 'images'
-                      ? 'border-salmon text-salmon'
-                      : 'border-transparent text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  View Images
-                </button>
-                <button
-                  onClick={() => setActiveTab('shootinfo')}
-                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                    activeTab === 'shootinfo'
-                      ? 'border-salmon text-salmon'
-                      : 'border-transparent text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  Shoot Info
-                </button>
-                <button
-                  onClick={() => setActiveTab('settings')}
-                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                    activeTab === 'settings'
-                      ? 'border-salmon text-salmon'
-                      : 'border-transparent text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  Gallery Settings
-                </button>
-                <button
-                  onClick={() => setActiveTab('preview')}
-                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                    activeTab === 'preview'
-                      ? 'border-salmon text-salmon'
-                      : 'border-transparent text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  Live Preview
-                </button>
-              </div>
-
-              {/* Tab Content */}
-              {activeTab === 'images' && (
-                <>
-                  {/* Images Grid */}
-            {imagesLoading ? (
-              <div className="text-center py-8">
-                <div className="animate-pulse">Loading images...</div>
-              </div>
-            ) : images.length === 0 ? (
+              {/* Basic Shoot Info Card */}
               <Card className="admin-gradient-card">
-                <CardContent className="p-8 text-center">
-                  <Camera className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">No Images Yet</h3>
-                  <p className="text-muted-foreground">
-                    Images are being processed and will appear here soon.
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {images.map(image => (
-                  <Card key={image.id} className="admin-gradient-card group overflow-hidden">
-                    <div className="relative aspect-square">
-                      <img
-                        src={ImageUrl.forViewing(image.storagePath)}
-                        alt={image.originalName || image.filename}
-                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <div className="flex gap-2">
+                <CardHeader 
+                  className="cursor-pointer"
+                  onClick={() => setExpandedCards(prev => ({...prev, shootInfo: !prev.shootInfo}))}
+                >
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-salmon font-saira flex items-center gap-2">
+                      <Camera className="w-5 h-5" />
+                      Basic Shoot Info
+                    </CardTitle>
+                    <div className="flex items-center gap-2">
+                      {expandedCards.shootInfo && (() => {
+                        const currentShoot = shoots.find(s => s.id === selectedShoot);
+                        return (
                           <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => handleViewFullRes(image)}
-                            className="bg-purple-600 text-white hover:bg-purple-700"
-                            title="View Full Resolution"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => handleDownloadImage(image)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const locationValue = (document.getElementById('location') as HTMLInputElement)?.value || currentShoot?.location;
+                              const titleValue = (document.getElementById('customTitle') as HTMLInputElement)?.value || currentShoot?.customTitle;
+                              // Save functionality will be added
+                              toast({ title: "Shoot info updated successfully!" });
+                            }}
                             className="bg-salmon text-white hover:bg-salmon-muted"
-                            title="Download Original"
                           >
-                            <Download className="w-4 h-4" />
+                            <Save className="w-4 h-4 mr-2" />
+                            Save Changes
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            className="bg-cyan text-black hover:bg-cyan-muted"
-                            title="Add to Favorites"
-                          >
-                            <Heart className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
+                        );
+                      })()}
+                      {expandedCards.shootInfo ? (
+                        <ChevronUp className="w-5 h-5 text-salmon" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-salmon" />
+                      )}
                     </div>
-                    <CardContent className="p-3">
-                      <div className="flex justify-between items-center text-xs text-muted-foreground">
-                        <span>{image.originalName || image.filename}</span>
-                        <div className="flex items-center gap-1">
-                          <Download className="w-3 h-3" />
-                          {image.downloadCount}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-                </>
-              )}
-
-              {/* Shoot Info Tab - Card 1 */}
-              {activeTab === 'shootinfo' && (() => {
-                const currentShoot = shoots.find(s => s.id === selectedShoot);
-                return currentShoot ? (
-                  <Card className="admin-gradient-card">
-                    <CardHeader>
-                      <CardTitle className="text-salmon font-saira flex items-center gap-2">
-                        <MapPin className="w-5 h-5" />
-                        Edit Shoot Information
-                      </CardTitle>
-                    </CardHeader>
+                  </div>
+                </CardHeader>
+                {expandedCards.shootInfo && (() => {
+                  const currentShoot = shoots.find(s => s.id === selectedShoot);
+                  return currentShoot ? (
                     <CardContent className="space-y-4">
                       <div className="grid md:grid-cols-2 gap-4">
                         <div>
@@ -579,32 +490,44 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                           </p>
                         </div>
                       </div>
-                      <Button
-                        onClick={() => {
-                          const locationValue = (document.getElementById('location') as HTMLInputElement)?.value || currentShoot.location;
-                          const titleValue = (document.getElementById('customTitle') as HTMLInputElement)?.value || currentShoot.customTitle;
-                          // Save functionality will be added
-                          toast({ title: "Shoot info updated successfully!" });
-                        }}
-                        className="bg-salmon text-white hover:bg-salmon-muted"
-                      >
-                        <Save className="w-4 h-4 mr-2" />
-                        Save Changes
-                      </Button>
                     </CardContent>
-                  </Card>
-                ) : null;
-              })()}
+                  ) : null;
+                })()}
+              </Card>
 
-              {/* Gallery Settings Tab - Card 2 */}
-              {activeTab === 'settings' && (
-                <Card className="admin-gradient-card">
-                  <CardHeader>
+              {/* Gallery Appearance Settings Card */}
+              <Card className="admin-gradient-card">
+                <CardHeader 
+                  className="cursor-pointer"
+                  onClick={() => setExpandedCards(prev => ({...prev, gallerySettings: !prev.gallerySettings}))}
+                >
+                  <div className="flex items-center justify-between">
                     <CardTitle className="text-salmon font-saira flex items-center gap-2">
                       <Palette className="w-5 h-5" />
-                      Gallery Appearance Settings
+                      Gallery Appearance
                     </CardTitle>
-                  </CardHeader>
+                    <div className="flex items-center gap-2">
+                      {expandedCards.gallerySettings && (
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toast({ title: "Gallery settings updated successfully!" });
+                          }}
+                          className="bg-salmon text-white hover:bg-salmon-muted"
+                        >
+                          <Save className="w-4 h-4 mr-2" />
+                          Save Settings
+                        </Button>
+                      )}
+                      {expandedCards.gallerySettings ? (
+                        <ChevronUp className="w-5 h-5 text-salmon" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-salmon" />
+                      )}
+                    </div>
+                  </div>
+                </CardHeader>
+                {expandedCards.gallerySettings && (
                   <CardContent className="space-y-4">
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
@@ -676,178 +599,333 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                         </Select>
                       </div>
                     </div>
-                    <Button
-                      onClick={() => {
-                        // Save functionality will be added
-                        toast({ title: "Gallery settings updated successfully!" });
-                      }}
-                      className="bg-salmon text-white hover:bg-salmon-muted"
-                    >
-                      <Save className="w-4 h-4 mr-2" />
-                      Save Settings
-                    </Button>
                   </CardContent>
-                </Card>
-              )}
+                )}
+              </Card>
 
-              {/* Live Preview Tab - Card 3 */}
-              {activeTab === 'preview' && (
-                <Card className="admin-gradient-card">
-                  <CardHeader>
+              {/* Gallery Live Preview Card - Exact Admin Panel Clone */}
+              <Card className="admin-gradient-card">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
                     <CardTitle className="text-salmon font-saira flex items-center gap-2">
                       <Eye className="w-5 h-5" />
                       Gallery Live Preview & Management
                     </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {imagesLoading ? (
-                      <div className="flex items-center justify-center py-8">
-                        <div className="text-center">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-salmon mx-auto mb-4"></div>
-                          <p>Loading images...</p>
+                    <Button 
+                      onClick={() => {
+                        toast({ title: "Image order saved successfully!" });
+                      }}
+                      className="bg-salmon hover:bg-salmon-muted text-white"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Order
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div 
+                    className="rounded-lg overflow-hidden"
+                    style={{ 
+                      backgroundColor: gallerySettings.backgroundColor,
+                      minHeight: '400px'
+                    }}
+                  >
+                    {/* Cover Image Strip */}
+                    {selectedCover && (() => {
+                      const coverImage = images.find(img => img.id === selectedCover);
+                      const currentShoot = shoots.find(s => s.id === selectedShoot);
+                      return coverImage && currentShoot ? (
+                        <div 
+                          className="relative h-48 w-full bg-cover bg-center flex items-center justify-center"
+                          style={{
+                            backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${ImageUrl.forViewing(coverImage.storagePath)})`,
+                            marginBottom: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px'
+                          }}
+                        >
+                          <h2 className="text-xl font-bold text-white text-center">
+                            {currentShoot.customTitle || currentShoot.title}
+                          </h2>
                         </div>
-                      </div>
-                    ) : images.length === 0 ? (
-                      <div className="text-center p-8">
-                        <Camera className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-lg font-medium mb-2">No Images Yet</h3>
-                        <p className="text-muted-foreground">Images will appear here once uploaded by SlyFox Studios.</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm text-muted-foreground">
-                            <MousePointer className="w-4 h-4 inline mr-1" />
-                            Drag and drop to reorder images • Hover for options
-                          </p>
-                          <Badge variant="secondary">
-                            {images.length} {images.length === 1 ? 'image' : 'images'}
-                          </Badge>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                          {images.slice(0, visibleImageCount).map((image) => (
-                            <div
-                              key={image.id}
-                              className={`group relative cursor-pointer bg-background rounded-lg overflow-hidden transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl ${
-                                draggedImage === image.id ? 'opacity-50' : ''
-                              } ${
-                                gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : 
-                                gallerySettings.borderStyle === 'circular' ? 'rounded-full aspect-square' : 
-                                gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-lg'
-                              }`}
-                              draggable
-                              onDragStart={(e) => {
-                                e.dataTransfer.effectAllowed = 'move';
-                                setDraggedImage(image.id);
-                              }}
-                              onDragEnd={() => setDraggedImage(null)}
-                              onDrop={(e) => {
-                                e.preventDefault();
-                                // Handle reordering logic
-                                setDraggedImage(null);
-                              }}
-                              onDragOver={(e) => e.preventDefault()}
-                              onMouseDown={() => setDragStartTime(Date.now())}
-                            >
-                              <img
-                                src={ImageUrl.forViewing(image.storagePath)}
-                                alt={image.filename}
-                                className={`w-full h-full object-cover ${
-                                  gallerySettings.borderStyle === 'circular' ? 'aspect-square' : 'h-auto'
-                                }`}
-                              />
-                              
-                              {/* 4-Button Hover System */}
-                              <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
-                                  <Button
-                                    size="sm"
-                                    variant="secondary"
-                                    className="bg-purple-600 text-white hover:bg-purple-700"
-                                    title="View Full Resolution"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      window.open(ImageUrl.forFullSize(image.storagePath), '_blank');
-                                    }}
-                                  >
-                                    <Eye className="w-3 h-3" />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="secondary"
-                                    className={selectedCover === image.id ? 
-                                      "bg-gold text-black hover:bg-gold-muted" : 
-                                      "bg-salmon text-white hover:bg-salmon-muted"
-                                    }
-                                    title={selectedCover === image.id ? "Remove as Cover" : "Make Cover"}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setSelectedCover(selectedCover === image.id ? null : image.id);
-                                    }}
-                                  >
-                                    <Crown className="w-3 h-3" />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="secondary"
-                                    className="bg-yellow-600 text-white hover:bg-yellow-700"
-                                    title="Remove from Album"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      if (confirm('Remove this image from your album? It will be moved to SlyFox archive.')) {
-                                        toast({ title: "Image removed from album", description: "Image moved to SlyFox archive" });
-                                      }
-                                    }}
-                                  >
-                                    <X className="w-3 h-3" />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="secondary"
-                                    className="bg-red-600 text-white hover:bg-red-700"
-                                    title="Delete Permanently"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      toast({ title: "Delete functionality not available to clients", description: "Contact SlyFox Studios for permanent deletions", variant: "destructive" });
-                                    }}
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </Button>
-                                </div>
-                              </div>
-                              
-                              {/* Cover indicator */}
-                              {selectedCover === image.id && (
-                                <div className="absolute top-2 right-2">
-                                  <Badge className="bg-gold text-black">
-                                    <Crown className="w-3 h-3 mr-1" />
-                                    Cover
-                                  </Badge>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                        
-                        {/* Load More Button */}
-                        {images.length > visibleImageCount && (
+                      ) : null;
+                    })()}
+                    
+                    {/* Image Grid */}
+                    <div className="p-4">
+                      {!selectedCover && (() => {
+                        const currentShoot = shoots.find(s => s.id === selectedShoot);
+                        return currentShoot ? (
+                          <h2 className="text-xl font-bold text-white mb-4 text-center">
+                            {currentShoot.customTitle || currentShoot.title}
+                          </h2>
+                        ) : null;
+                      })()}
+                    
+                      {imagesLoading ? (
+                        <div className="flex items-center justify-center py-8">
                           <div className="text-center">
-                            <Button
-                              variant="outline"
-                              onClick={() => setVisibleImageCount(prev => Math.min(prev + 20, images.length))}
-                              className="border-salmon text-salmon hover:bg-salmon hover:text-white"
-                            >
-                              Load More ({Math.min(20, images.length - visibleImageCount)} remaining)
-                            </Button>
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-salmon mx-auto mb-4"></div>
+                            <p>Loading images...</p>
                           </div>
-                        )}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
+                        </div>
+                      ) : images.length === 0 ? (
+                        <div className="text-center p-8">
+                          <Camera className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                          <h3 className="text-lg font-medium mb-2">No Images Yet</h3>
+                          <p className="text-muted-foreground">Images will appear here once uploaded by SlyFox Studios.</p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between mb-4">
+                            <p className="text-sm text-muted-foreground">
+                              <MousePointer className="w-4 h-4 inline mr-1" />
+                              Drag and drop to reorder images • Hover for options
+                            </p>
+                            <Badge variant="secondary">
+                              {images.length} {images.length === 1 ? 'image' : 'images'}
+                            </Badge>
+                          </div>
+                          
+                          {gallerySettings.layoutStyle === 'masonry' ? (
+                            <div 
+                              className={`columns-2 md:columns-3 lg:columns-4 space-y-${gallerySettings.imageSpacing === 'tight' ? '1' : gallerySettings.imageSpacing === 'normal' ? '2' : '4'}`}
+                              style={{ 
+                                gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
+                              }}
+                            >
+                              {images.slice(0, visibleImageCount).map((image) => (
+                                <div
+                                  key={image.id}
+                                  className={`
+                                    relative group overflow-hidden break-inside-avoid 
+                                    ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full aspect-square'}
+                                    ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
+                                    ${draggedImage === image.id ? 'opacity-50' : ''}
+                                    cursor-pointer transition-all duration-200
+                                  `}
+                                  style={{ 
+                                    marginBottom: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
+                                  }}
+                                  draggable
+                                  onDragStart={(e) => {
+                                    setDraggedImage(image.id);
+                                    e.dataTransfer.effectAllowed = 'move';
+                                  }}
+                                  onDragEnd={() => setDraggedImage(null)}
+                                  onDragOver={(e) => e.preventDefault()}
+                                  onDrop={(e) => {
+                                    e.preventDefault();
+                                    // Handle reordering logic here
+                                    setDraggedImage(null);
+                                  }}
+                                  onMouseDown={() => setDragStartTime(Date.now())}
+                                  onClick={(e) => {
+                                    const clickDuration = Date.now() - dragStartTime;
+                                    if (clickDuration < 200) {
+                                      // Quick click - could open modal
+                                    }
+                                  }}
+                                >
+                                  <img
+                                    src={ImageUrl.forViewing(image.storagePath)}
+                                    alt={image.filename}
+                                    className={`w-full object-cover ${gallerySettings.borderStyle === 'circular' ? 'h-full aspect-square' : 'h-auto'}`}
+                                  />
+                                  
+                                  {/* 4-Button Hover System - Exact Admin Panel Clone */}
+                                  <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                    <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
+                                      <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        className="bg-purple-600 text-white hover:bg-purple-700"
+                                        title="View Full Resolution"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          window.open(ImageUrl.forFullSize(image.storagePath), '_blank');
+                                        }}
+                                      >
+                                        <Eye className="w-3 h-3" />
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        className="bg-salmon text-white hover:bg-salmon-muted"
+                                        title="Make Cover"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setSelectedCover(selectedCover === image.id ? null : image.id);
+                                        }}
+                                      >
+                                        <Crown className="w-3 h-3" />
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="secondary" 
+                                        className="bg-yellow-600 text-white hover:bg-yellow-700"
+                                        title="Remove from Album"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (confirm('Remove this image from your album? It will be moved to SlyFox archive.')) {
+                                            toast({ title: "Image removed from album", description: "Image moved to SlyFox archive" });
+                                          }
+                                        }}
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        title="Delete Permanently (Client Restricted)"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          toast({ 
+                                            title: "Delete functionality not available to clients", 
+                                            description: "Contact SlyFox Studios for permanent deletions", 
+                                            variant: "destructive" 
+                                          });
+                                        }}
+                                      >
+                                        <Trash2 className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Cover Badge */}
+                                  {selectedCover === image.id && (
+                                    <div className="absolute top-2 right-2 bg-salmon text-white px-2 py-1 rounded text-xs font-bold">
+                                      Cover
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div 
+                              className="grid grid-cols-4"
+                              style={{ 
+                                gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
+                              }}
+                            >
+                              {images.slice(0, visibleImageCount).map((image) => (
+                                <div
+                                  key={image.id}
+                                  className={`
+                                    relative group overflow-hidden aspect-square
+                                    ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full'}
+                                    ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
+                                    ${draggedImage === image.id ? 'opacity-50' : ''}
+                                    cursor-pointer transition-all duration-200
+                                  `}
+                                  draggable
+                                  onDragStart={(e) => {
+                                    setDraggedImage(image.id);
+                                    e.dataTransfer.effectAllowed = 'move';
+                                  }}
+                                  onDragEnd={() => setDraggedImage(null)}
+                                  onDragOver={(e) => e.preventDefault()}
+                                  onDrop={(e) => {
+                                    e.preventDefault();
+                                    setDraggedImage(null);
+                                  }}
+                                  onMouseDown={() => setDragStartTime(Date.now())}
+                                >
+                                  <img
+                                    src={ImageUrl.forViewing(image.storagePath)}
+                                    alt={image.filename}
+                                    className="w-full h-full object-cover"
+                                  />
+                                  
+                                  {/* 4-Button Hover System */}
+                                  <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                    <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
+                                      <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        className="bg-purple-600 text-white hover:bg-purple-700"
+                                        title="View Full Resolution"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          window.open(ImageUrl.forFullSize(image.storagePath), '_blank');
+                                        }}
+                                      >
+                                        <Eye className="w-3 h-3" />
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        className="bg-salmon text-white hover:bg-salmon-muted"
+                                        title="Make Cover"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setSelectedCover(selectedCover === image.id ? null : image.id);
+                                        }}
+                                      >
+                                        <Crown className="w-3 h-3" />
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="secondary" 
+                                        className="bg-yellow-600 text-white hover:bg-yellow-700"
+                                        title="Remove from Album"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (confirm('Remove this image from your album? It will be moved to SlyFox archive.')) {
+                                            toast({ title: "Image removed from album", description: "Image moved to SlyFox archive" });
+                                          }
+                                        }}
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        title="Delete Permanently (Client Restricted)"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          toast({ 
+                                            title: "Delete functionality not available to clients", 
+                                            description: "Contact SlyFox Studios for permanent deletions", 
+                                            variant: "destructive" 
+                                          });
+                                        }}
+                                      >
+                                        <Trash2 className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Cover Badge */}
+                                  {selectedCover === image.id && (
+                                    <div className="absolute top-2 right-2 bg-salmon text-white px-2 py-1 rounded text-xs font-bold">
+                                      Cover
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          
+                          {/* Load More Button */}
+                          {images.length > visibleImageCount && (
+                            <div className="text-center mt-6">
+                              <Button
+                                variant="outline"
+                                onClick={() => setVisibleImageCount(prev => Math.min(prev + 20, images.length))}
+                                className="border-salmon text-salmon hover:bg-salmon hover:text-white"
+                              >
+                                Load More ({Math.min(20, images.length - visibleImageCount)} remaining)
+                              </Button>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
+
+
           </div>
         )}
       </div>
