@@ -57,8 +57,9 @@ export default function ClientGallery() {
   const params = useParams();
   const { toast } = useToast();
   const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
-  const [visibleImageCount, setVisibleImageCount] = useState(20);
+  const [visibleImageCount, setVisibleImageCount] = useState(30);
   const [modalImageIndex, setModalImageIndex] = useState<number | null>(null);
+  const [navbarVisible, setNavbarVisible] = useState(true);
   const slug = params.slug;
 
   // Fetch shoot data directly by slug - this is a public gallery for a single shoot
@@ -108,6 +109,31 @@ export default function ClientGallery() {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [modalImageIndex, images.length]);
 
+  // Navbar hide/show on scroll
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY === 0) {
+        // At the top, always show navbar
+        setNavbarVisible(true);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scrolling down and past 100px, hide navbar
+        setNavbarVisible(false);
+      } else if (currentScrollY < lastScrollY) {
+        // Scrolling up, show navbar
+        setNavbarVisible(true);
+      }
+      
+      lastScrollY = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // Share gallery functionality
   const handleShareGallery = () => {
     const currentUrl = window.location.href;
@@ -144,15 +170,23 @@ export default function ClientGallery() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = filename;
+      
+      // Generate proper filename - use provided name or fallback to shoot-based name
+      const downloadFilename = filename && filename !== 'null' 
+        ? filename 
+        : `${shoot?.title?.replace(/[^a-zA-Z0-9]/g, '-')}-image-${Date.now()}.jpg`;
+      
+      link.download = downloadFilename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
+      // Show success toast that auto-dismisses
       toast({
-        title: "Download started",
-        description: `${filename} is being downloaded`,
+        title: "Download complete",
+        description: `${downloadFilename} has been downloaded`,
+        duration: 3000, // Auto-dismiss after 3 seconds
       });
     } catch (error) {
       toast({
@@ -202,7 +236,7 @@ export default function ClientGallery() {
     return (
       <div className="min-h-screen bg-background text-foreground">
         {/* Simple navbar for loading state */}
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-b border-white/10">
+        <nav className={`fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-b border-white/10 transition-transform duration-300 ${navbarVisible ? 'translate-y-0' : '-translate-y-full'}`}>
           <div className="flex items-center justify-between h-16 px-6">
             <Link href="/">
               <img src="/images/logos/slyfox-logo-white.png" alt="SlyFox Studios" className="h-8" />
@@ -234,7 +268,7 @@ export default function ClientGallery() {
     return (
       <div className="min-h-screen bg-background text-foreground">
         {/* Simple navbar for error state */}
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-b border-white/10">
+        <nav className={`fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-b border-white/10 transition-transform duration-300 ${navbarVisible ? 'translate-y-0' : '-translate-y-full'}`}>
           <div className="flex items-center justify-between h-16 px-6">
             <Link href="/">
               <img src="/images/logos/slyfox-logo-white.png" alt="SlyFox Studios" className="h-8" />
@@ -278,7 +312,7 @@ export default function ClientGallery() {
       <meta name="description" content={`View ${shoot.customTitle || shoot.title} gallery by SlyFox Studios. ${shoot.description || 'Professional photography showcasing beautiful moments.'}`} />
       
       {/* Custom Navigation Bar for Gallery */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/10 backdrop-blur-sm">
+      <nav className={`fixed top-0 left-0 right-0 z-50 bg-black/10 backdrop-blur-sm transition-transform duration-300 ${navbarVisible ? 'translate-y-0' : '-translate-y-full'}`}>
         <div className="max-w-[1000px] mx-auto flex items-center justify-between h-16 px-6">
           {/* SlyFox Logo - Left Side */}
           <Link href="/">
@@ -318,7 +352,7 @@ export default function ClientGallery() {
         style={{
           backgroundColor: gallerySettings.backgroundColor || '#1a1a1a',
           ...(coverImage && {
-            backgroundImage: `url(${ImageUrl.forViewing(coverImage.storagePath)})`,
+            backgroundImage: `url(${ImageUrl.forFullSize(coverImage.storagePath)})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center'
           })
@@ -426,7 +460,7 @@ export default function ClientGallery() {
           {visibleImageCount < images.length && (
             <div className="text-center mt-8">
               <Button
-                onClick={() => setVisibleImageCount(prev => Math.min(prev + 20, images.length))}
+                onClick={() => setVisibleImageCount(prev => Math.min(prev + 30, images.length))}
                 variant="outline"
                 className="border-salmon text-salmon hover:bg-salmon hover:text-white"
               >
