@@ -25,19 +25,27 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // Start with false to prevent blocking
+  const [isLoading, setIsLoading] = useState(true); // Start with true to prevent premature redirects
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
 
   useEffect(() => {
     // Check for existing session
+    console.log('AuthProvider: Checking for saved user...');
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
       try {
-        setUser(JSON.parse(savedUser));
+        const parsedUser = JSON.parse(savedUser);
+        console.log('AuthProvider: Found saved user:', parsedUser.email, parsedUser.role);
+        setUser(parsedUser);
       } catch (error) {
         console.warn('Invalid saved user data, clearing...');
         localStorage.removeItem("user");
       }
+    } else {
+      console.log('AuthProvider: No saved user found');
     }
+    setIsLoading(false);
+    setHasCheckedAuth(true);
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -75,7 +83,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signOut = logout; // Alias for consistency
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, signOut, isLoading }}>
+    <AuthContext.Provider value={{ user, login, logout, signOut, isLoading: isLoading || !hasCheckedAuth }}>
       {children}
     </AuthContext.Provider>
   );

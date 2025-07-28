@@ -9,11 +9,16 @@ export default function ClientDashboard() {
   const { user, isLoading, logout } = useAuth();
   const [, setLocation] = useLocation();
 
+  console.log('ClientDashboard: isLoading:', isLoading, 'user:', user?.email, 'role:', user?.role);
+
   useEffect(() => {
+    console.log('ClientDashboard useEffect: isLoading:', isLoading, 'user:', user?.email);
     if (!isLoading && !user) {
+      console.log('ClientDashboard: No user, redirecting to login');
       setLocation("/login");
     }
     if (!isLoading && user && user.role !== "client") {
+      console.log('ClientDashboard: User is not client, redirecting to dashboard');
       setLocation("/dashboard");
     }
   }, [user, isLoading, setLocation]);
