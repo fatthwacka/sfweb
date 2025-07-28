@@ -237,8 +237,8 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     queryKey: ['/api/clients']
   });
 
-  const shoot = shootData?.shoot || null;
-  const images: GalleryImage[] = shootData?.images ? (shootData.images as GalleryImage[]) : [];
+  const shoot = (shootData as any)?.shoot || null;
+  const images: GalleryImage[] = (shootData as any)?.images ? ((shootData as any).images as GalleryImage[]) : [];
 
   // Initialize settings from shoot data
   useEffect(() => {
@@ -334,7 +334,9 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
   // Get ordered images for display
   const getOrderedImages = useCallback(() => {
-    if (imageOrder.length === 0) return images;
+    // Defensive checks for empty or undefined data
+    if (!images || images.length === 0) return [];
+    if (!imageOrder || imageOrder.length === 0) return images;
     
     const imageMap = new Map(images.map(img => [img.id, img]));
     const orderedImages = imageOrder
@@ -692,19 +694,31 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
             }}
           >
             {/* Cover Image Strip */}
-            {selectedCover && (
-              <div 
-                className="relative h-48 w-full bg-cover bg-center flex items-center justify-center"
-                style={{
-                  backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${ImageUrl.forViewing(getOrderedImages().find(img => img.id === selectedCover)?.storagePath || '')})`,
-                  marginBottom: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px'
-                }}
-              >
-                <h2 className="text-xl font-bold text-white text-center">
-                  {shoot?.customTitle || shoot?.title || 'Gallery'}
-                </h2>
-              </div>
-            )}
+            {selectedCover && (() => {
+              const coverImage = getOrderedImages().find(img => img.id === selectedCover);
+              const coverImageUrl = coverImage?.storagePath ? ImageUrl.forViewing(coverImage.storagePath) : null;
+              
+              return coverImageUrl ? (
+                <div 
+                  className="relative h-48 w-full bg-cover bg-center flex items-center justify-center"
+                  style={{
+                    backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${coverImageUrl})`,
+                    marginBottom: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px'
+                  }}
+                >
+                  <h2 className="text-xl font-bold text-white text-center">
+                    {shoot?.customTitle || shoot?.title || 'Gallery'}
+                  </h2>
+                </div>
+              ) : (
+                <div className="relative h-48 w-full bg-gray-800 flex items-center justify-center border-2 border-dashed border-gray-600">
+                  <div className="text-center text-gray-400">
+                    <Eye className="w-8 h-8 mx-auto mb-2" />
+                    <p className="text-sm">Cover image loading...</p>
+                  </div>
+                </div>
+              );
+            })()}
             
             {/* Image Grid */}
             <div className="p-4">
@@ -721,64 +735,84 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                   gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
                 }}
               >
-                {getOrderedImages().slice(0, visibleImageCount).map((image, index) => (
-                  <div 
-                    key={image.id}
-                    className={`
-                      relative group overflow-hidden break-inside-avoid 
-                      ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full aspect-square'}
-                      ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
-                      ${draggedImage === image.id ? 'opacity-50' : ''}
-                      cursor-pointer transition-all duration-200
-                    `}
-                    style={{ 
-                      marginBottom: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
-                    }}
-                    draggable={isDragReorderingEnabled}
-                    onDragStart={(e) => {
-                      if (!isDragReorderingEnabled) {
+                {getOrderedImages().slice(0, visibleImageCount).map((image, index) => {
+                  const imageUrl = image?.storagePath ? ImageUrl.forViewing(image.storagePath) : null;
+                  
+                  return (
+                    <div 
+                      key={image.id}
+                      className={`
+                        relative group overflow-hidden break-inside-avoid 
+                        ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full aspect-square'}
+                        ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
+                        ${draggedImage === image.id ? 'opacity-50' : ''}
+                        cursor-pointer transition-all duration-200
+                      `}
+                      style={{ 
+                        marginBottom: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
+                      }}
+                      draggable={isDragReorderingEnabled}
+                      onDragStart={(e) => {
+                        if (!isDragReorderingEnabled) {
+                          e.preventDefault();
+                          return;
+                        }
+                        setDraggedImage(image.id);
+                        e.dataTransfer.effectAllowed = 'move';
+                      }}
+                      onDragEnd={() => setDraggedImage(null)}
+                      onDragOver={(e) => isDragReorderingEnabled && e.preventDefault()}
+                      onDrop={(e) => {
+                        if (!isDragReorderingEnabled) return;
                         e.preventDefault();
-                        return;
-                      }
-                      setDraggedImage(image.id);
-                      e.dataTransfer.effectAllowed = 'move';
-                    }}
-                    onDragEnd={() => setDraggedImage(null)}
-                    onDragOver={(e) => isDragReorderingEnabled && e.preventDefault()}
-                    onDrop={(e) => {
-                      if (!isDragReorderingEnabled) return;
-                      e.preventDefault();
-                      if (draggedImage && draggedImage !== image.id) {
-                        setImageOrder(currentOrder => {
-                          const newOrder = [...currentOrder];
-                          const draggedIndex = newOrder.indexOf(draggedImage);
-                          const targetIndex = newOrder.indexOf(image.id);
-                          
-                          if (draggedIndex !== -1 && targetIndex !== -1) {
-                            // Remove from old position
-                            newOrder.splice(draggedIndex, 1);
-                            // Insert at new position  
-                            newOrder.splice(targetIndex, 0, draggedImage);
-                          }
-                          return newOrder;
-                        });
-                      }
-                      setDraggedImage(null);
-                    }}
-                    onMouseDown={(e) => setDragStartTime(Date.now())}
-                    onClick={(e) => {
-                      const clickDuration = Date.now() - dragStartTime;
-                      if (clickDuration < 200) { // Quick click = modal
-                        setSelectedImageModal(image.id);
-                      }
-                    }}
-                  >
-                    <img
-                      src={ImageUrl.forViewing(image.storagePath)}
-                      alt={image.filename}
-                      className={`w-full object-cover ${gallerySettings.borderStyle === 'circular' ? 'h-full aspect-square' : 'h-auto'}`}
-
-                    />
+                        if (draggedImage && draggedImage !== image.id) {
+                          setImageOrder(currentOrder => {
+                            const newOrder = [...currentOrder];
+                            const draggedIndex = newOrder.indexOf(draggedImage);
+                            const targetIndex = newOrder.indexOf(image.id);
+                            
+                            if (draggedIndex !== -1 && targetIndex !== -1) {
+                              // Remove from old position
+                              newOrder.splice(draggedIndex, 1);
+                              // Insert at new position  
+                              newOrder.splice(targetIndex, 0, draggedImage);
+                            }
+                            return newOrder;
+                          });
+                        }
+                        setDraggedImage(null);
+                      }}
+                      onMouseDown={(e) => setDragStartTime(Date.now())}
+                      onClick={(e) => {
+                        const clickDuration = Date.now() - dragStartTime;
+                        if (clickDuration < 200) { // Quick click = modal
+                          setSelectedImageModal(image.id);
+                        }
+                      }}
+                    >
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={image.filename}
+                          className={`w-full object-cover ${gallerySettings.borderStyle === 'circular' ? 'h-full aspect-square' : 'h-auto'}`}
+                          onError={(e) => {
+                            // Fallback to a placeholder on image load error
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const parent = target.parentElement;
+                            if (parent && !parent.querySelector('.image-error-placeholder')) {
+                              const placeholder = document.createElement('div');
+                              placeholder.className = 'image-error-placeholder flex items-center justify-center h-32 bg-gray-800 text-gray-400 text-sm';
+                              placeholder.innerHTML = 'Image unavailable';
+                              parent.appendChild(placeholder);
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-32 bg-gray-800 text-gray-400 text-sm">
+                          Loading...
+                        </div>
+                      )}
                     
                     {/* Hover Buttons */}
                     <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -849,7 +883,8 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                       </div>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div 
@@ -858,25 +893,28 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                   gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
                 }}
               >
-                {getOrderedImages().slice(0, visibleImageCount).map((image, index) => (
-                  <div 
-                    key={image.id}
-                    className={`
-                      relative group overflow-hidden aspect-square
-                      ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full'}
-                      ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
-                      ${draggedImage === image.id ? 'opacity-50' : ''}
-                      cursor-pointer transition-all duration-200
-                    `}
-                    draggable={isDragReorderingEnabled}
-                    onDragStart={(e) => {
-                      if (!isDragReorderingEnabled) {
-                        e.preventDefault();
-                        return;
-                      }
-                      setDraggedImage(image.id);
-                      e.dataTransfer.effectAllowed = 'move';
-                    }}
+                {getOrderedImages().slice(0, visibleImageCount).map((image, index) => {
+                  const imageUrl = image?.storagePath ? ImageUrl.forViewing(image.storagePath) : null;
+                  
+                  return (
+                    <div 
+                      key={image.id}
+                      className={`
+                        relative group overflow-hidden aspect-square
+                        ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full'}
+                        ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
+                        ${draggedImage === image.id ? 'opacity-50' : ''}
+                        cursor-pointer transition-all duration-200
+                      `}
+                      draggable={isDragReorderingEnabled}
+                      onDragStart={(e) => {
+                        if (!isDragReorderingEnabled) {
+                          e.preventDefault();
+                          return;
+                        }
+                        setDraggedImage(image.id);
+                        e.dataTransfer.effectAllowed = 'move';
+                      }}
                     onDragEnd={() => setDraggedImage(null)}
                     onDragOver={(e) => isDragReorderingEnabled && e.preventDefault()}
                     onDrop={(e) => {
@@ -907,12 +945,28 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                       }
                     }}
                   >
-                    <img
-                      src={ImageUrl.forViewing(image.storagePath)}
-                      alt={image.filename}
-                      className="w-full h-full object-cover"
-
-                    />
+                    {imageUrl ? (
+                      <img
+                        src={imageUrl}
+                        alt={image.filename}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent && !parent.querySelector('.image-error-placeholder')) {
+                            const placeholder = document.createElement('div');
+                            placeholder.className = 'image-error-placeholder flex items-center justify-center w-full h-full bg-gray-800 text-gray-400 text-sm';
+                            placeholder.innerHTML = 'Image unavailable';
+                            parent.appendChild(placeholder);
+                          }
+                        }}
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center w-full h-full bg-gray-800 text-gray-400 text-sm">
+                        Loading...
+                      </div>
+                    )}
                     
                     {/* Hover Buttons */}
                     <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -983,7 +1037,8 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                       </div>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
             
