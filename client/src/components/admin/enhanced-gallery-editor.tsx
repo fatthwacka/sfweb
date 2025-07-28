@@ -240,27 +240,27 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   const shoot = (shootData as any)?.shoot || null;
   const images: GalleryImage[] = (shootData as any)?.images ? ((shootData as any).images as GalleryImage[]) : [];
 
-  // Clear stale state when switching galleries
+  // Initialize all settings from shoot data when shoot changes
   useEffect(() => {
-    if (shoot?.id) {
-      // Clear selected cover when switching to a different gallery
-      setSelectedCover(null);
-    }
-  }, [shoot?.id]);
-
-  // Initialize settings from shoot data
-  useEffect(() => {
-    if (shoot && shoot.id && !editableShoot.title) {
+    console.log('Gallery init debug:', {
+      shootId: shoot?.id,
+      shootTitle: shoot?.title,
+      bannerImageId: shoot?.bannerImageId,
+      gallerySettings: shoot?.gallerySettings,
+      imagesLength: images.length,
+      firstImageId: images[0]?.id
+    });
+    
+    if (shoot && shoot.id && images.length > 0) {
       setCustomSlug(shoot.customSlug || '');
       
       // Set cover: use bannerImageId if valid, otherwise use first image as fallback
       if (shoot.bannerImageId && images.some(img => img.id === shoot.bannerImageId)) {
+        console.log('Setting cover to bannerImageId:', shoot.bannerImageId);
         setSelectedCover(shoot.bannerImageId);
-      } else if (images.length > 0) {
-        // Fallback to first image if no valid banner or bannerImageId is null
-        setSelectedCover(images[0].id);
       } else {
-        setSelectedCover(null);
+        console.log('Setting cover to first image:', images[0].id);
+        setSelectedCover(images[0].id);
       }
       
       // Initialize gallery settings from shoot data (provide defaults for null gallerySettings)
@@ -287,7 +287,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
         seoTags: Array.isArray(shoot.seoTags) ? shoot.seoTags.join(', ') : (shoot.seoTags || '')
       });
     }
-  }, [shoot?.id]);
+  }, [shoot?.id, images.length]);
 
   // Initialize image order from sequence - fix blank gaps issue
   useEffect(() => {
@@ -710,7 +710,14 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
             }}
           >
             {/* Cover Image Strip */}
-            {selectedCover && (() => {
+            {(() => {
+              console.log('Cover strip debug:', {
+                selectedCover,
+                hasSelectedCover: !!selectedCover,
+                orderedImagesCount: getOrderedImages().length
+              });
+              return selectedCover;
+            })() && (() => {
               const orderedImages = getOrderedImages();
               const coverImage = orderedImages.find(img => img.id === selectedCover);
               const coverImageUrl = coverImage?.storagePath ? ImageUrl.forViewing(coverImage.storagePath) : null;
