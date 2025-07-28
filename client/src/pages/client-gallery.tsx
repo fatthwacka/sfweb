@@ -72,6 +72,103 @@ export default function ClientGallery() {
     enabled: !!shoot?.id
   });
 
+  // Modal navigation functions - defined before useEffect
+  const openModal = (imageIndex: number) => {
+    setModalImageIndex(imageIndex);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeModal = () => {
+    setModalImageIndex(null);
+    document.body.style.overflow = 'auto';
+  };
+
+  const navigateModal = (direction: 'prev' | 'next') => {
+    if (modalImageIndex === null || images.length === 0) return;
+    
+    if (direction === 'prev') {
+      setModalImageIndex(modalImageIndex > 0 ? modalImageIndex - 1 : images.length - 1);
+    } else {
+      setModalImageIndex(modalImageIndex < images.length - 1 ? modalImageIndex + 1 : 0);
+    }
+  };
+
+  // Keyboard navigation for modal - moved up to ensure consistent hook order
+  useEffect(() => {
+    if (modalImageIndex === null) return;
+
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') navigateModal('prev');
+      if (e.key === 'ArrowRight') navigateModal('next');
+      if (e.key === 'Escape') closeModal();
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [modalImageIndex, images.length]);
+
+  // Share gallery functionality
+  const handleShareGallery = () => {
+    const currentUrl = window.location.href;
+    navigator.clipboard.writeText(currentUrl).then(() => {
+      toast({
+        title: "Gallery link copied!",
+        description: "Share this link to let others view this gallery.",
+      });
+    }).catch(() => {
+      toast({
+        title: "Failed to copy link",
+        description: "Please copy the URL manually from your browser.",
+        variant: "destructive",
+      });
+    });
+  };
+
+  const handleImageSelect = (imageId: string) => {
+    const newSelected = new Set(selectedImages);
+    if (newSelected.has(imageId)) {
+      newSelected.delete(imageId);
+    } else {
+      newSelected.add(imageId);
+    }
+    setSelectedImages(newSelected);
+  };
+
+  const handleDownloadSelected = () => {
+    if (selectedImages.size === 0) {
+      toast({
+        title: "No images selected",
+        description: "Please select images to download",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // TODO: Implement bulk download functionality
+    toast({
+      title: "Download started",
+      description: `Downloading ${selectedImages.size} images...`
+    });
+  };
+
+  // Share individual image
+  const handleShareImage = (imageIndex: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const imageUrl = `${window.location.origin}/galleries/${slug}?image=${imageIndex}`;
+    navigator.clipboard.writeText(imageUrl).then(() => {
+      toast({
+        title: "Image link copied!",
+        description: "Share this link to show this specific image.",
+      });
+    }).catch(() => {
+      toast({
+        title: "Failed to copy link",
+        description: "Please copy the URL manually from your browser.",
+        variant: "destructive",
+      });
+    });
+  };
+
   if (shootLoading) {
     return (
       <div className="min-h-screen bg-background text-foreground">
@@ -120,106 +217,9 @@ export default function ClientGallery() {
     );
   }
 
-  // Apply gallery settings from the shoot
+  // Apply gallery settings from the shoot  
   const { gallerySettings } = shoot;
   const coverImage = images.find(img => img.id === shoot.bannerImageId);
-
-  // Share gallery functionality
-  const handleShareGallery = () => {
-    const currentUrl = window.location.href;
-    navigator.clipboard.writeText(currentUrl).then(() => {
-      toast({
-        title: "Gallery link copied!",
-        description: "Share this link to let others view this gallery.",
-      });
-    }).catch(() => {
-      toast({
-        title: "Failed to copy link",
-        description: "Please copy the URL manually from your browser.",
-        variant: "destructive",
-      });
-    });
-  };
-
-  const handleImageSelect = (imageId: string) => {
-    const newSelected = new Set(selectedImages);
-    if (newSelected.has(imageId)) {
-      newSelected.delete(imageId);
-    } else {
-      newSelected.add(imageId);
-    }
-    setSelectedImages(newSelected);
-  };
-
-  const handleDownloadSelected = () => {
-    if (selectedImages.size === 0) {
-      toast({
-        title: "No images selected",
-        description: "Please select images to download",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // TODO: Implement bulk download functionality
-    toast({
-      title: "Download started",
-      description: `Downloading ${selectedImages.size} images...`
-    });
-  };
-
-  // Modal navigation functions
-  const openModal = (imageIndex: number) => {
-    setModalImageIndex(imageIndex);
-    document.body.style.overflow = 'hidden';
-  };
-
-  const closeModal = () => {
-    setModalImageIndex(null);
-    document.body.style.overflow = 'auto';
-  };
-
-  const navigateModal = (direction: 'prev' | 'next') => {
-    if (modalImageIndex === null || images.length === 0) return;
-    
-    if (direction === 'prev') {
-      setModalImageIndex(modalImageIndex > 0 ? modalImageIndex - 1 : images.length - 1);
-    } else {
-      setModalImageIndex(modalImageIndex < images.length - 1 ? modalImageIndex + 1 : 0);
-    }
-  };
-
-  // Keyboard navigation for modal
-  useEffect(() => {
-    if (modalImageIndex === null) return;
-
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') navigateModal('prev');
-      if (e.key === 'ArrowRight') navigateModal('next');
-      if (e.key === 'Escape') closeModal();
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [modalImageIndex]);
-
-  // Share individual image
-  const handleShareImage = (imageIndex: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const imageUrl = `${window.location.origin}/galleries/${slug}?image=${imageIndex}`;
-    navigator.clipboard.writeText(imageUrl).then(() => {
-      toast({
-        title: "Image link copied!",
-        description: "Share this link to show this specific image.",
-      });
-    }).catch(() => {
-      toast({
-        title: "Failed to copy link",
-        description: "Please copy the URL manually from your browser.",
-        variant: "destructive",
-      });
-    });
-  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
