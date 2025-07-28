@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -102,7 +102,6 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
   const [visibleImageCount, setVisibleImageCount] = useState(20);
   const [draggedImage, setDraggedImage] = useState<string | null>(null);
   const [dragStartTime, setDragStartTime] = useState<number>(0);
-  const [imageOrder, setImageOrder] = useState<string[]>([]);
 
   // Debug logging to help identify loading issues
   console.log('ClientPortal loading for:', userEmail);
@@ -126,30 +125,6 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
     queryFn: () => fetch(`/api/shoots/${selectedShoot}/images`).then(res => res.json()),
     enabled: !!selectedShoot,
   });
-
-  // Initialize image order when images load
-  useEffect(() => {
-    if (images.length > 0 && imageOrder.length === 0) {
-      const sortedImages = [...images].sort((a, b) => a.sequence - b.sequence);
-      setImageOrder(sortedImages.map(img => img.id));
-    }
-  }, [images]);
-
-  // Get ordered images for display
-  const getOrderedImages = () => {
-    if (imageOrder.length === 0) return images;
-    
-    const imageMap = new Map(images.map(img => [img.id, img]));
-    const orderedImages = imageOrder
-      .map(id => imageMap.get(id))
-      .filter(Boolean) as Image[];
-    
-    // Add any new images not in order yet
-    const orderedIds = new Set(imageOrder);
-    const newImages = images.filter(img => !orderedIds.has(img.id));
-    
-    return [...orderedImages, ...newImages];
-  };
 
   const filteredShoots = shoots.filter(shoot => {
     const matchesSearch = shoot.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -751,7 +726,7 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                                 gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
                               }}
                             >
-                              {getOrderedImages().slice(0, visibleImageCount).map((image) => (
+                              {images.slice(0, visibleImageCount).map((image) => (
                                 <div
                                   key={image.id}
                                   className={`
@@ -773,22 +748,7 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                                   onDragOver={(e) => e.preventDefault()}
                                   onDrop={(e) => {
                                     e.preventDefault();
-                                    if (draggedImage && draggedImage !== image.id) {
-                                      // Update image order state for masonry layout
-                                      setImageOrder(currentOrder => {
-                                        const newOrder = [...currentOrder];
-                                        const draggedIndex = newOrder.indexOf(draggedImage);
-                                        const targetIndex = newOrder.indexOf(image.id);
-                                        
-                                        if (draggedIndex !== -1 && targetIndex !== -1) {
-                                          // Remove from old position and insert at new position
-                                          newOrder.splice(draggedIndex, 1);
-                                          newOrder.splice(targetIndex, 0, draggedImage);
-                                          console.log('Masonry reordered images from', draggedIndex, 'to', targetIndex);
-                                        }
-                                        return newOrder;
-                                      });
-                                    }
+                                    // Handle reordering logic here
                                     setDraggedImage(null);
                                   }}
                                   onMouseDown={() => setDragStartTime(Date.now())}
@@ -889,12 +849,12 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                             </div>
                           ) : (
                             <div 
-                              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+                              className="grid grid-cols-4"
                               style={{ 
                                 gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
                               }}
                             >
-                              {getOrderedImages().slice(0, visibleImageCount).map((image) => (
+                              {images.slice(0, visibleImageCount).map((image) => (
                                 <div
                                   key={image.id}
                                   className={`
@@ -913,22 +873,6 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                                   onDragOver={(e) => e.preventDefault()}
                                   onDrop={(e) => {
                                     e.preventDefault();
-                                    if (draggedImage && draggedImage !== image.id) {
-                                      // Update image order state for grid layout
-                                      setImageOrder(currentOrder => {
-                                        const newOrder = [...currentOrder];
-                                        const draggedIndex = newOrder.indexOf(draggedImage);
-                                        const targetIndex = newOrder.indexOf(image.id);
-                                        
-                                        if (draggedIndex !== -1 && targetIndex !== -1) {
-                                          // Remove from old position and insert at new position
-                                          newOrder.splice(draggedIndex, 1);
-                                          newOrder.splice(targetIndex, 0, draggedImage);
-                                          console.log('Grid reordered images from', draggedIndex, 'to', targetIndex);
-                                        }
-                                        return newOrder;
-                                      });
-                                    }
                                     setDraggedImage(null);
                                   }}
                                   onMouseDown={() => setDragStartTime(Date.now())}

@@ -174,10 +174,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   const saveAppearanceMutation = useMutation({
     mutationFn: (data: any) => apiRequest('PATCH', `/api/shoots/${shootId}`, data),
     onSuccess: () => {
-      // Don't invalidate queries immediately to prevent reordering during save
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
-      }, 100);
+      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
       toast({ title: "Gallery appearance saved successfully!" });
     },
     onError: () => toast({ title: "Error", description: "Failed to save appearance", variant: "destructive" })
@@ -245,18 +242,6 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     if (shoot && shoot.id && !editableShoot.title) {
       setCustomSlug(shoot.customSlug || '');
       setSelectedCover(shoot.bannerImageId);
-      
-      // Initialize gallery settings from shoot data
-      if (shoot.gallerySettings) {
-        setGallerySettings({
-          backgroundColor: shoot.gallerySettings.backgroundColor || '#ffffff',
-          borderStyle: shoot.gallerySettings.borderStyle || 'sharp',
-          padding: shoot.gallerySettings.padding || 'tight',
-          layoutStyle: shoot.gallerySettings.layoutStyle || 'grid',
-          imageSpacing: shoot.gallerySettings.imageSpacing || 'tight'
-        });
-      }
-      
       setEditableShoot({
         title: shoot.title || '',
         location: shoot.location || '',
@@ -273,23 +258,13 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     }
   }, [shoot?.id]);
 
-  // Initialize image order from sequence - fix blank gaps issue
+  // Initialize image order from sequence
   useEffect(() => {
-    if (images.length > 0) {
+    if (images.length > 0 && imageOrder.length === 0) {
       const sortedImages = [...images].sort((a, b) => a.sequence - b.sequence);
-      const newOrder = sortedImages.map(img => img.id);
-      
-      // Only update if the order actually changed to prevent unnecessary re-renders
-      if (JSON.stringify(newOrder) !== JSON.stringify(imageOrder)) {
-        setImageOrder(newOrder);
-      }
-    } else {
-      // Clear order when no images
-      if (imageOrder.length > 0) {
-        setImageOrder([]);
-      }
+      setImageOrder(sortedImages.map(img => img.id));
     }
-  }, [images.length, images.map(img => `${img.id}-${img.sequence}`).join(',')]);
+  }, [images.length]);
 
   // Drag and drop handlers
   const handleDragStart = useCallback((e: React.DragEvent, imageId: string) => {
@@ -315,12 +290,9 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       const draggedIndex = newOrder.indexOf(draggedImage);
       const targetIndex = newOrder.indexOf(targetImageId);
       
-      // Only proceed if both indices are valid
-      if (draggedIndex !== -1 && targetIndex !== -1) {
-        // Remove dragged item and insert at new position
-        newOrder.splice(draggedIndex, 1);
-        newOrder.splice(targetIndex, 0, draggedImage);
-      }
+      // Remove dragged item and insert at new position
+      newOrder.splice(draggedIndex, 1);
+      newOrder.splice(targetIndex, 0, draggedImage);
       
       return newOrder;
     });
@@ -701,7 +673,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                 }}
               >
                 <h2 className="text-xl font-bold text-white text-center">
-                  {shoot?.customTitle || shoot?.title || 'Gallery'}
+                  {shoot.customTitle || shoot.title}
                 </h2>
               </div>
             )}
@@ -710,13 +682,13 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
             <div className="p-4">
               {!selectedCover && (
                 <h2 className="text-xl font-bold text-white mb-4 text-center">
-                  {shoot?.customTitle || shoot?.title || 'Gallery'}
+                  {shoot.customTitle || shoot.title}
                 </h2>
               )}
             
             {gallerySettings.layoutStyle === 'masonry' ? (
               <div 
-                className="columns-2 md:columns-3 lg:columns-4"
+                className={`columns-2 md:columns-3 lg:columns-4 space-y-${gallerySettings.imageSpacing === 'tight' ? '1' : gallerySettings.imageSpacing === 'normal' ? '2' : '4'}`}
                 style={{ 
                   gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
                 }}
@@ -749,21 +721,16 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                       if (!isDragReorderingEnabled) return;
                       e.preventDefault();
                       if (draggedImage && draggedImage !== image.id) {
-                        setImageOrder(currentOrder => {
-                          const newOrder = [...currentOrder];
-                          const draggedIndex = newOrder.indexOf(draggedImage);
-                          const targetIndex = newOrder.indexOf(image.id);
-                          
-                          if (draggedIndex !== -1 && targetIndex !== -1) {
-                            // Remove from old position
-                            newOrder.splice(draggedIndex, 1);
-                            // Insert at new position  
-                            newOrder.splice(targetIndex, 0, draggedImage);
-                          }
-                          return newOrder;
-                        });
+                        const newOrder = [...imageOrder];
+                        const draggedIndex = newOrder.indexOf(draggedImage);
+                        const targetIndex = newOrder.indexOf(image.id);
+                        
+                        if (draggedIndex !== -1 && targetIndex !== -1) {
+                          newOrder.splice(draggedIndex, 1);
+                          newOrder.splice(targetIndex, 0, draggedImage);
+                          setImageOrder(newOrder);
+                        }
                       }
-                      setDraggedImage(null);
                     }}
                     onMouseDown={(e) => setDragStartTime(Date.now())}
                     onClick={(e) => {
@@ -853,7 +820,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
               </div>
             ) : (
               <div 
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+                className="grid grid-cols-4"
                 style={{ 
                   gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
                 }}
@@ -883,19 +850,15 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                       if (!isDragReorderingEnabled) return;
                       e.preventDefault();
                       if (draggedImage && draggedImage !== image.id) {
-                        setImageOrder(currentOrder => {
-                          const newOrder = [...currentOrder];
-                          const draggedIndex = newOrder.indexOf(draggedImage);
-                          const targetIndex = newOrder.indexOf(image.id);
-                          
-                          if (draggedIndex !== -1 && targetIndex !== -1) {
-                            // Remove from old position
-                            newOrder.splice(draggedIndex, 1);
-                            // Insert at new position
-                            newOrder.splice(targetIndex, 0, draggedImage);
-                          }
-                          return newOrder;
-                        });
+                        const newOrder = [...imageOrder];
+                        const draggedIndex = newOrder.indexOf(draggedImage);
+                        const targetIndex = newOrder.indexOf(image.id);
+                        
+                        if (draggedIndex !== -1 && targetIndex !== -1) {
+                          newOrder.splice(draggedIndex, 1);
+                          newOrder.splice(targetIndex, 0, draggedImage);
+                          setImageOrder(newOrder);
+                        }
                       }
                       setDraggedImage(null);
                     }}
