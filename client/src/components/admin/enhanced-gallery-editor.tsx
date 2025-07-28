@@ -273,24 +273,23 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     }
   }, [shoot?.id]);
 
-  // Initialize image order from sequence - only on first load or when images change significantly
+  // Initialize image order from sequence - fix blank gaps issue
   useEffect(() => {
-    if (images.length > 0 && imageOrder.length === 0) {
+    if (images.length > 0) {
       const sortedImages = [...images].sort((a, b) => a.sequence - b.sequence);
-      setImageOrder(sortedImages.map(img => img.id));
-    } else if (images.length > 0 && imageOrder.length > 0) {
-      // Only add new images that aren't in the current order
-      const currentIds = new Set(imageOrder);
-      const newImages = images.filter(img => !currentIds.has(img.id));
-      if (newImages.length > 0) {
-        const newImageIds = newImages.map(img => img.id);
-        setImageOrder(prev => [...prev, ...newImageIds]);
+      const newOrder = sortedImages.map(img => img.id);
+      
+      // Only update if the order actually changed to prevent unnecessary re-renders
+      if (JSON.stringify(newOrder) !== JSON.stringify(imageOrder)) {
+        setImageOrder(newOrder);
       }
-      // Remove deleted images from order
-      const existingIds = new Set(images.map(img => img.id));
-      setImageOrder(prev => prev.filter(id => existingIds.has(id)));
+    } else {
+      // Clear order when no images
+      if (imageOrder.length > 0) {
+        setImageOrder([]);
+      }
     }
-  }, [images.length]);
+  }, [images.length, images.map(img => `${img.id}-${img.sequence}`).join(',')]);
 
   // Drag and drop handlers
   const handleDragStart = useCallback((e: React.DragEvent, imageId: string) => {
@@ -316,9 +315,12 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       const draggedIndex = newOrder.indexOf(draggedImage);
       const targetIndex = newOrder.indexOf(targetImageId);
       
-      // Remove dragged item and insert at new position
-      newOrder.splice(draggedIndex, 1);
-      newOrder.splice(targetIndex, 0, draggedImage);
+      // Only proceed if both indices are valid
+      if (draggedIndex !== -1 && targetIndex !== -1) {
+        // Remove dragged item and insert at new position
+        newOrder.splice(draggedIndex, 1);
+        newOrder.splice(targetIndex, 0, draggedImage);
+      }
       
       return newOrder;
     });
@@ -699,7 +701,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                 }}
               >
                 <h2 className="text-xl font-bold text-white text-center">
-                  {shoot.customTitle || shoot.title}
+                  {shoot?.customTitle || shoot?.title || 'Gallery'}
                 </h2>
               </div>
             )}
@@ -708,7 +710,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
             <div className="p-4">
               {!selectedCover && (
                 <h2 className="text-xl font-bold text-white mb-4 text-center">
-                  {shoot.customTitle || shoot.title}
+                  {shoot?.customTitle || shoot?.title || 'Gallery'}
                 </h2>
               )}
             
