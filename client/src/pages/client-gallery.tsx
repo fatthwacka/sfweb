@@ -70,7 +70,7 @@ export default function ClientGallery() {
 
   // Fetch shoot data directly by slug - this is a public gallery for a single shoot
   const { data: shoot, isLoading: shootLoading, error: shootError } = useQuery<Shoot>({
-    queryKey: ["/api/public/shoots", slug],
+    queryKey: ["/api/galleries", slug],
     enabled: !!slug
   });
 

@@ -292,7 +292,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Public gallery endpoint - fetch shoot by custom slug
-  app.get("/api/public/shoots/:slug", async (req, res) => {
+  app.get("/api/galleries/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
       const shoot = await storage.getShootBySlug(slug);
