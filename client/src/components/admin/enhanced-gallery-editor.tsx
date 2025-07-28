@@ -695,7 +695,18 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
           >
             {/* Cover Image Strip */}
             {selectedCover && (() => {
-              const coverImage = getOrderedImages().find(img => img.id === selectedCover);
+              const orderedImages = getOrderedImages();
+              const coverImage = orderedImages.find(img => img.id === selectedCover);
+              
+              // Debug logging
+              console.log('Cover debug:', {
+                selectedCover,
+                orderedImagesCount: orderedImages.length,
+                orderedImageIds: orderedImages.map(img => img.id),
+                coverImageFound: !!coverImage,
+                coverImagePath: coverImage?.storagePath
+              });
+              
               const coverImageUrl = coverImage?.storagePath ? ImageUrl.forViewing(coverImage.storagePath) : null;
               
               return coverImageUrl ? (
