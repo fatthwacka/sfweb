@@ -253,9 +253,12 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     if (shoot && shoot.id && !editableShoot.title) {
       setCustomSlug(shoot.customSlug || '');
       
-      // Only set cover if the bannerImageId exists in the current gallery's images
+      // Set cover: use bannerImageId if valid, otherwise use first image as fallback
       if (shoot.bannerImageId && images.some(img => img.id === shoot.bannerImageId)) {
         setSelectedCover(shoot.bannerImageId);
+      } else if (images.length > 0) {
+        // Fallback to first image if no valid banner or bannerImageId is null
+        setSelectedCover(images[0].id);
       } else {
         setSelectedCover(null);
       }
