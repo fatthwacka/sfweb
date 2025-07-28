@@ -242,6 +242,18 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     if (shoot && shoot.id && !editableShoot.title) {
       setCustomSlug(shoot.customSlug || '');
       setSelectedCover(shoot.bannerImageId);
+      
+      // Initialize gallery settings from shoot data
+      if (shoot.gallerySettings) {
+        setGallerySettings({
+          backgroundColor: shoot.gallerySettings.backgroundColor || '#ffffff',
+          borderStyle: shoot.gallerySettings.borderStyle || 'sharp',
+          padding: shoot.gallerySettings.padding || 'tight',
+          layoutStyle: shoot.gallerySettings.layoutStyle || 'grid',
+          imageSpacing: shoot.gallerySettings.imageSpacing || 'tight'
+        });
+      }
+      
       setEditableShoot({
         title: shoot.title || '',
         location: shoot.location || '',
@@ -260,11 +272,15 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
   // Initialize image order from sequence
   useEffect(() => {
-    if (images.length > 0 && imageOrder.length === 0) {
+    if (images.length > 0) {
       const sortedImages = [...images].sort((a, b) => a.sequence - b.sequence);
-      setImageOrder(sortedImages.map(img => img.id));
+      const newOrder = sortedImages.map(img => img.id);
+      // Only update if the order has actually changed
+      if (JSON.stringify(newOrder) !== JSON.stringify(imageOrder)) {
+        setImageOrder(newOrder);
+      }
     }
-  }, [images.length]);
+  }, [images]);
 
   // Drag and drop handlers
   const handleDragStart = useCallback((e: React.DragEvent, imageId: string) => {
@@ -688,7 +704,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
             
             {gallerySettings.layoutStyle === 'masonry' ? (
               <div 
-                className={`columns-2 md:columns-3 lg:columns-4 space-y-${gallerySettings.imageSpacing === 'tight' ? '1' : gallerySettings.imageSpacing === 'normal' ? '2' : '4'}`}
+                className="columns-2 md:columns-3 lg:columns-4"
                 style={{ 
                   gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
                 }}
@@ -820,7 +836,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
               </div>
             ) : (
               <div 
-                className="grid grid-cols-4"
+                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
                 style={{ 
                   gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
                 }}
