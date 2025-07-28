@@ -268,7 +268,7 @@ export default function ClientGallery() {
         style={{
           backgroundColor: gallerySettings.backgroundColor || '#1a1a1a',
           ...(coverImage && {
-            backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${ImageUrl.forViewing(coverImage.storagePath)})`,
+            backgroundImage: `url(${ImageUrl.forViewing(coverImage.storagePath)})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center'
           })
@@ -279,7 +279,7 @@ export default function ClientGallery() {
             {shoot.customTitle || shoot.title}
           </h1>
           {shoot.description && (
-            <p className="text-xl text-gray-200 max-w-3xl mx-auto mb-4 font-corinthia">
+            <p className="text-4xl text-gray-200 max-w-3xl mx-auto mb-4 font-corinthia">
               {shoot.description}
             </p>
           )}
