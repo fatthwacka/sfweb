@@ -135,6 +135,34 @@ export default function ClientGallery() {
     setSelectedImages(newSelected);
   };
 
+  // Download image function with proper file download
+  const downloadImage = async (storagePath: string, filename: string) => {
+    try {
+      const fullSizeUrl = ImageUrl.forFullSize(storagePath);
+      const response = await fetch(fullSizeUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Download started",
+        description: `${filename} is being downloaded`,
+      });
+    } catch (error) {
+      toast({
+        title: "Download failed",
+        description: "Could not download the image. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleDownloadSelected = () => {
     if (selectedImages.size === 0) {
       toast({
@@ -196,9 +224,6 @@ export default function ClientGallery() {
   }
 
   if (shootError || !shoot) {
-    // Debug: Log the error structure
-    console.log("Gallery error details:", shootError);
-    
     // Check if it's a private gallery error - TanStack Query wraps fetch errors
     const isPrivateGallery = 
       shootError?.message?.includes('status code 403') || 
@@ -363,15 +388,16 @@ export default function ClientGallery() {
                     {/* Hover overlay with buttons at bottom */}
                     <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <div className="absolute bottom-2 left-2 right-2 flex justify-center gap-2">
-                        <a
-                          href={ImageUrl.forFullSize(image.storagePath)}
-                          download={image.originalName}
-                          onClick={(e) => e.stopPropagation()}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            downloadImage(image.storagePath, image.originalName);
+                          }}
                           className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
                           title="Download Image"
                         >
                           <Download className="w-4 h-4 text-white" />
-                        </a>
+                        </button>
                         <button
                           onClick={(e) => handleShareImage(actualIndex, e)}
                           className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
@@ -450,10 +476,10 @@ export default function ClientGallery() {
             <ChevronRight className="w-8 h-8" />
           </button>
 
-          {/* Modal image */}
+          {/* Modal image - uses transformed URL for faster loading */}
           <div className="max-w-screen-lg max-h-screen p-4 flex items-center justify-center">
             <img
-              src={ImageUrl.forFullSize(images[modalImageIndex]?.storagePath)}
+              src={ImageUrl.forViewing(images[modalImageIndex]?.storagePath)}
               alt={images[modalImageIndex]?.filename}
               className="max-w-full max-h-full object-contain"
             />
@@ -465,13 +491,13 @@ export default function ClientGallery() {
             <span>•</span>
             <span>{images[modalImageIndex]?.originalName}</span>
             <span>•</span>
-            <a
-              href={ImageUrl.forFullSize(images[modalImageIndex]?.storagePath)}
-              download={images[modalImageIndex]?.originalName}
+            <button
+              onClick={() => downloadImage(images[modalImageIndex]?.storagePath, images[modalImageIndex]?.originalName)}
               className="hover:text-salmon transition-colors"
+              title="Download Image"
             >
               <Download className="w-4 h-4" />
-            </a>
+            </button>
           </div>
         </div>
       )}
