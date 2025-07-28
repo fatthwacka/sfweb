@@ -305,16 +305,21 @@ export default function ClientGallery() {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
               {images.slice(0, visibleImageCount)
                 .sort((a, b) => a.sequence - b.sequence)
-                .map((image, index) => (
-                  <div
-                    key={image.id}
-                    className={`
-                      relative group overflow-hidden
-                      ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full aspect-square'}
-                      ${selectedImages.has(image.id) ? 'ring-2 ring-salmon' : ''}
-                      cursor-pointer transition-all duration-200
-                    `}
-                    onClick={() => openModal(index)}
+                .map((image, visibleIndex) => {
+                  // Find the actual index in the full sorted images array
+                  const sortedImages = images.sort((a, b) => a.sequence - b.sequence);
+                  const actualIndex = sortedImages.findIndex(img => img.id === image.id);
+                  
+                  return (
+                    <div
+                      key={image.id}
+                      className={`
+                        relative group overflow-hidden
+                        ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full aspect-square'}
+                        ${selectedImages.has(image.id) ? 'ring-2 ring-salmon' : ''}
+                        cursor-pointer transition-all duration-200
+                      `}
+                      onClick={() => openModal(actualIndex)}
                   >
                     <img
                       src={ImageUrl.forViewing(image.storagePath)}
@@ -343,7 +348,7 @@ export default function ClientGallery() {
                           <Download className="w-4 h-4 text-white" />
                         </a>
                         <button
-                          onClick={(e) => handleShareImage(index, e)}
+                          onClick={(e) => handleShareImage(actualIndex, e)}
                           className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
                           title="Share Image"
                         >
@@ -352,7 +357,7 @@ export default function ClientGallery() {
                       </div>
                     </div>
                   </div>
-                ))}
+                )})}
             </div>
           )}
 
