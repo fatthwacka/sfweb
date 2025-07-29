@@ -96,7 +96,8 @@ export function AdminContent({ userRole }: AdminContentProps) {
     email: '', 
     phone: '', 
     address: '', 
-    secondaryEmail: '' 
+    secondaryEmail: '',
+    password: '' 
   });
   const [editingShoot, setEditingShoot] = useState<Shoot | null>(null);
   const [selectedShoot, setSelectedShoot] = useState<string | null>(null);
@@ -188,13 +189,15 @@ export function AdminContent({ userRole }: AdminContentProps) {
 
   const updateClientMutation = useMutation({
     mutationFn: (data: any) => apiRequest("PATCH", `/api/clients/${data.id}`, data),
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
       setEditingClient(null);
-      setEditFormData({ name: '', email: '', phone: '', address: '', secondaryEmail: '' });
+      setEditFormData({ name: '', email: '', phone: '', address: '', secondaryEmail: '', password: '' });
+      
+      // Show specific message based on server response
       toast({
         title: "Success",
-        description: "Client updated successfully"
+        description: response?.message || "Client updated successfully"
       });
     },
     onError: (error: any) => {
@@ -407,7 +410,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
     event.preventDefault();
     if (!editingClient) return;
     
-    const data = {
+    const data: any = {
       id: editingClient.id,
       name: editFormData.name.trim(),
       email: editFormData.email.trim() || null,
@@ -416,6 +419,11 @@ export function AdminContent({ userRole }: AdminContentProps) {
       secondaryEmail: editFormData.secondaryEmail.trim() || null,
       slug: editingClient.slug // Keep existing slug
     };
+
+    // Include password if provided
+    if (editFormData.password.trim()) {
+      data.password = editFormData.password.trim();
+    }
     
     updateClientMutation.mutate(data);
   };
@@ -1031,7 +1039,8 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                     email: client.email || '',
                                     phone: client.phone || '',
                                     address: client.address || '',
-                                    secondaryEmail: client.secondaryEmail || ''
+                                    secondaryEmail: client.secondaryEmail || '',
+                                    password: ''
                                   });
                                 }}
                               >
@@ -1707,41 +1716,24 @@ export function AdminContent({ userRole }: AdminContentProps) {
                 <h3 className="text-lg font-semibold text-salmon border-b border-salmon/30 pb-2">
                   Password & Security
                 </h3>
-                <div className="space-y-4">
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      className="flex-1 border-border hover:border-cyan text-white"
-                      onClick={() => {
-                        if (confirm(`Reset password for ${editingClient.name}? They will be notified via email.`)) {
-                          toast({
-                            title: "Password Reset",
-                            description: "Password reset email would be sent to client.",
-                          });
-                        }
-                      }}
-                    >
-                      <Mail className="w-4 h-4 mr-2" />
-                      Send Password Reset
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="flex-1 border-border hover:border-salmon text-white"
-                      onClick={() => {
-                        const newPassword = prompt("Enter new temporary password:", "slyfox-2025");
-                        if (newPassword) {
-                          toast({
-                            title: "Password Updated",
-                            description: `Temporary password set to: ${newPassword}`,
-                          });
-                        }
-                      }}
-                    >
-                      <Shield className="w-4 h-4 mr-2" />
-                      Set Temp Password
-                    </Button>
+                <form onSubmit={handleUpdateClient} className="space-y-4">
+                  <div>
+                    <Label htmlFor="editClientPassword">Set Portal Password</Label>
+                    <Input 
+                      id="editClientPassword" 
+                      type="password" 
+                      placeholder="Enter password to create/update portal access"
+                      value={editFormData.password}
+                      onChange={(e) => setEditFormData(prev => ({...prev, password: e.target.value}))}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Leave blank to keep existing password. Setting a password creates portal access.
+                    </p>
                   </div>
-                </div>
+                  <Button type="submit" disabled={updateClientMutation.isPending} className="w-full bg-salmon text-white hover:bg-salmon-muted">
+                    {updateClientMutation.isPending ? 'Creating Portal Access...' : 'Update Password & Portal Access'}
+                  </Button>
+                </form>
               </div>
 
               {/* Privacy & Data Management Section */}

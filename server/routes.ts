@@ -433,26 +433,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
             role: 'client'
           };
           
+          console.log(`Creating Supabase auth account for client: ${client.email}`);
           await createSupabaseUser(userData);
+          console.log(`✅ Successfully created auth account for: ${client.email}`);
           
           res.json({ 
             ...client, 
             portalAccess: true,
-            message: "Client updated with portal access created"
+            message: `Portal access created successfully! ${client.name} can now log in at /login with email: ${client.email}`
           });
         } catch (authError) {
           console.error("Portal account creation failed:", authError);
           res.json({ 
             ...client, 
             portalAccess: false,
-            message: "Client updated but portal access setup failed: " + authError.message
+            message: `Client updated but portal access failed: ${authError.message}`
           });
         }
       } else {
         res.json({ 
           ...client, 
           portalAccess: false,
-          message: "Client updated without portal access changes"
+          message: "Client information updated successfully"
         });
       }
     } catch (error) {
