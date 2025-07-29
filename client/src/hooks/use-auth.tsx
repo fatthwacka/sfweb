@@ -102,11 +102,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setIsLoading(true);
     
     try {
+      // Check if already signed in first
+      const { data: { session: existingSession } } = await supabase.auth.getSession();
+      if (existingSession?.user) {
+        console.log('Already signed in, using existing session');
+        await handleUserProfile(existingSession.user.id);
+        return;
+      }
+
       console.log('Attempting Supabase auth...');
-      const { data, error } = await supabase.auth.signInWithPassword({
+      
+      // Add timeout to prevent hanging
+      const authPromise = supabase.auth.signInWithPassword({
         email,
         password
       });
+      
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Authentication timeout')), 10000);
+      });
+      
+      const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any;
 
       console.log('Supabase auth response:', { data, error });
 
@@ -117,53 +133,62 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (data.user) {
         console.log('Auth successful, fetching profile for user:', data.user.id);
-        
-        // Get user profile
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('id, email, full_name, role')
-          .eq('id', data.user.id)
-          .single();
-
-        console.log('Profile fetch result:', { profile, profileError });
-
-        if (profileError) {
-          console.error('Profile fetch error:', profileError);
-          throw new Error(`Profile fetch failed: ${profileError.message}`);
-        }
-
-        if (profile) {
-          const user: User = {
-            id: profile.id,
-            email: profile.email,
-            role: profile.role || 'client',
-            fullName: profile.full_name
-          };
-          
-          console.log('Setting user state:', user);
-          setUser(user);
-          
-          // Handle redirect based on user role
-          console.log('Login redirect: user role is', user.role);
-          setTimeout(() => {
-            if (user.role === "client") {
-              console.log('Redirecting client to /client-portal');
-              window.location.href = "/client-portal";
-            } else if (user.role === "staff" || user.role === "super_admin") {
-              console.log('Redirecting staff to /dashboard');
-              window.location.href = "/dashboard";
-            } else {
-              window.location.href = "/";
-            }
-          }, 100);
-        } else {
-          throw new Error("User profile not found in database");
-        }
+        await handleUserProfile(data.user.id);
       } else {
         throw new Error("No user returned from authentication");
       }
     } catch (error: any) {
       console.error('Login error:', error);
+      setIsLoading(false);
+      throw error;
+    }
+  };
+
+  const handleUserProfile = async (userId: string) => {
+    try {
+      // Get user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, email, full_name, role')
+        .eq('id', userId)
+        .single();
+
+      console.log('Profile fetch result:', { profile, profileError });
+
+      if (profileError) {
+        console.error('Profile fetch error:', profileError);
+        throw new Error(`Profile fetch failed: ${profileError.message}`);
+      }
+
+      if (profile) {
+        const user: User = {
+          id: profile.id,
+          email: profile.email,
+          role: profile.role || 'client',
+          fullName: profile.full_name
+        };
+        
+        console.log('Setting user state:', user);
+        setUser(user);
+        setIsLoading(false);
+        
+        // Handle redirect based on user role
+        console.log('Login redirect: user role is', user.role);
+        setTimeout(() => {
+          if (user.role === "client") {
+            console.log('Redirecting client to /client-portal');
+            window.location.href = "/client-portal";
+          } else if (user.role === "staff" || user.role === "super_admin") {
+            console.log('Redirecting staff to /dashboard');
+            window.location.href = "/dashboard";
+          } else {
+            window.location.href = "/";
+          }
+        }, 100);
+      } else {
+        throw new Error("User profile not found in database");
+      }
+    } catch (error) {
       setIsLoading(false);
       throw error;
     }
