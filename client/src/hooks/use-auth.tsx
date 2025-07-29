@@ -101,47 +101,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     console.log('Login attempt starting for:', email);
     setIsLoading(true);
     
-    try {
-      // Check if already signed in first
-      const { data: { session: existingSession } } = await supabase.auth.getSession();
-      if (existingSession?.user) {
-        console.log('Already signed in, using existing session');
-        await handleUserProfile(existingSession.user.id);
-        return;
-      }
-
-      console.log('Attempting Supabase auth...');
-      
-      // Add timeout to prevent hanging
-      const authPromise = supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-      
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Authentication timeout')), 10000);
-      });
-      
-      const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any;
-
-      console.log('Supabase auth response:', { data, error });
-
-      if (error) {
-        console.error('Supabase auth error:', error);
-        throw new Error(error.message);
-      }
-
-      if (data.user) {
-        console.log('Auth successful, fetching profile for user:', data.user.id);
-        await handleUserProfile(data.user.id);
-      } else {
-        throw new Error("No user returned from authentication");
-      }
-    } catch (error: any) {
-      console.error('Login error:', error);
-      setIsLoading(false);
-      throw error;
-    }
+    // Use backend authentication directly due to network connectivity issues
+    console.log('Using backend authentication...');
+    return await tryBackendAuth(email, password);
   };
 
   const handleUserProfile = async (userId: string) => {
