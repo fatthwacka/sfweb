@@ -437,20 +437,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/clients/:id", async (req, res) => {
+  app.delete("/api/clients/:identifier", async (req, res) => {
     try {
-      const clientId = parseInt(req.params.id);
+      const identifier = req.params.identifier;
       
-      console.log('Deleting client:', clientId);
+      console.log('Deleting client by identifier:', identifier);
       
-      const success = await storage.deleteClient(clientId);
+      // Try to parse as ID first, fallback to email
+      let success = false;
+      if (!isNaN(Number(identifier))) {
+        // It's a numeric ID
+        const clientId = parseInt(identifier);
+        success = await storage.deleteClient(clientId);
+      } else {
+        // It's an email, find client by email first then delete by ID
+        const client = await storage.getClientByEmail(identifier);
+        if (client) {
+          success = await storage.deleteClient(client.id);
+        }
+      }
       
       if (!success) {
         return res.status(404).json({ message: "Client not found" });
       }
       
-      console.log('Client deleted successfully:', clientId);
-      res.json({ message: "Client deleted successfully", id: clientId });
+      console.log('Client deleted successfully:', identifier);
+      res.json({ message: "Client deleted successfully", identifier });
     } catch (error) {
       console.error("Delete client error:", error);
       res.status(500).json({ message: "Failed to delete client" });
