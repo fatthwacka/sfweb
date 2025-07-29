@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 // import { DatePicker } from "@/components/ui/date-picker";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { ImageUrl } from "@/lib/image-utils";
 import { EnhancedGalleryEditor } from "./enhanced-gallery-editor";
 import { StaffManagement } from "./staff-management";
 import {
@@ -1502,7 +1503,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                 {/* Image Preview */}
                                 <div className="aspect-square bg-background rounded-md flex items-center justify-center overflow-hidden">
                                   <img
-                                    src={image.storagePath}
+                                    src={ImageUrl.forViewing(image.storagePath)}
                                     alt={image.filename}
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
@@ -1537,7 +1538,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                     className="flex-1 border-border hover:border-cyan text-white"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      window.open(image.storagePath, '_blank');
+                                      window.open(ImageUrl.forFullSize(image.storagePath), '_blank');
                                     }}
                                   >
                                     <Eye className="w-3 h-3" />
@@ -1548,13 +1549,20 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                     className="flex-1 border-border hover:border-salmon text-white"
                                     onClick={(e) => {
                                       e.stopPropagation();
+                                      const downloadUrl = ImageUrl.forDownload(image.storagePath);
+                                      const link = document.createElement('a');
+                                      link.href = downloadUrl;
+                                      link.download = image.filename;
+                                      document.body.appendChild(link);
+                                      link.click();
+                                      document.body.removeChild(link);
                                       toast({
-                                        title: "Feature Coming Soon",
-                                        description: "Image editing will be implemented in the next update.",
+                                        title: "Download Started",
+                                        description: `Downloading ${image.filename}`,
                                       });
                                     }}
                                   >
-                                    <Edit className="w-3 h-3" />
+                                    <Download className="w-3 h-3" />
                                   </Button>
                                 </div>
                               </div>
