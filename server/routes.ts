@@ -437,6 +437,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/clients/:id", async (req, res) => {
+    try {
+      const clientId = parseInt(req.params.id);
+      
+      console.log('Deleting client:', clientId);
+      
+      const success = await storage.deleteClient(clientId);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Client not found" });
+      }
+      
+      console.log('Client deleted successfully:', clientId);
+      res.json({ message: "Client deleted successfully", id: clientId });
+    } catch (error) {
+      console.error("Delete client error:", error);
+      res.status(500).json({ message: "Failed to delete client" });
+    }
+  });
+
   // Shoot endpoints
   app.get("/api/shoots", async (req, res) => {
     try {

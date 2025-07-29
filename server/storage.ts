@@ -33,6 +33,7 @@ export interface IStorage {
   createClient(client: InsertClient): Promise<Client>;
   updateClient(id: number, updates: Partial<InsertClient>): Promise<Client | undefined>;
   deleteClient(id: number): Promise<boolean>;
+  deleteClient(id: number): Promise<boolean>;
   
   // Shoots (UUIDs)
   getShoot(id: string): Promise<Shoot | undefined>;

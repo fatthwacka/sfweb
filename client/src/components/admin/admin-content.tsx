@@ -207,6 +207,25 @@ export function AdminContent({ userRole }: AdminContentProps) {
     }
   });
 
+  const deleteClientMutation = useMutation({
+    mutationFn: (clientId: number) => apiRequest("DELETE", `/api/clients/${clientId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
+      toast({
+        title: "Success",
+        description: "Client deleted successfully"
+      });
+    },
+    onError: (error: any) => {
+      console.error('Delete client error:', error);
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to delete client",
+        variant: "destructive"
+      });
+    }
+  });
+
   const handleCreateClient = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -1042,13 +1061,8 @@ export function AdminContent({ userRole }: AdminContentProps) {
                               variant="outline" 
                               className="border-border hover:border-red-500 text-white"
                               onClick={() => {
-                                if (confirm(`Are you sure you want to delete client ${client.name}?`)) {
-                                  // Add delete client mutation call here
-                                  toast({
-                                    title: "Feature Coming Soon",
-                                    description: "Client deletion will be implemented in the next update.",
-                                    variant: "destructive"
-                                  });
+                                if (confirm(`Are you sure you want to delete client ${client.name}?\n\nNote: This will only delete the client record. Any shoots assigned to this client will remain but show as "orphaned" until reassigned to another client.`)) {
+                                  deleteClientMutation.mutate(client.id);
                                 }
                               }}
                             >
@@ -1795,14 +1809,11 @@ export function AdminContent({ userRole }: AdminContentProps) {
                   className="w-full border-red-500 text-red-400 hover:bg-red-500 hover:text-white h-auto p-4"
                   onClick={() => {
                     const confirmation = prompt(
-                      `⚠️ DELETE ENTIRE ACCOUNT for ${editingClient.name}?\n\nThis will permanently delete:\n• Client account & login access\n• All associated shoots and galleries\n• All photos and data\n\nType "DELETE ACCOUNT" to confirm:`
+                      `⚠️ DELETE ENTIRE ACCOUNT for ${editingClient.name}?\n\nThis will permanently delete:\n• Client record from database\n• Associated shoots remain but become orphaned\n\nNote: This does NOT delete photos from storage - only the client record.\n\nType "DELETE ACCOUNT" to confirm:`
                     );
                     if (confirmation === "DELETE ACCOUNT") {
-                      toast({
-                        title: "Account Deletion",
-                        description: "Complete account deletion will be implemented in the next release.",
-                        variant: "destructive"
-                      });
+                      deleteClientMutation.mutate(editingClient.id);
+                      setEditingClient(null);
                     }
                   }}
                 >
