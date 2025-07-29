@@ -209,18 +209,25 @@ export function AdminContent({ userRole }: AdminContentProps) {
 
   const deleteClientMutation = useMutation({
     mutationFn: (clientId: number) => apiRequest("DELETE", `/api/clients/${clientId}`),
-    onSuccess: () => {
+    onSuccess: (data, clientId) => {
+      // Force refresh the clients list
       queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
+      queryClient.refetchQueries({ queryKey: ["/api/clients"] });
+      
+      // Close edit dialog if this client was being edited
+      setEditingClient(null);
+      
       toast({
         title: "Success",
-        description: "Client deleted successfully"
+        description: `Client deleted successfully`
       });
     },
     onError: (error: any) => {
       console.error('Delete client error:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || "Failed to delete client";
       toast({
         title: "Error",
-        description: error?.message || "Failed to delete client",
+        description: errorMessage,
         variant: "destructive"
       });
     }
