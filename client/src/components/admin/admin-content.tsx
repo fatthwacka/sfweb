@@ -31,7 +31,9 @@ import {
   Palette,
   User,
   Shield,
-  UserPlus
+  UserPlus,
+  Check,
+  Download
 } from "lucide-react";
 
 interface Client {
@@ -104,6 +106,10 @@ export function AdminContent({ userRole }: AdminContentProps) {
   const [newUserOpen, setNewUserOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  
+  // Bulk selection state for images
+  const [selectedImages, setSelectedImages] = useState<Set<number>>(new Set());
+  const [bulkActionOpen, setBulkActionOpen] = useState(false);
 
   // Fetch data with client-shoot relationships
   const { data: clients = [], isLoading: clientsLoading } = useQuery<Client[]>({
@@ -121,6 +127,32 @@ export function AdminContent({ userRole }: AdminContentProps) {
   // Get shoots for each client via email matching
   const getClientShoots = (clientEmail: string) => {
     return shoots.filter(shoot => shoot.clientId === clientEmail);
+  };
+
+  // Bulk selection helper functions
+  const toggleImageSelection = (imageId: number) => {
+    const newSelected = new Set(selectedImages);
+    if (newSelected.has(imageId)) {
+      newSelected.delete(imageId);
+    } else {
+      newSelected.add(imageId);
+    }
+    setSelectedImages(newSelected);
+  };
+
+  const selectAllImages = () => {
+    const filteredImages = images.filter(image => 
+      !searchTerm || image.filename.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setSelectedImages(new Set(filteredImages.map(img => img.id)));
+  };
+
+  const clearSelection = () => {
+    setSelectedImages(new Set());
+  };
+
+  const getSelectedImagesData = () => {
+    return images.filter(image => selectedImages.has(image.id));
   };
 
   const { data: users = [], isLoading: usersLoading } = useQuery<any[]>({
@@ -412,6 +444,30 @@ export function AdminContent({ userRole }: AdminContentProps) {
     shoot.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (shoot.description && shoot.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  // Bulk delete images mutation
+  const deleteImagesMutation = useMutation({
+    mutationFn: async (imageIds: number[]) => {
+      for (const imageId of imageIds) {
+        await apiRequest("DELETE", `/api/images/${imageId}`);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/images"] });
+      clearSelection();
+      toast({
+        title: "Success",
+        description: `${selectedImages.size} images deleted successfully`
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error", 
+        description: "Failed to delete images",
+        variant: "destructive"
+      });
+    }
+  });
 
   const handleUpdateUser = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -1320,9 +1376,88 @@ export function AdminContent({ userRole }: AdminContentProps) {
               ) : (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <p className="text-muted-foreground">
-                      Showing {images.length} images across all shoots
-                    </p>
+                    <div className="flex items-center gap-4">
+                      <p className="text-muted-foreground">
+                        Showing {images.length} images across all shoots
+                      </p>
+                      {selectedImages.size > 0 && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-salmon font-medium">
+                            {selectedImages.size} selected
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={clearSelection}
+                            className="h-7 px-2 text-xs"
+                          >
+                            Clear
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={selectAllImages}
+                        className="text-xs"
+                      >
+                        Select All
+                      </Button>
+                      
+                      {selectedImages.size > 0 && (
+                        <div className="flex gap-2">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                className="text-xs"
+                              >
+                                <Trash2 className="w-3 h-3 mr-1" />
+                                Delete ({selectedImages.size})
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="admin-gradient-card">
+                              <DialogHeader>
+                                <DialogTitle className="text-salmon">Delete Selected Images</DialogTitle>
+                                <DialogDescription className="text-muted-foreground">
+                                  Are you sure you want to permanently delete {selectedImages.size} selected images from the database? This action cannot be undone.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="flex justify-end gap-3 pt-4">
+                                <DialogTrigger asChild>
+                                  <Button variant="outline">Cancel</Button>
+                                </DialogTrigger>
+                                <Button
+                                  variant="destructive"
+                                  onClick={() => deleteImagesMutation.mutate(Array.from(selectedImages))}
+                                  disabled={deleteImagesMutation.isPending}
+                                >
+                                  {deleteImagesMutation.isPending ? 'Deleting...' : 'Delete Images'}
+                                </Button>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                          
+                          <Button
+                            size="sm"
+                            className="bg-cyan text-white hover:bg-cyan-muted text-xs"
+                            onClick={() => {
+                              toast({
+                                title: "Download Coming Soon",
+                                description: "Bulk download functionality will be implemented next."
+                              });
+                            }}
+                          >
+                            <Download className="w-3 h-3 mr-1" />
+                            Download ({selectedImages.size})
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -1333,10 +1468,37 @@ export function AdminContent({ userRole }: AdminContentProps) {
                       )
                       .map((image) => {
                         const associatedShoot = shoots.find(s => s.id === image.shootId.toString());
+                        const isSelected = selectedImages.has(image.id);
                         return (
-                          <Card key={image.id} className="admin-gradient-card group hover:border-salmon/60 transition-colors">
+                          <Card 
+                            key={image.id} 
+                            className={`admin-gradient-card group hover:border-salmon/60 transition-colors cursor-pointer relative ${
+                              isSelected ? 'border-salmon/80 ring-2 ring-salmon/30' : ''
+                            }`}
+                            onClick={() => toggleImageSelection(image.id)}
+                          >
                             <CardContent className="p-3">
                               <div className="space-y-2">
+                                {/* Selection Overlay */}
+                                {isSelected && (
+                                  <div className="absolute inset-0 bg-salmon/10 rounded-lg flex items-center justify-center z-10">
+                                    <div className="bg-salmon text-white rounded-full p-1">
+                                      <Check className="w-4 h-4" />
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                {/* Selection Checkbox */}
+                                <div className="absolute top-2 left-2 z-20">
+                                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                                    isSelected 
+                                      ? 'bg-salmon border-salmon text-white' 
+                                      : 'border-white/50 bg-background/80 group-hover:border-salmon/60'
+                                  }`}>
+                                    {isSelected && <Check className="w-3 h-3" />}
+                                  </div>
+                                </div>
+                                
                                 {/* Image Preview */}
                                 <div className="aspect-square bg-background rounded-md flex items-center justify-center overflow-hidden">
                                   <img
@@ -1344,7 +1506,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                     alt={image.filename}
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
-                                      e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiMzNzM3MzciLz48cGF0aCBkPSJNMTIgMTVIMjhWMjVIMTJWMTVaIiBzdHJva2U9IiM5CA0OUM5IiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4K';
+                                      e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiMzNzM3MzciLz48cGF0aCBkPSJNMTIgMTVIMjhWMjVIMTJWMTVaIiBzdHJva2U9IiM5CA0OVM5IiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4K';
                                     }}
                                   />
                                 </div>
@@ -1373,8 +1535,8 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                     size="sm" 
                                     variant="outline" 
                                     className="flex-1 border-border hover:border-cyan text-white"
-                                    onClick={() => {
-                                      // Open image in new tab or lightbox
+                                    onClick={(e) => {
+                                      e.stopPropagation();
                                       window.open(image.storagePath, '_blank');
                                     }}
                                   >
@@ -1384,7 +1546,8 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                     size="sm" 
                                     variant="outline" 
                                     className="flex-1 border-border hover:border-salmon text-white"
-                                    onClick={() => {
+                                    onClick={(e) => {
+                                      e.stopPropagation();
                                       toast({
                                         title: "Feature Coming Soon",
                                         description: "Image editing will be implemented in the next update.",
