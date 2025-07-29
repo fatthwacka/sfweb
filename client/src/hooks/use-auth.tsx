@@ -1,6 +1,4 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from "react";
-import { supabase, type SupabaseUser } from "@/lib/supabase";
-import type { User as SupabaseAuthUser } from "@supabase/supabase-js";
 
 interface User {
   id: string;
@@ -31,134 +29,53 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
 
   useEffect(() => {
-    // Check for existing Supabase session
-    console.log('AuthProvider: Checking for Supabase session...');
-    
-    const getSession = async () => {
+    // Check for existing session
+    console.log('AuthProvider: Checking for saved user...');
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session?.user) {
-          // Get user profile from profiles table
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('id, email, full_name, role')
-            .eq('id', session.user.id)
-            .single();
-
-          if (profile) {
-            const user: User = {
-              id: profile.id,
-              email: profile.email,
-              role: profile.role || 'client',
-              fullName: profile.full_name
-            };
-            console.log('AuthProvider: Found session user:', user.email, user.role);
-            setUser(user);
-          }
-        } else {
-          console.log('AuthProvider: No session found');
-        }
+        const parsedUser = JSON.parse(savedUser);
+        console.log('AuthProvider: Found saved user:', parsedUser.email, parsedUser.role);
+        setUser(parsedUser);
       } catch (error) {
-        console.error('Session check error:', error);
+        console.warn('Invalid saved user data, clearing...');
+        localStorage.removeItem("user");
       }
-      
-      setIsLoading(false);
-      setHasCheckedAuth(true);
-    };
-
-    getSession();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event);
-      
-      if (session?.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id, email, full_name, role')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profile) {
-          const user: User = {
-            id: profile.id,
-            email: profile.email,
-            role: profile.role || 'client',
-            fullName: profile.full_name
-          };
-          setUser(user);
-        }
-      } else {
-        setUser(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    } else {
+      console.log('AuthProvider: No saved user found');
+    }
+    setIsLoading(false);
+    setHasCheckedAuth(true);
   }, []);
 
   const login = async (email: string, password: string) => {
-    console.log('Login attempt starting for:', email);
     setIsLoading(true);
-    
-    // Use backend authentication directly due to network connectivity issues
-    console.log('Using backend authentication...');
-    return await tryBackendAuth(email, password);
-  };
-
-  const handleUserProfile = async (userId: string) => {
     try {
-      // Get user profile
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, email, full_name, role')
-        .eq('id', userId)
-        .single();
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-      console.log('Profile fetch result:', { profile, profileError });
-
-      if (profileError) {
-        console.error('Profile fetch error:', profileError);
-        throw new Error(`Profile fetch failed: ${profileError.message}`);
+      if (!response.ok) {
+        throw new Error("Invalid credentials");
       }
 
-      if (profile) {
-        const user: User = {
-          id: profile.id,
-          email: profile.email,
-          role: profile.role || 'client',
-          fullName: profile.full_name
-        };
-        
-        console.log('Setting user state:', user);
-        setUser(user);
-        setIsLoading(false);
-        
-        // Handle redirect based on user role
-        console.log('Login redirect: user role is', user.role);
-        setTimeout(() => {
-          if (user.role === "client") {
-            console.log('Redirecting client to /client-portal');
-            window.location.href = "/client-portal";
-          } else if (user.role === "staff" || user.role === "super_admin") {
-            console.log('Redirecting staff to /dashboard');
-            window.location.href = "/dashboard";
-          } else {
-            window.location.href = "/";
-          }
-        }, 100);
-      } else {
-        throw new Error("User profile not found in database");
-      }
+      const data = await response.json();
+      setUser(data.user);
+      localStorage.setItem("user", JSON.stringify(data.user));
     } catch (error) {
-      setIsLoading(false);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const logout = async () => {
-    await supabase.auth.signOut();
+  const logout = () => {
     setUser(null);
+    localStorage.removeItem("user");
     // Redirect to home page after logout
     window.location.href = "/";
   };

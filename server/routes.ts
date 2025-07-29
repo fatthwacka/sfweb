@@ -408,12 +408,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/clients/:id", async (req, res) => {
     try {
       const clientId = parseInt(req.params.id);
-      const { password, ...clientUpdates } = req.body;
+      const updates = req.body;
       
-      console.log('Updating client:', clientId, 'with data:', clientUpdates);
+      console.log('Updating client:', clientId, 'with data:', updates);
       
       // Validate the update data
-      const validatedUpdates = insertClientSchema.partial().parse(clientUpdates);
+      const validatedUpdates = insertClientSchema.partial().parse(updates);
       
       const client = await storage.updateClient(clientId, validatedUpdates);
       
@@ -422,41 +422,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       console.log('Client updated successfully:', client);
-      
-      // If password provided, create or update portal account
-      if (password && client.email) {
-        try {
-          const userData: CreateUserData = {
-            email: client.email,
-            password: password,
-            fullName: client.name,
-            role: 'client'
-          };
-          
-          console.log(`Creating Supabase auth account for client: ${client.email}`);
-          await createSupabaseUser(userData);
-          console.log(`✅ Successfully created auth account for: ${client.email}`);
-          
-          res.json({ 
-            ...client, 
-            portalAccess: true,
-            message: `Portal access created successfully! ${client.name} can now log in at /login with email: ${client.email}`
-          });
-        } catch (authError) {
-          console.error("Portal account creation failed:", authError);
-          res.json({ 
-            ...client, 
-            portalAccess: false,
-            message: `Client updated but portal access failed: ${authError.message}`
-          });
-        }
-      } else {
-        res.json({ 
-          ...client, 
-          portalAccess: false,
-          message: "Client information updated successfully"
-        });
-      }
+      res.json(client);
     } catch (error) {
       console.error("Update client error:", error);
       if (error.issues) {
@@ -761,59 +727,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Failed to upload images",
         error: error instanceof Error ? error.message : "Unknown error"
       });
-    }
-  });
-
-  // Authentication endpoint for network-blocked scenarios
-  app.post('/api/auth/login', async (req, res) => {
-    try {
-      const { email, password } = req.body;
-      
-      if (!email || !password) {
-        return res.status(400).json({ error: 'Email and password required' });
-      }
-
-      console.log('Backend auth attempt for:', email);
-
-      // Try to authenticate via Supabase Admin API
-      const { data, error } = await supabase.auth.admin.getUserByEmail(email);
-      
-      if (error || !data.user) {
-        console.log('User not found in backend auth:', error);
-        return res.status(401).json({ error: 'Invalid credentials' });
-      }
-
-      // Get user profile
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, email, full_name, role')
-        .eq('id', data.user.id)
-        .single();
-
-      if (profileError || !profile) {
-        console.log('Profile not found in backend auth:', profileError);
-        return res.status(401).json({ error: 'User profile not found' });
-      }
-
-      // For demo purposes, accept common passwords
-      // In production, you'd verify against hashed passwords
-      const demoPasswords = ['slyfox-2025', 'test123', 'password'];
-      if (!demoPasswords.includes(password)) {
-        return res.status(401).json({ error: 'Invalid credentials' });
-      }
-
-      console.log('Backend auth successful for:', email);
-
-      res.json({
-        id: profile.id,
-        email: profile.email,
-        role: profile.role || 'client',
-        fullName: profile.full_name
-      });
-
-    } catch (error) {
-      console.error('Backend auth error:', error);
-      res.status(500).json({ error: 'Authentication server error' });
     }
   });
 
