@@ -98,24 +98,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const login = async (email: string, password: string) => {
+    console.log('Login attempt starting for:', email);
     setIsLoading(true);
+    
     try {
+      console.log('Attempting Supabase auth...');
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
 
+      console.log('Supabase auth response:', { data, error });
+
       if (error) {
+        console.error('Supabase auth error:', error);
         throw new Error(error.message);
       }
 
       if (data.user) {
+        console.log('Auth successful, fetching profile for user:', data.user.id);
+        
         // Get user profile
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('id, email, full_name, role')
           .eq('id', data.user.id)
           .single();
+
+        console.log('Profile fetch result:', { profile, profileError });
+
+        if (profileError) {
+          console.error('Profile fetch error:', profileError);
+          throw new Error(`Profile fetch failed: ${profileError.message}`);
+        }
 
         if (profile) {
           const user: User = {
@@ -124,27 +139,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
             role: profile.role || 'client',
             fullName: profile.full_name
           };
+          
+          console.log('Setting user state:', user);
           setUser(user);
           
           // Handle redirect based on user role
           console.log('Login redirect: user role is', user.role);
-          if (user.role === "client") {
-            console.log('Redirecting client to /client-portal');
-            window.location.href = "/client-portal";
-          } else if (user.role === "staff" || user.role === "super_admin") {
-            console.log('Redirecting staff to /dashboard');
-            window.location.href = "/dashboard";
-          } else {
-            window.location.href = "/";
-          }
+          setTimeout(() => {
+            if (user.role === "client") {
+              console.log('Redirecting client to /client-portal');
+              window.location.href = "/client-portal";
+            } else if (user.role === "staff" || user.role === "super_admin") {
+              console.log('Redirecting staff to /dashboard');
+              window.location.href = "/dashboard";
+            } else {
+              window.location.href = "/";
+            }
+          }, 100);
         } else {
-          throw new Error("User profile not found");
+          throw new Error("User profile not found in database");
         }
+      } else {
+        throw new Error("No user returned from authentication");
       }
-    } catch (error) {
-      throw error;
-    } finally {
+    } catch (error: any) {
+      console.error('Login error:', error);
       setIsLoading(false);
+      throw error;
     }
   };
 
