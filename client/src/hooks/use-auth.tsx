@@ -125,6 +125,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
             fullName: profile.full_name
           };
           setUser(user);
+          
+          // Handle redirect based on user role
+          console.log('Login redirect: user role is', user.role);
+          if (user.role === "client") {
+            console.log('Redirecting client to /client-portal');
+            window.location.href = "/client-portal";
+          } else if (user.role === "staff" || user.role === "super_admin") {
+            console.log('Redirecting staff to /dashboard');
+            window.location.href = "/dashboard";
+          } else {
+            window.location.href = "/";
+          }
         } else {
           throw new Error("User profile not found");
         }
