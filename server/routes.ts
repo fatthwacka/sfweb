@@ -408,12 +408,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/clients/:id", async (req, res) => {
     try {
       const clientId = parseInt(req.params.id);
-      const updates = req.body;
+      const { password, ...clientUpdates } = req.body;
       
-      console.log('Updating client:', clientId, 'with data:', updates);
+      console.log('Updating client:', clientId, 'with data:', clientUpdates);
       
       // Validate the update data
-      const validatedUpdates = insertClientSchema.partial().parse(updates);
+      const validatedUpdates = insertClientSchema.partial().parse(clientUpdates);
       
       const client = await storage.updateClient(clientId, validatedUpdates);
       
@@ -422,7 +422,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       console.log('Client updated successfully:', client);
-      res.json(client);
+      
+      // If password provided, create or update portal account
+      if (password && client.email) {
+        try {
+          const userData: CreateUserData = {
+            email: client.email,
+            password: password,
+            fullName: client.name,
+            role: 'client'
+          };
+          
+          await createSupabaseUser(userData);
+          
+          res.json({ 
+            ...client, 
+            portalAccess: true,
+            message: "Client updated with portal access created"
+          });
+        } catch (authError) {
+          console.error("Portal account creation failed:", authError);
+          res.json({ 
+            ...client, 
+            portalAccess: false,
+            message: "Client updated but portal access setup failed: " + authError.message
+          });
+        }
+      } else {
+        res.json({ 
+          ...client, 
+          portalAccess: false,
+          message: "Client updated without portal access changes"
+        });
+      }
     } catch (error) {
       console.error("Update client error:", error);
       if (error.issues) {
