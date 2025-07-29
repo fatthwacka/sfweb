@@ -119,8 +119,17 @@ export class SupabaseStorage implements IStorage {
   }
 
   async deleteClient(id: number): Promise<boolean> {
+    console.log(`🗑️ SupabaseStorage.deleteClient: Deleting client ID ${id}`);
     const result = await db.delete(clients).where(eq(clients.id, id));
-    return result.rowCount > 0;
+    console.log(`🗑️ SupabaseStorage.deleteClient: Delete result:`, result);
+    
+    // For Drizzle with Supabase, the result might not have rowCount
+    // Let's check if the operation was successful by querying the client again
+    const clientStillExists = await this.getClient(id);
+    const success = !clientStillExists;
+    console.log(`🗑️ SupabaseStorage.deleteClient: Client still exists after delete: ${!!clientStillExists}, Success: ${success}`);
+    
+    return success;
   }
 
   // Shoot methods
