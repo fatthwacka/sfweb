@@ -208,8 +208,8 @@ export function AdminContent({ userRole }: AdminContentProps) {
   });
 
   const deleteClientMutation = useMutation({
-    mutationFn: (clientId: number) => apiRequest("DELETE", `/api/clients/${clientId}`),
-    onSuccess: (data, clientId) => {
+    mutationFn: (clientEmail: string) => apiRequest("DELETE", `/api/clients/${encodeURIComponent(clientEmail)}`),
+    onSuccess: (data, clientEmail) => {
       // Force refresh the clients list
       queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
       queryClient.refetchQueries({ queryKey: ["/api/clients"] });
@@ -1069,7 +1069,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                               className="border-border hover:border-red-500 text-white"
                               onClick={() => {
                                 if (confirm(`Are you sure you want to delete client ${client.name}?\n\nNote: This will only delete the client record. Any shoots assigned to this client will remain but show as "orphaned" until reassigned to another client.`)) {
-                                  deleteClientMutation.mutate(client.id);
+                                  deleteClientMutation.mutate(client.email || '');
                                 }
                               }}
                             >
@@ -1819,7 +1819,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                       `⚠️ DELETE ENTIRE ACCOUNT for ${editingClient.name}?\n\nThis will permanently delete:\n• Client record from database\n• Associated shoots remain but become orphaned\n\nNote: This does NOT delete photos from storage - only the client record.\n\nType "DELETE ACCOUNT" to confirm:`
                     );
                     if (confirmation === "DELETE ACCOUNT") {
-                      deleteClientMutation.mutate(editingClient.id);
+                      deleteClientMutation.mutate(editingClient.email || '');
                       setEditingClient(null);
                     }
                   }}

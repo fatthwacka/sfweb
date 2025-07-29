@@ -88,6 +88,11 @@ export class SupabaseStorage implements IStorage {
     return result[0];
   }
 
+  async getClientByEmail(email: string): Promise<Client | undefined> {
+    const result = await db.select().from(clients).where(eq(clients.email, email)).limit(1);
+    return result[0];
+  }
+
   async getClients(): Promise<Client[]> {
     return await db.select().from(clients).orderBy(desc(clients.createdAt));
   }

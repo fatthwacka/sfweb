@@ -349,6 +349,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { password, ...clientRequestData } = req.body;
       const data = insertClientSchema.parse(clientRequestData);
       
+      // Check if client with this email already exists
+      if (data.email) {
+        const existingClient = await storage.getClientByEmail(data.email);
+        if (existingClient) {
+          return res.status(400).json({ 
+            message: `A client with email ${data.email} already exists. Each client must have a unique email address.` 
+          });
+        }
+      }
+      
       // Add required created_by field using the current authenticated user
       // Use the admin profile ID that exists in the database
       const validProfileId = '070dae19-d4ce-4fe0-b3d4-a090fa3ece3a'; // admin@slyfox.co.za
@@ -393,7 +403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Client created without portal access"
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Create client error:", error);
       if (error.issues) {
         console.error("Validation issues:", error.issues);
@@ -451,9 +461,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success = await storage.deleteClient(clientId);
       } else {
         // It's an email, find client by email first then delete by ID
+        console.log('Looking for client with email:', identifier);
         const client = await storage.getClientByEmail(identifier);
+        console.log('Found client:', client ? `ID ${client.id}` : 'NONE');
         if (client) {
+          console.log('Attempting to delete client ID:', client.id);
           success = await storage.deleteClient(client.id);
+          console.log('Delete operation result:', success);
         }
       }
       
@@ -463,7 +477,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('Client deleted successfully:', identifier);
       res.json({ message: "Client deleted successfully", identifier });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Delete client error:", error);
       res.status(500).json({ message: "Failed to delete client" });
     }

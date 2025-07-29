@@ -29,10 +29,10 @@ export interface IStorage {
   // Clients (integers)
   getClient(id: number): Promise<Client | undefined>;
   getClientBySlug(slug: string): Promise<Client | undefined>;
+  getClientByEmail(email: string): Promise<Client | undefined>;
   getClients(): Promise<Client[]>;
   createClient(client: InsertClient): Promise<Client>;
   updateClient(id: number, updates: Partial<InsertClient>): Promise<Client | undefined>;
-  deleteClient(id: number): Promise<boolean>;
   deleteClient(id: number): Promise<boolean>;
   
   // Shoots (UUIDs)
@@ -490,6 +490,10 @@ export class MemStorage implements IStorage {
 
   async getClientBySlug(slug: string): Promise<Client | undefined> {
     return Array.from(this.clients.values()).find(client => client.slug === slug);
+  }
+
+  async getClientByEmail(email: string): Promise<Client | undefined> {
+    return Array.from(this.clients.values()).find(client => client.email === email);
   }
 
   async getClients(): Promise<Client[]> {
