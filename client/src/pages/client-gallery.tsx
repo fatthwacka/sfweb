@@ -60,6 +60,7 @@ export default function ClientGallery() {
   const [visibleImageCount, setVisibleImageCount] = useState(30);
   const [modalImageIndex, setModalImageIndex] = useState<number | null>(null);
   const [navbarVisible, setNavbarVisible] = useState(true);
+  const [imageAspectRatios, setImageAspectRatios] = useState<Map<string, number>>(new Map());
   const slug = params.slug;
 
   // Fetch shoot data directly by slug - this is a public gallery for a single shoot
@@ -212,6 +213,63 @@ export default function ClientGallery() {
       title: "Download started",
       description: `Downloading ${selectedImages.size} images...`
     });
+  };
+
+  // Analyze image aspect ratios for automatic layout
+  const analyzeImageAspectRatios = (images: Image[]) => {
+    const ratioFrequency: { [key: number]: number } = {};
+    
+    images.forEach(image => {
+      // Load image to get dimensions (cached by browser)
+      const img = new window.Image();
+      img.onload = () => {
+        const ratio = img.naturalWidth / img.naturalHeight;
+        const roundedRatio = Math.round(ratio * 100) / 100; // Round to avoid floating point issues
+        
+        setImageAspectRatios(prev => new Map(prev).set(image.id, ratio));
+        
+        // Update frequency count
+        ratioFrequency[roundedRatio] = (ratioFrequency[roundedRatio] || 0) + 1;
+      };
+      img.src = ImageUrl.forViewing(image.storagePath);
+    });
+  };
+
+  // Get most common aspect ratio
+  const getMostCommonAspectRatio = (): number => {
+    if (imageAspectRatios.size === 0) return 3/2; // Default fallback
+    
+    const ratioFrequency: { [key: number]: number } = {};
+    Array.from(imageAspectRatios.values()).forEach(ratio => {
+      const roundedRatio = Math.round(ratio * 100) / 100;
+      ratioFrequency[roundedRatio] = (ratioFrequency[roundedRatio] || 0) + 1;
+    });
+    
+    const mostCommon = Object.keys(ratioFrequency)
+      .reduce((a, b) => ratioFrequency[parseFloat(a)] > ratioFrequency[parseFloat(b)] ? a : b);
+    
+    return parseFloat(mostCommon);
+  };
+
+  // Analyze images when they load
+  useEffect(() => {
+    if (images.length > 0) {
+      analyzeImageAspectRatios(images);
+    }
+  }, [images]);
+
+  // Get responsive grid classes
+  const getGridClasses = () => {
+    return "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-5";
+  };
+
+  // Get gap spacing based on gallery settings
+  const getGapClass = () => {
+    const spacing = gallerySettings.imageSpacing;
+    if (spacing === 'tight') return 'gap-0.5';
+    if (spacing === 'normal') return 'gap-2';
+    if (spacing === 'loose') return 'gap-4';
+    return 'gap-1'; // default
   };
 
   // Share individual image
@@ -374,10 +432,10 @@ export default function ClientGallery() {
       <section className="py-8">
         <div className="px-4 max-w-none w-full">
           {imagesLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+            <div className={`${getGridClasses()} ${getGapClass()}`}>
               {[...Array(12)].map((_, i) => (
                 <div key={i} className="animate-pulse">
-                  <div className="h-64 bg-gray-800 rounded"></div>
+                  <div className="aspect-[3/2] bg-gray-800 rounded"></div>
                 </div>
               ))}
             </div>
@@ -386,74 +444,235 @@ export default function ClientGallery() {
               <p className="text-gray-400">No images found in this gallery.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-              {images.slice(0, visibleImageCount)
-                .sort((a, b) => a.sequence - b.sequence)
-                .map((image, visibleIndex) => {
-                  // Find the actual index in the full sorted images array
-                  const sortedImages = images.sort((a, b) => a.sequence - b.sequence);
-                  const actualIndex = sortedImages.findIndex(img => img.id === image.id);
-                  
-                  return (
-                    <div
-                      key={image.id}
-                      className={`
-                        relative group overflow-hidden
-                        ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full aspect-square'}
-                        ${selectedImages.has(image.id) ? 'ring-2 ring-salmon' : ''}
-                        cursor-pointer transition-all duration-200
-                      `}
-                      onClick={() => openModal(actualIndex)}
-                  >
-                    <img
-                      src={ImageUrl.forViewing(image.storagePath)}
-                      alt={image.filename}
-                      className={`w-full object-cover ${gallerySettings.borderStyle === 'circular' ? 'h-full aspect-square' : 'h-64'} transition-all duration-200 group-hover:brightness-90`}
-                      loading="lazy"
-                    />
-                    
-                    {/* Selection indicator */}
-                    {selectedImages.has(image.id) && (
-                      <div className="absolute top-2 right-2 w-6 h-6 bg-salmon rounded-full flex items-center justify-center z-10">
-                        <div className="w-3 h-3 bg-white rounded-full"></div>
-                      </div>
-                    )}
-                    
-                    {/* Hover overlay with buttons at bottom */}
-                    <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <div className="absolute bottom-2 left-2 right-2 flex justify-center gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            downloadImage(image.storagePath, image.originalName);
-                          }}
-                          className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                          title="Download Image"
+            <>
+              {/* Masonry Layout */}
+              {gallerySettings.layoutStyle === 'masonry' && (
+                <div 
+                  className="columns-2 md:columns-3 lg:columns-4 xl:columns-5"
+                  style={{ 
+                    gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
+                  }}
+                >
+                  {images.slice(0, visibleImageCount)
+                    .sort((a, b) => a.sequence - b.sequence)
+                    .map((image, visibleIndex) => {
+                      const sortedImages = images.sort((a, b) => a.sequence - b.sequence);
+                      const actualIndex = sortedImages.findIndex(img => img.id === image.id);
+                      
+                      return (
+                        <div
+                          key={image.id}
+                          className={`
+                            relative group overflow-hidden break-inside-avoid mb-1
+                            ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full aspect-square'}
+                            ${selectedImages.has(image.id) ? 'ring-2 ring-salmon' : ''}
+                            cursor-pointer transition-all duration-200
+                          `}
+                          onClick={() => openModal(actualIndex)}
                         >
-                          <Download className="w-4 h-4 text-white" />
-                        </button>
-                        <button
-                          onClick={(e) => handleShareImage(actualIndex, e)}
-                          className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                          title="Share Image"
+                          <img
+                            src={ImageUrl.forViewing(image.storagePath)}
+                            alt={image.filename}
+                            className="w-full h-auto object-cover transition-all duration-200 group-hover:brightness-90"
+                            loading="lazy"
+                          />
+                          
+                          {/* Selection indicator */}
+                          {selectedImages.has(image.id) && (
+                            <div className="absolute top-2 right-2 w-6 h-6 bg-salmon rounded-full flex items-center justify-center z-10">
+                              <div className="w-3 h-3 bg-white rounded-full"></div>
+                            </div>
+                          )}
+                          
+                          {/* Hover overlay with buttons */}
+                          <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <div className="absolute bottom-2 left-2 right-2 flex justify-center gap-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  downloadImage(image.storagePath, image.originalName);
+                                }}
+                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
+                                title="Download Image"
+                              >
+                                <Download className="w-4 h-4 text-white" />
+                              </button>
+                              <button
+                                onClick={(e) => handleShareImage(actualIndex, e)}
+                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
+                                title="Share Image"
+                              >
+                                <Share2 className="w-4 h-4 text-white" />
+                              </button>
+                              <a
+                                href={ImageUrl.forFullSize(image.storagePath)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
+                                title="View Full Resolution"
+                              >
+                                <Eye className="w-4 h-4 text-white" />
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+
+              {/* Square Grid Layout */}
+              {gallerySettings.layoutStyle === 'grid' && (
+                <div className={`${getGridClasses()} ${getGapClass()}`}>
+                  {images.slice(0, visibleImageCount)
+                    .sort((a, b) => a.sequence - b.sequence)
+                    .map((image, visibleIndex) => {
+                      const sortedImages = images.sort((a, b) => a.sequence - b.sequence);
+                      const actualIndex = sortedImages.findIndex(img => img.id === image.id);
+                      
+                      return (
+                        <div
+                          key={image.id}
+                          className={`
+                            relative group overflow-hidden aspect-square
+                            ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full'}
+                            ${selectedImages.has(image.id) ? 'ring-2 ring-salmon' : ''}
+                            cursor-pointer transition-all duration-200
+                          `}
+                          onClick={() => openModal(actualIndex)}
                         >
-                          <Share2 className="w-4 h-4 text-white" />
-                        </button>
-                        <a
-                          href={ImageUrl.forFullSize(image.storagePath)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                          title="View Full Resolution"
+                          <img
+                            src={ImageUrl.forViewing(image.storagePath)}
+                            alt={image.filename}
+                            className="w-full h-full object-cover transition-all duration-200 group-hover:brightness-90"
+                            loading="lazy"
+                          />
+                          
+                          {/* Selection indicator */}
+                          {selectedImages.has(image.id) && (
+                            <div className="absolute top-2 right-2 w-6 h-6 bg-salmon rounded-full flex items-center justify-center z-10">
+                              <div className="w-3 h-3 bg-white rounded-full"></div>
+                            </div>
+                          )}
+                          
+                          {/* Hover overlay with buttons */}
+                          <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <div className="absolute bottom-2 left-2 right-2 flex justify-center gap-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  downloadImage(image.storagePath, image.originalName);
+                                }}
+                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
+                                title="Download Image"
+                              >
+                                <Download className="w-4 h-4 text-white" />
+                              </button>
+                              <button
+                                onClick={(e) => handleShareImage(actualIndex, e)}
+                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
+                                title="Share Image"
+                              >
+                                <Share2 className="w-4 h-4 text-white" />
+                              </button>
+                              <a
+                                href={ImageUrl.forFullSize(image.storagePath)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
+                                title="View Full Resolution"
+                              >
+                                <Eye className="w-4 h-4 text-white" />
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+
+              {/* Automatic Layout (Equal Columns with Most Common Aspect Ratio) */}
+              {gallerySettings.layoutStyle === 'columns' && (
+                <div 
+                  className={`${getGridClasses()} ${getGapClass()}`}
+                  style={{
+                    '--auto-aspect-ratio': getMostCommonAspectRatio()
+                  } as React.CSSProperties}
+                >
+                  {images.slice(0, visibleImageCount)
+                    .sort((a, b) => a.sequence - b.sequence)
+                    .map((image, visibleIndex) => {
+                      const sortedImages = images.sort((a, b) => a.sequence - b.sequence);
+                      const actualIndex = sortedImages.findIndex(img => img.id === image.id);
+                      const commonRatio = getMostCommonAspectRatio();
+                      
+                      return (
+                        <div
+                          key={image.id}
+                          className={`
+                            relative group overflow-hidden
+                            ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full'}
+                            ${selectedImages.has(image.id) ? 'ring-2 ring-salmon' : ''}
+                            cursor-pointer transition-all duration-200
+                          `}
+                          style={{ aspectRatio: commonRatio }}
+                          onClick={() => openModal(actualIndex)}
                         >
-                          <Eye className="w-4 h-4 text-white" />
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                )})}
-            </div>
+                          <img
+                            src={ImageUrl.forViewing(image.storagePath)}
+                            alt={image.filename}
+                            className="w-full h-full object-cover transition-all duration-200 group-hover:brightness-90"
+                            loading="lazy"
+                          />
+                          
+                          {/* Selection indicator */}
+                          {selectedImages.has(image.id) && (
+                            <div className="absolute top-2 right-2 w-6 h-6 bg-salmon rounded-full flex items-center justify-center z-10">
+                              <div className="w-3 h-3 bg-white rounded-full"></div>
+                            </div>
+                          )}
+                          
+                          {/* Hover overlay with buttons */}
+                          <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <div className="absolute bottom-2 left-2 right-2 flex justify-center gap-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  downloadImage(image.storagePath, image.originalName);
+                                }}
+                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
+                                title="Download Image"
+                              >
+                                <Download className="w-4 h-4 text-white" />
+                              </button>
+                              <button
+                                onClick={(e) => handleShareImage(actualIndex, e)}
+                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
+                                title="Share Image"
+                              >
+                                <Share2 className="w-4 h-4 text-white" />
+                              </button>
+                              <a
+                                href={ImageUrl.forFullSize(image.storagePath)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
+                                title="View Full Resolution"
+                              >
+                                <Eye className="w-4 h-4 text-white" />
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+            </>
           )}
 
           {/* Load More Button */}

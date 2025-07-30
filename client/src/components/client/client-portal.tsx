@@ -700,7 +700,7 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                           <SelectContent>
                             <SelectItem value="masonry">Masonry (Pinterest-style)</SelectItem>
                             <SelectItem value="grid">Square Grid</SelectItem>
-                            <SelectItem value="columns">Equal Columns</SelectItem>
+                            <SelectItem value="columns">Automatic (Smart Ratio)</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
