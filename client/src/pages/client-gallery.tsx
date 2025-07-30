@@ -429,7 +429,10 @@ export default function ClientGallery() {
       </section>
 
       {/* Image Gallery Section - Full Width */}
-      <section className="py-8">
+      <section 
+        className="py-8" 
+        style={{ backgroundColor: gallerySettings.backgroundColor || '#000000' }}
+      >
         <div className="px-4 max-w-none w-full">
           {imagesLoading ? (
             <div className={`${getGridClasses()} ${getGapClass()}`}>
