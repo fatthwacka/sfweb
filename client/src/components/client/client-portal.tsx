@@ -585,28 +585,26 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                             This will be displayed as your gallery heading
                           </p>
                         </div>
-                      </div>
-                      
-                      {/* Album Reference Information */}
-                      <div className="border-t pt-4 space-y-3">
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Album Slug</Label>
-                          <div className="mt-1 p-2 bg-muted/50 rounded-md">
+                          <Label htmlFor="albumSlug">Album Slug</Label>
+                          <div className="p-2 bg-background rounded-md border">
                             <code className="text-sm text-cyan-400">{currentShoot.customSlug}</code>
                           </div>
                           <p className="text-xs text-muted-foreground mt-1">
                             URL-friendly identifier for your gallery
                           </p>
                         </div>
-                        
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Public Gallery Link</Label>
-                          <div className="mt-1 flex gap-2">
-                            <div className="flex-1 p-2 bg-muted/50 rounded-md">
-                              <code className="text-sm text-salmon break-all">
-                                {window.location.origin}/gallery/{currentShoot.customSlug}
-                              </code>
-                            </div>
+                          <Label className="mb-2 block">Live Album</Label>
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={() => {
+                                window.open(`/gallery/${currentShoot.customSlug}`, '_blank');
+                              }}
+                              className="bg-salmon text-white hover:bg-salmon-muted"
+                            >
+                              View Live Album
+                            </Button>
                             <Button
                               size="sm"
                               variant="outline"
@@ -619,7 +617,7 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                             </Button>
                           </div>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Share this link to let others view your gallery
+                            Opens your public gallery in a new tab
                           </p>
                         </div>
                       </div>

@@ -138,6 +138,13 @@ The application is structured to be easily deployable to platforms like Vercel, 
 
 ## Recent Changes: Latest modifications with dates
 
+### July 30, 2025 - Client Dashboard Album Reference Added ✅
+- **Album Slug Display**: Added non-editable album slug field in client's Basic Shoot Info card
+- **Live Album Access**: Added "View Live Album" button with external link icon for opening public gallery
+- **Consistent Styling**: Album slug uses same label styling as Location/Gallery Title fields with black background container
+- **Compact Layout**: Streamlined design without showing full URL, focusing on easy access to live gallery
+- **Dual Access Methods**: Main button and icon button both open gallery in new tab for user convenience
+
 ### July 29, 2025 - Optimized Images Tab with Bulk Selection Complete ✅
 - **Bulk Image Selection**: Added visual tick marks with single-click selection/deselection functionality
 - **Selection UI**: Clear selection counter, Select All/Clear buttons, and bulk action controls
