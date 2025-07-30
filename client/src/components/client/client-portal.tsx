@@ -33,7 +33,8 @@ import {
   Trash2,
   MousePointer,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  ExternalLink
 } from "lucide-react";
 
 interface Shoot {
@@ -582,6 +583,43 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                           />
                           <p className="text-xs text-muted-foreground mt-1">
                             This will be displayed as your gallery heading
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Album Reference Information */}
+                      <div className="border-t pt-4 space-y-3">
+                        <div>
+                          <Label className="text-sm font-medium text-muted-foreground">Album Slug</Label>
+                          <div className="mt-1 p-2 bg-muted/50 rounded-md">
+                            <code className="text-sm text-cyan-400">{currentShoot.customSlug}</code>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            URL-friendly identifier for your gallery
+                          </p>
+                        </div>
+                        
+                        <div>
+                          <Label className="text-sm font-medium text-muted-foreground">Public Gallery Link</Label>
+                          <div className="mt-1 flex gap-2">
+                            <div className="flex-1 p-2 bg-muted/50 rounded-md">
+                              <code className="text-sm text-salmon break-all">
+                                {window.location.origin}/gallery/{currentShoot.customSlug}
+                              </code>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                window.open(`/gallery/${currentShoot.customSlug}`, '_blank');
+                              }}
+                              className="border-border hover:border-cyan"
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Share this link to let others view your gallery
                           </p>
                         </div>
                       </div>
