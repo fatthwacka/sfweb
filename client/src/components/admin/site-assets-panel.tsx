@@ -58,7 +58,7 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
     queryFn: async () => {
       try {
         const response = await apiRequest('GET', '/api/local-assets');
-        return response as LocalSiteAsset[];
+        return Array.isArray(response) ? response as LocalSiteAsset[] : [] as LocalSiteAsset[];
       } catch (error) {
         console.warn('Failed to fetch local assets:', error);
         return [] as LocalSiteAsset[];
@@ -411,7 +411,7 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
                     <AssetCard 
                       key={assetKey}
                       assetKey={assetKey} 
-                      asset={localAssets?.find((a) => a.assetKey === assetKey)}
+                      asset={Array.isArray(localAssets) ? localAssets.find((a) => a.assetKey === assetKey) : undefined}
                     />
                   ))}
               </div>
@@ -434,7 +434,7 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
                     <AssetCard 
                       key={assetKey}
                       assetKey={assetKey} 
-                      asset={localAssets?.find((a) => a.assetKey === assetKey)}
+                      asset={Array.isArray(localAssets) ? localAssets.find((a) => a.assetKey === assetKey) : undefined}
                     />
                   ))}
               </div>
