@@ -910,7 +910,7 @@ export class MemStorage implements IStorage {
 
   // Featured Images Management methods
   async getFeaturedImages(): Promise<Image[]> {
-    return Array.from(this.images.values()).filter(image => image.featuredImage);
+    return Array.from(this.images.values()).filter(image => image.featuredImage === true);
   }
 
   async getFeaturedImagesByClassification(classification: ImageClassification): Promise<Image[]> {
@@ -919,7 +919,7 @@ export class MemStorage implements IStorage {
     );
   }
 
-  async updateImageFeaturedStatus(imageIds: string[], featured: boolean): Promise<Image[]> {
+  async updateImageFeaturedStatus(imageIds: number[], featured: boolean): Promise<Image[]> {
     const updatedImages: Image[] = [];
     
     for (const imageId of imageIds) {

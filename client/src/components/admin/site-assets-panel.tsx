@@ -298,25 +298,22 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
           {/* Hero Images Section */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Hero Images</CardTitle>
+              <CardTitle className="text-lg">Hero Images (9 Total)</CardTitle>
               <p className="text-sm text-gray-600">
-                Primary images displayed on key pages. Each has automatic fallback protection.
+                Primary images displayed on key pages across the photography website. Each has automatic fallback protection.
               </p>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <AssetCard 
-                  assetKey={ASSET_KEYS.HERO_MAIN} 
-                  asset={localAssets?.find((a) => a.assetKey === ASSET_KEYS.HERO_MAIN)}
-                />
-                <AssetCard 
-                  assetKey={ASSET_KEYS.HERO_ABOUT} 
-                  asset={localAssets?.find((a) => a.assetKey === ASSET_KEYS.HERO_ABOUT)}
-                />
-                <AssetCard 
-                  assetKey={ASSET_KEYS.HERO_CONTACT} 
-                  asset={localAssets?.find((a) => a.assetKey === ASSET_KEYS.HERO_CONTACT)}
-                />
+                {Object.entries(ASSET_KEYS)
+                  .filter(([key]) => key.startsWith('hero/'))
+                  .map(([assetKey, title]) => (
+                    <AssetCard 
+                      key={assetKey}
+                      assetKey={assetKey} 
+                      asset={localAssets?.find((a) => a.assetKey === assetKey)}
+                    />
+                  ))}
               </div>
             </CardContent>
           </Card>
@@ -324,25 +321,22 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
           {/* Background Images Section */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Background Images</CardTitle>
+              <CardTitle className="text-lg">Background Images (3 Total)</CardTitle>
               <p className="text-sm text-gray-600">
-                Subtle background textures and patterns used throughout the site.
+                Subtle background textures and patterns used throughout the site sections.
               </p>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <AssetCard 
-                  assetKey={ASSET_KEYS.BG_MAIN} 
-                  asset={localAssets?.find((a) => a.assetKey === ASSET_KEYS.BG_MAIN)}
-                />
-                <AssetCard 
-                  assetKey={ASSET_KEYS.BG_CONTACT} 
-                  asset={localAssets?.find((a) => a.assetKey === ASSET_KEYS.BG_CONTACT)}
-                />
-                <AssetCard 
-                  assetKey={ASSET_KEYS.BG_PORTFOLIO} 
-                  asset={localAssets?.find((a) => a.assetKey === ASSET_KEYS.BG_PORTFOLIO)}
-                />
+                {Object.entries(ASSET_KEYS)
+                  .filter(([key]) => key.startsWith('backgrounds/'))
+                  .map(([assetKey, title]) => (
+                    <AssetCard 
+                      key={assetKey}
+                      assetKey={assetKey} 
+                      asset={localAssets?.find((a) => a.assetKey === assetKey)}
+                    />
+                  ))}
               </div>
             </CardContent>
           </Card>
