@@ -977,6 +977,9 @@ import { PostgreSQLStorage } from "./pg-storage";
 // Import Supabase storage
 import { SupabaseStorage } from "./supabase-storage";
 
-// Initialize Supabase storage directly - no fallback needed
-export const storage: IStorage = new SupabaseStorage();
+// For local development with local site assets, use MemStorage
+// For production, use SupabaseStorage
+export const storage: IStorage = process.env.NODE_ENV === 'development' 
+  ? new MemStorage() 
+  : new SupabaseStorage();
 
