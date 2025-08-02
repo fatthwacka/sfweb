@@ -14,7 +14,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { ImageUrl } from "@/lib/image-utils";
 import { EnhancedGalleryEditor } from "./enhanced-gallery-editor";
 import { StaffManagement } from "./staff-management";
-import { SiteAssetsPanel } from "./site-assets-panel";
+import { SimpleAssetsPanel } from "./simple-assets-panel";
 import { GalleryLivePreview } from "../shared/gallery-live-preview";
 import {
   BarChart3,
@@ -1670,7 +1670,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
           )}
 
           {activeTab === 'site-assets' && userRole === 'super_admin' && (
-            <SiteAssetsPanel userRole={userRole} />
+            <SimpleAssetsPanel />
           )}
 
           {activeTab === 'staff' && userRole === 'super_admin' && (

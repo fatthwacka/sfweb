@@ -7,7 +7,7 @@ import { createSupabaseUser, type CreateUserData } from './supabase-auth.js';
 import { populateWithExistingAuth } from './populate-with-existing-auth.js';
 import { initializeAdmin } from './init-admin.js';
 import { createClient } from '@supabase/supabase-js';
-import localAssetsRouter from './routes/local-assets';
+import simpleAssetsRouter from './routes/simple-assets';
 import { 
   insertUserSchema, insertClientSchema, insertShootSchema, 
   insertImageSchema, insertBookingSchema, insertAnalyticsSchema,
@@ -1244,8 +1244,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Use the dedicated local assets router
-  app.use('/api/local-assets', localAssetsRouter);
+  // Use the simple assets router for direct file management
+  app.use('/api/simple-assets', simpleAssetsRouter);
 
   // GET /api/images/featured - Get featured images
   app.get("/api/images/featured", async (req, res) => {
