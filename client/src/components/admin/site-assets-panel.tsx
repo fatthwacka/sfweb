@@ -99,6 +99,8 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
       return response.json();
     },
     onSuccess: (data, variables) => {
+      // Force a complete cache refresh to ensure UI updates
+      queryClient.removeQueries({ queryKey: ['local-site-assets'] });
       queryClient.invalidateQueries({ queryKey: ['local-site-assets'] });
       toast({
         title: "Success",
@@ -132,6 +134,8 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
       return response.json();
     },
     onSuccess: () => {
+      // Force complete cache refresh for alt text updates
+      queryClient.removeQueries({ queryKey: ['local-site-assets'] });
       queryClient.invalidateQueries({ queryKey: ['local-site-assets'] });
       toast({
         title: "Success",
@@ -155,6 +159,8 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
       return response.json();
     },
     onSuccess: (data, assetKey) => {
+      // Force complete cache refresh for removals
+      queryClient.removeQueries({ queryKey: ['local-site-assets'] });
       queryClient.invalidateQueries({ queryKey: ['local-site-assets'] });
       toast({
         title: "Success",
@@ -243,11 +249,11 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
     };
     
     return (
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden bg-gradient-to-br from-purple-900/20 via-indigo-900/15 to-purple-800/25 border border-purple-500/30">
         <CardContent className="p-4">
           <div 
-            className={`aspect-video mb-4 bg-gray-100 rounded-lg overflow-hidden relative border-2 border-dashed transition-colors ${
-              isDragOver ? 'border-salmon bg-salmon/10' : 'border-transparent'
+            className={`aspect-video mb-4 rounded-lg overflow-hidden relative border-2 border-dashed transition-colors ${
+              isDragOver ? 'border-salmon bg-salmon/10' : 'border-purple-400/40'
             }`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -256,8 +262,8 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
             <SmartImage
               assetKey={assetKey}
               alt={asset?.altText || `${assetKey} image`}
-              className="w-full h-full object-cover"
-              onFallbackUsed={(key) => console.warn(`Fallback used for ${key}`)}
+              className="w-full h-full object-cover border-2 border-purple-400/40 rounded"
+              onFallbackUsed={(key) => console.log(`Fallback used for ${key}`)}
             />
             {isDragOver && (
               <div className="absolute inset-0 bg-salmon/20 flex items-center justify-center">
@@ -268,8 +274,8 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
         
         <div className="space-y-3">
           <div>
-            <h4 className="font-semibold text-sm">{ASSET_KEYS[assetKey as keyof typeof ASSET_KEYS] || assetKey}</h4>
-            <p className="text-xs text-gray-500">
+            <h4 className="font-semibold text-sm text-white">{ASSET_KEYS[assetKey as keyof typeof ASSET_KEYS] || assetKey}</h4>
+            <p className="text-xs text-purple-200">
               {asset?.altText || 'No alt text set'}
             </p>
           </div>
@@ -279,7 +285,7 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
             <label className="flex-1">
               <Button 
                 size="sm" 
-                className="w-full"
+                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 border border-purple-400/30"
                 disabled={uploadingAsset === assetKey}
               >
                 <Upload className="w-3 h-3 mr-1" />
@@ -293,24 +299,22 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
               />
             </label>
 
-            {/* Remove Image Button */}
-            {asset && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="flex-shrink-0"
-                onClick={() => removeAsset.mutate(assetKey)}
-                disabled={removeAsset.isPending}
-                title="Remove image and revert to fallback"
-              >
-                <Trash2 className="w-3 h-3" />
-              </Button>
-            )}
+            {/* Remove Image Button - Always show but conditional functionality */}
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex-shrink-0 border-red-400/30 hover:bg-red-500/20 hover:border-red-400"
+              onClick={() => removeAsset.mutate(assetKey)}
+              disabled={removeAsset.isPending || !asset}
+              title={asset ? "Remove image and revert to fallback" : "No custom image to remove"}
+            >
+              <Trash2 className="w-3 h-3" />
+            </Button>
 
             {/* Edit alt text */}
             <Dialog>
               <DialogTrigger asChild>
-                <Button size="sm" variant="outline">
+                <Button size="sm" variant="outline" className="border-purple-400/30 hover:bg-purple-500/20">
                   <Settings className="w-3 h-3" />
                   Alt Text
                 </Button>
@@ -370,13 +374,13 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="bg-gradient-to-br from-purple-900/30 via-indigo-900/20 to-purple-800/35 border border-purple-500/40">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-white">
             <Settings className="w-5 h-5" />
             Site Asset Management
           </CardTitle>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-purple-200">
             Manage hero images, backgrounds, and featured content. Each asset has a fallback system for reliability.
           </p>
         </CardHeader>
@@ -396,10 +400,10 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
 
         <TabsContent value="local-assets" className="space-y-6">
           {/* Hero Images Section */}
-          <Card>
+          <Card className="bg-gradient-to-br from-purple-900/25 via-indigo-900/15 to-purple-800/30 border border-purple-500/30">
             <CardHeader>
-              <CardTitle className="text-lg">Hero Images (9 Total)</CardTitle>
-              <p className="text-sm text-gray-600">
+              <CardTitle className="text-lg text-white">Hero Images (9 Total)</CardTitle>
+              <p className="text-sm text-purple-200">
                 Primary images displayed on key pages across the photography website. Each has automatic fallback protection.
               </p>
             </CardHeader>
@@ -419,10 +423,10 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
           </Card>
 
           {/* Background Images Section */}
-          <Card>
+          <Card className="bg-gradient-to-br from-purple-900/25 via-indigo-900/15 to-purple-800/30 border border-purple-500/30">
             <CardHeader>
-              <CardTitle className="text-lg">Background Images (3 Total)</CardTitle>
-              <p className="text-sm text-gray-600">
+              <CardTitle className="text-lg text-white">Background Images (3 Total)</CardTitle>
+              <p className="text-sm text-purple-200">
                 Subtle background textures and patterns used throughout the site sections.
               </p>
             </CardHeader>
@@ -443,10 +447,10 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
         </TabsContent>
 
         <TabsContent value="featured-work" className="space-y-6">
-          <Card>
+          <Card className="bg-gradient-to-br from-purple-900/25 via-indigo-900/15 to-purple-800/30 border border-purple-500/30">
             <CardHeader>
-              <CardTitle className="text-lg">Featured Work Gallery</CardTitle>
-              <p className="text-sm text-gray-600">
+              <CardTitle className="text-lg text-white">Featured Work Gallery</CardTitle>
+              <p className="text-sm text-purple-200">
                 Images displayed on the homepage. Currently showing {featuredImages?.length || 0} featured images.
               </p>
             </CardHeader>
