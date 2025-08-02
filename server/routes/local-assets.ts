@@ -3,7 +3,21 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs/promises';
 import { storage } from '../storage';
-import { ASSET_KEYS } from '../../client/src/components/shared/smart-image';
+// Asset keys imported locally to avoid client-side dependencies
+const ASSET_KEYS = {
+  'hero/cape-town-wedding-photography-slyfox-studios': 'Main Home Page Hero',
+  'hero/professional-photography-services-cape-town': 'Photography Services Landing',
+  'hero/cape-town-wedding-photographer-portfolio': 'Weddings Portfolio Hero',
+  'hero/portrait-photographer-cape-town-studio': 'Portraits Portfolio Hero',
+  'hero/corporate-photography-cape-town-business': 'Corporate Photography Hero',
+  'hero/event-photographer-cape-town-professional': 'Events Portfolio Hero',
+  'hero/graduation-photography-cape-town-ceremony': 'Graduation Photography Hero',
+  'hero/product-photography-cape-town-commercial': 'Product Photography Hero',
+  'hero/matric-dance-photographer-cape-town': 'Matric Dance Photography Hero',
+  'backgrounds/photography-studio-cape-town-texture': 'Main Site Background',
+  'backgrounds/wedding-photography-background-elegant': 'Wedding Portfolio Background',
+  'backgrounds/portrait-photography-studio-backdrop': 'Portrait Studio Background'
+} as const;
 
 const router = Router();
 

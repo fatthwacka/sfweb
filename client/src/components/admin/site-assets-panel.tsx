@@ -7,7 +7,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Upload, Image as ImageIcon, Video, Settings, Eye, Star, AlertTriangle } from "lucide-react";
-import { SmartImage, ASSET_KEYS } from "@/components/shared/smart-image";
+import { SmartImage } from "@/components/shared/smart-image";
+
+// Asset keys defined locally to avoid circular imports
+const ASSET_KEYS = {
+  'hero/cape-town-wedding-photography-slyfox-studios': 'Main Home Page Hero',
+  'hero/professional-photography-services-cape-town': 'Photography Services Landing',
+  'hero/cape-town-wedding-photographer-portfolio': 'Weddings Portfolio Hero',
+  'hero/portrait-photographer-cape-town-studio': 'Portraits Portfolio Hero',
+  'hero/corporate-photography-cape-town-business': 'Corporate Photography Hero',
+  'hero/event-photographer-cape-town-professional': 'Events Portfolio Hero',
+  'hero/graduation-photography-cape-town-ceremony': 'Graduation Photography Hero',
+  'hero/product-photography-cape-town-commercial': 'Product Photography Hero',
+  'hero/matric-dance-photographer-cape-town': 'Matric Dance Photography Hero',
+  'backgrounds/photography-studio-cape-town-texture': 'Main Site Background',
+  'backgrounds/wedding-photography-background-elegant': 'Wedding Portfolio Background',
+  'backgrounds/portrait-photography-studio-backdrop': 'Portrait Studio Background'
+} as const;
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -40,7 +56,7 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
   const { data: localAssets, isLoading } = useQuery({
     queryKey: ['local-site-assets'],
     queryFn: async () => {
-      const response = await apiRequest('/api/local-assets');
+      const response = await apiRequest('GET', '/api/local-assets');
       return response as LocalSiteAsset[];
     }
   });
@@ -49,7 +65,7 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
   const { data: featuredImages } = useQuery({
     queryKey: ['featured-images'],
     queryFn: async () => {
-      const response = await apiRequest('/api/images/featured');
+      const response = await apiRequest('GET', '/api/images/featured');
       return response as any[];
     }
   });
@@ -169,7 +185,7 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
         
         <div className="space-y-3">
           <div>
-            <h4 className="font-semibold text-sm">{assetKey}</h4>
+            <h4 className="font-semibold text-sm">{ASSET_KEYS[assetKey as keyof typeof ASSET_KEYS] || assetKey}</h4>
             <p className="text-xs text-gray-500">
               {asset?.altText || 'No alt text set'}
             </p>

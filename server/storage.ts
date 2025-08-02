@@ -459,6 +459,134 @@ export class MemStorage implements IStorage {
       };
       this.packages.set(packageItem.id, packageItem);
     });
+
+    // Initialize local site assets for all 12 asset keys with SEO-optimized names
+    const siteAssets = [
+      {
+        assetKey: 'hero/cape-town-wedding-photography-slyfox-studios',
+        assetType: 'hero',
+        filePath: '/assets/hero/cape-town-wedding-photography-slyfox-studios-ni.jpg',
+        altText: 'Professional Cape Town wedding photography by SlyFox Studios',
+        seoKeywords: 'cape-town-wedding-photography-slyfox-studios',
+        isActive: true,
+        updatedBy: 'system'
+      },
+      {
+        assetKey: 'hero/professional-photography-services-cape-town',
+        assetType: 'hero',
+        filePath: '/assets/hero/professional-photography-services-cape-town-ni.jpg',
+        altText: 'Professional photography services in Cape Town',
+        seoKeywords: 'professional-photography-services-cape-town',
+        isActive: true,
+        updatedBy: 'system'
+      },
+      {
+        assetKey: 'hero/cape-town-wedding-photographer-portfolio',
+        assetType: 'hero',
+        filePath: '/assets/hero/cape-town-wedding-photographer-portfolio-ni.jpg',
+        altText: 'Cape Town wedding photographer portfolio showcase',
+        seoKeywords: 'cape-town-wedding-photographer-portfolio',
+        isActive: true,
+        updatedBy: 'system'
+      },
+      {
+        assetKey: 'hero/portrait-photographer-cape-town-studio',
+        assetType: 'hero',
+        filePath: '/assets/hero/portrait-photographer-cape-town-studio-ni.jpg',
+        altText: 'Professional portrait photographer in Cape Town studio',
+        seoKeywords: 'portrait-photographer-cape-town-studio',
+        isActive: true,
+        updatedBy: 'system'
+      },
+      {
+        assetKey: 'hero/corporate-photography-cape-town-business',
+        assetType: 'hero',
+        filePath: '/assets/hero/corporate-photography-cape-town-business-ni.jpg',
+        altText: 'Corporate photography services for Cape Town businesses',
+        seoKeywords: 'corporate-photography-cape-town-business',
+        isActive: true,
+        updatedBy: 'system'
+      },
+      {
+        assetKey: 'hero/event-photographer-cape-town-professional',
+        assetType: 'hero',
+        filePath: '/assets/hero/event-photographer-cape-town-professional-ni.jpg',
+        altText: 'Professional event photographer in Cape Town',
+        seoKeywords: 'event-photographer-cape-town-professional',
+        isActive: true,
+        updatedBy: 'system'
+      },
+      {
+        assetKey: 'hero/graduation-photography-cape-town-ceremony',
+        assetType: 'hero',
+        filePath: '/assets/hero/graduation-photography-cape-town-ceremony-ni.jpg',
+        altText: 'Graduation ceremony photography in Cape Town',
+        seoKeywords: 'graduation-photography-cape-town-ceremony',
+        isActive: true,
+        updatedBy: 'system'
+      },
+      {
+        assetKey: 'hero/product-photography-cape-town-commercial',
+        assetType: 'hero',
+        filePath: '/assets/hero/product-photography-cape-town-commercial-ni.jpg',
+        altText: 'Commercial product photography services in Cape Town',
+        seoKeywords: 'product-photography-cape-town-commercial',
+        isActive: true,
+        updatedBy: 'system'
+      },
+      {
+        assetKey: 'hero/matric-dance-photographer-cape-town',
+        assetType: 'hero',
+        filePath: '/assets/hero/matric-dance-photographer-cape-town-ni.jpg',
+        altText: 'Matric dance photographer in Cape Town',
+        seoKeywords: 'matric-dance-photographer-cape-town',
+        isActive: true,
+        updatedBy: 'system'
+      },
+      {
+        assetKey: 'backgrounds/photography-studio-cape-town-texture',
+        assetType: 'background',
+        filePath: '/assets/backgrounds/photography-studio-cape-town-texture-ni.jpg',
+        altText: 'Cape Town photography studio background texture',
+        seoKeywords: 'photography-studio-cape-town-texture',
+        isActive: true,
+        updatedBy: 'system'
+      },
+      {
+        assetKey: 'backgrounds/wedding-photography-background-elegant',
+        assetType: 'background',
+        filePath: '/assets/backgrounds/wedding-photography-background-elegant-ni.jpg',
+        altText: 'Elegant wedding photography background',
+        seoKeywords: 'wedding-photography-background-elegant',
+        isActive: true,
+        updatedBy: 'system'
+      },
+      {
+        assetKey: 'backgrounds/portrait-photography-studio-backdrop',
+        assetType: 'background',
+        filePath: '/assets/backgrounds/portrait-photography-studio-backdrop-ni.jpg',
+        altText: 'Professional portrait photography studio backdrop',
+        seoKeywords: 'portrait-photography-studio-backdrop',
+        isActive: true,
+        updatedBy: 'system'
+      }
+    ];
+
+    siteAssets.forEach(asset => {
+      const localAsset: LocalSiteAsset = {
+        id: crypto.randomUUID(),
+        assetKey: asset.assetKey,
+        assetType: asset.assetType,
+        filePath: asset.filePath,
+        altText: asset.altText,
+        seoKeywords: asset.seoKeywords,
+        isActive: asset.isActive,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        updatedBy: asset.updatedBy
+      };
+      this.localSiteAssets.set(asset.assetKey, localAsset);
+    });
   }
 
   // User methods

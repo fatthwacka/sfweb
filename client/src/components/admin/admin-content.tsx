@@ -36,7 +36,8 @@ import {
   Shield,
   UserPlus,
   Check,
-  Download
+  Download,
+  Star
 } from "lucide-react";
 
 interface Client {
@@ -467,6 +468,30 @@ export function AdminContent({ userRole }: AdminContentProps) {
       toast({
         title: "Error", 
         description: "Failed to delete images",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Bulk mark as featured images mutation
+  const markAsFeaturedMutation = useMutation({
+    mutationFn: async (imageIds: number[]) => {
+      for (const imageId of imageIds) {
+        await apiRequest("PATCH", `/api/images/${imageId}`, { featuredImage: true });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/images"] });
+      clearSelection();
+      toast({
+        title: "Success",
+        description: `${selectedImages.size} images marked as featured successfully`
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error", 
+        description: "Failed to mark images as featured",
         variant: "destructive"
       });
     }
@@ -1445,6 +1470,16 @@ export function AdminContent({ userRole }: AdminContentProps) {
                               </div>
                             </DialogContent>
                           </Dialog>
+                          
+                          <Button
+                            size="sm"
+                            className="bg-yellow-600 text-white hover:bg-yellow-700 text-xs"
+                            onClick={() => markAsFeaturedMutation.mutate(Array.from(selectedImages))}
+                            disabled={markAsFeaturedMutation.isPending}
+                          >
+                            <Star className="w-3 h-3 mr-1" />
+                            {markAsFeaturedMutation.isPending ? 'Marking...' : `Mark as Featured (${selectedImages.size})`}
+                          </Button>
                           
                           <Button
                             size="sm"

@@ -93,15 +93,20 @@ export const SmartImage: React.FC<SmartImageProps> = ({
   );
 };
 
-// Asset key constants for type safety
+// Asset key constants with SEO-optimized names and descriptions
 export const ASSET_KEYS = {
-  HERO_MAIN: 'hero/cape-town-photography-studio-hero',
-  HERO_ABOUT: 'hero/professional-photographer-cape-town-about',
-  HERO_CONTACT: 'hero/slyfox-studios-contact-photography',
-  HERO_PORTFOLIO: 'hero/wedding-photography-portfolio-cape-town',
-  BG_MAIN: 'backgrounds/photography-studio-background-texture',
-  BG_CONTACT: 'backgrounds/contact-page-photography-background',
-  BG_PORTFOLIO: 'backgrounds/wedding-photography-portfolio-background',
+  'hero/cape-town-wedding-photography-slyfox-studios': 'Main Home Page Hero',
+  'hero/professional-photography-services-cape-town': 'Photography Services Landing',
+  'hero/cape-town-wedding-photographer-portfolio': 'Weddings Portfolio Hero',
+  'hero/portrait-photographer-cape-town-studio': 'Portraits Portfolio Hero',
+  'hero/corporate-photography-cape-town-business': 'Corporate Photography Hero',
+  'hero/event-photographer-cape-town-professional': 'Events Portfolio Hero',
+  'hero/graduation-photography-cape-town-ceremony': 'Graduation Photography Hero',
+  'hero/product-photography-cape-town-commercial': 'Product Photography Hero',
+  'hero/matric-dance-photographer-cape-town': 'Matric Dance Photography Hero',
+  'backgrounds/photography-studio-cape-town-texture': 'Main Site Background',
+  'backgrounds/wedding-photography-background-elegant': 'Wedding Portfolio Background',
+  'backgrounds/portrait-photography-studio-backdrop': 'Portrait Studio Background'
 } as const;
 
 export type AssetKey = typeof ASSET_KEYS[keyof typeof ASSET_KEYS];
