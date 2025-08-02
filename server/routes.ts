@@ -925,6 +925,150 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Local Site Assets API endpoints
+  app.get("/api/local-assets", async (req, res) => {
+    try {
+      const assets = await storage.getLocalSiteAssets();
+      res.json(assets);
+    } catch (error) {
+      console.error("Get local assets error:", error);
+      res.status(500).json({ message: "Failed to fetch local assets" });
+    }
+  });
+
+  app.post("/api/local-assets/upload", upload.single('file'), async (req, res) => {
+    try {
+      const { assetKey } = req.body;
+      const file = req.file;
+      
+      if (!file) {
+        return res.status(400).json({ message: 'No file provided' });
+      }
+      
+      if (!assetKey) {
+        return res.status(400).json({ message: 'Asset key is required' });
+      }
+      
+      console.log(`🔄 Uploading asset: ${assetKey}`);
+      
+      // Determine file extension based on mime type
+      let extension = '.jpg';
+      if (file.mimetype === 'image/png') extension = '.png';
+      if (file.mimetype === 'image/webp') extension = '.webp';
+      
+      // Create the new image file path (-ni version)  
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      const filePath = path.join(process.cwd(), 'public', 'assets', `${assetKey}-ni${extension}`);
+      const fileDir = path.dirname(filePath);
+      
+      // Ensure directory exists
+      await fs.mkdir(fileDir, { recursive: true });
+      
+      // Delete existing -ni file if it exists
+      try {
+        const existingFiles = await fs.readdir(fileDir);
+        const existingNiFile = existingFiles.find(f => f.startsWith(`${path.basename(assetKey)}-ni.`));
+        if (existingNiFile) {
+          await fs.unlink(path.join(fileDir, existingNiFile));
+        }
+      } catch (error) {
+        // File doesn't exist, which is fine
+      }
+      
+      // Write the new file
+      await fs.writeFile(filePath, file.buffer);
+      
+      // Create or update the asset record in storage
+      const assetData = {
+        assetKey,
+        assetType: 'image' as const,
+        filePath: `/assets/${assetKey}-ni${extension}`,
+        altText: `${assetKey} image`,
+        seoKeywords: null,
+        isActive: true,
+        updatedBy: 'admin'
+      };
+      
+      let asset;
+      const existingAsset = await storage.getLocalSiteAssetByKey(assetKey);
+      if (existingAsset) {
+        asset = await storage.updateLocalSiteAsset(assetKey, assetData);
+      } else {
+        asset = await storage.createLocalSiteAsset(assetData);
+      }
+      
+      console.log(`✅ Asset ${assetKey} uploaded successfully`);
+      res.json({ 
+        success: true, 
+        asset,
+        message: `Asset ${assetKey} uploaded successfully` 
+      });
+    } catch (error) {
+      console.error('Error uploading asset:', error);
+      res.status(500).json({ message: 'Failed to upload asset' });
+    }
+  });
+
+  app.patch("/api/local-assets/:assetKey/alt-text", async (req, res) => {
+    try {
+      const { assetKey } = req.params;
+      const { altText } = req.body;
+      
+      if (!altText) {
+        return res.status(400).json({ message: 'Alt text is required' });
+      }
+      
+      const asset = await storage.updateLocalSiteAsset(assetKey, {
+        altText: altText.trim(),
+        updatedBy: 'admin'
+      });
+      
+      if (!asset) {
+        return res.status(404).json({ message: 'Asset not found' });
+      }
+      
+      res.json({ 
+        message: 'Alt text updated successfully',
+        asset
+      });
+    } catch (error) {
+      console.error('Error updating alt text:', error);
+      res.status(500).json({ message: 'Failed to update alt text' });
+    }
+  });
+
+  app.delete("/api/local-assets/:assetKey", async (req, res) => {
+    try {
+      const { assetKey } = req.params;
+      
+      // Delete the -ni file from filesystem
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      const assetDir = path.join(process.cwd(), 'public', 'assets');
+      const extensions = ['.jpg', '.png', '.webp'];
+      
+      for (const ext of extensions) {
+        try {
+          await fs.unlink(path.join(assetDir, `${assetKey}-ni${ext}`));
+        } catch (error) {
+          // File doesn't exist, which is fine
+        }
+      }
+      
+      // Delete from database
+      const deleted = await storage.deleteLocalSiteAsset(assetKey);
+      
+      res.json({ 
+        success: true,
+        message: 'Asset removed - reverted to fallback image' 
+      });
+    } catch (error) {
+      console.error('Error deleting asset:', error);
+      res.status(500).json({ message: 'Failed to delete asset' });
+    }
+  });
+
   // Client Portal API endpoints
   app.get("/api/client/shoots/:email", async (req, res) => {
     try {

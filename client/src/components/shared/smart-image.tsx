@@ -8,6 +8,22 @@ interface SmartImageProps {
   onFallbackUsed?: (assetKey: string) => void;
 }
 
+// Asset fallback mapping
+const ASSET_FALLBACK_MAP: Record<string, string> = {
+  'hero/cape-town-wedding-photography-slyfox-studios': '/images/hero/cape-town-wedding-photography-slyfox-studios.jpg',
+  'hero/professional-photography-services-cape-town': '/images/hero/professional-photography-services-cape-town.jpg',
+  'hero/cape-town-wedding-photographer-portfolio': '/images/hero/cape-town-wedding-photographer-portfolio.jpg',
+  'hero/portrait-photographer-cape-town-studio': '/images/hero/portrait-photographer-cape-town-studio.jpg',
+  'hero/corporate-photography-cape-town-business': '/images/hero/corporate-photography-cape-town-business.jpg',
+  'hero/event-photographer-cape-town-professional': '/images/hero/event-photographer-cape-town-professional.jpg',
+  'hero/graduation-photography-cape-town-ceremony': '/images/hero/graduation-photography-cape-town-ceremony.jpg',
+  'hero/product-photography-cape-town-commercial': '/images/hero/product-photography-cape-town-commercial.jpg',
+  'hero/matric-dance-photographer-cape-town': '/images/hero/matric-dance-photographer-cape-town.jpg',
+  'backgrounds/photography-studio-cape-town-texture': '/images/backgrounds/photography-studio-cape-town-texture.jpg',
+  'backgrounds/wedding-photography-background-elegant': '/images/backgrounds/wedding-photography-background-elegant.jpg',
+  'backgrounds/portrait-photography-studio-backdrop': '/images/backgrounds/portrait-photography-studio-backdrop.jpg'
+};
+
 /**
  * SmartImage component with automatic fallback system
  * Attempts to load the '-ni' (new image) version first,
@@ -29,155 +45,51 @@ export const SmartImage: React.FC<SmartImageProps> = ({
     setImageSrc(`/assets/${assetKey}-ni.jpg`);
     setHasError(false);
     setIsLoading(true);
-    
-    // For admin panel - immediately show fallback since no custom images exist yet
-    const fallbackImage = ASSET_FALLBACK_MAP[assetKey];
-    if (fallbackImage) {
-      setImageSrc(fallbackImage);
-      setIsLoading(false);
-      if (onFallbackUsed) {
-        onFallbackUsed(assetKey);
-      }
-    }
-  }, [assetKey]);
-
-  const handleImageError = () => {
-    if (!hasError) {
-      // First error - try real fallback image from public/images/hero/
-      const fallbackImage = ASSET_FALLBACK_MAP[assetKey];
-      if (fallbackImage) {
-        setImageSrc(fallbackImage);
-        setHasError(true);
-        
-        // Log fallback usage for monitoring
-        console.warn(`SmartImage: Using real fallback for ${assetKey}: ${fallbackImage}`);
-        if (onFallbackUsed) {
-          onFallbackUsed(assetKey);
-        }
-      } else {
-        // No fallback available, show placeholder
-        console.error(`SmartImage: No fallback available for ${assetKey}`);
-        setIsLoading(false);
-        setHasError(true);
-      }
-    } else {
-      // Second error - fallback also failed
-      console.error(`SmartImage: Both primary and fallback images failed for ${assetKey}`);
-      setIsLoading(false);
-    }
-  };
-
-  // For admin panel - start by trying fallback immediately if no uploaded asset exists
-  const checkIfCustomImageExists = async () => {
-    try {
-      const response = await fetch(`/assets/${assetKey}-ni.jpg`, { method: 'HEAD' });
-      if (!response.ok) {
-        // Custom image doesn't exist, use fallback immediately
-        const fallbackImage = ASSET_FALLBACK_MAP[assetKey];
-        if (fallbackImage) {
-          setImageSrc(fallbackImage);
-          setHasError(true); // Mark as using fallback
-          if (onFallbackUsed) {
-            onFallbackUsed(assetKey);
-          }
-        }
-      }
-      setIsLoading(false);
-    } catch (error) {
-      // Network error or custom image doesn't exist
-      const fallbackImage = ASSET_FALLBACK_MAP[assetKey];
-      if (fallbackImage) {
-        setImageSrc(fallbackImage);
-        setHasError(true);
-        if (onFallbackUsed) {
-          onFallbackUsed(assetKey);
-        }
-      }
-      setIsLoading(false);
-    }
-  };
-
-  // On mount, check if custom image exists (for admin panel)
-  useEffect(() => {
-    checkIfCustomImageExists();
   }, [assetKey]);
 
   const handleImageLoad = () => {
     setIsLoading(false);
   };
 
-  // If both images failed, show placeholder
-  if (hasError && isLoading === false) {
+  const handleImageError = () => {
+    if (!hasError) {
+      // First error - try fallback image from public/images/
+      const fallbackImage = ASSET_FALLBACK_MAP[assetKey];
+      if (fallbackImage) {
+        setImageSrc(fallbackImage);
+        setHasError(true);
+        
+        if (onFallbackUsed) {
+          onFallbackUsed(assetKey);
+        }
+      } else {
+        // No fallback available
+        setIsLoading(false);
+        setHasError(true);
+      }
+    } else {
+      // Second error - fallback also failed
+      setIsLoading(false);
+    }
+  };
+
+  if (hasError && !ASSET_FALLBACK_MAP[assetKey]) {
     return (
-      <div 
-        className={`bg-gray-800 flex items-center justify-center text-gray-400 text-sm ${className}`}
-        style={style}
-      >
-        <div className="text-center">
-          <div className="w-8 h-8 mx-auto mb-2 opacity-50">
-            <svg fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div>Image unavailable</div>
-        </div>
+      <div className={`${className} bg-gray-200 flex items-center justify-center`} style={style}>
+        <span className="text-gray-500 text-sm">Image not available</span>
       </div>
     );
   }
 
   return (
-    <>
-      {isLoading && (
-        <div 
-          className={`bg-gray-800 animate-pulse ${className}`}
-          style={style}
-        />
-      )}
-      <img
-        src={imageSrc}
-        alt={alt}
-        className={`${className} ${isLoading ? 'hidden' : ''}`}
-        style={style}
-        onError={handleImageError}
-        onLoad={handleImageLoad}
-        loading="lazy"
-      />
-    </>
+    <img
+      src={imageSrc}
+      alt={alt}
+      className={className}
+      style={style}
+      onLoad={handleImageLoad}
+      onError={handleImageError}
+      loading="lazy"
+    />
   );
 };
-
-// Asset key constants with SEO-optimized names and descriptions
-export const ASSET_KEYS = {
-  'hero/cape-town-wedding-photography-slyfox-studios': 'Main Home Page Hero',
-  'hero/professional-photography-services-cape-town': 'Photography Services Landing',
-  'hero/cape-town-wedding-photographer-portfolio': 'Weddings Portfolio Hero',
-  'hero/portrait-photographer-cape-town-studio': 'Portraits Portfolio Hero',
-  'hero/corporate-photography-cape-town-business': 'Corporate Photography Hero',
-  'hero/event-photographer-cape-town-professional': 'Events Portfolio Hero',
-  'hero/graduation-photography-cape-town-ceremony': 'Graduation Photography Hero',
-  'hero/product-photography-cape-town-commercial': 'Product Photography Hero',
-  'hero/matric-dance-photographer-cape-town': 'Matric Dance Photography Hero',
-  'backgrounds/photography-studio-cape-town-texture': 'Main Site Background',
-  'backgrounds/wedding-photography-background-elegant': 'Wedding Portfolio Background',
-  'backgrounds/portrait-photography-studio-backdrop': 'Portrait Studio Background'
-} as const;
-
-// Mapping of asset keys to actual hero image files in public/images/hero/
-export const ASSET_FALLBACK_MAP: Record<string, string> = {
-  'hero/cape-town-wedding-photography-slyfox-studios': '/images/hero/homepage-main-hero.jpg',
-  'hero/professional-photography-services-cape-town': '/images/hero/photography-hero.jpg',
-  'hero/cape-town-wedding-photographer-portfolio': '/images/hero/wedding-photography-hero.webp',
-  'hero/portrait-photographer-cape-town-studio': '/images/hero/portrait-photography-hero.jpg',
-  'hero/corporate-photography-cape-town-business': '/images/hero/corporate-photography-hero.jpg',
-  'hero/event-photographer-cape-town-professional': '/images/hero/Event-photography-hero.jpg',
-  'hero/graduation-photography-cape-town-ceremony': '/images/hero/graduation-photography-hero.jpg',
-  'hero/product-photography-cape-town-commercial': '/images/hero/product-photography-hero.jpg',
-  'hero/matric-dance-photographer-cape-town': '/images/hero/matric-dance-photography-hero.jpg',
-  
-  // Background fallbacks (using existing backgrounds)
-  'backgrounds/photography-studio-cape-town-texture': '/images/backgrounds/photography-category-hero.jpg',
-  'backgrounds/wedding-photography-background-elegant': '/images/backgrounds/wedding-hero-background.jpg',
-  'backgrounds/portrait-photography-studio-backdrop': '/images/backgrounds/portrait-hero-background.jpg'
-};
-
-export type AssetKey = typeof ASSET_KEYS[keyof typeof ASSET_KEYS];

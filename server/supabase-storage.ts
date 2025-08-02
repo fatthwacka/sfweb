@@ -426,29 +426,31 @@ export class SupabaseStorage implements IStorage {
     return result;
   }
 
-  // Local site assets methods (placeholder implementations for development)
-  async getLocalSiteAssets(): Promise<any[]> {
-    // Return empty array for now - these are handled differently in production
-    return [];
+  // Local site assets methods
+  async getLocalSiteAssets(): Promise<LocalSiteAsset[]> {
+    return await db.select().from(localSiteAssets).orderBy(desc(localSiteAssets.updatedAt));
   }
 
-  async getLocalSiteAssetByKey(assetKey: string): Promise<any | undefined> {
-    // Return undefined for now - these are handled differently in production
-    return undefined;
+  async getLocalSiteAssetByKey(assetKey: string): Promise<LocalSiteAsset | undefined> {
+    const result = await db.select().from(localSiteAssets).where(eq(localSiteAssets.assetKey, assetKey)).limit(1);
+    return result[0];
   }
 
-  async createLocalSiteAsset(asset: any): Promise<any> {
-    // Return the asset for now - these are handled differently in production
-    return { ...asset, id: Date.now().toString(), createdAt: new Date(), updatedAt: new Date() };
+  async createLocalSiteAsset(asset: InsertLocalSiteAsset): Promise<LocalSiteAsset> {
+    const result = await db.insert(localSiteAssets).values(asset).returning();
+    return result[0];
   }
 
-  async updateLocalSiteAsset(assetKey: string, updates: any): Promise<any | undefined> {
-    // Return updated asset for now - these are handled differently in production
-    return { assetKey, ...updates, updatedAt: new Date() };
+  async updateLocalSiteAsset(assetKey: string, updates: Partial<InsertLocalSiteAsset>): Promise<LocalSiteAsset | undefined> {
+    const result = await db.update(localSiteAssets)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(localSiteAssets.assetKey, assetKey))
+      .returning();
+    return result[0];
   }
 
   async deleteLocalSiteAsset(assetKey: string): Promise<boolean> {
-    // Return true for now - these are handled differently in production
-    return true;
+    const result = await db.delete(localSiteAssets).where(eq(localSiteAssets.assetKey, assetKey));
+    return result.rowCount > 0;
   }
 }
