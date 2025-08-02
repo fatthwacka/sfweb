@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Upload, Trash2, Edit, Check, X } from 'lucide-react';
-import { DirectImage } from '@/components/shared/direct-image';
+// img removed - using direct img tags with filePath
 import { useToast } from '@/hooks/use-toast';
 
 interface LocalAsset {
@@ -225,8 +225,8 @@ export function SimpleAssetsPanel() {
                 {/* Image Preview */}
                 <div className="aspect-video rounded-lg overflow-hidden bg-gray-800 border border-purple-300">
                   {asset.exists ? (
-                    <DirectImage
-                      filename={asset.filename}
+                    <img
+                      src={asset.filePath}
                       alt={asset.altText}
                       className="w-full h-full object-cover"
                     />
@@ -345,8 +345,8 @@ export function SimpleAssetsPanel() {
                 {/* Image Preview */}
                 <div className="aspect-video rounded-lg overflow-hidden bg-gray-800 border border-purple-300">
                   {asset.exists ? (
-                    <DirectImage
-                      filename={asset.filename}
+                    <img
+                      src={asset.filePath}
                       alt={asset.altText}
                       className="w-full h-full object-cover"
                     />
