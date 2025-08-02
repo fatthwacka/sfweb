@@ -337,4 +337,118 @@ export class SupabaseStorage implements IStorage {
     const result = await db.update(bookings).set(updates).where(eq(bookings.id, id)).returning();
     return result[0];
   }
+
+  // Missing shoot methods
+  async getAllShoots(): Promise<Shoot[]> {
+    return await db.select().from(shoots).orderBy(desc(shoots.createdAt));
+  }
+
+  async getShoot(id: string): Promise<Shoot | undefined> {
+    const result = await db.select().from(shoots).where(eq(shoots.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getShootsByClient(clientId: number): Promise<Shoot[]> {
+    return await db.select().from(shoots).where(eq(shoots.clientId, clientId)).orderBy(desc(shoots.createdAt));
+  }
+
+  async createShoot(insertShoot: InsertShoot): Promise<Shoot> {
+    const result = await db.insert(shoots).values(insertShoot).returning();
+    return result[0];
+  }
+
+  async updateShoot(id: string, updates: Partial<InsertShoot>): Promise<Shoot | undefined> {
+    const result = await db.update(shoots).set(updates).where(eq(shoots.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteShoot(id: string): Promise<boolean> {
+    const result = await db.delete(shoots).where(eq(shoots.id, id));
+    return result.rowCount > 0;
+  }
+
+  async updateShootCustomization(id: string, customization: UpdateShootCustomization): Promise<Shoot | undefined> {
+    const result = await db.update(shoots).set(customization).where(eq(shoots.id, id)).returning();
+    return result[0];
+  }
+
+  // Missing image methods
+  async getAllImages(): Promise<Image[]> {
+    return await db.select().from(images).orderBy(desc(images.createdAt));
+  }
+
+  async getImage(id: string): Promise<Image | undefined> {
+    const result = await db.select().from(images).where(eq(images.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getImagesByShoot(shootId: string): Promise<Image[]> {
+    return await db.select().from(images).where(eq(images.shootId, shootId)).orderBy(desc(images.createdAt));
+  }
+
+  async createImage(insertImage: InsertImage): Promise<Image> {
+    const result = await db.insert(images).values(insertImage).returning();
+    return result[0];
+  }
+
+  async updateImage(id: string, updates: Partial<InsertImage>): Promise<Image | undefined> {
+    const result = await db.update(images).set(updates).where(eq(images.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteImage(id: string): Promise<boolean> {
+    const result = await db.delete(images).where(eq(images.id, id));
+    return result.rowCount > 0;
+  }
+
+  async getFeaturedImages(): Promise<Image[]> {
+    return await db.select().from(images).where(eq(images.classification, 'featured')).orderBy(desc(images.createdAt));
+  }
+
+  async updateImageClassification(id: string, classification: any): Promise<Image | undefined> {
+    const result = await db.update(images).set({ classification }).where(eq(images.id, id)).returning();
+    return result[0];
+  }
+
+  async bulkUpdateShootImageClassification(shootId: string, classification: any): Promise<Image[]> {
+    const result = await db.update(images)
+      .set({ classification })
+      .where(eq(images.shootId, shootId))
+      .returning();
+    return result;
+  }
+
+  async bulkUpdateImageClassification(imageIds: string[], classification: any): Promise<Image[]> {
+    const result = await db.update(images)
+      .set({ classification })
+      .where(sql`${images.id} = ANY(${imageIds})`)
+      .returning();
+    return result;
+  }
+
+  // Local site assets methods (placeholder implementations for development)
+  async getLocalSiteAssets(): Promise<any[]> {
+    // Return empty array for now - these are handled differently in production
+    return [];
+  }
+
+  async getLocalSiteAssetByKey(assetKey: string): Promise<any | undefined> {
+    // Return undefined for now - these are handled differently in production
+    return undefined;
+  }
+
+  async createLocalSiteAsset(asset: any): Promise<any> {
+    // Return the asset for now - these are handled differently in production
+    return { ...asset, id: Date.now().toString(), createdAt: new Date(), updatedAt: new Date() };
+  }
+
+  async updateLocalSiteAsset(assetKey: string, updates: any): Promise<any | undefined> {
+    // Return updated asset for now - these are handled differently in production
+    return { assetKey, ...updates, updatedAt: new Date() };
+  }
+
+  async deleteLocalSiteAsset(assetKey: string): Promise<boolean> {
+    // Return true for now - these are handled differently in production
+    return true;
+  }
 }

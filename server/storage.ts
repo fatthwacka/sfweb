@@ -977,9 +977,6 @@ import { PostgreSQLStorage } from "./pg-storage";
 // Import Supabase storage
 import { SupabaseStorage } from "./supabase-storage";
 
-// For local development with local site assets, use MemStorage
-// For production, use SupabaseStorage
-export const storage: IStorage = process.env.NODE_ENV === 'development' 
-  ? new MemStorage() 
-  : new SupabaseStorage();
+// Always use Supabase storage for data persistence
+export const storage: IStorage = new SupabaseStorage();
 
