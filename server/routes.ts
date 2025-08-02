@@ -1140,16 +1140,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`🔄 Uploading asset: ${assetKey}`);
 
-      // Save or update the asset
-      const asset = await storage.createOrUpdateLocalSiteAsset({
-        assetKey,
-        assetType: 'image',
-        filePath: `/assets/${assetKey}-ni.jpg`, // Standard naming convention
-        altText: `${assetKey} image`,
-        seoKeywords: null,
-        isActive: true,
-        updatedBy: 'admin' // TODO: Get from authenticated user
-      });
+      // Check if asset exists, update or create
+      const existingAsset = await storage.getLocalSiteAssetByKey(assetKey);
+      
+      let asset;
+      if (existingAsset) {
+        asset = await storage.updateLocalSiteAsset(assetKey, {
+          filePath: `/assets/${assetKey}-ni.jpg`,
+          updatedBy: 'admin'
+        });
+      } else {
+        asset = await storage.createLocalSiteAsset({
+          assetKey,
+          assetType: 'image',
+          filePath: `/assets/${assetKey}-ni.jpg`,
+          altText: `${assetKey} image`,
+          seoKeywords: null,
+          isActive: true,
+          updatedBy: 'admin'
+        });
+      }
 
       // Here you would normally save the file to disk or cloud storage
       // For now, we'll simulate successful upload
@@ -1203,7 +1213,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`📝 Updating alt text for: ${assetKey}`);
 
-      const asset = await storage.updateLocalSiteAssetAltText(assetKey, altText);
+      const asset = await storage.updateLocalSiteAsset(assetKey, { altText });
 
       console.log(`✅ Alt text updated for ${assetKey}`);
 

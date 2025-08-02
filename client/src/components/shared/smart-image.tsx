@@ -29,6 +29,16 @@ export const SmartImage: React.FC<SmartImageProps> = ({
     setImageSrc(`/assets/${assetKey}-ni.jpg`);
     setHasError(false);
     setIsLoading(true);
+    
+    // For admin panel - immediately show fallback since no custom images exist yet
+    const fallbackImage = ASSET_FALLBACK_MAP[assetKey];
+    if (fallbackImage) {
+      setImageSrc(fallbackImage);
+      setIsLoading(false);
+      if (onFallbackUsed) {
+        onFallbackUsed(assetKey);
+      }
+    }
   }, [assetKey]);
 
   const handleImageError = () => {
