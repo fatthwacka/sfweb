@@ -66,7 +66,7 @@ export function VideoHero({
                 <Button
                   onClick={primaryAction.onClick}
                   size="lg"
-                  className={`px-8 py-4 text-lg font-barlow font-semibold rounded-full transition-all duration-300 transform hover:scale-[1.02] ${
+                  className={`px-8 py-4 text-lg font-barlow font-semibold rounded-full transition-all duration-300 transform hover:scale-105 ${
                     primaryAction.variant === "cyan" 
                       ? "bg-cyan text-black hover:bg-cyan-muted" 
                       : "bg-salmon text-black hover:bg-salmon-muted"

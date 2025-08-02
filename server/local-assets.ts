@@ -3,18 +3,18 @@ import path from 'path';
 
 // Direct filename mapping - exactly as used in the pages
 export const ASSET_FILES = {
-  // Hero images (9 total) - matching actual files in public/images/hero/
-  'hero-main': 'homepage-main-hero.jpg',
-  'hero-services': 'photography-hero.jpg', 
-  'hero-weddings': 'wedding-photography-hero.webp',
-  'hero-portraits': 'portrait-photography-hero.jpg',
-  'hero-corporate': 'corporate-photography-hero.jpg',
-  'hero-events': 'Event-photography-hero.jpg',
-  'hero-graduation': 'graduation-photography-hero.jpg',
-  'hero-products': 'product-photography-hero.jpg',
-  'hero-matric': 'matric-dance-photography-hero.jpg',
+  // Hero images (9 total)
+  'hero-main': 'cape-town-wedding-photography-slyfox-studios.jpg',
+  'hero-services': 'professional-photography-services-cape-town.jpg', 
+  'hero-weddings': 'cape-town-wedding-photographer-portfolio.jpg',
+  'hero-portraits': 'portrait-photographer-cape-town-studio.jpg',
+  'hero-corporate': 'corporate-photography-cape-town-business.jpg',
+  'hero-events': 'event-photographer-cape-town-professional.jpg',
+  'hero-graduation': 'graduation-photography-cape-town-ceremony.jpg',
+  'hero-products': 'product-photography-cape-town-commercial.jpg',
+  'hero-matric': 'matric-dance-photographer-cape-town.jpg',
   
-  // Background images (3 total) - in backgrounds folder
+  // Background images (3 total)
   'bg-studio': 'photography-studio-cape-town-texture.jpg',
   'bg-wedding': 'wedding-photography-background-elegant.jpg', 
   'bg-portrait': 'portrait-photography-studio-backdrop.jpg'
@@ -32,19 +32,13 @@ export interface LocalAsset {
 }
 
 export class LocalAssetsManager {
-  private heroDir = path.join(process.cwd(), 'public', 'images', 'hero');
-  private backgroundsDir = path.join(process.cwd(), 'public', 'images', 'backgrounds');
+  private assetsDir = path.join(process.cwd(), 'public', 'images');
 
   async getAllAssets(): Promise<LocalAsset[]> {
     const assets: LocalAsset[] = [];
     
     for (const [key, filename] of Object.entries(ASSET_FILES)) {
-      // Determine directory based on asset type
-      const isHero = key.startsWith('hero-');
-      const directory = isHero ? this.heroDir : this.backgroundsDir;
-      const webPath = isHero ? `/images/hero/${filename}` : `/images/backgrounds/${filename}`;
-      
-      const filePath = path.join(directory, filename);
+      const filePath = path.join(this.assetsDir, filename);
       let exists = false;
       
       try {
@@ -59,7 +53,7 @@ export class LocalAssetsManager {
         filename,
         altText: DEFAULT_ALT_TEXT,
         exists,
-        filePath: webPath
+        filePath: `/images/${filename}`
       });
     }
     
@@ -68,12 +62,10 @@ export class LocalAssetsManager {
 
   async uploadAsset(key: keyof typeof ASSET_FILES, fileBuffer: Buffer): Promise<void> {
     const filename = ASSET_FILES[key];
-    const isHero = key.startsWith('hero-');
-    const directory = isHero ? this.heroDir : this.backgroundsDir;
-    const filePath = path.join(directory, filename);
+    const filePath = path.join(this.assetsDir, filename);
     
     // Ensure directory exists
-    await fs.mkdir(directory, { recursive: true });
+    await fs.mkdir(this.assetsDir, { recursive: true });
     
     // Write file (overwrites if exists)
     await fs.writeFile(filePath, fileBuffer);
@@ -81,9 +73,7 @@ export class LocalAssetsManager {
 
   async deleteAsset(key: keyof typeof ASSET_FILES): Promise<void> {
     const filename = ASSET_FILES[key];
-    const isHero = key.startsWith('hero-');
-    const directory = isHero ? this.heroDir : this.backgroundsDir;
-    const filePath = path.join(directory, filename);
+    const filePath = path.join(this.assetsDir, filename);
     
     try {
       await fs.unlink(filePath);

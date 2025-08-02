@@ -48,7 +48,7 @@ export function ClientGalleryAccess() {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="bg-gold text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold-muted transition-all duration-300 transform hover:scale-[1.02]">
+              <Button className="bg-gold text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold-muted transition-all duration-300 transform hover:scale-105">
                 Access My Gallery
               </Button>
               <Button 
