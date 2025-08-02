@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Upload, Trash2, Edit, Check, X } from 'lucide-react';
-// img removed - using direct img tags with filePath
+
 import { useToast } from '@/hooks/use-toast';
 
 interface LocalAsset {
