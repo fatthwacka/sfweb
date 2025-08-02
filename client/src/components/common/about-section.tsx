@@ -43,7 +43,7 @@ export function AboutSection() {
               </div>
             </div>
             
-            <button className="bg-transparent border-2 border-salmon text-salmon px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-salmon hover:text-black transition-all duration-300 transform hover:scale-105">
+            <button className="bg-transparent border-2 border-salmon text-salmon px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-salmon hover:text-black transition-all duration-300 transform hover:scale-[1.02]">
               Meet Our Team
             </button>
           </div>

@@ -114,7 +114,7 @@ export function PortfolioShowcase() {
         <div className="text-center mt-12">
           <Button 
             variant="outline"
-            className="border-2 border-gold text-gold px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold hover:text-black transition-all duration-300 transform hover:scale-105"
+            className="border-2 border-gold text-gold px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold hover:text-black transition-all duration-300 transform hover:scale-[1.02]"
           >
             View Full Portfolio
           </Button>
