@@ -278,6 +278,49 @@ const categoryData: Record<string, {
       "https://images.unsplash.com/photo-1622810547313-15e6e0031e3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
     ],
     seoKeywords: "Cape Town graduation photographer, university graduation photography, graduation ceremony photography, graduation portraits Cape Town, academic milestone photography"
+  },
+  "matric-dance": {
+    name: "Matric Dance Photography",
+    title: "Matric Dance Photography Cape Town",
+    description: "Capture the elegance and excitement of your matric dance with professional photography that celebrates this special milestone.",
+    longDescription: "Your matric dance is a once-in-a-lifetime celebration that marks the end of your school journey. Our matric dance photography captures the glamour, excitement, and memories of this special evening with artistic flair and attention to detail.",
+    heroImage: "/images/hero/matric-dance-photography-hero.jpg",
+    features: [
+      "Pre-dance portraits",
+      "Couple photography",
+      "Group shots with friends",
+      "Venue coverage",
+      "Formal poses",
+      "Candid dance moments",
+      "After-party coverage",
+      "Same-night highlights"
+    ],
+    packages: [
+      {
+        name: "Essential",
+        price: "R1,800",
+        duration: "3 hours",
+        features: ["Pre-dance portraits", "Couple photos", "Group shots", "30 edited photos", "Online gallery"]
+      },
+      {
+        name: "Complete",
+        price: "R2,800",
+        duration: "5 hours",
+        features: ["Full coverage", "Multiple locations", "Couple & group photos", "60 edited photos", "Premium gallery"]
+      },
+      {
+        name: "Premium",
+        price: "R3,800",
+        duration: "Full event",
+        features: ["Complete coverage", "Multiple photographers", "100+ photos", "Video highlights", "Luxury package"]
+      }
+    ],
+    gallery: [
+      "/images/gallery/matric-dance-1.jpg",
+      "/images/gallery/matric-dance-2.jpg", 
+      "/images/gallery/matric-dance-3.jpg"
+    ],
+    seoKeywords: "Cape Town matric dance photographer, matric dance photography Cape Town, prom photography South Africa, formal dance photography, matric farewell photography"
   }
 };
 
