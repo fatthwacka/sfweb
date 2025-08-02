@@ -57,6 +57,41 @@ export const SmartImage: React.FC<SmartImageProps> = ({
     }
   };
 
+  // For admin panel - start by trying fallback immediately if no uploaded asset exists
+  const checkIfCustomImageExists = async () => {
+    try {
+      const response = await fetch(`/assets/${assetKey}-ni.jpg`, { method: 'HEAD' });
+      if (!response.ok) {
+        // Custom image doesn't exist, use fallback immediately
+        const fallbackImage = ASSET_FALLBACK_MAP[assetKey];
+        if (fallbackImage) {
+          setImageSrc(fallbackImage);
+          setHasError(true); // Mark as using fallback
+          if (onFallbackUsed) {
+            onFallbackUsed(assetKey);
+          }
+        }
+      }
+      setIsLoading(false);
+    } catch (error) {
+      // Network error or custom image doesn't exist
+      const fallbackImage = ASSET_FALLBACK_MAP[assetKey];
+      if (fallbackImage) {
+        setImageSrc(fallbackImage);
+        setHasError(true);
+        if (onFallbackUsed) {
+          onFallbackUsed(assetKey);
+        }
+      }
+      setIsLoading(false);
+    }
+  };
+
+  // On mount, check if custom image exists (for admin panel)
+  useEffect(() => {
+    checkIfCustomImageExists();
+  }, [assetKey]);
+
   const handleImageLoad = () => {
     setIsLoading(false);
   };

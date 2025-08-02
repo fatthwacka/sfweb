@@ -181,7 +181,7 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
       .slice(0, 125);               // SEO optimal length
   };
 
-  const handleFileUpload = (assetKey: string, event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (assetKey: string, event: React.ChangeEvent<HTMLInputElement> | { target: { files: File[] } }) => {
     const file = event.target.files?.[0];
     if (!file) return;
 

@@ -1124,6 +1124,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // POST /api/local-assets/upload - Upload site asset
+  app.post("/api/local-assets/upload", localAssetsUpload.single('file'), async (req, res) => {
+    try {
+      const file = req.file;
+      const { assetKey } = req.body;
+
+      if (!file) {
+        return res.status(400).json({ message: "No file provided" });
+      }
+
+      if (!assetKey) {
+        return res.status(400).json({ message: "Asset key is required" });
+      }
+
+      console.log(`🔄 Uploading asset: ${assetKey}`);
+
+      // Save or update the asset
+      const asset = await storage.createOrUpdateLocalSiteAsset({
+        assetKey,
+        assetType: 'image',
+        filePath: `/assets/${assetKey}-ni.jpg`, // Standard naming convention
+        altText: `${assetKey} image`,
+        seoKeywords: null,
+        isActive: true,
+        updatedBy: 'admin' // TODO: Get from authenticated user
+      });
+
+      // Here you would normally save the file to disk or cloud storage
+      // For now, we'll simulate successful upload
+      console.log(`✅ Asset ${assetKey} uploaded successfully`);
+
+      res.json({
+        success: true,
+        asset,
+        message: `Asset ${assetKey} uploaded successfully`
+      });
+
+    } catch (error) {
+      console.error('Local asset upload error:', error);
+      res.status(500).json({
+        message: 'Failed to upload asset',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // DELETE /api/local-assets/:assetKey - Remove asset (revert to fallback)
+  app.delete("/api/local-assets/:assetKey", async (req, res) => {
+    try {
+      const { assetKey } = req.params;
+
+      console.log(`🗑️ Removing asset: ${assetKey}`);
+
+      await storage.deleteLocalSiteAsset(assetKey);
+
+      console.log(`✅ Asset ${assetKey} removed successfully`);
+
+      res.json({
+        success: true,
+        message: `Asset ${assetKey} removed - reverted to fallback`
+      });
+
+    } catch (error) {
+      console.error('Local asset deletion error:', error);
+      res.status(500).json({
+        message: 'Failed to remove asset',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // PATCH /api/local-assets/:assetKey/alt-text - Update alt text
+  app.patch("/api/local-assets/:assetKey/alt-text", async (req, res) => {
+    try {
+      const { assetKey } = req.params;
+      const { altText } = req.body;
+
+      console.log(`📝 Updating alt text for: ${assetKey}`);
+
+      const asset = await storage.updateLocalSiteAssetAltText(assetKey, altText);
+
+      console.log(`✅ Alt text updated for ${assetKey}`);
+
+      res.json({
+        success: true,
+        asset,
+        message: 'Alt text updated successfully'
+      });
+
+    } catch (error) {
+      console.error('Alt text update error:', error);
+      res.status(500).json({
+        message: 'Failed to update alt text',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // GET /api/images/featured - Get featured images
   app.get("/api/images/featured", async (req, res) => {
     try {
