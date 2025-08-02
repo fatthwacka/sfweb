@@ -14,6 +14,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { ImageUrl } from "@/lib/image-utils";
 import { EnhancedGalleryEditor } from "./enhanced-gallery-editor";
 import { StaffManagement } from "./staff-management";
+import { SiteAssetsPanel } from "./site-assets-panel";
+import { GalleryLivePreview } from "../shared/gallery-live-preview";
 import {
   BarChart3,
   Users,
@@ -516,6 +518,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
           { id: 'images', label: 'Images', icon: FileImage },
           { id: 'galleries', label: 'Gallery Management', icon: Palette },
           ...(userRole === 'super_admin' ? [
+            { id: 'site-assets', label: 'Site Assets', icon: Home },
             { id: 'staff', label: 'Staff Management', icon: Shield },
             { id: 'users', label: 'User Management', icon: User }
           ] : [])
@@ -1629,6 +1632,10 @@ export function AdminContent({ userRole }: AdminContentProps) {
                 </Card>
               )}
             </div>
+          )}
+
+          {activeTab === 'site-assets' && userRole === 'super_admin' && (
+            <SiteAssetsPanel userRole={userRole} />
           )}
 
           {activeTab === 'staff' && userRole === 'super_admin' && (

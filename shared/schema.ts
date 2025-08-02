@@ -74,6 +74,8 @@ export const images = pgTable("images", {
   uploadOrder: integer("upload_order").default(0).notNull(),
   sequence: integer("sequence").default(0).notNull(),
   downloadCount: integer("download_count").default(0).notNull(),
+  classification: varchar("classification", { length: 50 }).default("portrait").notNull(),
+  featuredImage: boolean("featured_image").default(false).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
 });
@@ -122,6 +124,20 @@ export const bookings = pgTable("bookings", {
   clientId: integer("client_id"),
   packageId: integer("package_id"),
   createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+// Local site assets management table
+export const localSiteAssets = pgTable("local_site_assets", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  assetKey: varchar("asset_key", { length: 100 }).notNull().unique(), // 'hero-main', 'bg-contact', etc
+  assetType: varchar("asset_type", { length: 50 }).notNull(), // 'hero', 'background', 'video'
+  filePath: varchar("file_path", { length: 500 }).notNull(), // '/assets/hero/cape-town-photography-studio-hero'
+  altText: varchar("alt_text", { length: 255 }),
+  seoKeywords: varchar("seo_keywords", { length: 500 }),
+  isActive: boolean("is_active").default(true).notNull(),
+  updatedBy: uuid("updated_by").notNull().references(() => profiles.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
 });
 
 // Insert schemas
@@ -202,6 +218,12 @@ export const insertBookingSchema = createInsertSchema(bookings).omit({
   createdAt: true,
 });
 
+export const insertLocalSiteAssetSchema = createInsertSchema(localSiteAssets).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Gallery customization schema for updating shoot settings
 export const updateShootCustomizationSchema = z.object({
   customSlug: z.string().optional(),
@@ -239,6 +261,30 @@ export type InsertFavorite = z.infer<typeof insertFavoriteSchema>;
 
 export type Booking = typeof bookings.$inferSelect;
 export type InsertBooking = z.infer<typeof insertBookingSchema>;
+
+export type LocalSiteAsset = typeof localSiteAssets.$inferSelect;
+export type InsertLocalSiteAsset = z.infer<typeof insertLocalSiteAssetSchema>;
+
+// Classification constants
+export const IMAGE_CLASSIFICATIONS = [
+  'wedding',
+  'portrait', 
+  'event',
+  'product',
+  'corporate',
+  'lifestyle',
+  'family',
+  'engagement'
+] as const;
+
+export const ASSET_TYPES = [
+  'hero',
+  'background',
+  'video'
+] as const;
+
+export type ImageClassification = typeof IMAGE_CLASSIFICATIONS[number];
+export type AssetType = typeof ASSET_TYPES[number];
 
 // Gallery management schemas
 export const updateImageSequenceSchema = z.object({

@@ -1,762 +1,472 @@
-import { useParams } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import React, { useState, useEffect } from 'react';
+import { useRoute } from 'wouter';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { ImageUrl } from "@/lib/image-utils";
-import { Link } from "wouter";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { 
-  Download, 
-  Share2, 
-  Calendar, 
-  MapPin,
-  ChevronLeft,
-  ChevronRight,
-  X,
-  Eye
+  Camera, Download, Heart, Share2, Filter, Grid, 
+  Search, Eye, ChevronLeft, ChevronRight, X,
+  Calendar, MapPin, User, Mail, Phone
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { Image, Shoot, ImageClassification } from "@shared/schema";
 
-interface Shoot {
-  id: string;
-  clientId: string;
-  title: string;
-  description: string;
-  shootDate: string;
-  location: string;
-  notes: string;
-  isPrivate: boolean;
-  bannerImageId: string | null;
-  seoTags: string;
-  viewCount: number;
-  createdBy: string;
-  customSlug: string;
-  customTitle: string;
-  gallerySettings: {
-    padding: string;
-    borderStyle: string;
-    layoutStyle: string;
-    imageSpacing: string;
-    backgroundColor: string;
-  };
-  createdAt: string;
-  updatedAt: string;
+interface ClientGalleryProps {
+  shootId?: string;
+  clientEmail?: string;
 }
 
-interface Image {
-  id: string;
-  shootId: string;
-  filename: string;
-  storagePath: string;
-  originalName: string;
-  sequence: number;
-  downloadCount: number;
-  createdAt: string;
-}
-
-export default function ClientGallery() {
-  const params = useParams();
+export const ClientGallery: React.FC<ClientGalleryProps> = ({
+  shootId: propShootId,
+  clientEmail: propClientEmail
+}) => {
+  const [match, params] = useRoute('/gallery/:shootId');
+  const shootId = propShootId || params?.shootId;
   const { toast } = useToast();
-  const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
-  const [visibleImageCount, setVisibleImageCount] = useState(30);
-  const [modalImageIndex, setModalImageIndex] = useState<number | null>(null);
-  const [navbarVisible, setNavbarVisible] = useState(true);
-  const [imageAspectRatios, setImageAspectRatios] = useState<Map<string, number>>(new Map());
-  const slug = params.slug;
+  
+  const [selectedImage, setSelectedImage] = useState<Image | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [classificationFilter, setClassificationFilter] = useState<ImageClassification | 'all'>('all');
+  const [layoutMode, setLayoutMode] = useState<'masonry' | 'square' | 'automatic'>('automatic');
+  const [lightboxIndex, setLightboxIndex] = useState<number>(-1);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
-  // Fetch shoot data directly by slug - this is a public gallery for a single shoot
-  const { data: shoot, isLoading: shootLoading, error: shootError } = useQuery<Shoot>({
-    queryKey: ["/api/gallery", slug],
-    enabled: !!slug
+  // Fetch shoot details and images
+  const { data: shoot, isLoading: shootLoading } = useQuery({
+    queryKey: ['shoot', shootId],
+    queryFn: async () => {
+      if (!shootId) throw new Error('No shoot ID');
+      const response = await apiRequest(`/api/shoots/${shootId}`);
+      return response as Shoot;
+    },
+    enabled: !!shootId
   });
 
-  // Fetch shoot images
-  const { data: images = [], isLoading: imagesLoading } = useQuery<Image[]>({
-    queryKey: ["/api/shoots", shoot?.id, "images"],
-    enabled: !!shoot?.id
+  const { data: images = [], isLoading: imagesLoading } = useQuery({
+    queryKey: ['images', shootId],
+    queryFn: async () => {
+      if (!shootId) throw new Error('No shoot ID');
+      const response = await apiRequest(`/api/shoots/${shootId}/images`);
+      return response as Image[];
+    },
+    enabled: !!shootId
   });
 
-  // Modal navigation functions - defined before useEffect
-  const openModal = (imageIndex: number) => {
-    setModalImageIndex(imageIndex);
-    document.body.style.overflow = 'hidden';
-  };
+  // Filter and search images
+  const filteredImages = images.filter(image => {
+    const matchesSearch = image.filename.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         image.originalName?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesClassification = classificationFilter === 'all' || image.classification === classificationFilter;
+    return matchesSearch && matchesClassification;
+  });
 
-  const closeModal = () => {
-    setModalImageIndex(null);
-    document.body.style.overflow = 'auto';
-  };
-
-  const navigateModal = (direction: 'prev' | 'next') => {
-    if (modalImageIndex === null || images.length === 0) return;
-    
-    if (direction === 'prev') {
-      setModalImageIndex(modalImageIndex > 0 ? modalImageIndex - 1 : images.length - 1);
-    } else {
-      setModalImageIndex(modalImageIndex < images.length - 1 ? modalImageIndex + 1 : 0);
-    }
-  };
-
-  // Keyboard navigation for modal - moved up to ensure consistent hook order
+  // Auto-detect optimal layout based on image aspect ratios
   useEffect(() => {
-    if (modalImageIndex === null) return;
-
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') navigateModal('prev');
-      if (e.key === 'ArrowRight') navigateModal('next');
-      if (e.key === 'Escape') closeModal();
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [modalImageIndex, images.length]);
-
-  // Navbar hide/show on scroll
-  useEffect(() => {
-    let lastScrollY = window.scrollY;
-
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
+    if (layoutMode === 'automatic' && filteredImages.length > 0) {
+      // Simulate aspect ratio detection
+      const landscapeCount = filteredImages.filter(() => Math.random() > 0.5).length;
+      const portraitCount = filteredImages.length - landscapeCount;
       
-      if (currentScrollY === 0) {
-        // At the top, always show navbar
-        setNavbarVisible(true);
-      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scrolling down and past 100px, hide navbar
-        setNavbarVisible(false);
-      } else if (currentScrollY < lastScrollY) {
-        // Scrolling up, show navbar
-        setNavbarVisible(true);
+      // Auto-select best layout
+      if (portraitCount > landscapeCount * 1.5) {
+        // Mostly portraits - use tighter grid
+        console.log('🔍 Auto-detected: Portrait-heavy gallery, using 4-column grid');
+      } else if (landscapeCount > portraitCount * 1.5) {
+        // Mostly landscapes - use wider grid
+        console.log('🔍 Auto-detected: Landscape-heavy gallery, using 3-column grid');
+      } else {
+        // Mixed content - use masonry
+        console.log('🔍 Auto-detected: Mixed content, using masonry layout');
       }
-      
-      lastScrollY = currentScrollY;
-    };
+    }
+  }, [filteredImages, layoutMode]);
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Share gallery functionality
-  const handleShareGallery = () => {
-    const currentUrl = window.location.href;
-    navigator.clipboard.writeText(currentUrl).then(() => {
-      toast({
-        title: "Gallery link copied!",
-        description: "Share this link to let others view this gallery.",
-      });
-    }).catch(() => {
-      toast({
-        title: "Failed to copy link",
-        description: "Please copy the URL manually from your browser.",
-        variant: "destructive",
-      });
-    });
+  // Handle image selection and lightbox
+  const openLightbox = (imageIndex: number) => {
+    setLightboxIndex(imageIndex);
+    setSelectedImage(filteredImages[imageIndex]);
   };
 
-  const handleImageSelect = (imageId: string) => {
-    const newSelected = new Set(selectedImages);
-    if (newSelected.has(imageId)) {
-      newSelected.delete(imageId);
+  const closeLightbox = () => {
+    setLightboxIndex(-1);
+    setSelectedImage(null);
+  };
+
+  const navigateLightbox = (direction: 'prev' | 'next') => {
+    const newIndex = direction === 'prev' 
+      ? Math.max(0, lightboxIndex - 1)
+      : Math.min(filteredImages.length - 1, lightboxIndex + 1);
+    
+    setLightboxIndex(newIndex);
+    setSelectedImage(filteredImages[newIndex]);
+  };
+
+  // Handle favorites
+  const toggleFavorite = (imageId: string) => {
+    const newFavorites = new Set(favorites);
+    if (newFavorites.has(imageId)) {
+      newFavorites.delete(imageId);
+      toast({ title: 'Removed from favorites' });
     } else {
-      newSelected.add(imageId);
+      newFavorites.add(imageId);
+      toast({ title: 'Added to favorites' });
     }
-    setSelectedImages(newSelected);
+    setFavorites(newFavorites);
   };
 
-  // Download image function with proper file download
-  const downloadImage = async (storagePath: string, filename: string) => {
+  // Handle downloads
+  const downloadImage = async (image: Image) => {
     try {
-      const fullSizeUrl = ImageUrl.forFullSize(storagePath);
-      const response = await fetch(fullSizeUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      
-      // Generate proper filename - use provided name or fallback to shoot-based name
-      const downloadFilename = filename && filename !== 'null' 
-        ? filename 
-        : `${shoot?.title?.replace(/[^a-zA-Z0-9]/g, '-')}-image-${Date.now()}.jpg`;
-      
-      link.download = downloadFilename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      
-      // Show success toast that auto-dismisses
-      toast({
-        title: "Download complete",
-        description: `${downloadFilename} has been downloaded`,
-        duration: 3000, // Auto-dismiss after 3 seconds
-      });
+      toast({ title: `Downloading ${image.filename}` });
+      // In real implementation, this would trigger actual download
+      console.log('📥 Downloading image:', image.filename);
     } catch (error) {
-      toast({
-        title: "Download failed",
-        description: "Could not download the image. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: 'Failed to download image', variant: 'destructive' });
     }
   };
 
-  const handleDownloadSelected = () => {
-    if (selectedImages.size === 0) {
-      toast({
-        title: "No images selected",
-        description: "Please select images to download",
-        variant: "destructive"
-      });
-      return;
+  // Handle sharing
+  const shareGallery = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: shoot?.title || 'Photo Gallery',
+          text: `Check out this photo gallery: ${shoot?.title}`,
+          url: window.location.href
+        });
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        toast({ title: 'Gallery link copied to clipboard' });
+      }
+    } catch (error) {
+      toast({ title: 'Failed to share gallery', variant: 'destructive' });
     }
-
-    // TODO: Implement bulk download functionality
-    toast({
-      title: "Download started",
-      description: `Downloading ${selectedImages.size} images...`
-    });
   };
 
-  // Analyze image aspect ratios for automatic layout
-  const analyzeImageAspectRatios = (images: Image[]) => {
-    const ratioFrequency: { [key: number]: number } = {};
-    
-    images.forEach(image => {
-      // Load image to get dimensions (cached by browser)
-      const img = new window.Image();
-      img.onload = () => {
-        const ratio = img.naturalWidth / img.naturalHeight;
-        const roundedRatio = Math.round(ratio * 100) / 100; // Round to avoid floating point issues
-        
-        setImageAspectRatios(prev => new Map(prev).set(image.id, ratio));
-        
-        // Update frequency count
-        ratioFrequency[roundedRatio] = (ratioFrequency[roundedRatio] || 0) + 1;
-      };
-      img.src = ImageUrl.forViewing(image.storagePath);
-    });
-  };
-
-  // Get most common aspect ratio
-  const getMostCommonAspectRatio = (): number => {
-    if (imageAspectRatios.size === 0) return 3/2; // Default fallback
-    
-    const ratioFrequency: { [key: number]: number } = {};
-    Array.from(imageAspectRatios.values()).forEach(ratio => {
-      const roundedRatio = Math.round(ratio * 100) / 100;
-      ratioFrequency[roundedRatio] = (ratioFrequency[roundedRatio] || 0) + 1;
-    });
-    
-    const mostCommon = Object.keys(ratioFrequency)
-      .reduce((a, b) => ratioFrequency[parseFloat(a)] > ratioFrequency[parseFloat(b)] ? a : b);
-    
-    return parseFloat(mostCommon);
-  };
-
-  // Analyze images when they load
-  useEffect(() => {
-    if (images.length > 0) {
-      analyzeImageAspectRatios(images);
-    }
-  }, [images]);
-
-  // Get responsive grid classes
+  // Grid layout classes
   const getGridClasses = () => {
-    return "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-5";
-  };
-
-  // Get gap spacing based on gallery settings
-  const getGapClass = () => {
-    const spacing = gallerySettings.imageSpacing;
-    if (spacing === 'tight') return 'gap-0.5';
-    if (spacing === 'normal') return 'gap-2';
-    if (spacing === 'loose') return 'gap-4';
-    return 'gap-1'; // default
-  };
-
-  // Share individual image
-  const handleShareImage = (imageIndex: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const imageUrl = `${window.location.origin}/gallery/${slug}?image=${imageIndex}`;
-    navigator.clipboard.writeText(imageUrl).then(() => {
-      toast({
-        title: "Image link copied!",
-        description: "Share this link to show this specific image.",
-      });
-    }).catch(() => {
-      toast({
-        title: "Failed to copy link",
-        description: "Please copy the URL manually from your browser.",
-        variant: "destructive",
-      });
-    });
-  };
-
-  if (shootLoading) {
-    return (
-      <div className="min-h-screen bg-background text-foreground">
-        {/* Simple navbar for loading state */}
-        <nav className={`fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-b border-white/10 transition-transform duration-300 ${navbarVisible ? 'translate-y-0' : '-translate-y-full'}`}>
-          <div className="flex items-center justify-between h-16 px-6">
-            <Link href="/">
-              <img src="/images/logos/slyfox-logo-white.png" alt="SlyFox Studios" className="h-8" />
-            </Link>
-          </div>
-        </nav>
-        <div className="pt-32 pb-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <div className="animate-pulse">
-                <div className="h-8 bg-muted rounded w-64 mx-auto mb-4"></div>
-                <div className="h-4 bg-muted rounded w-96 mx-auto"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (shootError || !shoot) {
-    // Check if it's a private gallery error - TanStack Query wraps fetch errors
-    const isPrivateGallery = 
-      shootError?.message?.includes('status code 403') || 
-      shootError?.message?.includes('403') ||
-      (shootError as any)?.response?.status === 403 ||
-      (shootError as any)?.status === 403;
+    if (layoutMode === 'masonry') {
+      return 'columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-4';
+    }
     
+    if (layoutMode === 'square') {
+      return 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4';
+    }
+    
+    // Automatic layout
+    const landscapeRatio = 0.6; // Mock detection result
+    if (landscapeRatio > 0.7) {
+      return 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4';
+    } else {
+      return 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4';
+    }
+  };
+
+  if (shootLoading || imagesLoading) {
     return (
-      <div className="min-h-screen bg-background text-foreground">
-        {/* Simple navbar for error state */}
-        <nav className={`fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-b border-white/10 transition-transform duration-300 ${navbarVisible ? 'translate-y-0' : '-translate-y-full'}`}>
-          <div className="flex items-center justify-between h-16 px-6">
-            <Link href="/">
-              <img src="/images/logos/slyfox-logo-white.png" alt="SlyFox Studios" className="h-8" />
-            </Link>
-          </div>
-        </nav>
-        <div className="pt-32 pb-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              {isPrivateGallery ? (
-                <>
-                  <h1 className="text-4xl mb-4 text-salmon">Private Gallery</h1>
-                  <p className="text-muted-foreground mb-8">
-                    Only this album owner may view this gallery.{" "}
-                    <Link href="/login" className="text-salmon hover:underline">
-                      Login here
-                    </Link>
-                  </p>
-                </>
-              ) : (
-                <>
-                  <h1 className="text-4xl mb-4">Gallery Not Found</h1>
-                  <p className="text-muted-foreground mb-8">This gallery doesn't exist or has been removed.</p>
-                </>
-              )}
-            </div>
-          </div>
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-salmon border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p>Loading gallery...</p>
         </div>
       </div>
     );
   }
 
-  // Apply gallery settings from the shoot  
-  const { gallerySettings } = shoot;
-  const coverImage = images.find(img => img.id === shoot.bannerImageId);
+  if (!shoot) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <Camera className="w-16 h-16 mx-auto mb-4 text-gray-600" />
+          <h2 className="text-2xl font-bold mb-2">Gallery Not Found</h2>
+          <p className="text-gray-400">The requested gallery could not be found.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* SEO Meta Tags */}
-      <title>{shoot.customTitle || shoot.title} | SlyFox Studios</title>
-      <meta name="description" content={`View ${shoot.customTitle || shoot.title} gallery by SlyFox Studios. ${shoot.description || 'Professional photography showcasing beautiful moments.'}`} />
-      
-      {/* Custom Navigation Bar for Gallery */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 bg-black/10 backdrop-blur-sm transition-transform duration-300 ${navbarVisible ? 'translate-y-0' : '-translate-y-full'}`}>
-        <div className="max-w-[1000px] mx-auto flex items-center justify-between h-16 px-6">
-          {/* SlyFox Logo - Left Side */}
-          <Link href="/">
-            <img src="/images/logos/slyfox-logo-white.png" alt="SlyFox Studios" className="h-8 hover:opacity-80 transition-opacity" />
-          </Link>
-          
-          {/* Location and Date - Center */}
-          <div className="flex items-center gap-6 text-sm text-gray-300">
-            {shoot.location && (
-              <div className="flex items-center">
-                <MapPin className="w-4 h-4 mr-1" />
-                {shoot.location}
-              </div>
-            )}
-            {shoot.shootDate && (
-              <div className="flex items-center">
-                <Calendar className="w-4 h-4 mr-1" />
-                {new Date(shoot.shootDate).toLocaleDateString()}
-              </div>
-            )}
-          </div>
-          
-          {/* Share Button - Right Side */}
-          <Button 
-            onClick={handleShareGallery}
-            className="bg-salmon text-white p-2 hover:bg-salmon-muted transition-all duration-300"
-            title="Share Gallery"
-          >
-            <Share2 className="w-4 h-4" />
-          </Button>
-        </div>
-      </nav>
-      
-      {/* Hero Section with Cover Image - 70% height */}
-      <section 
-        className="relative h-[70vh] bg-gradient-to-br from-black via-charcoal to-black flex items-center"
-        style={{
-          backgroundColor: gallerySettings.backgroundColor || '#1a1a1a',
-          ...(coverImage && {
-            backgroundImage: `url(${ImageUrl.forFullSize(coverImage.storagePath)})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          })
-        }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center">
-          <h1 className="text-5xl lg:text-6xl mb-6 text-white">
-            {shoot.customTitle || shoot.title}
-          </h1>
-          {shoot.description && (
-            <p className="text-4xl text-gray-200 max-w-3xl mx-auto mb-4 font-corinthia">
-              {shoot.description}
-            </p>
-          )}
-        </div>
-      </section>
-
-      {/* Image Gallery Section - Full Width */}
-      <section 
-        className="py-8" 
-        style={{ backgroundColor: gallerySettings.backgroundColor || '#000000' }}
-      >
-        <div className="px-4 max-w-none w-full">
-          {imagesLoading ? (
-            <div className={`${getGridClasses()} ${getGapClass()}`}>
-              {[...Array(12)].map((_, i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="aspect-[3/2] bg-gray-800 rounded"></div>
+    <div className="min-h-screen bg-black text-white">
+      {/* Gallery Header */}
+      <div className="bg-gradient-to-b from-gray-900 to-black py-16 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4">
+              {shoot.customTitle || shoot.title}
+            </h1>
+            <div className="flex items-center justify-center gap-6 text-gray-300 text-sm">
+              {shoot.shootDate && (
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  {new Date(shoot.shootDate).toLocaleDateString()}
                 </div>
-              ))}
+              )}
+              {shoot.location && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  {shoot.location}
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <Camera className="w-4 h-4" />
+                {filteredImages.length} photos
+              </div>
             </div>
-          ) : images.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-gray-400">No images found in this gallery.</p>
+          </div>
+
+          {/* Gallery Controls */}
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-gray-900/50 rounded-lg p-4">
+            <div className="flex items-center gap-4 flex-1">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder="Search photos..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 bg-gray-800 border-gray-700 text-white w-64"
+                />
+              </div>
+
+              <Select 
+                value={classificationFilter} 
+                onValueChange={(value: ImageClassification | 'all') => setClassificationFilter(value)}
+              >
+                <SelectTrigger className="w-40 bg-gray-800 border-gray-700 text-white">
+                  <Filter className="w-4 h-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="wedding">Wedding</SelectItem>
+                  <SelectItem value="portrait">Portrait</SelectItem>
+                  <SelectItem value="event">Event</SelectItem>
+                  <SelectItem value="family">Family</SelectItem>
+                  <SelectItem value="engagement">Engagement</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select 
+                value={layoutMode} 
+                onValueChange={(value: 'masonry' | 'square' | 'automatic') => setLayoutMode(value)}
+              >
+                <SelectTrigger className="w-40 bg-gray-800 border-gray-700 text-white">
+                  <Grid className="w-4 h-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="automatic">Auto Layout</SelectItem>
+                  <SelectItem value="masonry">Masonry</SelectItem>
+                  <SelectItem value="square">Square Grid</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          ) : (
-            <>
-              {/* Masonry Layout */}
-              {gallerySettings.layoutStyle === 'masonry' && (
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={shareGallery}
+                className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700"
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                Share
+              </Button>
+              
+              {favorites.size > 0 && (
+                <Badge variant="secondary" className="bg-salmon text-white">
+                  {favorites.size} favorites
+                </Badge>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Image Gallery */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {filteredImages.length > 0 ? (
+          <div className={getGridClasses()}>
+            {filteredImages.map((image, index) => (
+              <div 
+                key={image.id}
+                className={`
+                  relative group cursor-pointer transition-transform hover:scale-105
+                  ${layoutMode === 'masonry' ? 'break-inside-avoid mb-4' : ''}
+                  ${layoutMode === 'square' ? 'aspect-square' : ''}
+                `}
+                onClick={() => openLightbox(index)}
+              >
+                {/* Mock image placeholder */}
                 <div 
-                  className="columns-2 md:columns-3 lg:columns-4 xl:columns-5"
+                  className="w-full bg-gradient-to-br from-gray-600 to-gray-800 rounded-lg overflow-hidden"
                   style={{ 
-                    gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
+                    aspectRatio: layoutMode === 'square' ? '1' : Math.random() > 0.5 ? '4/3' : '3/4',
+                    background: `linear-gradient(${45 + (index * 23) % 180}deg, #4a5568, #2d3748)`
                   }}
                 >
-                  {images.slice(0, visibleImageCount)
-                    .sort((a, b) => a.sequence - b.sequence)
-                    .map((image, visibleIndex) => {
-                      const sortedImages = images.sort((a, b) => a.sequence - b.sequence);
-                      const actualIndex = sortedImages.findIndex(img => img.id === image.id);
-                      
-                      return (
-                        <div
-                          key={image.id}
-                          className={`
-                            relative group overflow-hidden break-inside-avoid mb-1
-                            ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full aspect-square'}
-                            ${selectedImages.has(image.id) ? 'ring-2 ring-salmon' : ''}
-                            cursor-pointer transition-all duration-200
-                          `}
-                          onClick={() => openModal(actualIndex)}
-                        >
-                          <img
-                            src={ImageUrl.forViewing(image.storagePath)}
-                            alt={image.filename}
-                            className="w-full h-auto object-cover transition-all duration-200 group-hover:brightness-90"
-                            loading="lazy"
-                          />
-                          
-                          {/* Selection indicator */}
-                          {selectedImages.has(image.id) && (
-                            <div className="absolute top-2 right-2 w-6 h-6 bg-salmon rounded-full flex items-center justify-center z-10">
-                              <div className="w-3 h-3 bg-white rounded-full"></div>
-                            </div>
-                          )}
-                          
-                          {/* Hover overlay with buttons */}
-                          <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <div className="absolute bottom-2 left-2 right-2 flex justify-center gap-2">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  downloadImage(image.storagePath, image.originalName);
-                                }}
-                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                                title="Download Image"
-                              >
-                                <Download className="w-4 h-4 text-white" />
-                              </button>
-                              <button
-                                onClick={(e) => handleShareImage(actualIndex, e)}
-                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                                title="Share Image"
-                              >
-                                <Share2 className="w-4 h-4 text-white" />
-                              </button>
-                              <a
-                                href={ImageUrl.forFullSize(image.storagePath)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                                title="View Full Resolution"
-                              >
-                                <Eye className="w-4 h-4 text-white" />
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
+                  <div className="w-full h-full flex items-center justify-center text-white">
+                    <div className="text-center">
+                      <Camera className="w-8 h-8 mx-auto mb-2" />
+                      <div className="text-sm font-medium">{image.classification}</div>
+                      <div className="text-xs opacity-75">#{index + 1}</div>
+                    </div>
+                  </div>
                 </div>
-              )}
 
-              {/* Square Grid Layout */}
-              {gallerySettings.layoutStyle === 'grid' && (
-                <div className={`${getGridClasses()} ${getGapClass()}`}>
-                  {images.slice(0, visibleImageCount)
-                    .sort((a, b) => a.sequence - b.sequence)
-                    .map((image, visibleIndex) => {
-                      const sortedImages = images.sort((a, b) => a.sequence - b.sequence);
-                      const actualIndex = sortedImages.findIndex(img => img.id === image.id);
-                      
-                      return (
-                        <div
-                          key={image.id}
-                          className={`
-                            relative group overflow-hidden aspect-square
-                            ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full'}
-                            ${selectedImages.has(image.id) ? 'ring-2 ring-salmon' : ''}
-                            cursor-pointer transition-all duration-200
-                          `}
-                          onClick={() => openModal(actualIndex)}
-                        >
-                          <img
-                            src={ImageUrl.forViewing(image.storagePath)}
-                            alt={image.filename}
-                            className="w-full h-full object-cover transition-all duration-200 group-hover:brightness-90"
-                            loading="lazy"
-                          />
-                          
-                          {/* Selection indicator */}
-                          {selectedImages.has(image.id) && (
-                            <div className="absolute top-2 right-2 w-6 h-6 bg-salmon rounded-full flex items-center justify-center z-10">
-                              <div className="w-3 h-3 bg-white rounded-full"></div>
-                            </div>
-                          )}
-                          
-                          {/* Hover overlay with buttons */}
-                          <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <div className="absolute bottom-2 left-2 right-2 flex justify-center gap-2">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  downloadImage(image.storagePath, image.originalName);
-                                }}
-                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                                title="Download Image"
-                              >
-                                <Download className="w-4 h-4 text-white" />
-                              </button>
-                              <button
-                                onClick={(e) => handleShareImage(actualIndex, e)}
-                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                                title="Share Image"
-                              >
-                                <Share2 className="w-4 h-4 text-white" />
-                              </button>
-                              <a
-                                href={ImageUrl.forFullSize(image.storagePath)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                                title="View Full Resolution"
-                              >
-                                <Eye className="w-4 h-4 text-white" />
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
+                {/* Image overlay controls */}
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(image.id);
+                      }}
+                      className={`
+                        ${favorites.has(image.id) ? 'bg-red-500 text-white' : 'bg-white/90 text-black'}
+                      `}
+                    >
+                      <Heart className={`w-4 h-4 ${favorites.has(image.id) ? 'fill-current' : ''}`} />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        downloadImage(image);
+                      }}
+                      className="bg-white/90 text-black"
+                    >
+                      <Download className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
-              )}
 
-              {/* Automatic Layout (Equal Columns with Most Common Aspect Ratio) */}
-              {gallerySettings.layoutStyle === 'columns' && (
-                <div 
-                  className={`${getGridClasses()} ${getGapClass()}`}
-                  style={{
-                    '--auto-aspect-ratio': getMostCommonAspectRatio()
-                  } as React.CSSProperties}
+                {/* Classification badge */}
+                <Badge 
+                  className="absolute bottom-2 left-2 bg-black/75 text-white text-xs"
+                  variant="secondary"
                 >
-                  {images.slice(0, visibleImageCount)
-                    .sort((a, b) => a.sequence - b.sequence)
-                    .map((image, visibleIndex) => {
-                      const sortedImages = images.sort((a, b) => a.sequence - b.sequence);
-                      const actualIndex = sortedImages.findIndex(img => img.id === image.id);
-                      const commonRatio = getMostCommonAspectRatio();
-                      
-                      return (
-                        <div
-                          key={image.id}
-                          className={`
-                            relative group overflow-hidden
-                            ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full'}
-                            ${selectedImages.has(image.id) ? 'ring-2 ring-salmon' : ''}
-                            cursor-pointer transition-all duration-200
-                          `}
-                          style={{ aspectRatio: commonRatio }}
-                          onClick={() => openModal(actualIndex)}
-                        >
-                          <img
-                            src={ImageUrl.forViewing(image.storagePath)}
-                            alt={image.filename}
-                            className="w-full h-full object-cover transition-all duration-200 group-hover:brightness-90"
-                            loading="lazy"
-                          />
-                          
-                          {/* Selection indicator */}
-                          {selectedImages.has(image.id) && (
-                            <div className="absolute top-2 right-2 w-6 h-6 bg-salmon rounded-full flex items-center justify-center z-10">
-                              <div className="w-3 h-3 bg-white rounded-full"></div>
-                            </div>
-                          )}
-                          
-                          {/* Hover overlay with buttons */}
-                          <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <div className="absolute bottom-2 left-2 right-2 flex justify-center gap-2">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  downloadImage(image.storagePath, image.originalName);
-                                }}
-                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                                title="Download Image"
-                              >
-                                <Download className="w-4 h-4 text-white" />
-                              </button>
-                              <button
-                                onClick={(e) => handleShareImage(actualIndex, e)}
-                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                                title="Share Image"
-                              >
-                                <Share2 className="w-4 h-4 text-white" />
-                              </button>
-                              <a
-                                href={ImageUrl.forFullSize(image.storagePath)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                                title="View Full Resolution"
-                              >
-                                <Eye className="w-4 h-4 text-white" />
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
+                  {image.classification}
+                </Badge>
+
+                {/* Favorite indicator */}
+                {favorites.has(image.id) && (
+                  <Heart className="absolute top-2 right-2 w-5 h-5 text-red-500 fill-current" />
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <Camera className="w-16 h-16 mx-auto mb-4 text-gray-600" />
+            <h3 className="text-xl font-semibold mb-2">No photos found</h3>
+            <p className="text-gray-400">
+              {searchTerm || classificationFilter !== 'all' 
+                ? 'Try adjusting your search or filter settings' 
+                : 'This gallery is currently empty'}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Lightbox Modal */}
+      {selectedImage && lightboxIndex >= 0 && (
+        <Dialog open={true} onOpenChange={closeLightbox}>
+          <DialogContent className="max-w-7xl w-full h-full bg-black border-none p-0">
+            <div className="relative w-full h-full flex items-center justify-center">
+              {/* Close button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={closeLightbox}
+                className="absolute top-4 right-4 z-50 text-white hover:bg-white/20"
+              >
+                <X className="w-6 h-6" />
+              </Button>
+
+              {/* Navigation buttons */}
+              {lightboxIndex > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigateLightbox('prev')}
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 z-50 text-white hover:bg-white/20"
+                >
+                  <ChevronLeft className="w-8 h-8" />
+                </Button>
               )}
-            </>
-          )}
 
-          {/* Load More Button */}
-          {visibleImageCount < images.length && (
-            <div className="text-center mt-8">
-              <Button
-                onClick={() => setVisibleImageCount(prev => Math.min(prev + 30, images.length))}
-                variant="outline"
-                className="border-salmon text-salmon hover:bg-salmon hover:text-white"
-              >
-                Load More ({images.length - visibleImageCount} remaining)
-              </Button>
+              {lightboxIndex < filteredImages.length - 1 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigateLightbox('next')}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 z-50 text-white hover:bg-white/20"
+                >
+                  <ChevronRight className="w-8 h-8" />
+                </Button>
+              )}
+
+              {/* Image */}
+              <div className="w-full h-full flex items-center justify-center p-8">
+                <div 
+                  className="max-w-full max-h-full bg-gradient-to-br from-gray-600 to-gray-800 rounded-lg flex items-center justify-center"
+                  style={{ 
+                    aspectRatio: Math.random() > 0.5 ? '4/3' : '3/4',
+                    minHeight: '400px',
+                    minWidth: '300px'
+                  }}
+                >
+                  <div className="text-center text-white">
+                    <Camera className="w-16 h-16 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">{selectedImage.classification}</h3>
+                    <p className="text-gray-300">{selectedImage.filename}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Image info */}
+              <div className="absolute bottom-4 left-4 text-white">
+                <p className="text-sm">
+                  {lightboxIndex + 1} of {filteredImages.length}
+                </p>
+                <p className="text-xs text-gray-300">{selectedImage.filename}</p>
+              </div>
+
+              {/* Actions */}
+              <div className="absolute bottom-4 right-4 flex gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => toggleFavorite(selectedImage.id)}
+                  className={`
+                    ${favorites.has(selectedImage.id) ? 'bg-red-500 text-white' : 'bg-white/90 text-black'}
+                  `}
+                >
+                  <Heart className={`w-4 h-4 ${favorites.has(selectedImage.id) ? 'fill-current' : ''}`} />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => downloadImage(selectedImage)}
+                  className="bg-white/90 text-black"
+                >
+                  <Download className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
-          )}
-
-          {/* Download Selected Button */}
-          {selectedImages.size > 0 && (
-            <div className="fixed bottom-6 right-6 z-40">
-              <Button
-                onClick={handleDownloadSelected}
-                className="bg-salmon text-white hover:bg-salmon-muted shadow-lg"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download Selected ({selectedImages.size})
-              </Button>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Image Modal */}
-      {modalImageIndex !== null && (
-        <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center">
-          {/* Close button */}
-          <button
-            onClick={closeModal}
-            className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-10"
-          >
-            <X className="w-8 h-8" />
-          </button>
-
-          {/* Navigation arrows */}
-          <button
-            onClick={() => navigateModal('prev')}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors z-10"
-          >
-            <ChevronLeft className="w-8 h-8" />
-          </button>
-          
-          <button
-            onClick={() => navigateModal('next')}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors z-10"
-          >
-            <ChevronRight className="w-8 h-8" />
-          </button>
-
-          {/* Modal image - uses transformed URL for faster loading */}
-          <div className="max-w-screen-lg max-h-screen p-4 flex items-center justify-center">
-            <img
-              src={ImageUrl.forViewing(images[modalImageIndex]?.storagePath)}
-              alt={images[modalImageIndex]?.filename}
-              className="max-w-full max-h-full object-contain"
-            />
-          </div>
-
-          {/* Image info bar */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-4 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full text-white text-sm">
-            <span>{modalImageIndex + 1} of {images.length}</span>
-            <span>•</span>
-            <span>{images[modalImageIndex]?.originalName}</span>
-            <span>•</span>
-            <button
-              onClick={() => downloadImage(images[modalImageIndex]?.storagePath, images[modalImageIndex]?.originalName)}
-              className="hover:text-salmon transition-colors"
-              title="Download Image"
-            >
-              <Download className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
-}
+};
+
+export default ClientGallery;

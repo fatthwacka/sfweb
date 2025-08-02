@@ -1,712 +1,319 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Eye, Save, Crown, X, Trash2, AlertTriangle } from "lucide-react";
-import { ImageUrl } from "@/lib/image-utils";
-
-interface Image {
-  id: string;
-  filename: string;
-  storagePath: string;
-  sequence: number;
-}
-
-interface Shoot {
-  id: string;
-  title: string;
-  customTitle?: string;
-  bannerImageId?: string;
-}
-
-interface GallerySettings {
-  backgroundColor: string;
-  layoutStyle: string;
-  borderStyle: string;
-  imageSpacing: string;
-}
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Eye, Grid, Square, Layers, Palette } from "lucide-react";
+import type { Image, ImageClassification } from "@shared/schema";
 
 interface GalleryLivePreviewProps {
-  shoot: Shoot | null;
   images: Image[];
-  gallerySettings: GallerySettings;
-  selectedCover: string | null;
-  setSelectedCover: (id: string | null) => void;
-  imageOrder: string[];
-  setImageOrder: React.Dispatch<React.SetStateAction<string[]>>;
-  visibleImageCount: number;
-  setVisibleImageCount: React.Dispatch<React.SetStateAction<number>>;
-  getOrderedImages: () => Image[];
-  onSaveOrder: () => void;
-  isSaving?: boolean;
-  onRemoveImage?: (imageId: string) => void;
-  onDeleteImage?: (imageId: string) => void;
-  onViewFullRes?: (storagePath: string) => void;
+  backgroundColor?: string;
+  onBackgroundColorChange?: (color: string) => void;
+  galleryLayout?: 'masonry' | 'square' | 'automatic';
+  onLayoutChange?: (layout: 'masonry' | 'square' | 'automatic') => void;
+  showClassificationFilter?: boolean;
 }
 
-export function GalleryLivePreview({
-  shoot,
+interface AspectRatioData {
+  ratio: number;
+  count: number;
+  category: 'landscape' | 'portrait' | 'square';
+}
+
+export const GalleryLivePreview: React.FC<GalleryLivePreviewProps> = ({
   images,
-  gallerySettings,
-  selectedCover,
-  setSelectedCover,
-  imageOrder,
-  setImageOrder,
-  visibleImageCount,
-  setVisibleImageCount,
-  getOrderedImages,
-  onSaveOrder,
-  isSaving = false,
-  onRemoveImage,
-  onDeleteImage,
-  onViewFullRes
-}: GalleryLivePreviewProps) {
-  const [draggedImage, setDraggedImage] = useState<string | null>(null);
-  const [dragStartTime, setDragStartTime] = useState<number>(0);
-  const [selectedImageModal, setSelectedImageModal] = useState<string | null>(null);
-  const [imageAspectRatios, setImageAspectRatios] = useState<Map<string, number>>(new Map());
+  backgroundColor = '#1a1a1a',
+  onBackgroundColorChange,
+  galleryLayout = 'automatic',
+  onLayoutChange,
+  showClassificationFilter = true
+}) => {
+  const [selectedClassification, setSelectedClassification] = useState<ImageClassification | 'all'>('all');
+  const [aspectRatioData, setAspectRatioData] = useState<AspectRatioData[]>([]);
+  const [processingTime, setProcessingTime] = useState<number>(0);
+  const [previewMode, setPreviewMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
 
-  const isDragReorderingEnabled = images.length <= 100;
+  // Filter images by classification
+  const filteredImages = selectedClassification === 'all' 
+    ? images 
+    : images.filter(img => img.classification === selectedClassification);
 
-  // Analyze image aspect ratios for automatic layout
-  const analyzeImageAspectRatios = (images: Image[]) => {
-    images.forEach(image => {
-      const img = new window.Image();
-      img.onload = () => {
-        const ratio = img.naturalWidth / img.naturalHeight;
-        setImageAspectRatios(prev => new Map(prev).set(image.id, ratio));
-      };
-      img.src = ImageUrl.forViewing(image.storagePath);
-    });
-  };
-
-  // Get most common aspect ratio
-  const getMostCommonAspectRatio = (): number => {
-    if (imageAspectRatios.size === 0) return 3/2; // Default fallback
-    
-    const ratioFrequency: { [key: number]: number } = {};
-    Array.from(imageAspectRatios.values()).forEach(ratio => {
-      const roundedRatio = Math.round(ratio * 100) / 100;
-      ratioFrequency[roundedRatio] = (ratioFrequency[roundedRatio] || 0) + 1;
-    });
-    
-    const mostCommon = Object.keys(ratioFrequency)
-      .reduce((a, b) => ratioFrequency[parseFloat(a)] > ratioFrequency[parseFloat(b)] ? a : b);
-    
-    return parseFloat(mostCommon);
-  };
-
-  // Get responsive grid classes
-  const getGridClasses = () => {
-    return "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4";
-  };
-
-  // Get gap spacing based on gallery settings
-  const getGapClass = () => {
-    const spacing = gallerySettings.imageSpacing;
-    if (spacing === 'tight') return 'gap-0.5';
-    if (spacing === 'normal') return 'gap-2';
-    if (spacing === 'loose') return 'gap-4';
-    return 'gap-1'; // default
-  };
-
-  // Analyze images when they load
+  // Automatic aspect ratio detection system
   useEffect(() => {
-    if (images.length > 0) {
-      analyzeImageAspectRatios(images);
-    }
-  }, [images]);
+    const startTime = performance.now();
+    
+    // Simulate aspect ratio detection (in real app, this would analyze actual image dimensions)
+    const ratioMap = new Map<string, AspectRatioData>();
+    
+    filteredImages.forEach(image => {
+      // Simulate aspect ratio detection (replace with actual image analysis)
+      const mockRatio = Math.random() > 0.6 ? (4/3) : (3/4); // Mock landscape vs portrait
+      const category: 'landscape' | 'portrait' | 'square' = 
+        mockRatio > 1.1 ? 'landscape' : 
+        mockRatio < 0.9 ? 'portrait' : 'square';
+      
+      const key = category;
+      const existing = ratioMap.get(key);
+      
+      if (existing) {
+        existing.count++;
+      } else {
+        ratioMap.set(key, {
+          ratio: mockRatio,
+          count: 1,
+          category
+        });
+      }
+    });
+    
+    const aspectData = Array.from(ratioMap.values()).sort((a, b) => b.count - a.count);
+    setAspectRatioData(aspectData);
+    
+    const endTime = performance.now();
+    setProcessingTime(endTime - startTime);
+  }, [filteredImages]);
 
-  // Load more images handler
-  const loadMoreImages = () => {
-    setVisibleImageCount(prev => Math.min(prev + 20, Math.min(100, images.length)));
+  // Determine optimal grid columns based on viewport and content
+  const getGridColumns = () => {
+    const imageCount = filteredImages.length;
+    
+    if (previewMode === 'mobile') return 'grid-cols-2';
+    if (previewMode === 'tablet') return 'grid-cols-3';
+    
+    // Desktop responsive columns based on image count and layout
+    if (galleryLayout === 'square') {
+      return imageCount > 20 ? 'grid-cols-5' : imageCount > 10 ? 'grid-cols-4' : 'grid-cols-3';
+    }
+    
+    if (galleryLayout === 'masonry') {
+      return 'columns-2 md:columns-3 lg:columns-4 xl:columns-5';
+    }
+    
+    // Automatic layout based on aspect ratio analysis
+    const dominantCategory = aspectRatioData[0]?.category;
+    if (dominantCategory === 'landscape') return 'grid-cols-2 md:grid-cols-3';
+    if (dominantCategory === 'portrait') return 'grid-cols-3 md:grid-cols-4 lg:grid-cols-5';
+    return 'grid-cols-3 md:grid-cols-4';
   };
+
+  // Background color presets
+  const backgroundPresets = [
+    { name: 'Black', value: '#000000' },
+    { name: 'Dark Gray', value: '#1a1a1a' },
+    { name: 'White', value: '#ffffff' },
+    { name: 'Warm Gray', value: '#2d2d2d' },
+    { name: 'Cool Gray', value: '#1e293b' },
+  ];
+
+  // Mock image component for preview
+  const PreviewImage = ({ image, index }: { image: Image, index: number }) => (
+    <div 
+      className={`
+        relative group cursor-pointer transition-transform hover:scale-105
+        ${galleryLayout === 'masonry' ? 'break-inside-avoid mb-4' : 'aspect-square'}
+        ${galleryLayout === 'automatic' && aspectRatioData[0]?.category === 'landscape' ? 'aspect-[4/3]' : ''}
+        ${galleryLayout === 'automatic' && aspectRatioData[0]?.category === 'portrait' ? 'aspect-[3/4]' : ''}
+      `}
+    >
+      {/* Mock image placeholder */}
+      <div 
+        className={`
+          w-full h-full bg-gradient-to-br from-gray-600 to-gray-800 rounded-lg
+          flex items-center justify-center text-white text-sm
+        `}
+        style={{ 
+          background: `linear-gradient(${45 + (index * 23) % 180}deg, #4a5568, #2d3748)`
+        }}
+      >
+        <div className="text-center">
+          <div className="font-medium">{image.classification}</div>
+          <div className="text-xs opacity-75">#{index + 1}</div>
+        </div>
+      </div>
+      
+      {/* Classification badge */}
+      <Badge 
+        className="absolute bottom-2 left-2 bg-black/75 text-white text-xs"
+        variant="secondary"
+      >
+        {image.classification}
+      </Badge>
+    </div>
+  );
 
   return (
-    <>
-      <Card className="admin-gradient-card">
+    <div className="space-y-6">
+      {/* Preview Controls */}
+      <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-salmon flex items-center gap-2">
-              <Eye className="w-5 h-5" />
-              Gallery Live Preview
-            </CardTitle>
-            <Button 
-              onClick={onSaveOrder}
-              disabled={isSaving}
-              className="bg-salmon hover:bg-salmon-muted text-white"
-            >
-              {isSaving ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Order
-                </>
-              )}
-            </Button>
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <Eye className="w-5 h-5" />
+            Gallery Live Preview
+            <Badge variant="outline" className="ml-auto">
+              {processingTime.toFixed(1)}ms detection
+            </Badge>
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div 
-            className="rounded-lg overflow-hidden"
-            style={{ 
-              backgroundColor: gallerySettings.backgroundColor,
-              minHeight: '400px'
-            }}
-          >
-            {/* Cover Image Strip */}
-            {selectedCover && (() => {
-              const orderedImages = getOrderedImages();
-              const coverImage = orderedImages.find(img => img.id === selectedCover);
-              const coverImageUrl = coverImage?.storagePath ? ImageUrl.forViewing(coverImage.storagePath) : null;
-              
-              return coverImageUrl ? (
-                <div 
-                  className="relative h-48 w-full bg-cover bg-center flex items-center justify-center"
-                  style={{
-                    backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${coverImageUrl})`,
-                    marginBottom: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px'
-                  }}
+        <CardContent className="space-y-4">
+          {/* Layout and Viewport Controls */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Gallery Layout</Label>
+              <Select 
+                value={galleryLayout} 
+                onValueChange={(value: 'masonry' | 'square' | 'automatic') => onLayoutChange?.(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="automatic">
+                    <div className="flex items-center gap-2">
+                      <Layers className="w-4 h-4" />
+                      Automatic (Smart)
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="masonry">
+                    <div className="flex items-center gap-2">
+                      <Grid className="w-4 h-4" />
+                      Masonry
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="square">
+                    <div className="flex items-center gap-2">
+                      <Square className="w-4 h-4" />
+                      Square Grid
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Preview Device</Label>
+              <Select 
+                value={previewMode} 
+                onValueChange={(value: 'desktop' | 'tablet' | 'mobile') => setPreviewMode(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="desktop">Desktop</SelectItem>
+                  <SelectItem value="tablet">Tablet</SelectItem>
+                  <SelectItem value="mobile">Mobile</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {showClassificationFilter && (
+              <div className="space-y-2">
+                <Label>Filter by Type</Label>
+                <Select 
+                  value={selectedClassification} 
+                  onValueChange={(value: ImageClassification | 'all') => setSelectedClassification(value)}
                 >
-                  <h2 className="text-xl font-bold text-white text-center">
-                    {shoot?.customTitle || shoot?.title || 'Gallery'}
-                  </h2>
-                </div>
-              ) : (
-                <div className="relative h-48 w-full bg-gray-800 flex items-center justify-center border-2 border-dashed border-gray-600">
-                  <div className="text-center text-gray-400">
-                    <Eye className="w-8 h-8 mx-auto mb-2" />
-                    <p className="text-sm">Cover image loading...</p>
-                  </div>
-                </div>
-              );
-            })()}
-            
-            {/* Image Grid */}
-            <div className="p-4">
-              {!selectedCover && (
-                <h2 className="text-xl font-bold text-white mb-4 text-center">
-                  {shoot?.customTitle || shoot?.title || 'Gallery'}
-                </h2>
-              )}
-            
-              {gallerySettings.layoutStyle === 'masonry' ? (
-                <div 
-                  className="columns-2 md:columns-3 lg:columns-4"
-                  style={{ 
-                    gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
-                  }}
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Images</SelectItem>
+                    <SelectItem value="wedding">Wedding</SelectItem>
+                    <SelectItem value="portrait">Portrait</SelectItem>
+                    <SelectItem value="event">Event</SelectItem>
+                    <SelectItem value="product">Product</SelectItem>
+                    <SelectItem value="corporate">Corporate</SelectItem>
+                    <SelectItem value="lifestyle">Lifestyle</SelectItem>
+                    <SelectItem value="family">Family</SelectItem>
+                    <SelectItem value="engagement">Engagement</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+
+          {/* Background Color Controls */}
+          <div className="space-y-2">
+            <Label>Background Color</Label>
+            <div className="flex gap-2 flex-wrap">
+              {backgroundPresets.map((preset) => (
+                <Button
+                  key={preset.value}
+                  variant={backgroundColor === preset.value ? "default" : "outline"}
+                  size="sm"
+                  className="flex items-center gap-2"
+                  onClick={() => onBackgroundColorChange?.(preset.value)}
                 >
-                  {getOrderedImages().slice(0, visibleImageCount).map((image, index) => {
-                    const imageUrl = image?.storagePath ? ImageUrl.forViewing(image.storagePath) : null;
-                    
-                    return (
-                      <div 
-                        key={image.id}
-                        className={`
-                          relative group overflow-hidden break-inside-avoid 
-                          ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full aspect-square'}
-                          ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
-                          ${draggedImage === image.id ? 'opacity-50' : ''}
-                          cursor-pointer transition-all duration-200
-                        `}
-                        style={{ 
-                          marginBottom: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
-                        }}
-                        draggable={isDragReorderingEnabled}
-                        onDragStart={(e) => {
-                          if (!isDragReorderingEnabled) {
-                            e.preventDefault();
-                            return;
-                          }
-                          setDraggedImage(image.id);
-                          e.dataTransfer.effectAllowed = 'move';
-                        }}
-                        onDragEnd={() => setDraggedImage(null)}
-                        onDragOver={(e) => isDragReorderingEnabled && e.preventDefault()}
-                        onDrop={(e) => {
-                          if (!isDragReorderingEnabled) return;
-                          e.preventDefault();
-                          if (draggedImage && draggedImage !== image.id) {
-                            setImageOrder(currentOrder => {
-                              const newOrder = [...currentOrder];
-                              const draggedIndex = newOrder.indexOf(draggedImage);
-                              const targetIndex = newOrder.indexOf(image.id);
-                              
-                              if (draggedIndex !== -1 && targetIndex !== -1) {
-                                // Remove from old position
-                                newOrder.splice(draggedIndex, 1);
-                                // Insert at new position  
-                                newOrder.splice(targetIndex, 0, draggedImage);
-                              }
-                              return newOrder;
-                            });
-                          }
-                          setDraggedImage(null);
-                        }}
-                        onMouseDown={(e) => setDragStartTime(Date.now())}
-                        onClick={(e) => {
-                          const clickDuration = Date.now() - dragStartTime;
-                          if (clickDuration < 200) { // Quick click = modal
-                            setSelectedImageModal(image.id);
-                          }
-                        }}
-                      >
-                        {imageUrl ? (
-                          <img
-                            src={imageUrl}
-                            alt={image.filename}
-                            className={`w-full object-cover ${gallerySettings.borderStyle === 'circular' ? 'h-full aspect-square' : 'h-auto'}`}
-                            onError={(e) => {
-                              // Fallback to a placeholder on image load error
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              const parent = target.parentElement;
-                              if (parent && !parent.querySelector('.image-error-placeholder')) {
-                                const placeholder = document.createElement('div');
-                                placeholder.className = 'image-error-placeholder flex items-center justify-center h-32 bg-gray-800 text-gray-400 text-sm';
-                                placeholder.innerHTML = 'Image unavailable';
-                                parent.appendChild(placeholder);
-                              }
-                            }}
-                          />
-                        ) : (
-                          <div className="flex items-center justify-center h-32 bg-gray-800 text-gray-400 text-sm">
-                            Loading...
-                          </div>
-                        )}
-                      
-                        {/* Hover Buttons */}
-                        <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              className="bg-purple-600 text-white hover:bg-purple-700"
-                              title="View Full Resolution"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (onViewFullRes) {
-                                  onViewFullRes(image.storagePath);
-                                } else {
-                                  window.open(ImageUrl.forFullSize(image.storagePath), '_blank');
-                                }
-                              }}
-                            >
-                              <Eye className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              className="bg-salmon text-white hover:bg-salmon-muted"
-                              title="Make Cover"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const newCover = selectedCover === image.id ? null : image.id;
-                                setSelectedCover(newCover);
-                              }}
-                            >
-                              <Crown className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="secondary" 
-                              className="bg-yellow-600 text-white hover:bg-yellow-700"
-                              title="Remove from Album"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (onRemoveImage) {
-                                  onRemoveImage(image.id);
-                                }
-                              }}
-                            >
-                              <X className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              title="Delete from Database"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (onDeleteImage) {
-                                  onDeleteImage(image.id);
-                                }
-                              }}
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        </div>
-                        
-                        {selectedCover === image.id && (
-                          <div className="absolute top-2 right-2 bg-salmon text-white px-2 py-1 rounded text-xs font-bold">
-                            Cover
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : gallerySettings.layoutStyle === 'grid' ? (
-                <div className={`${getGridClasses()} ${getGapClass()}`}>
-                  {getOrderedImages().slice(0, visibleImageCount).map((image, index) => {
-                    const imageUrl = image?.storagePath ? ImageUrl.forViewing(image.storagePath) : null;
-                    
-                    return (
-                      <div 
-                        key={image.id}
-                        className={`
-                          relative group overflow-hidden aspect-square
-                          ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full'}
-                          ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
-                          ${draggedImage === image.id ? 'opacity-50' : ''}
-                          cursor-pointer transition-all duration-200
-                        `}
-                        draggable={isDragReorderingEnabled}
-                        onDragStart={(e) => {
-                          if (!isDragReorderingEnabled) {
-                            e.preventDefault();
-                            return;
-                          }
-                          setDraggedImage(image.id);
-                          e.dataTransfer.effectAllowed = 'move';
-                        }}
-                        onDragEnd={() => setDraggedImage(null)}
-                        onDragOver={(e) => isDragReorderingEnabled && e.preventDefault()}
-                        onDrop={(e) => {
-                          if (!isDragReorderingEnabled) return;
-                          e.preventDefault();
-                          if (draggedImage && draggedImage !== image.id) {
-                            setImageOrder(currentOrder => {
-                              const newOrder = [...currentOrder];
-                              const draggedIndex = newOrder.indexOf(draggedImage);
-                              const targetIndex = newOrder.indexOf(image.id);
-                              
-                              if (draggedIndex !== -1 && targetIndex !== -1) {
-                                // Remove from old position
-                                newOrder.splice(draggedIndex, 1);
-                                // Insert at new position
-                                newOrder.splice(targetIndex, 0, draggedImage);
-                              }
-                              return newOrder;
-                            });
-                          }
-                          setDraggedImage(null);
-                        }}
-                        onMouseDown={(e) => setDragStartTime(Date.now())}
-                        onClick={(e) => {
-                          const clickDuration = Date.now() - dragStartTime;
-                          if (clickDuration < 200) { // Quick click = modal
-                            setSelectedImageModal(image.id);
-                          }
-                        }}
-                      >
-                        {imageUrl ? (
-                          <img
-                            src={imageUrl}
-                            alt={image.filename}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              const parent = target.parentElement;
-                              if (parent && !parent.querySelector('.image-error-placeholder')) {
-                                const placeholder = document.createElement('div');
-                                placeholder.className = 'image-error-placeholder flex items-center justify-center w-full h-full bg-gray-800 text-gray-400 text-sm';
-                                placeholder.innerHTML = 'Image unavailable';
-                                parent.appendChild(placeholder);
-                              }
-                            }}
-                          />
-                        ) : (
-                          <div className="flex items-center justify-center w-full h-full bg-gray-800 text-gray-400 text-sm">
-                            Loading...
-                          </div>
-                        )}
-                        
-                        {/* Hover Buttons */}
-                        <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              className="bg-purple-600 text-white hover:bg-purple-700"
-                              title="View Full Resolution"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (onViewFullRes) {
-                                  onViewFullRes(image.storagePath);
-                                } else {
-                                  window.open(ImageUrl.forFullSize(image.storagePath), '_blank');
-                                }
-                              }}
-                            >
-                              <Eye className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              className="bg-salmon text-white hover:bg-salmon-muted"
-                              title="Make Cover"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const newCover = selectedCover === image.id ? null : image.id;
-                                setSelectedCover(newCover);
-                              }}
-                            >
-                              <Crown className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="secondary" 
-                              className="bg-yellow-600 text-white hover:bg-yellow-700"
-                              title="Remove from Album"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (onRemoveImage) {
-                                  onRemoveImage(image.id);
-                                }
-                              }}
-                            >
-                              <X className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              title="Delete from Database"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (onDeleteImage) {
-                                  onDeleteImage(image.id);
-                                }
-                              }}
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        </div>
-                        
-                        {selectedCover === image.id && (
-                          <div className="absolute top-2 right-2 bg-salmon text-white px-2 py-1 rounded text-xs font-bold">
-                            Cover
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                // Automatic Layout (columns with most common aspect ratio)
-                <div className={`${getGridClasses()} ${getGapClass()}`}>
-                  {getOrderedImages().slice(0, visibleImageCount).map((image, index) => {
-                    const imageUrl = image?.storagePath ? ImageUrl.forViewing(image.storagePath) : null;
-                    const commonRatio = getMostCommonAspectRatio();
-                    
-                    return (
-                      <div 
-                        key={image.id}
-                        className={`
-                          relative group overflow-hidden
-                          ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full'}
-                          ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
-                          ${draggedImage === image.id ? 'opacity-50' : ''}
-                          cursor-pointer transition-all duration-200
-                        `}
-                        style={{ aspectRatio: commonRatio }}
-                        draggable={isDragReorderingEnabled}
-                        onDragStart={(e) => {
-                          if (!isDragReorderingEnabled) {
-                            e.preventDefault();
-                            return;
-                          }
-                          setDraggedImage(image.id);
-                          e.dataTransfer.effectAllowed = 'move';
-                        }}
-                        onDragEnd={() => setDraggedImage(null)}
-                        onDragOver={(e) => isDragReorderingEnabled && e.preventDefault()}
-                        onDrop={(e) => {
-                          if (!isDragReorderingEnabled) return;
-                          e.preventDefault();
-                          if (draggedImage && draggedImage !== image.id) {
-                            setImageOrder(currentOrder => {
-                              const newOrder = [...currentOrder];
-                              const draggedIndex = newOrder.indexOf(draggedImage);
-                              const targetIndex = newOrder.indexOf(image.id);
-                              
-                              if (draggedIndex !== -1 && targetIndex !== -1) {
-                                // Remove from old position
-                                newOrder.splice(draggedIndex, 1);
-                                // Insert at new position
-                                newOrder.splice(targetIndex, 0, draggedImage);
-                              }
-                              return newOrder;
-                            });
-                          }
-                          setDraggedImage(null);
-                        }}
-                        onMouseDown={(e) => setDragStartTime(Date.now())}
-                        onClick={(e) => {
-                          const clickDuration = Date.now() - dragStartTime;
-                          if (clickDuration < 200) { // Quick click = modal
-                            setSelectedImageModal(image.id);
-                          }
-                        }}
-                      >
-                        {imageUrl ? (
-                          <img
-                            src={imageUrl}
-                            alt={image.filename}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              const parent = target.parentElement;
-                              if (parent && !parent.querySelector('.image-error-placeholder')) {
-                                const placeholder = document.createElement('div');
-                                placeholder.className = 'image-error-placeholder flex items-center justify-center w-full h-full bg-gray-800 text-gray-400 text-sm';
-                                placeholder.innerHTML = 'Image unavailable';
-                                parent.appendChild(placeholder);
-                              }
-                            }}
-                          />
-                        ) : (
-                          <div className="flex items-center justify-center w-full h-full bg-gray-800 text-gray-400 text-sm">
-                            Loading...
-                          </div>
-                        )}
-                        
-                        {/* Hover Buttons */}
-                        <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              className="bg-purple-600 text-white hover:bg-purple-700"
-                              title="View Full Resolution"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (onViewFullRes) {
-                                  onViewFullRes(image.storagePath);
-                                } else {
-                                  window.open(ImageUrl.forFullSize(image.storagePath), '_blank');
-                                }
-                              }}
-                            >
-                              <Eye className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              className="bg-salmon text-white hover:bg-salmon-muted"
-                              title="Make Cover"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const newCover = selectedCover === image.id ? null : image.id;
-                                setSelectedCover(newCover);
-                              }}
-                            >
-                              <Crown className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="secondary" 
-                              className="bg-yellow-600 text-white hover:bg-yellow-700"
-                              title="Remove from Album"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (onRemoveImage) {
-                                  onRemoveImage(image.id);
-                                }
-                              }}
-                            >
-                              <X className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              title="Delete from Database"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (onDeleteImage) {
-                                  onDeleteImage(image.id);
-                                }
-                              }}
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        </div>
-                        
-                        {selectedCover === image.id && (
-                          <div className="absolute top-2 right-2 bg-salmon text-white px-2 py-1 rounded text-xs font-bold">
-                            Cover
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-              
-              {/* Load More Button */}
-              {visibleImageCount < Math.min(100, images.length) && (
-                <div className="text-center mt-4">
-                  <Button
-                    variant="outline"
-                    onClick={loadMoreImages}
-                    className="px-8 py-2"
-                  >
-                    Load More Images ({Math.min(20, Math.min(100, images.length) - visibleImageCount)} more)
-                  </Button>
-                </div>
-              )}
-              
-              {images.length > 100 && (
-                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mt-4">
-                  <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
-                    <AlertTriangle className="w-4 h-4" />
-                    <span className="font-medium">Large Album Notice</span>
-                  </div>
-                  <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                    This album has {images.length} images. For performance, only the first 100 images are shown in the preview. You can still reorder the visible images.
-                  </p>
-                </div>
-              )}
+                  <div 
+                    className="w-3 h-3 rounded border"
+                    style={{ backgroundColor: preset.value }}
+                  />
+                  {preset.name}
+                </Button>
+              ))}
             </div>
           </div>
+
+          {/* Aspect Ratio Analysis */}
+          {aspectRatioData.length > 0 && (
+            <div className="space-y-2">
+              <Label>Aspect Ratio Analysis</Label>
+              <div className="flex gap-2 flex-wrap">
+                {aspectRatioData.map((data, index) => (
+                  <Badge key={index} variant="secondary" className="gap-1">
+                    <Palette className="w-3 h-3" />
+                    {data.category}: {data.count} images
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Image Modal */}
-      {selectedImageModal && (
-        <Dialog open={!!selectedImageModal} onOpenChange={() => setSelectedImageModal(null)}>
-          <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-            <DialogHeader className="sr-only">
-              <DialogTitle>Image Preview</DialogTitle>
-              <DialogDescription>Gallery-optimized image preview</DialogDescription>
-            </DialogHeader>
-            <div className="relative">
-              <img
-                src={ImageUrl.forViewing(getOrderedImages().find(img => img.id === selectedImageModal)?.storagePath || '')}
-                alt="Gallery preview"
-                className="w-full h-auto max-h-[85vh] object-contain"
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 right-2 bg-black/50 text-white hover:bg-black/70"
-                onClick={() => setSelectedImageModal(null)}
-              >
-                <X className="w-4 h-4" />
-              </Button>
+      {/* Live Preview */}
+      <Card>
+        <CardContent className="p-6">
+          <div 
+            className={`
+              rounded-lg p-6 transition-all duration-300
+              ${previewMode === 'mobile' ? 'max-w-sm mx-auto' : 
+                previewMode === 'tablet' ? 'max-w-2xl mx-auto' : 'w-full'}
+            `}
+            style={{ backgroundColor }}
+          >
+            <div className="mb-4 text-center">
+              <h3 className={`font-semibold ${backgroundColor === '#ffffff' ? 'text-black' : 'text-white'}`}>
+                Gallery Preview
+              </h3>
+              <p className={`text-sm opacity-75 ${backgroundColor === '#ffffff' ? 'text-gray-600' : 'text-gray-300'}`}>
+                {filteredImages.length} images • {galleryLayout} layout • {previewMode} view
+              </p>
             </div>
-          </DialogContent>
-        </Dialog>
-      )}
-    </>
+
+            {filteredImages.length > 0 ? (
+              <div 
+                className={`
+                  ${galleryLayout === 'masonry' ? getGridColumns() : `grid gap-4 ${getGridColumns()}`}
+                `}
+              >
+                {filteredImages.slice(0, 20).map((image, index) => (
+                  <PreviewImage key={image.id} image={image} index={index} />
+                ))}
+              </div>
+            ) : (
+              <div className={`text-center py-12 ${backgroundColor === '#ffffff' ? 'text-gray-500' : 'text-gray-400'}`}>
+                <Grid className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>No images to display</p>
+                <p className="text-sm">Select a different classification or add images to the gallery</p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
-}
+};

@@ -1,5 +1,5 @@
 import { 
-  profiles, users, clients, shoots, images, packages, analytics, favorites, bookings,
+  profiles, users, clients, shoots, images, packages, analytics, favorites, bookings, localSiteAssets,
   type Profile, type InsertProfile,
   type User, type InsertUser, 
   type Client, type InsertClient,
@@ -9,6 +9,8 @@ import {
   type Analytics, type InsertAnalytics,
   type Favorite, type InsertFavorite,
   type Booking, type InsertBooking,
+  type LocalSiteAsset, type InsertLocalSiteAsset,
+  type ImageClassification,
   type UpdateShootCustomization
 } from "@shared/schema";
 
@@ -74,6 +76,21 @@ export interface IStorage {
   createBooking(booking: InsertBooking): Promise<Booking>;
   getBookings(): Promise<Booking[]>;
   updateBooking(id: number, updates: Partial<InsertBooking>): Promise<Booking | undefined>;
+  
+  // Local Site Assets (UUIDs)
+  getLocalSiteAssets(): Promise<LocalSiteAsset[]>;
+  getLocalSiteAssetByKey(assetKey: string): Promise<LocalSiteAsset | undefined>;
+  createLocalSiteAsset(asset: InsertLocalSiteAsset): Promise<LocalSiteAsset>;
+  updateLocalSiteAsset(assetKey: string, updates: Partial<InsertLocalSiteAsset>): Promise<LocalSiteAsset | undefined>;
+  deleteLocalSiteAsset(assetKey: string): Promise<boolean>;
+  
+  // Featured Images Management
+  getFeaturedImages(): Promise<Image[]>;
+  getFeaturedImagesByClassification(classification: ImageClassification): Promise<Image[]>;
+  updateImageFeaturedStatus(imageIds: string[], featured: boolean): Promise<Image[]>;
+  updateImageClassification(imageId: string, classification: ImageClassification): Promise<Image | undefined>;
+  updateShootImagesClassification(shootId: string, classification: ImageClassification): Promise<Image[]>;
+  bulkUpdateImageClassification(imageIds: string[], classification: ImageClassification): Promise<Image[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -85,6 +102,7 @@ export class MemStorage implements IStorage {
   private analytics: Map<string, Analytics> = new Map();
   private favorites: Map<string, Favorite> = new Map();
   private bookings: Map<string, Booking> = new Map();
+  private localSiteAssets: Map<string, LocalSiteAsset> = new Map();
   
   private currentUserId = 1;
   private currentClientId = 1;
@@ -723,6 +741,106 @@ export class MemStorage implements IStorage {
     const updatedBooking = { ...booking, ...updates };
     this.bookings.set(id, updatedBooking);
     return updatedBooking;
+  }
+
+  // Local Site Assets methods
+  async getLocalSiteAssets(): Promise<LocalSiteAsset[]> {
+    return Array.from(this.localSiteAssets.values());
+  }
+
+  async getLocalSiteAssetByKey(assetKey: string): Promise<LocalSiteAsset | undefined> {
+    return this.localSiteAssets.get(assetKey);
+  }
+
+  async createLocalSiteAsset(asset: InsertLocalSiteAsset): Promise<LocalSiteAsset> {
+    const newAsset: LocalSiteAsset = {
+      id: crypto.randomUUID(),
+      ...asset,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.localSiteAssets.set(asset.assetKey, newAsset);
+    return newAsset;
+  }
+
+  async updateLocalSiteAsset(assetKey: string, updates: Partial<InsertLocalSiteAsset>): Promise<LocalSiteAsset | undefined> {
+    const asset = this.localSiteAssets.get(assetKey);
+    if (!asset) return undefined;
+    
+    const updatedAsset = { 
+      ...asset, 
+      ...updates, 
+      updatedAt: new Date() 
+    };
+    this.localSiteAssets.set(assetKey, updatedAsset);
+    return updatedAsset;
+  }
+
+  async deleteLocalSiteAsset(assetKey: string): Promise<boolean> {
+    return this.localSiteAssets.delete(assetKey);
+  }
+
+  // Featured Images Management methods
+  async getFeaturedImages(): Promise<Image[]> {
+    return Array.from(this.images.values()).filter(image => image.featuredImage);
+  }
+
+  async getFeaturedImagesByClassification(classification: ImageClassification): Promise<Image[]> {
+    return Array.from(this.images.values()).filter(
+      image => image.featuredImage && image.classification === classification
+    );
+  }
+
+  async updateImageFeaturedStatus(imageIds: string[], featured: boolean): Promise<Image[]> {
+    const updatedImages: Image[] = [];
+    
+    for (const imageId of imageIds) {
+      const image = this.images.get(imageId);
+      if (image) {
+        const updatedImage = { ...image, featuredImage: featured, updatedAt: new Date() };
+        this.images.set(imageId, updatedImage);
+        updatedImages.push(updatedImage);
+      }
+    }
+    
+    return updatedImages;
+  }
+
+  async updateImageClassification(imageId: string, classification: ImageClassification): Promise<Image | undefined> {
+    const image = this.images.get(imageId);
+    if (!image) return undefined;
+    
+    const updatedImage = { ...image, classification, updatedAt: new Date() };
+    this.images.set(imageId, updatedImage);
+    return updatedImage;
+  }
+
+  async updateShootImagesClassification(shootId: string, classification: ImageClassification): Promise<Image[]> {
+    const shootImages = Array.from(this.images.values()).filter(image => image.shootId === shootId);
+    const updatedImages: Image[] = [];
+    
+    for (const image of shootImages) {
+      const updatedImage = { ...image, classification, updatedAt: new Date() };
+      this.images.set(image.id, updatedImage);
+      updatedImages.push(updatedImage);
+    }
+    
+    return updatedImages;
+  }
+
+  async bulkUpdateImageClassification(imageIds: string[], classification: ImageClassification): Promise<Image[]> {
+    const updatedImages: Image[] = [];
+    
+    for (const imageId of imageIds) {
+      const image = this.images.get(imageId);
+      if (image) {
+        const updatedImage = { ...image, classification, updatedAt: new Date() };
+        this.images.set(imageId, updatedImage);
+        updatedImages.push(updatedImage);
+      }
+    }
+    
+    return updatedImages;
   }
 }
 

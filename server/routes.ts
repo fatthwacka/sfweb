@@ -1099,6 +1099,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Local Assets Management endpoints
+  const localAssetsUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Invalid file type. Only JPG, PNG, and WebP are allowed.'));
+      }
+    }
+  });
+
+  // GET /api/local-assets - Get all local site assets
+  app.get("/api/local-assets", async (req, res) => {
+    try {
+      const assets = await storage.getLocalSiteAssets();
+      res.json(assets);
+    } catch (error) {
+      console.error('Error fetching local assets:', error);
+      res.status(500).json({ message: 'Failed to fetch local assets' });
+    }
+  });
+
+  // GET /api/images/featured - Get featured images
+  app.get("/api/images/featured", async (req, res) => {
+    try {
+      const featuredImages = await storage.getFeaturedImages();
+      res.json(featuredImages);
+    } catch (error) {
+      console.error('Error fetching featured images:', error);
+      res.status(500).json({ message: 'Failed to fetch featured images' });
+    }
+  });
+
+  // PATCH /api/images/bulk-featured - Bulk update featured status
+  app.patch("/api/images/bulk-featured", async (req, res) => {
+    try {
+      const { imageIds, featured } = req.body;
+      
+      if (!Array.isArray(imageIds) || typeof featured !== 'boolean') {
+        return res.status(400).json({ message: 'Invalid request body' });
+      }
+      
+      const updatedImages = await storage.updateImageFeaturedStatus(imageIds, featured);
+      
+      res.json({ 
+        message: `${imageIds.length} images ${featured ? 'added to' : 'removed from'} featured`,
+        updatedImages 
+      });
+    } catch (error) {
+      console.error('Error updating featured status:', error);
+      res.status(500).json({ message: 'Failed to update featured status' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
