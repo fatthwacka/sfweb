@@ -7,6 +7,7 @@ import { createSupabaseUser, type CreateUserData } from './supabase-auth.js';
 import { populateWithExistingAuth } from './populate-with-existing-auth.js';
 import { initializeAdmin } from './init-admin.js';
 import { createClient } from '@supabase/supabase-js';
+import localAssetsRouter from './routes/local-assets';
 import { 
   insertUserSchema, insertClientSchema, insertShootSchema, 
   insertImageSchema, insertBookingSchema, insertAnalyticsSchema,
@@ -1243,138 +1244,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Local Assets Management endpoints
-  const localAssetsUpload = multer({
-    storage: multer.memoryStorage(),
-    limits: { fileSize: 10 * 1024 * 1024 },
-    fileFilter: (req, file, cb) => {
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-      if (allowedTypes.includes(file.mimetype)) {
-        cb(null, true);
-      } else {
-        cb(new Error('Invalid file type. Only JPG, PNG, and WebP are allowed.'));
-      }
-    }
-  });
-
-  // GET /api/local-assets - Get all local site assets
-  app.get("/api/local-assets", async (req, res) => {
-    try {
-      const assets = await storage.getLocalSiteAssets();
-      res.json(assets);
-    } catch (error) {
-      console.error('Error fetching local assets:', error);
-      res.status(500).json({ message: 'Failed to fetch local assets' });
-    }
-  });
-
-  // POST /api/local-assets/upload - Upload site asset
-  app.post("/api/local-assets/upload", localAssetsUpload.single('file'), async (req, res) => {
-    try {
-      const file = req.file;
-      const { assetKey } = req.body;
-
-      if (!file) {
-        return res.status(400).json({ message: "No file provided" });
-      }
-
-      if (!assetKey) {
-        return res.status(400).json({ message: "Asset key is required" });
-      }
-
-      console.log(`🔄 Uploading asset: ${assetKey}`);
-
-      // Check if asset exists, update or create
-      const existingAsset = await storage.getLocalSiteAssetByKey(assetKey);
-      
-      let asset;
-      if (existingAsset) {
-        asset = await storage.updateLocalSiteAsset(assetKey, {
-          filePath: `/assets/${assetKey}-ni.jpg`,
-          updatedBy: 'admin'
-        });
-      } else {
-        asset = await storage.createLocalSiteAsset({
-          assetKey,
-          assetType: 'image',
-          filePath: `/assets/${assetKey}-ni.jpg`,
-          altText: `${assetKey} image`,
-          seoKeywords: null,
-          isActive: true,
-          updatedBy: 'admin'
-        });
-      }
-
-      // Here you would normally save the file to disk or cloud storage
-      // For now, we'll simulate successful upload
-      console.log(`✅ Asset ${assetKey} uploaded successfully`);
-
-      res.json({
-        success: true,
-        asset,
-        message: `Asset ${assetKey} uploaded successfully`
-      });
-
-    } catch (error) {
-      console.error('Local asset upload error:', error);
-      res.status(500).json({
-        message: 'Failed to upload asset',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  });
-
-  // DELETE /api/local-assets/:assetKey - Remove asset (revert to fallback)
-  app.delete("/api/local-assets/:assetKey", async (req, res) => {
-    try {
-      const { assetKey } = req.params;
-
-      console.log(`🗑️ Removing asset: ${assetKey}`);
-
-      await storage.deleteLocalSiteAsset(assetKey);
-
-      console.log(`✅ Asset ${assetKey} removed successfully`);
-
-      res.json({
-        success: true,
-        message: `Asset ${assetKey} removed - reverted to fallback`
-      });
-
-    } catch (error) {
-      console.error('Local asset deletion error:', error);
-      res.status(500).json({
-        message: 'Failed to remove asset',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  });
-
-  // PATCH /api/local-assets/:assetKey/alt-text - Update alt text
-  app.patch("/api/local-assets/:assetKey/alt-text", async (req, res) => {
-    try {
-      const { assetKey } = req.params;
-      const { altText } = req.body;
-
-      console.log(`📝 Updating alt text for: ${assetKey}`);
-
-      const asset = await storage.updateLocalSiteAsset(assetKey, { altText });
-
-      console.log(`✅ Alt text updated for ${assetKey}`);
-
-      res.json({
-        success: true,
-        asset,
-        message: 'Alt text updated successfully'
-      });
-
-    } catch (error) {
-      console.error('Alt text update error:', error);
-      res.status(500).json({
-        message: 'Failed to update alt text',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  });
+  // Use the dedicated local assets router
+  app.use('/api/local-assets', localAssetsRouter);
 
   // GET /api/images/featured - Get featured images
   app.get("/api/images/featured", async (req, res) => {

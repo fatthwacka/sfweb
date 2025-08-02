@@ -426,31 +426,92 @@ export class SupabaseStorage implements IStorage {
     return result;
   }
 
-  // Local site assets methods
-  async getLocalSiteAssets(): Promise<LocalSiteAsset[]> {
-    return await db.select().from(localSiteAssets).orderBy(desc(localSiteAssets.updatedAt));
+  // Local site assets methods - file-based storage only
+  async getLocalSiteAssets(): Promise<any[]> {
+    const fs = await import('fs/promises');
+    const path = await import('path');
+    
+    const assets = [];
+    const assetDir = path.join(process.cwd(), 'public', 'assets');
+    
+    // Define all possible asset keys
+    const assetKeys = [
+      'hero/cape-town-wedding-photography-slyfox-studios',
+      'hero/professional-photography-services-cape-town',
+      'hero/cape-town-wedding-photographer-portfolio',
+      'hero/portrait-photographer-cape-town-studio',
+      'hero/corporate-photography-cape-town-business',
+      'hero/event-photographer-cape-town-professional',
+      'hero/graduation-photography-cape-town-ceremony',
+      'hero/product-photography-cape-town-commercial',
+      'hero/matric-dance-photographer-cape-town',
+      'backgrounds/photography-studio-cape-town-texture',
+      'backgrounds/wedding-photography-background-elegant',
+      'backgrounds/portrait-photography-studio-backdrop'
+    ];
+    
+    for (const assetKey of assetKeys) {
+      // Check if -ni version exists
+      const extensions = ['.jpg', '.png', '.webp'];
+      let foundFile = null;
+      
+      for (const ext of extensions) {
+        try {
+          const filePath = path.join(assetDir, `${assetKey}-ni${ext}`);
+          await fs.access(filePath);
+          foundFile = `/assets/${assetKey}-ni${ext}`;
+          break;
+        } catch (error) {
+          // File doesn't exist, continue
+        }
+      }
+      
+      if (foundFile) {
+        assets.push({
+          id: assetKey,
+          assetKey,
+          assetType: assetKey.startsWith('hero/') ? 'hero' : 'background',
+          filePath: foundFile,
+          altText: `${assetKey} image`,
+          isActive: true,
+          updatedAt: new Date()
+        });
+      }
+    }
+    
+    return assets;
   }
 
-  async getLocalSiteAssetByKey(assetKey: string): Promise<LocalSiteAsset | undefined> {
-    const result = await db.select().from(localSiteAssets).where(eq(localSiteAssets.assetKey, assetKey)).limit(1);
-    return result[0];
+  async getLocalSiteAssetByKey(assetKey: string): Promise<any | undefined> {
+    const assets = await this.getLocalSiteAssets();
+    return assets.find(asset => asset.assetKey === assetKey);
   }
 
-  async createLocalSiteAsset(asset: InsertLocalSiteAsset): Promise<LocalSiteAsset> {
-    const result = await db.insert(localSiteAssets).values(asset).returning();
-    return result[0];
+  async createLocalSiteAsset(asset: any): Promise<any> {
+    // File already created by upload endpoint, just return asset info
+    return {
+      id: asset.assetKey,
+      ...asset,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
   }
 
-  async updateLocalSiteAsset(assetKey: string, updates: Partial<InsertLocalSiteAsset>): Promise<LocalSiteAsset | undefined> {
-    const result = await db.update(localSiteAssets)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(localSiteAssets.assetKey, assetKey))
-      .returning();
-    return result[0];
+  async updateLocalSiteAsset(assetKey: string, updates: any): Promise<any | undefined> {
+    // For file-based assets, we only track basic info
+    const existingAsset = await this.getLocalSiteAssetByKey(assetKey);
+    if (existingAsset) {
+      return {
+        ...existingAsset,
+        ...updates,
+        updatedAt: new Date()
+      };
+    }
+    return undefined;
   }
 
   async deleteLocalSiteAsset(assetKey: string): Promise<boolean> {
-    const result = await db.delete(localSiteAssets).where(eq(localSiteAssets.assetKey, assetKey));
-    return result.rowCount > 0;
+    // File deletion handled by routes, just return success
+    return true;
   }
 }
