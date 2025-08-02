@@ -119,8 +119,8 @@ export const ASSET_KEYS = {
 
 // Mapping of asset keys to actual hero image files in public/images/hero/
 export const ASSET_FALLBACK_MAP: Record<string, string> = {
-  'hero/cape-town-wedding-photography-slyfox-studios': '/images/hero/wedding-photography-hero.webp',
-  'hero/professional-photography-services-cape-town': '/images/hero/portrait-photography-hero.jpg',
+  'hero/cape-town-wedding-photography-slyfox-studios': '/images/hero/homepage-main-hero.jpg',
+  'hero/professional-photography-services-cape-town': '/images/hero/photography-hero.jpg',
   'hero/cape-town-wedding-photographer-portfolio': '/images/hero/wedding-photography-hero.webp',
   'hero/portrait-photographer-cape-town-studio': '/images/hero/portrait-photography-hero.jpg',
   'hero/corporate-photography-cape-town-business': '/images/hero/corporate-photography-hero.jpg',

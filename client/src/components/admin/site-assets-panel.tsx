@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Upload, Image as ImageIcon, Video, Settings, Eye, Star, AlertTriangle } from "lucide-react";
+import { Upload, Image as ImageIcon, Video, Settings, Eye, Star, AlertTriangle, Trash2 } from "lucide-react";
 import { SmartImage } from "@/components/shared/smart-image";
 
 // Asset keys defined locally to avoid circular imports
@@ -141,6 +141,35 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
     }
   });
 
+  // Remove asset mutation (reverts to fallback)
+  const removeAsset = useMutation({
+    mutationFn: async (assetKey: string) => {
+      const response = await fetch(`/api/local-assets/${assetKey}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Remove failed');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data, assetKey) => {
+      queryClient.invalidateQueries({ queryKey: ['local-site-assets'] });
+      toast({
+        title: "Success",
+        description: `Asset removed - reverted to fallback image`
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: 'Failed to remove asset',
+        variant: "destructive"
+      });
+    }
+  });
+
   // Validate alt text input
   const validateAltText = (text: string): string => {
     return text
@@ -263,6 +292,20 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
                 className="hidden"
               />
             </label>
+
+            {/* Remove Image Button */}
+            {asset && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex-shrink-0"
+                onClick={() => removeAsset.mutate(assetKey)}
+                disabled={removeAsset.isPending}
+                title="Remove image and revert to fallback"
+              >
+                <Trash2 className="w-3 h-3" />
+              </Button>
+            )}
 
             {/* Edit alt text */}
             <Dialog>

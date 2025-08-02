@@ -63,7 +63,7 @@ export default function Photography() {
       <section className="relative h-screen overflow-hidden flex items-center justify-center">
         <div 
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('/images/hero/portrait-photography-hero.jpg')` }}
+          style={{ backgroundImage: `url('/images/hero/photography-hero.jpg')` }}
         >
           <div className="absolute inset-0 hero-gradient"></div>
         </div>
