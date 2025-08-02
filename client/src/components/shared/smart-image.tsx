@@ -33,17 +33,25 @@ export const SmartImage: React.FC<SmartImageProps> = ({
 
   const handleImageError = () => {
     if (!hasError) {
-      // First error - try fallback image
-      setImageSrc(`/assets/${assetKey}-fb.jpg`);
-      setHasError(true);
-      
-      // Log fallback usage for monitoring
-      console.warn(`SmartImage: Fallback activated for ${assetKey}`);
-      if (onFallbackUsed) {
-        onFallbackUsed(assetKey);
+      // First error - try real fallback image from public/images/hero/
+      const fallbackImage = ASSET_FALLBACK_MAP[assetKey];
+      if (fallbackImage) {
+        setImageSrc(fallbackImage);
+        setHasError(true);
+        
+        // Log fallback usage for monitoring
+        console.warn(`SmartImage: Using real fallback for ${assetKey}: ${fallbackImage}`);
+        if (onFallbackUsed) {
+          onFallbackUsed(assetKey);
+        }
+      } else {
+        // No fallback available, show placeholder
+        console.error(`SmartImage: No fallback available for ${assetKey}`);
+        setIsLoading(false);
+        setHasError(true);
       }
     } else {
-      // Second error - both images failed
+      // Second error - fallback also failed
       console.error(`SmartImage: Both primary and fallback images failed for ${assetKey}`);
       setIsLoading(false);
     }
@@ -54,7 +62,7 @@ export const SmartImage: React.FC<SmartImageProps> = ({
   };
 
   // If both images failed, show placeholder
-  if (hasError && imageSrc.includes('-fb.jpg')) {
+  if (hasError && isLoading === false) {
     return (
       <div 
         className={`bg-gray-800 flex items-center justify-center text-gray-400 text-sm ${className}`}
@@ -108,5 +116,23 @@ export const ASSET_KEYS = {
   'backgrounds/wedding-photography-background-elegant': 'Wedding Portfolio Background',
   'backgrounds/portrait-photography-studio-backdrop': 'Portrait Studio Background'
 } as const;
+
+// Mapping of asset keys to actual hero image files in public/images/hero/
+export const ASSET_FALLBACK_MAP: Record<string, string> = {
+  'hero/cape-town-wedding-photography-slyfox-studios': '/images/hero/wedding-photography-hero.webp',
+  'hero/professional-photography-services-cape-town': '/images/hero/portrait-photography-hero.jpg',
+  'hero/cape-town-wedding-photographer-portfolio': '/images/hero/wedding-photography-hero.webp',
+  'hero/portrait-photographer-cape-town-studio': '/images/hero/portrait-photography-hero.jpg',
+  'hero/corporate-photography-cape-town-business': '/images/hero/corporate-photography-hero.jpg',
+  'hero/event-photographer-cape-town-professional': '/images/hero/Event-photography-hero.jpg',
+  'hero/graduation-photography-cape-town-ceremony': '/images/hero/graduation-photography-hero.jpg',
+  'hero/product-photography-cape-town-commercial': '/images/hero/product-photography-hero.jpg',
+  'hero/matric-dance-photographer-cape-town': '/images/hero/matric-dance-photography-hero.jpg',
+  
+  // Background fallbacks (using existing backgrounds)
+  'backgrounds/photography-studio-cape-town-texture': '/images/backgrounds/photography-category-hero.jpg',
+  'backgrounds/wedding-photography-background-elegant': '/images/backgrounds/wedding-hero-background.jpg',
+  'backgrounds/portrait-photography-studio-backdrop': '/images/backgrounds/portrait-hero-background.jpg'
+};
 
 export type AssetKey = typeof ASSET_KEYS[keyof typeof ASSET_KEYS];

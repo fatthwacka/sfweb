@@ -26,7 +26,7 @@ const categoryData: Record<string, {
     title: "Wedding Photography Cape Town",
     description: "Capture your special day with timeless elegance and emotion. Professional wedding photography services in Cape Town.",
     longDescription: "Your wedding day is one of the most important days of your life, and we're here to ensure every precious moment is captured with artistic vision and emotional depth. Our wedding photography approach combines candid storytelling with stunning portraits, creating a comprehensive visual narrative of your celebration.",
-    heroImage: "/images/backgrounds/wedding-hero-background.jpg",
+    heroImage: "/images/hero/wedding-photography-hero.webp",
     features: [
       "Engagement session included",
       "Full ceremony coverage",
@@ -69,7 +69,7 @@ const categoryData: Record<string, {
     title: "Professional Portrait Photography Cape Town",
     description: "Professional headshots and personal portraits that tell your story with confidence and style.",
     longDescription: "Whether you need professional headshots for your career or personal portraits that capture your essence, our portrait sessions are designed to make you look and feel your best. We specialize in creating images that reflect your personality and professional brand.",
-    heroImage: "/images/backgrounds/portrait-hero-background.jpg",
+    heroImage: "/images/hero/portrait-photography-hero.jpg",
     features: [
       "Professional lighting setup",
       "Multiple outfit changes",
@@ -112,7 +112,7 @@ const categoryData: Record<string, {
     title: "Corporate Photography Services Cape Town",
     description: "Elevate your business image with professional corporate photography that builds trust and credibility.",
     longDescription: "Professional corporate photography is essential for building trust and credibility in today's business world. We provide comprehensive corporate photography services including executive portraits, team photos, office environments, and corporate event coverage.",
-    heroImage: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=800",
+    heroImage: "/images/hero/corporate-photography-hero.jpg",
     features: [
       "Executive portraits",
       "Team photography",
@@ -155,7 +155,7 @@ const categoryData: Record<string, {
     title: "Event Photography Cape Town",
     description: "Document memorable moments at conferences, parties, and gatherings with professional event photography.",
     longDescription: "From intimate gatherings to large-scale conferences, we capture the energy and emotion of your events. Our unobtrusive approach ensures we document authentic moments while maintaining the natural flow of your event.",
-    heroImage: "https://images.unsplash.com/photo-1511578314322-379afb476865?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=800",
+    heroImage: "/images/hero/Event-photography-hero.jpg",
     features: [
       "Conference documentation",
       "Party coverage",
@@ -198,7 +198,7 @@ const categoryData: Record<string, {
     title: "Product Photography Cape Town",
     description: "Showcase your products with stunning commercial photography that drives sales and engagement.",
     longDescription: "High-quality product photography is crucial for e-commerce success and brand credibility. We create compelling product images that highlight your products' best features and drive customer engagement across all platforms.",
-    heroImage: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=800",
+    heroImage: "/images/hero/product-photography-hero.jpg",
     features: [
       "E-commerce optimization",
       "White background shots",
@@ -241,7 +241,7 @@ const categoryData: Record<string, {
     title: "Graduation Photography Cape Town",
     description: "Celebrate academic achievements with memorable graduation photos that commemorate this milestone.",
     longDescription: "Graduation is a once-in-a-lifetime achievement that deserves to be celebrated and remembered. Our graduation photography services capture the pride, joy, and accomplishment of this significant milestone in your life.",
-    heroImage: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=800",
+    heroImage: "/images/hero/graduation-photography-hero.jpg",
     features: [
       "Ceremony coverage",
       "Individual portraits",

@@ -56,8 +56,13 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
   const { data: localAssets, isLoading } = useQuery({
     queryKey: ['local-site-assets'],
     queryFn: async () => {
-      const response = await apiRequest('GET', '/api/local-assets');
-      return response as LocalSiteAsset[];
+      try {
+        const response = await apiRequest('GET', '/api/local-assets');
+        return response as LocalSiteAsset[];
+      } catch (error) {
+        console.warn('Failed to fetch local assets:', error);
+        return [] as LocalSiteAsset[];
+      }
     }
   });
 
@@ -65,8 +70,13 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
   const { data: featuredImages } = useQuery({
     queryKey: ['featured-images'],
     queryFn: async () => {
-      const response = await apiRequest('GET', '/api/images/featured');
-      return response as any[];
+      try {
+        const response = await apiRequest('GET', '/api/images/featured');
+        return response as any[];
+      } catch (error) {
+        console.warn('Failed to fetch featured images:', error);
+        return [] as any[];
+      }
     }
   });
 
@@ -171,17 +181,61 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
     uploadAsset.mutate({ assetKey, file });
   };
 
-  const AssetCard = ({ assetKey, asset }: { assetKey: string, asset?: LocalSiteAsset }) => (
-    <Card className="overflow-hidden">
-      <CardContent className="p-4">
-        <div className="aspect-video mb-4 bg-gray-100 rounded-lg overflow-hidden">
-          <SmartImage
-            assetKey={assetKey}
-            alt={asset?.altText || `${assetKey} image`}
-            className="w-full h-full object-cover"
-            onFallbackUsed={(key) => console.warn(`Fallback used for ${key}`)}
-          />
-        </div>
+  const AssetCard = ({ assetKey, asset }: { assetKey: string, asset?: LocalSiteAsset }) => {
+    const [isDragOver, setIsDragOver] = useState(false);
+    
+    const handleDragOver = (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragOver(true);
+    };
+    
+    const handleDragLeave = (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragOver(false);
+    };
+    
+    const handleDrop = (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragOver(false);
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        const file = files[0];
+        if (file.type.startsWith('image/')) {
+          handleFileUpload(assetKey, { target: { files: [file] } } as any);
+        } else {
+          toast({
+            title: "Invalid file type",
+            description: "Please drop an image file (JPG, PNG, WebP)",
+            variant: "destructive"
+          });
+        }
+      }
+    };
+    
+    return (
+      <Card className="overflow-hidden">
+        <CardContent className="p-4">
+          <div 
+            className={`aspect-video mb-4 bg-gray-100 rounded-lg overflow-hidden relative border-2 border-dashed transition-colors ${
+              isDragOver ? 'border-salmon bg-salmon/10' : 'border-transparent'
+            }`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            <SmartImage
+              assetKey={assetKey}
+              alt={asset?.altText || `${assetKey} image`}
+              className="w-full h-full object-cover"
+              onFallbackUsed={(key) => console.warn(`Fallback used for ${key}`)}
+            />
+            {isDragOver && (
+              <div className="absolute inset-0 bg-salmon/20 flex items-center justify-center">
+                <div className="text-salmon font-medium">Drop image here</div>
+              </div>
+            )}
+          </div>
         
         <div className="space-y-3">
           <div>
@@ -200,7 +254,7 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
                 disabled={uploadingAsset === assetKey}
               >
                 <Upload className="w-3 h-3 mr-1" />
-                {uploadingAsset === assetKey ? 'Uploading...' : 'Update'}
+                {uploadingAsset === assetKey ? 'Uploading...' : 'Upload Image'}
               </Button>
               <input
                 type="file"
@@ -215,6 +269,7 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
               <DialogTrigger asChild>
                 <Button size="sm" variant="outline">
                   <Settings className="w-3 h-3" />
+                  Alt Text
                 </Button>
               </DialogTrigger>
               <DialogContent>
@@ -245,8 +300,9 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
                       updateAltText.mutate({ assetKey, altText: validatedText });
                     }}
                     disabled={updateAltText.isPending}
+                    className="w-full"
                   >
-                    {updateAltText.isPending ? 'Updating...' : 'Update Alt Text'}
+                    {updateAltText.isPending ? 'Updating Alt Text...' : 'Save Alt Text'}
                   </Button>
                 </div>
               </DialogContent>
@@ -254,8 +310,9 @@ export const SiteAssetsPanel: React.FC<SiteAssetsPanelProps> = ({ userRole }) =>
           </div>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card> 
+    );
+  };
 
   if (isLoading) {
     return (
