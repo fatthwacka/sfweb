@@ -132,6 +132,8 @@
   -webkit-text-fill-color: white !important;
   background-clip: unset !important;
   color: white !important;
+  font-weight: 100 !important;
+  font-family: inherit !important;
 }
 
 /* Section headers with cyan color */
