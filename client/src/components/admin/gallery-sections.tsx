@@ -136,16 +136,15 @@ export function BasicInfoSection({
                 <SelectValue placeholder="Select shoot type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="wedding">Wedding</SelectItem>
-                <SelectItem value="portrait">Portrait</SelectItem>
+                <SelectItem value="commercial">Commercial</SelectItem>
                 <SelectItem value="corporate">Corporate</SelectItem>
                 <SelectItem value="event">Event</SelectItem>
-                <SelectItem value="family">Family</SelectItem>
-                <SelectItem value="maternity">Maternity</SelectItem>
-                <SelectItem value="engagement">Engagement</SelectItem>
-                <SelectItem value="commercial">Commercial</SelectItem>
+                <SelectItem value="fashion">Fashion</SelectItem>
                 <SelectItem value="lifestyle">Lifestyle</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="maternity">Maternity</SelectItem>
+                <SelectItem value="portrait">Portrait</SelectItem>
+                <SelectItem value="product">Product</SelectItem>
+                <SelectItem value="wedding">Wedding</SelectItem>
               </SelectContent>
             </Select>
           </div>
