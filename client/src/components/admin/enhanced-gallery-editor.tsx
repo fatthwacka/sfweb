@@ -592,20 +592,20 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     // Check if shoot type has changed
     const shootTypeChanged = originalShootType !== editableShoot.shootType;
     
-    console.log('Debug: Save Basic Info Data:', data);
-    console.log('Debug: Original shoot type:', originalShootType);
-    console.log('Debug: Current editable shoot type:', editableShoot.shootType);
-    console.log('Debug: Shoot type changed:', shootTypeChanged);
+
     
     try {
       // Save basic info first
       await saveBasicInfoMutation.mutateAsync(data);
       
+      // Always update the original shoot type after successful save to prevent stale state
+      setOriginalShootType(editableShoot.shootType);
+      
       // If shoot type changed, update all images in this shoot
       if (shootTypeChanged && editableShoot.shootType) {
         console.log(`Shoot type changed from "${originalShootType}" to "${editableShoot.shootType}"`);
         console.log(`Updating ${images.length} images to new classification`);
-        console.log('Debug: Classification being sent:', editableShoot.shootType);
+
         
         const response = await apiRequest('PATCH', `/api/shoots/${shootId}/images/classification`, {
           classification: editableShoot.shootType
@@ -617,13 +617,16 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
             description: `Updated ${response.updatedCount} images to "${editableShoot.shootType}" classification` 
           });
           
-          // Update the original shoot type to the new value
-          setOriginalShootType(editableShoot.shootType);
-          
           // Refresh image data to show updated classifications
           queryClient.invalidateQueries({ queryKey: ['/api/images'] });
           queryClient.invalidateQueries({ queryKey: ['/api/images/featured'] });
         }
+      } else {
+        // Show success message even when no classification update was needed
+        toast({ 
+          title: "Success", 
+          description: "Shoot information updated successfully" 
+        });
       }
     } catch (error) {
       console.error('Error saving basic info or updating classifications:', error);

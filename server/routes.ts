@@ -798,10 +798,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { shootId } = req.params;
       const { classification } = req.body;
       
-      console.log('Debug: Received classification update request');
-      console.log('Debug: shootId:', shootId);
-      console.log('Debug: classification:', classification);
-      console.log('Debug: typeof classification:', typeof classification);
+
       
       if (!classification) {
         return res.status(400).json({ error: 'Classification is required' });
@@ -810,8 +807,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Updating all images for shoot ${shootId} to classification: ${classification}`);
       const updatedImages = await storage.updateShootImagesClassification(shootId, classification);
       
-      console.log('Debug: Updated images count:', updatedImages.length);
-      console.log('Debug: First few updated images:', updatedImages.slice(0, 3).map(img => ({ id: img.id, classification: img.classification })));
+
       
       res.json({ 
         success: true, 
