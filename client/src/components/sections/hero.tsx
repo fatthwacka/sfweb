@@ -17,10 +17,6 @@ export function Hero() {
       {/* Content */}
       <div className="relative z-10 text-center max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="animate-slide-up">
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl mb-12 leading-tight">
-            Capturing Life's Beautiful Moments
-          </h1>
-
           <Button className="btn-salmon px-12">
             Book Your Session
           </Button>

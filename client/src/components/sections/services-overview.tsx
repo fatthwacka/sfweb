@@ -14,9 +14,9 @@ export function ServicesOverview() {
     <section className="py-20 bg-gradient-to-br from-indigo-900/40 via-background to-blue-900/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="salmon text-4xl lg:text-5xl mb-6">
-            Our <span>Services</span>
-          </h2>
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl mb-12 leading-tight">
+            Capturing Life's Beautiful Moments
+          </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             From intimate portraits to grand celebrations, we capture every moment with artistic vision and technical excellence.
           </p>
