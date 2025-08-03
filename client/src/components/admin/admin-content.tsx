@@ -118,8 +118,8 @@ export function AdminContent({ userRole }: AdminContentProps) {
   const [bulkActionOpen, setBulkActionOpen] = useState(false);
   
   // Image filters
-  const [selectedClientFilter, setSelectedClientFilter] = useState<string>('');
-  const [selectedShootFilter, setSelectedShootFilter] = useState<string>('');
+  const [selectedClientFilter, setSelectedClientFilter] = useState<string>('__all__');
+  const [selectedShootFilter, setSelectedShootFilter] = useState<string>('__all__');
 
   // Fetch data with client-shoot relationships
   const { data: clients = [], isLoading: clientsLoading } = useQuery<Client[]>({
@@ -161,7 +161,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
       }
       
       // Client filter
-      if (selectedClientFilter) {
+      if (selectedClientFilter && selectedClientFilter !== '__all__') {
         const imageShoot = shoots.find(shoot => shoot.id === image.shootId);
         if (!imageShoot || imageShoot.clientId !== selectedClientFilter) {
           return false;
@@ -169,7 +169,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
       }
       
       // Shoot filter
-      if (selectedShootFilter && image.shootId !== selectedShootFilter) {
+      if (selectedShootFilter && selectedShootFilter !== '__all__' && image.shootId !== selectedShootFilter) {
         return false;
       }
       
@@ -1515,9 +1515,9 @@ export function AdminContent({ userRole }: AdminContentProps) {
                           <SelectValue placeholder="All clients" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All clients</SelectItem>
+                          <SelectItem value="__all__">All clients</SelectItem>
                           {clients.map(client => (
-                            <SelectItem key={client.id} value={client.email || ''}>
+                            <SelectItem key={client.id} value={client.email || `client-${client.id}`}>
                               {client.name}
                             </SelectItem>
                           ))}
@@ -1532,9 +1532,9 @@ export function AdminContent({ userRole }: AdminContentProps) {
                           <SelectValue placeholder="All shoots" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All shoots</SelectItem>
+                          <SelectItem value="__all__">All shoots</SelectItem>
                           {shoots
-                            .filter(shoot => !selectedClientFilter || shoot.clientId === selectedClientFilter)
+                            .filter(shoot => !selectedClientFilter || selectedClientFilter === '__all__' || shoot.clientId === selectedClientFilter)
                             .map(shoot => (
                               <SelectItem key={shoot.id} value={shoot.id}>
                                 {shoot.title} - {shoot.location}
@@ -1544,13 +1544,13 @@ export function AdminContent({ userRole }: AdminContentProps) {
                       </Select>
                     </div>
                     
-                    {(selectedClientFilter || selectedShootFilter) && (
+                    {(selectedClientFilter !== '__all__' || selectedShootFilter !== '__all__') && (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          setSelectedClientFilter('');
-                          setSelectedShootFilter('');
+                          setSelectedClientFilter('__all__');
+                          setSelectedShootFilter('__all__');
                         }}
                         className="text-xs"
                       >
