@@ -116,6 +116,10 @@ export function AdminContent({ userRole }: AdminContentProps) {
   // Bulk selection state for images
   const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
   const [bulkActionOpen, setBulkActionOpen] = useState(false);
+  
+  // Image filters
+  const [selectedClientFilter, setSelectedClientFilter] = useState<string>('');
+  const [selectedShootFilter, setSelectedShootFilter] = useState<string>('');
 
   // Fetch data with client-shoot relationships
   const { data: clients = [], isLoading: clientsLoading } = useQuery<Client[]>({
@@ -148,10 +152,33 @@ export function AdminContent({ userRole }: AdminContentProps) {
     setSelectedImages(newSelected);
   };
 
+  // Get filtered images based on current filters
+  const getFilteredImages = () => {
+    return images.filter(image => {
+      // Search term filter
+      if (searchTerm && !image.filename.toLowerCase().includes(searchTerm.toLowerCase())) {
+        return false;
+      }
+      
+      // Client filter
+      if (selectedClientFilter) {
+        const imageShoot = shoots.find(shoot => shoot.id === image.shootId);
+        if (!imageShoot || imageShoot.clientId !== selectedClientFilter) {
+          return false;
+        }
+      }
+      
+      // Shoot filter
+      if (selectedShootFilter && image.shootId !== selectedShootFilter) {
+        return false;
+      }
+      
+      return true;
+    });
+  };
+
   const selectAllImages = () => {
-    const filteredImages = images.filter(image => 
-      !searchTerm || image.filename.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredImages = getFilteredImages();
     setSelectedImages(new Set(filteredImages.map(img => img.id)));
   };
 
@@ -548,6 +575,25 @@ export function AdminContent({ userRole }: AdminContentProps) {
       toast({
         title: "Error", 
         description: "Failed to mark images as featured",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Individual toggle featured status mutation
+  const toggleFeaturedMutation = useMutation({
+    mutationFn: async ({ imageId, featured }: { imageId: string; featured: boolean }) => {
+      return apiRequest("PATCH", `/api/images/${imageId}`, { featuredImage: featured });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/images"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/images/featured"] });
+    },
+    onError: (error) => {
+      console.error('Toggle featured error:', error);
+      toast({
+        title: "Error", 
+        description: "Failed to update featured status",
         variant: "destructive"
       });
     }
@@ -1460,10 +1506,63 @@ export function AdminContent({ userRole }: AdminContentProps) {
                 </Card>
               ) : (
                 <div className="space-y-4">
+                  {/* Filters Row */}
+                  <div className="flex flex-wrap gap-4 p-4 border border-border rounded-lg bg-muted/50">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-sm font-medium">Filter by Client:</Label>
+                      <Select value={selectedClientFilter} onValueChange={setSelectedClientFilter}>
+                        <SelectTrigger className="w-48">
+                          <SelectValue placeholder="All clients" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All clients</SelectItem>
+                          {clients.map(client => (
+                            <SelectItem key={client.id} value={client.email || ''}>
+                              {client.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Label className="text-sm font-medium">Filter by Shoot:</Label>
+                      <Select value={selectedShootFilter} onValueChange={setSelectedShootFilter}>
+                        <SelectTrigger className="w-64">
+                          <SelectValue placeholder="All shoots" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All shoots</SelectItem>
+                          {shoots
+                            .filter(shoot => !selectedClientFilter || shoot.clientId === selectedClientFilter)
+                            .map(shoot => (
+                              <SelectItem key={shoot.id} value={shoot.id}>
+                                {shoot.title} - {shoot.location}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {(selectedClientFilter || selectedShootFilter) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedClientFilter('');
+                          setSelectedShootFilter('');
+                        }}
+                        className="text-xs"
+                      >
+                        Clear Filters
+                      </Button>
+                    )}
+                  </div>
+
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-4">
                       <p className="text-muted-foreground">
-                        Showing {images.length} images across all shoots
+                        Showing {getFilteredImages().length} of {images.length} images
                       </p>
                       {selectedImages.size > 0 && (
                         <div className="flex items-center gap-2">
@@ -1556,12 +1655,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                   </div>
                   
                   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    {images
-                      .filter(image => 
-                        !searchTerm || 
-                        image.filename.toLowerCase().includes(searchTerm.toLowerCase())
-                      )
-                      .map((image) => {
+                    {getFilteredImages().map((image) => {
                         const associatedShoot = shoots.find(s => s.id === image.shootId);
                         const isSelected = selectedImages.has(image.id);
                         return (
@@ -1624,40 +1718,65 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                   </div>
                                 </div>
                                 
-                                {/* Action Buttons */}
-                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                {/* Featured Status and Action Buttons */}
+                                <div className="flex gap-1 items-center">
+                                  {/* Featured Toggle Button - Always visible */}
                                   <Button 
                                     size="sm" 
                                     variant="outline" 
-                                    className="flex-1 border-border hover:border-cyan text-white"
+                                    className={`w-8 h-8 p-0 border-2 transition-all ${
+                                      image.featuredImage 
+                                        ? 'border-green-500 bg-green-500/20 text-green-400 shadow-lg shadow-green-500/25' 
+                                        : 'border-gray-500 text-gray-400 hover:border-green-500 hover:text-green-400'
+                                    }`}
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      window.open(ImageUrl.forFullSize(image.storagePath), '_blank');
-                                    }}
-                                  >
-                                    <Eye className="w-3 h-3" />
-                                  </Button>
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline" 
-                                    className="flex-1 border-border hover:border-salmon text-white"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      const downloadUrl = ImageUrl.forDownload(image.storagePath);
-                                      const link = document.createElement('a');
-                                      link.href = downloadUrl;
-                                      link.download = image.filename;
-                                      document.body.appendChild(link);
-                                      link.click();
-                                      document.body.removeChild(link);
-                                      toast({
-                                        title: "Download Started",
-                                        description: `Downloading ${image.filename}`,
+                                      toggleFeaturedMutation.mutate({ 
+                                        imageId: image.id, 
+                                        featured: !image.featuredImage 
                                       });
                                     }}
+                                    disabled={toggleFeaturedMutation.isPending}
+                                    title={image.featuredImage ? "Remove from featured" : "Mark as featured"}
                                   >
-                                    <Download className="w-3 h-3" />
+                                    <Star className={`w-3 h-3 ${image.featuredImage ? 'fill-current' : ''}`} />
                                   </Button>
+                                  
+                                  {/* Other action buttons - appear on hover */}
+                                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline" 
+                                      className="w-8 h-8 p-0 border-border hover:border-cyan text-white"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        window.open(ImageUrl.forFullSize(image.storagePath), '_blank');
+                                      }}
+                                    >
+                                      <Eye className="w-3 h-3" />
+                                    </Button>
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline" 
+                                      className="w-8 h-8 p-0 border-border hover:border-salmon text-white"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const downloadUrl = ImageUrl.forDownload(image.storagePath);
+                                        const link = document.createElement('a');
+                                        link.href = downloadUrl;
+                                        link.download = image.filename;
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                        toast({
+                                          title: "Download Started",
+                                          description: `Downloading ${image.filename}`,
+                                        });
+                                      }}
+                                    >
+                                      <Download className="w-3 h-3" />
+                                    </Button>
+                                  </div>
                                 </div>
                               </div>
                             </CardContent>
