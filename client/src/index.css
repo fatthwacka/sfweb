@@ -221,9 +221,7 @@
     color: hsl(var(--cyan));
   }
 
-  p {
-    @apply font-saira;
-  }
+
   
   html {
     scroll-behavior: smooth;
