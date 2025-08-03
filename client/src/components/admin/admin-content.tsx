@@ -127,11 +127,11 @@ export function AdminContent({ userRole }: AdminContentProps) {
   });
 
   const { data: images = [], isLoading: imagesLoading } = useQuery<Image[]>({
-    queryKey: ["/api/images"],
-    refetchOnMount: true,
-    refetchOnWindowFocus: false,
-    staleTime: 0 // Force fresh data
+    queryKey: ["/api/images"]
   });
+  
+  // DEBUG: Log the actual data received from API vs what's being displayed
+  console.log('RAW API DATA - First 3 images from query:', images.slice(0, 3).map(img => ({ id: img.id, filename: img.filename })));
 
   // Get shoots for each client via email matching
   const getClientShoots = (clientEmail: string) => {
