@@ -123,6 +123,18 @@
   }
   
   /* Section headers with cyan color */
+
+/* Override gradient for specific gallery navigation h1 */
+.gallery-nav-h1 {
+  background: none !important;
+  background-image: none !important;
+  -webkit-background-clip: unset !important;
+  -webkit-text-fill-color: white !important;
+  background-clip: unset !important;
+  color: white !important;
+}
+
+/* Section headers with cyan color */
   h2.cyan {
     color: #4ecdc4;
   }

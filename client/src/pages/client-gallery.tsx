@@ -403,18 +403,13 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
             {/* Shoot Name (H1 for SEO, but styled as subtitle) */}
             {shoot.description && (
               <h1 
+                className="gallery-nav-h1"
                 style={{ 
-                  color: 'white !important', 
                   fontSize: '14px', 
                   fontWeight: '100', 
                   margin: 0,
                   fontStyle: 'italic',
-                  opacity: 0.8,
-                  background: 'none !important',
-                  backgroundImage: 'none !important',
-                  backgroundClip: 'unset !important',
-                  WebkitBackgroundClip: 'unset !important',
-                  WebkitTextFillColor: 'white !important'
+                  opacity: 0.8
                 }}
               >
                 {shoot.description}
