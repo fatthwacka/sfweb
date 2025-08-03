@@ -379,10 +379,10 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
       <meta name="description" content={`View ${shoot.customTitle || shoot.title} gallery by SlyFox Studios. ${shoot.description || 'Professional photography showcasing beautiful moments.'}`} />
       
       {/* Custom Navigation Bar for Gallery */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${navbarVisible ? 'translate-y-0' : '-translate-y-full'}`}>
-        <div className="max-w-[1000px] mx-auto flex items-center justify-center h-16 px-6">
+      <nav className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 ${navbarVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
+        <div className="bg-black/20 backdrop-blur-md border border-white/10 rounded-full px-6 py-3 shadow-lg">
           {/* Centered Container with Equal Spacing */}
-          <div className="flex items-center justify-center gap-8 w-full">
+          <div className="flex items-center justify-center gap-8">
             {/* Logo */}
             <Link href="/">
               <img src="/images/logos/slyfox-logo-white.png" alt="SlyFox Studios" className="h-8 hover:opacity-80 transition-opacity" />
