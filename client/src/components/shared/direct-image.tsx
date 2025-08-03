@@ -5,6 +5,7 @@ interface DirectImageProps {
   alt?: string;
   className?: string;
   style?: React.CSSProperties;
+  cacheKey?: string; // Optional cache key to force refresh when changed
 }
 
 /**
@@ -15,14 +16,15 @@ export const DirectImage: React.FC<DirectImageProps> = ({
   filename, 
   alt = 'professional photography durban', 
   className, 
-  style 
+  style,
+  cacheKey
 }) => {
-  // Add timestamp to force cache invalidation
-  const cacheBuster = `?t=${Date.now()}`;
+  // Only add cache buster if cacheKey is provided (indicating a recent update)
+  const src = cacheKey ? `/images/${filename}?v=${cacheKey}` : `/images/${filename}`;
   
   return (
     <img
-      src={`/images/${filename}${cacheBuster}`}
+      src={src}
       alt={alt}
       className={className}
       style={style}

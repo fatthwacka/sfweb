@@ -279,7 +279,7 @@ export function SimpleAssetsPanel() {
                       filename={asset.filename}
                       alt={asset.altText}
                       className="w-full h-full object-cover"
-                      key={`${asset.key}-${imageTimestamps[asset.key] || Date.now()}`}
+                      cacheKey={imageTimestamps[asset.key]?.toString()}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -394,7 +394,7 @@ export function SimpleAssetsPanel() {
                       filename={asset.filename}
                       alt={asset.altText}
                       className="w-full h-full object-cover"
-                      key={`${asset.key}-${imageTimestamps[asset.key] || Date.now()}`}
+                      cacheKey={imageTimestamps[asset.key]?.toString()}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">
