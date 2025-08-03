@@ -54,6 +54,9 @@ export const IMAGE_PRESETS = {
   // Optimized viewing size for all interfaces (targeting 500-600KB as requested)
   optimized: { width: 2400, height: 2400, quality: 80, resize: 'contain' as const },
   
+  // Modal viewing - maintains aspect ratio, optimized for modal display
+  modal: { width: 2400, quality: 80, resize: 'contain' as const },
+  
   // Full size for downloads and detailed inspection (no transformation)
   fullSize: {} as ImageTransformOptions,
 } as const;
@@ -72,6 +75,9 @@ export function getImageUrl(originalUrl: string, preset: keyof typeof IMAGE_PRES
 export const ImageUrl = {
   // For all viewing contexts (admin, galleries, client portal) - ~364KB optimized
   forViewing: (url: string) => getImageUrl(url, 'optimized'),
+  
+  // For modal viewing - maintains aspect ratio, optimized size
+  forModal: (url: string) => getImageUrl(url, 'modal'),
   
   // For downloads and full resolution inspection (original 4.4MB)
   forFullSize: (url: string) => url,

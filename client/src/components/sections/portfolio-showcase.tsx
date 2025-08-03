@@ -202,7 +202,7 @@ export function PortfolioShowcase() {
             {currentImage && (
               <div className="relative w-full h-full flex items-center justify-center p-8">
                 <img
-                  src={ImageUrl.forViewing(currentImage.storagePath)}
+                  src={ImageUrl.forModal(currentImage.storagePath)}
                   alt={currentImage.filename}
                   className="max-w-full max-h-full object-contain"
                 />
