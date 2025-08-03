@@ -402,7 +402,14 @@ export class SupabaseStorage implements IStorage {
   }
 
   async getFeaturedImages(): Promise<Image[]> {
-    return await db.select().from(images).where(eq(images.classification, 'featured')).orderBy(desc(images.createdAt));
+    return await db.select().from(images).where(eq(images.featuredImage, true)).orderBy(desc(images.createdAt));
+  }
+
+  async getFeaturedClassifications(): Promise<string[]> {
+    const result = await db.selectDistinct({ classification: images.classification })
+      .from(images)
+      .where(eq(images.featuredImage, true));
+    return result.map(row => row.classification).filter(Boolean).sort();
   }
 
   async updateImageClassification(id: string, classification: any): Promise<Image | undefined> {

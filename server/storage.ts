@@ -54,6 +54,8 @@ export interface IStorage {
   // Images (UUIDs)
   getImage(id: string): Promise<Image | undefined>;
   getImagesByShoot(shootId: string): Promise<Image[]>;
+  getFeaturedImages(): Promise<Image[]>;
+  getFeaturedClassifications(): Promise<string[]>;
   createImage(image: InsertImage): Promise<Image>;
   updateImage(id: string, updates: Partial<InsertImage>): Promise<Image | undefined>;
   deleteImage(id: string): Promise<boolean>;
@@ -911,6 +913,13 @@ export class MemStorage implements IStorage {
   // Featured Images Management methods
   async getFeaturedImages(): Promise<Image[]> {
     return Array.from(this.images.values()).filter(image => image.featuredImage === true);
+  }
+
+  async getFeaturedClassifications(): Promise<string[]> {
+    const featuredImages = Array.from(this.images.values()).filter(image => image.featuredImage === true);
+    const classifications = new Set<string>();
+    featuredImages.forEach(image => classifications.add(image.classification));
+    return Array.from(classifications).sort();
   }
 
   async getFeaturedImagesByClassification(classification: ImageClassification): Promise<Image[]> {

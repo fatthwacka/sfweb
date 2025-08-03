@@ -777,6 +777,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Featured images endpoints for homepage
+  app.get("/api/images/featured", async (req, res) => {
+    try {
+      const featuredImages = await storage.getFeaturedImages();
+      res.json(featuredImages);
+    } catch (error) {
+      console.error('Failed to fetch featured images:', error);
+      res.status(500).json({ error: 'Failed to fetch featured images' });
+    }
+  });
+
+  app.get("/api/images/featured/classifications", async (req, res) => {
+    try {
+      const classifications = await storage.getFeaturedClassifications();
+      res.json(classifications);
+    } catch (error) {
+      console.error('Failed to fetch featured classifications:', error);
+      res.status(500).json({ error: 'Failed to fetch featured classifications' });
+    }
+  });
+
   // Analytics endpoint
   app.post("/api/analytics", async (req, res) => {
     try {

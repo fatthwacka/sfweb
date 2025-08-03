@@ -1,81 +1,56 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import type { Image } from "@shared/schema";
 
-const portfolioItems = [
-  {
-    id: 1,
-    title: "Garden Wedding",
-    location: "Cape Town • 2024",
-    category: "weddings",
-    image: "/images/portfolio/wedding-couple-1.jpg"
-  },
-  {
-    id: 2,
-    title: "Executive Portrait",
-    location: "Corporate • 2024",
-    category: "portraits",
-    image: "/images/portfolio/portrait-professional-1.jpg"
-  },
-  {
-    id: 3,
-    title: "Tech Conference",
-    location: "Event • 2024",
-    category: "corporate",
-    image: "/images/portfolio/wedding-couple-2.jpg"
-  },
-  {
-    id: 4,
-    title: "Beach Wedding",
-    location: "Cape Town • 2024",
-    category: "weddings",
-    image: "/images/portfolio/portrait-professional-2.jpg"
-  },
-  {
-    id: 5,
-    title: "Family Session",
-    location: "Portrait • 2024",
-    category: "portraits",
-    image: "/images/portfolio/wedding-couple-3.jpg"
-  },
-  {
-    id: 6,
-    title: "Product Shoot",
-    location: "Commercial • 2024",
-    category: "product",
-    image: "/images/portfolio/portrait-professional-3.jpg"
-  },
-  {
-    id: 7,
-    title: "Matric Dance",
-    location: "School Event • 2024",
-    category: "matric-dance",
-    image: "/images/portfolio/matric-dance-1.jpg"
-  },
-  {
-    id: 8,
-    title: "Corporate Event",
-    location: "Conference • 2024",
-    category: "event",
-    image: "/images/portfolio/corporate-event-1.jpg"
-  }
-];
+// Helper function to format classification for display
+const formatClassificationLabel = (classification: string) => {
+  return classification
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
 
-const filterOptions = [
-  { label: "All Work", value: "all" },
-  { label: "Weddings", value: "weddings" },
-  { label: "Portraits", value: "portraits" },
-  { label: "Corporate", value: "corporate" },
-  { label: "Product", value: "product" },
-  { label: "Matric Dance", value: "matric-dance" },
-  { label: "Event", value: "event" }
-];
+// Helper function to create filter value from classification
+const createFilterValue = (classification: string) => {
+  return classification.toLowerCase().replace(/\s+/g, '-');
+};
 
 export function PortfolioShowcase() {
   const [activeFilter, setActiveFilter] = useState("all");
+  const [filterOptions, setFilterOptions] = useState([{ label: "All Work", value: "all" }]);
 
-  const filteredItems = activeFilter === "all" 
-    ? portfolioItems 
-    : portfolioItems.filter(item => item.category === activeFilter);
+  // Fetch featured images from Supabase
+  const { data: featuredImages, isLoading: imagesLoading } = useQuery<Image[]>({
+    queryKey: ['/api/images/featured'],
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  // Fetch available classifications for filter buttons
+  const { data: classifications, isLoading: classificationsLoading } = useQuery<string[]>({
+    queryKey: ['/api/images/featured/classifications'],
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  // Update filter options when classifications are loaded
+  useEffect(() => {
+    if (classifications && classifications.length > 0) {
+      const options = [
+        { label: "All Work", value: "all" },
+        ...classifications.map(classification => ({
+          label: formatClassificationLabel(classification),
+          value: classification
+        }))
+      ];
+      setFilterOptions(options);
+    }
+  }, [classifications]);
+
+  // Filter featured images based on active filter
+  const filteredItems = !featuredImages ? [] : 
+    activeFilter === "all" 
+      ? featuredImages 
+      : featuredImages.filter(image => image.classification === activeFilter);
 
   return (
     <section className="py-20 bg-gradient-to-br from-slate-900/60 via-background to-grey-800/40">
@@ -109,24 +84,45 @@ export function PortfolioShowcase() {
 
         {/* Portfolio Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredItems.map(item => (
-            <div key={item.id} className="group cursor-pointer">
-              <div className="relative overflow-hidden rounded-xl image-hover-effect">
-                <img 
-                  src={item.image} 
-                  alt={item.title} 
-                  className="w-full h-80 object-cover"
-                />
+          {imagesLoading ? (
+            // Loading skeleton
+            Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="bg-gray-800/50 h-80 rounded-xl"></div>
+              </div>
+            ))
+          ) : filteredItems.length > 0 ? (
+            filteredItems.map(image => (
+              <div key={image.id} className="group cursor-pointer">
+                <div className="relative overflow-hidden rounded-xl image-hover-effect">
+                  <img 
+                    src={image.storagePath} 
+                    alt={image.filename} 
+                    className="w-full h-80 object-cover"
+                  />
 
-                <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <div className="text-center">
-                    <h4 className="text-xl font-quicksand font-bold text-salmon mb-2">{item.title}</h4>
-                    <p className="text-gray-200 text-sm">{item.location}</p>
+                  <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <div className="text-center">
+                      <h4 className="text-xl font-quicksand font-bold text-salmon mb-2">
+                        {formatClassificationLabel(image.classification)}
+                      </h4>
+                      <p className="text-gray-200 text-sm">
+                        {image.filename.replace(/\.[^/.]+$/, "")}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p className="text-gray-400 text-lg">
+                {activeFilter === "all" 
+                  ? "No featured images available" 
+                  : `No featured images in ${formatClassificationLabel(activeFilter)} category`}
+              </p>
             </div>
-          ))}
+          )}
         </div>
 
         <div className="text-center mt-12">
