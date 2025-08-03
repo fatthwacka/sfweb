@@ -6,6 +6,7 @@ SlyFox Studios is a professional photography and videography business based in C
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 Technical approach: Always fix everything at the root cause, never patch, workaround, or temporary fix.
+**Critical:** Never test uploads using real attachment screenshots - this overwrites professional hero images with random files. Always use dedicated test files or validate without actual uploads.
 
 ## System Architecture
 This application follows a **monorepo structure** with clear separation between frontend, backend, and shared code.
