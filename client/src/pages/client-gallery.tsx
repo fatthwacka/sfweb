@@ -41,20 +41,20 @@ export const ClientGallery: React.FC<ClientGalleryProps> = ({
     queryKey: ['gallery', shootId],
     queryFn: async () => {
       if (!shootId) throw new Error('No shoot ID');
-      const response = await apiRequest(`/api/gallery/${shootId}`);
-      return response as Shoot;
+      const response = await apiRequest('GET', `/api/gallery/${shootId}`);
+      return await response.json() as Shoot;
     },
     enabled: !!shootId
   });
 
   const { data: images = [], isLoading: imagesLoading } = useQuery({
-    queryKey: ['gallery-images', shootId],
+    queryKey: ['gallery-images', shoot?.id],
     queryFn: async () => {
-      if (!shootId) throw new Error('No shoot ID');
-      const response = await apiRequest(`/api/shoots/${shootId}/images`);
-      return response as Image[];
+      if (!shoot?.id) throw new Error('No shoot ID');
+      const response = await apiRequest('GET', `/api/shoots/${shoot.id}/images`);
+      return await response.json() as Image[];
     },
-    enabled: !!shootId
+    enabled: !!shoot?.id
   });
 
   // Filter and search images
