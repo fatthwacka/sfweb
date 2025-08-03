@@ -397,8 +397,15 @@ export class SupabaseStorage implements IStorage {
   }
 
   async deleteImage(id: string): Promise<boolean> {
-    const result = await db.delete(images).where(eq(images.id, id));
-    return result.rowCount > 0;
+    console.log(`Storage: Attempting to delete image with ID: ${id}`);
+    try {
+      const result = await db.delete(images).where(eq(images.id, id));
+      console.log(`Storage: Delete result - rowCount: ${result.rowCount}`);
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error(`Storage: Delete image error:`, error);
+      throw error;
+    }
   }
 
   async getFeaturedImages(): Promise<Image[]> {
