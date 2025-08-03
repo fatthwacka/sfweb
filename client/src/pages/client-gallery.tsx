@@ -22,6 +22,7 @@ interface Shoot {
   clientId: string;
   title: string;
   description: string;
+  shootType: string;
   shootDate: string;
   location: string;
   notes: string;
@@ -428,20 +429,23 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
               />
             </Link>
 
-            {/* Client Name (H2 for SEO, but styled as main title) */}
+            {/* Shoot Type (styled as main title) */}
             <h2
               style={{
                 color: "white",
                 fontSize: "18px",
                 fontWeight: "bold",
                 margin: 0,
+                whiteSpace: "nowrap",
               }}
             >
-              {shoot.customTitle || shoot.title}
+              {shoot.shootType ? 
+                shoot.shootType.charAt(0).toUpperCase() + shoot.shootType.slice(1) 
+                : "Portfolio"}
             </h2>
 
-            {/* Shoot Name (H1 for SEO, but styled as subtitle) */}
-            {shoot.description && (
+            {/* Shoot Title (H1 for SEO, but styled as subtitle on same line) */}
+            {shoot.title && (
               <h1
                 className="gallery-nav-h1"
                 style={{
@@ -450,9 +454,10 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                   margin: 0,
                   fontStyle: "italic",
                   opacity: 0.8,
+                  whiteSpace: "nowrap",
                 }}
               >
-                {shoot.description}
+                {shoot.title}
               </h1>
             )}
 
