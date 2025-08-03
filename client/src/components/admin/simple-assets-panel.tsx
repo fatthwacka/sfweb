@@ -35,6 +35,7 @@ export function SimpleAssetsPanel() {
   const [draggedOver, setDraggedOver] = useState<string | null>(null);
   const [editingAlt, setEditingAlt] = useState<string | null>(null);
   const [altTextValue, setAltTextValue] = useState('');
+  const [uploadingAsset, setUploadingAsset] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -47,6 +48,7 @@ export function SimpleAssetsPanel() {
   // Upload mutation
   const uploadMutation = useMutation({
     mutationFn: async ({ key, file }: { key: string; file: File }) => {
+      setUploadingAsset(key);
       const formData = new FormData();
       formData.append('file', file);
       
@@ -62,6 +64,7 @@ export function SimpleAssetsPanel() {
       return response.json();
     },
     onSuccess: (data, { key }) => {
+      setUploadingAsset(null);
       // Refresh the assets data to show new image immediately
       queryClient.invalidateQueries({ queryKey: ['/api/simple-assets'] });
       queryClient.refetchQueries({ queryKey: ['/api/simple-assets'] });
@@ -69,13 +72,15 @@ export function SimpleAssetsPanel() {
       toast({
         title: 'Upload Successful',
         description: `${ASSET_LABELS[key]} has been updated.`,
+        className: 'success-message',
       });
     },
     onError: (error, { key }) => {
+      setUploadingAsset(null);
       toast({
         title: 'Upload Failed',
         description: `Failed to upload ${ASSET_LABELS[key]}.`,
-        variant: 'destructive',
+        className: 'error-message',
       });
     },
   });
@@ -98,13 +103,14 @@ export function SimpleAssetsPanel() {
       toast({
         title: 'Asset Deleted',
         description: `${ASSET_LABELS[key]} has been removed.`,
+        className: 'success-message',
       });
     },
     onError: (error, key) => {
       toast({
         title: 'Delete Failed',
         description: `Failed to delete ${ASSET_LABELS[key]}.`,
-        variant: 'destructive',
+        className: 'error-message',
       });
     },
   });
@@ -131,7 +137,7 @@ export function SimpleAssetsPanel() {
       toast({
         title: 'Invalid File',
         description: 'Please drop an image file.',
-        variant: 'destructive',
+        className: 'error-message',
       });
     }
   };
@@ -169,6 +175,7 @@ export function SimpleAssetsPanel() {
       toast({
         title: 'Alt Text Updated',
         description: `${ASSET_LABELS[key]} alt text has been updated.`,
+        className: 'success-message',
       });
       setEditingAlt(null);
     },
@@ -176,7 +183,7 @@ export function SimpleAssetsPanel() {
       toast({
         title: 'Update Failed',
         description: `Failed to update alt text for ${ASSET_LABELS[key]}.`,
-        variant: 'destructive',
+        className: 'error-message',
       });
     },
   });
@@ -254,8 +261,16 @@ export function SimpleAssetsPanel() {
               </CardHeader>
               
               <CardContent className="space-y-3">
-                {/* Image Preview */}
-                <div className="aspect-video rounded-lg overflow-hidden bg-slate-800/50 border border-purple-500/30">
+                {/* Image Preview with Upload Preloader */}
+                <div className="aspect-video rounded-lg overflow-hidden bg-slate-800/50 border border-purple-500/30 relative">
+                  {uploadingAsset === asset.key && (
+                    <div className="absolute inset-0 upload-preloader flex items-center justify-center z-10">
+                      <div className="text-center text-purple-200">
+                        <div className="w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                        <p className="text-sm">Uploading...</p>
+                      </div>
+                    </div>
+                  )}
                   {asset.exists ? (
                     <DirectImage
                       filename={asset.filename}
@@ -303,7 +318,8 @@ export function SimpleAssetsPanel() {
                         <Button 
                           size="sm" 
                           className="bg-purple-600 hover:bg-purple-700"
-                          disabled={uploadMutation.isPending}
+                          disabled={uploadMutation.isPending || uploadingAsset === asset.key}
+                          onClick={() => document.getElementById(`upload-${asset.key}`)?.click()}
                         >
                           <Upload className="w-4 h-4" />
                         </Button>
@@ -360,8 +376,16 @@ export function SimpleAssetsPanel() {
               </CardHeader>
               
               <CardContent className="space-y-3">
-                {/* Image Preview */}
-                <div className="aspect-video rounded-lg overflow-hidden bg-slate-800/50 border border-purple-500/30">
+                {/* Image Preview with Upload Preloader */}
+                <div className="aspect-video rounded-lg overflow-hidden bg-slate-800/50 border border-purple-500/30 relative">
+                  {uploadingAsset === asset.key && (
+                    <div className="absolute inset-0 upload-preloader flex items-center justify-center z-10">
+                      <div className="text-center text-purple-200">
+                        <div className="w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                        <p className="text-sm">Uploading...</p>
+                      </div>
+                    </div>
+                  )}
                   {asset.exists ? (
                     <DirectImage
                       filename={asset.filename}
@@ -385,7 +409,8 @@ export function SimpleAssetsPanel() {
                   <Label htmlFor={`upload-bg-${asset.key}`}>
                     <Button 
                       className="bg-purple-600 hover:bg-purple-700"
-                      disabled={uploadMutation.isPending}
+                      disabled={uploadMutation.isPending || uploadingAsset === asset.key}
+                      onClick={() => document.getElementById(`upload-bg-${asset.key}`)?.click()}
                     >
                       <Upload className="w-4 h-4 mr-2" />
                       Upload Image
