@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -24,6 +24,9 @@ export function PortfolioShowcase() {
   const [filterOptions, setFilterOptions] = useState([{ label: "All Work", value: "all" }]);
   const [modalOpen, setModalOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [columnCount, setColumnCount] = useState(6);
+  const [imageHeights, setImageHeights] = useState<{ [key: string]: number }>({});
+  const gridRef = useRef<HTMLDivElement>(null);
 
   // Fetch featured images from Supabase
   const { data: featuredImages, isLoading: imagesLoading } = useQuery<Image[]>({
@@ -72,6 +75,84 @@ export function PortfolioShowcase() {
   };
 
   const currentImage = filteredItems[currentImageIndex];
+
+  // Calculate responsive column count
+  const updateColumnCount = useCallback(() => {
+    const width = window.innerWidth;
+    if (width >= 1400) setColumnCount(6);       // 1400px+ = 6 columns
+    else if (width >= 1024) setColumnCount(5);  // 1024px+ = 5 columns
+    else if (width >= 768) setColumnCount(4);   // 768px+ = 4 columns
+    else if (width >= 640) setColumnCount(3);   // 640px+ = 3 columns
+    else setColumnCount(2);                     // < 640px = 2 columns
+  }, []);
+
+  // Handle window resize
+  useEffect(() => {
+    updateColumnCount();
+    const handleResize = () => updateColumnCount();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [updateColumnCount]);
+
+  // Calculate masonry layout
+  const getMasonryStyle = useCallback((index: number) => {
+    if (!gridRef.current || filteredItems.length === 0) return {};
+    
+    const gap = 8; // 8px gap
+    const containerWidth = gridRef.current.clientWidth;
+    const columnWidth = (containerWidth - (gap * (columnCount - 1))) / columnCount;
+    
+    const columnIndex = index % columnCount;
+    const rowIndex = Math.floor(index / columnCount);
+    
+    // Calculate heights of previous items in the same column
+    let columnHeight = 0;
+    for (let i = columnIndex; i < index; i += columnCount) {
+      const imageId = filteredItems[i]?.id;
+      if (imageId && imageHeights[imageId]) {
+        columnHeight += imageHeights[imageId] + gap;
+      }
+    }
+    
+    return {
+      position: 'absolute' as const,
+      left: columnIndex * (columnWidth + gap),
+      top: columnHeight,
+      width: columnWidth,
+    };
+  }, [columnCount, filteredItems, imageHeights]);
+
+  // Handle image load to calculate height
+  const handleImageLoad = useCallback((imageId: string, naturalWidth: number, naturalHeight: number) => {
+    if (!gridRef.current) return;
+    
+    const containerWidth = gridRef.current.clientWidth;
+    const gap = 8;
+    const columnWidth = (containerWidth - (gap * (columnCount - 1))) / columnCount;
+    const aspectRatio = naturalHeight / naturalWidth;
+    const calculatedHeight = columnWidth * aspectRatio;
+    
+    setImageHeights(prev => ({
+      ...prev,
+      [imageId]: calculatedHeight
+    }));
+  }, [columnCount]);
+
+  // Calculate total container height for masonry
+  const getTotalHeight = useCallback(() => {
+    if (filteredItems.length === 0 || Object.keys(imageHeights).length === 0) return 0;
+    
+    const gap = 8;
+    const columnHeights = Array(columnCount).fill(0);
+    
+    filteredItems.forEach((image, index) => {
+      const columnIndex = index % columnCount;
+      const height = imageHeights[image.id] || 0;
+      columnHeights[columnIndex] += height + gap;
+    });
+    
+    return Math.max(...columnHeights) - gap; // Remove last gap
+  }, [filteredItems, imageHeights, columnCount]);
 
   return (
     <section className="py-20 bg-gradient-to-br from-slate-900/60 via-background to-grey-800/40">
