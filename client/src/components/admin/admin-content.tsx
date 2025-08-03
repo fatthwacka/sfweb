@@ -98,6 +98,37 @@ export function AdminContent({ userRole }: AdminContentProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [newClientOpen, setNewClientOpen] = useState(false);
   const [newShootOpen, setNewShootOpen] = useState(false);
+
+  // Generate SEO keywords based on shoot type and location
+  const generateSEOKeywords = (shootType: string, location: string, clientName: string) => {
+    const baseKeywords = ['photography', 'professional photographer'];
+    const locationKeywords = location.toLowerCase().includes('durban') 
+      ? ['durban photography', 'kwazulu natal photography', 'la lucia photography']
+      : [`${location.toLowerCase()} photography`];
+    
+    const shootTypeKeywords = {
+      'wedding': ['wedding photography', 'bridal photography', 'wedding photographer'],
+      'engagement': ['engagement photography', 'couple photography', 'engagement photographer'],
+      'portrait': ['portrait photography', 'headshot photography', 'personal branding'],
+      'maternity': ['maternity photography', 'pregnancy photography', 'baby bump photos'],
+      'family': ['family photography', 'family portraits', 'family photographer'],
+      'corporate': ['corporate photography', 'business headshots', 'company events'],
+      'event': ['event photography', 'function photography', 'party photographer'],
+      'graduation': ['graduation photography', 'graduation portraits', 'academic photography'],
+      'newborn': ['newborn photography', 'baby photography', 'newborn portraits'],
+      'product': ['product photography', 'commercial photography', 'e-commerce photos'],
+      'matric dance': ['matric dance photography', 'formal photography', 'prom photography']
+    };
+
+    const typeSpecific = shootTypeKeywords[shootType as keyof typeof shootTypeKeywords] || [shootType + ' photography'];
+    
+    return [...baseKeywords, ...locationKeywords, ...typeSpecific].join(', ');
+  };
+
+  // Generate description based on client name and shoot type
+  const generateDescription = (clientName: string, shootType: string, location: string) => {
+    return `${clientName}'s ${shootType} photography by SlyFox Studios. Professional ${shootType} photographer in ${location}.`;
+  };
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [editFormData, setEditFormData] = useState({ 
     name: '', 
@@ -835,7 +866,26 @@ export function AdminContent({ userRole }: AdminContentProps) {
                             <div className="grid md:grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="clientEmail">Client Email *</Label>
-                                <Select name="clientEmail" required>
+                                <Select name="clientEmail" required onValueChange={(value) => {
+                                  // Auto-populate SEO fields when client changes
+                                  const shootTypeSelect = document.querySelector('[name="shootType"]') as HTMLInputElement;
+                                  const locationInput = document.querySelector('[name="location"]') as HTMLInputElement;
+                                  const seoInput = document.querySelector('[name="seoTags"]') as HTMLInputElement;
+                                  const descriptionInput = document.querySelector('[name="description"]') as HTMLTextAreaElement;
+                                  
+                                  if (value && shootTypeSelect?.value && locationInput?.value) {
+                                    const selectedClient = clients.find(c => c.email === value);
+                                    if (selectedClient && seoInput) {
+                                      const keywords = generateSEOKeywords(shootTypeSelect.value, locationInput.value, selectedClient.name);
+                                      seoInput.value = keywords;
+                                      
+                                      if (descriptionInput && !descriptionInput.value) {
+                                        const description = generateDescription(selectedClient.name, shootTypeSelect.value, locationInput.value);
+                                        descriptionInput.value = description;
+                                      }
+                                    }
+                                  }
+                                }}>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select client" />
                                   </SelectTrigger>
@@ -850,21 +900,44 @@ export function AdminContent({ userRole }: AdminContentProps) {
                               </div>
                               <div>
                                 <Label htmlFor="shootType">Shoot Type *</Label>
-                                <Select name="shootType" required>
+                                <Select name="shootType" required onValueChange={(value) => {
+                                  // Auto-populate SEO fields when shoot type changes
+                                  const clientSelect = document.querySelector('[name="clientEmail"]') as HTMLInputElement;
+                                  const locationInput = document.querySelector('[name="location"]') as HTMLInputElement;
+                                  const seoInput = document.querySelector('[name="seoTags"]') as HTMLInputElement;
+                                  const descriptionInput = document.querySelector('[name="description"]') as HTMLTextAreaElement;
+                                  
+                                  if (value && locationInput?.value) {
+                                    const selectedClient = clients.find(c => c.email === clientSelect?.value);
+                                    if (selectedClient && seoInput) {
+                                      const keywords = generateSEOKeywords(value, locationInput.value, selectedClient.name);
+                                      seoInput.value = keywords;
+                                      
+                                      if (descriptionInput && !descriptionInput.value) {
+                                        const description = generateDescription(selectedClient.name, value, locationInput.value);
+                                        descriptionInput.value = description;
+                                      }
+                                    }
+                                  }
+                                }}>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select shoot type" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="wedding">Wedding</SelectItem>
-                                    <SelectItem value="portrait">Portrait</SelectItem>
+                                    <SelectItem value="commercial">Commercial</SelectItem>
                                     <SelectItem value="corporate">Corporate</SelectItem>
+                                    <SelectItem value="engagement">Engagement</SelectItem>
                                     <SelectItem value="event">Event</SelectItem>
                                     <SelectItem value="family">Family</SelectItem>
-                                    <SelectItem value="maternity">Maternity</SelectItem>
-                                    <SelectItem value="engagement">Engagement</SelectItem>
-                                    <SelectItem value="commercial">Commercial</SelectItem>
+                                    <SelectItem value="graduation">Graduation</SelectItem>
                                     <SelectItem value="lifestyle">Lifestyle</SelectItem>
+                                    <SelectItem value="maternity">Maternity</SelectItem>
+                                    <SelectItem value="matric dance">Matric Dance</SelectItem>
+                                    <SelectItem value="newborn">Newborn</SelectItem>
                                     <SelectItem value="other">Other</SelectItem>
+                                    <SelectItem value="portrait">Portrait</SelectItem>
+                                    <SelectItem value="product">Product</SelectItem>
+                                    <SelectItem value="wedding">Wedding</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </div>
@@ -923,7 +996,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                 <Input 
                                   id="location" 
                                   name="location" 
-                                  placeholder="Durban, KZN"
+                                  defaultValue="La Lucia, Durban"
                                   required 
                                 />
                               </div>
