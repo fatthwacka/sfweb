@@ -321,7 +321,20 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     if (gallerySettings?.imageSpacing === 'tight') {
       return 'gap-1';
     }
-    return 'gap-2';
+    if (gallerySettings?.imageSpacing === 'normal') {
+      return 'gap-2';
+    }
+    return 'gap-2'; // Default spacing
+  };
+
+  const getGalleryPaddingClasses = () => {
+    if (gallerySettings?.padding === 'tight') {
+      return 'p-1';
+    }
+    if (gallerySettings?.padding === 'normal') {
+      return 'p-4';
+    }
+    return 'p-2'; // Default padding
   };
 
   const getImageHeightClass = () => {
@@ -404,7 +417,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
         className="py-8" 
         style={{ backgroundColor: gallerySettings.backgroundColor || 'transparent' }}
       >
-        <div className="px-4 max-w-none w-full">
+        <div className={`max-w-none w-full ${getGalleryPaddingClasses()}`}>
           {imagesLoading ? (
             <div className={`${getGalleryLayoutClasses()} ${getGallerySpacingClasses()}`}>
               {[...Array(12)].map((_, i) => (
