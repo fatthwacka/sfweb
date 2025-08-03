@@ -45,10 +45,6 @@ app.use((req, res, next) => {
   console.log("SUPABASE_SERVICE_ROLE_KEY configured:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
   
   const server = await registerRoutes(app);
-  
-  // Serve static files from public directory ALWAYS (both dev and production)
-  const path = await import("path");
-  app.use(express.static(path.resolve(import.meta.dirname, "..", "public")));
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -62,8 +58,14 @@ app.use((req, res, next) => {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (app.get("env") === "development") {
+    // In development: serve public directory and setup vite
+    const path = await import("path");
+    app.use(express.static(path.resolve(import.meta.dirname, "..", "public")));
     await setupVite(app, server);
   } else {
+    // In production: serve public directory first, then built client files
+    const path = await import("path");
+    app.use(express.static(path.resolve(import.meta.dirname, "..", "public")));
     serveStatic(app);
   }
 
