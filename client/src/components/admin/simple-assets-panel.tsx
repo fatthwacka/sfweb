@@ -36,6 +36,7 @@ export function SimpleAssetsPanel() {
   const [editingAlt, setEditingAlt] = useState<string | null>(null);
   const [altTextValue, setAltTextValue] = useState('');
   const [uploadingAsset, setUploadingAsset] = useState<string | null>(null);
+  const [imageTimestamps, setImageTimestamps] = useState<Record<string, number>>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -65,7 +66,9 @@ export function SimpleAssetsPanel() {
     },
     onSuccess: (data, { key }) => {
       setUploadingAsset(null);
-      // Refresh the assets data to show new image immediately
+      // Force image refresh by updating timestamp
+      setImageTimestamps(prev => ({ ...prev, [key]: Date.now() }));
+      // Refresh the assets data
       queryClient.invalidateQueries({ queryKey: ['/api/simple-assets'] });
       queryClient.refetchQueries({ queryKey: ['/api/simple-assets'] });
       
@@ -276,7 +279,7 @@ export function SimpleAssetsPanel() {
                       filename={asset.filename}
                       alt={asset.altText}
                       className="w-full h-full object-cover"
-                      key={`${asset.key}-${Date.now()}`}
+                      key={`${asset.key}-${imageTimestamps[asset.key] || Date.now()}`}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -391,7 +394,7 @@ export function SimpleAssetsPanel() {
                       filename={asset.filename}
                       alt={asset.altText}
                       className="w-full h-full object-cover"
-                      key={`${asset.key}-${Date.now()}`}
+                      key={`${asset.key}-${imageTimestamps[asset.key] || Date.now()}`}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">
