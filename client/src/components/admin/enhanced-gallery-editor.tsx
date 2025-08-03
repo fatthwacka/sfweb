@@ -592,6 +592,11 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     // Check if shoot type has changed
     const shootTypeChanged = originalShootType !== editableShoot.shootType;
     
+    console.log('Debug: Save Basic Info Data:', data);
+    console.log('Debug: Original shoot type:', originalShootType);
+    console.log('Debug: Current editable shoot type:', editableShoot.shootType);
+    console.log('Debug: Shoot type changed:', shootTypeChanged);
+    
     try {
       // Save basic info first
       await saveBasicInfoMutation.mutateAsync(data);
@@ -600,6 +605,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       if (shootTypeChanged && editableShoot.shootType) {
         console.log(`Shoot type changed from "${originalShootType}" to "${editableShoot.shootType}"`);
         console.log(`Updating ${images.length} images to new classification`);
+        console.log('Debug: Classification being sent:', editableShoot.shootType);
         
         const response = await apiRequest('PATCH', `/api/shoots/${shootId}/images/classification`, {
           classification: editableShoot.shootType
