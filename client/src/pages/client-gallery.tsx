@@ -301,22 +301,16 @@ export const ClientGallery: React.FC<ClientGalleryProps> = ({
                 `}
                 onClick={() => openLightbox(index)}
               >
-                {/* Mock image placeholder */}
-                <div 
-                  className="w-full bg-gradient-to-br from-gray-600 to-gray-800 rounded-lg overflow-hidden"
-                  style={{ 
-                    aspectRatio: layoutMode === 'square' ? '1' : Math.random() > 0.5 ? '4/3' : '3/4',
-                    background: `linear-gradient(${45 + (index * 23) % 180}deg, #4a5568, #2d3748)`
-                  }}
-                >
-                  <div className="w-full h-full flex items-center justify-center text-white">
-                    <div className="text-center">
-                      <Camera className="w-8 h-8 mx-auto mb-2" />
-                      <div className="text-sm font-medium">{image.classification}</div>
-                      <div className="text-xs opacity-75">#{index + 1}</div>
-                    </div>
-                  </div>
-                </div>
+                {/* Actual image from Supabase */}
+                <img
+                  src={image.storagePath}
+                  alt={image.originalName || image.filename}
+                  className={`
+                    w-full object-cover rounded-lg
+                    ${layoutMode === 'square' ? 'aspect-square' : 'h-auto'}
+                  `}
+                  loading="lazy"
+                />
 
                 {/* Image overlay controls */}
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
@@ -416,20 +410,11 @@ export const ClientGallery: React.FC<ClientGalleryProps> = ({
 
               {/* Image */}
               <div className="w-full h-full flex items-center justify-center p-8">
-                <div 
-                  className="max-w-full max-h-full bg-gradient-to-br from-gray-600 to-gray-800 rounded-lg flex items-center justify-center"
-                  style={{ 
-                    aspectRatio: Math.random() > 0.5 ? '4/3' : '3/4',
-                    minHeight: '400px',
-                    minWidth: '300px'
-                  }}
-                >
-                  <div className="text-center text-white">
-                    <Camera className="w-16 h-16 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">{selectedImage.classification}</h3>
-                    <p className="text-gray-300">{selectedImage.filename}</p>
-                  </div>
-                </div>
+                <img
+                  src={selectedImage.storagePath}
+                  alt={selectedImage.originalName || selectedImage.filename}
+                  className="max-w-full max-h-full object-contain rounded-lg"
+                />
               </div>
 
               {/* Image info */}
