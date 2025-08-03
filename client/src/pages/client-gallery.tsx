@@ -406,7 +406,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                 style={{ 
                   color: 'white', 
                   fontSize: '14px', 
-                  fontWeight: 'normal', 
+                  fontWeight: '100', 
                   margin: 0,
                   fontStyle: 'italic',
                   opacity: 0.8
@@ -471,10 +471,10 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
             <Button 
               onClick={handleShareGallery}
               className="bg-white text-black hover:bg-gray-200 transition-all duration-300"
-              style={{ padding: '4px' }}
+              style={{ padding: '2px', minWidth: 'auto', height: 'auto' }}
               title="Share Gallery"
             >
-              <Share2 className="w-4 h-4" />
+              <Share2 className="w-3 h-3" />
             </Button>
           </div>
         </div>
