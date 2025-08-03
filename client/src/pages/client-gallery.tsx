@@ -7,18 +7,19 @@ import { ImageUrl } from '@/lib/image-utils';
 import { apiRequest } from '@/lib/queryClient';
 import type { Shoot, Image } from '@/shared/schema';
 
-export default function ClientGallery() {
-  const { shootId } = useParams();
+export default function ClientGallery({ shootId }: { shootId?: string }) {
+  const params = useParams();
+  const actualShootId = shootId || params.slug;
 
   // Fetch shoot details with all customization settings
   const { data: shoot, isLoading: shootLoading } = useQuery({
-    queryKey: ['gallery', shootId],
+    queryKey: ['gallery', actualShootId],
     queryFn: async () => {
-      if (!shootId) throw new Error('No shoot ID');
-      const response = await apiRequest('GET', `/api/gallery/${shootId}`);
+      if (!actualShootId) throw new Error('No shoot ID');
+      const response = await apiRequest('GET', `/api/gallery/${actualShootId}`);
       return await response.json() as Shoot;
     },
-    enabled: !!shootId
+    enabled: !!actualShootId
   });
 
   // Fetch images for the shoot
