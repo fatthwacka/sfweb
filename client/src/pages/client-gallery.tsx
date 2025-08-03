@@ -317,7 +317,15 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     return 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
   };
 
-  // Removed getGallerySpacingClasses - using inline styles for precise control
+  const getGallerySpacingClasses = () => {
+    if (gallerySettings?.imageSpacing === 'tight') {
+      return 'gap-1';
+    }
+    if (gallerySettings?.imageSpacing === 'normal') {
+      return 'gap-2';
+    }
+    return 'gap-1'; // Default to tight spacing to match database setting
+  };
 
   const getGalleryPaddingClasses = () => {
     if (gallerySettings?.padding === 'tight') {
@@ -411,14 +419,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
       >
         <div className={`max-w-none w-full ${getGalleryPaddingClasses()}`}>
           {imagesLoading ? (
-            <div 
-              className={`${getGalleryLayoutClasses()}`}
-              style={{ 
-                display: 'grid',
-                gap: '4px',
-                gridAutoRows: '256px'
-              }}
-            >
+            <div className={`${getGalleryLayoutClasses()} ${getGallerySpacingClasses()}`}>
               {[...Array(12)].map((_, i) => (
                 <div key={i} className="animate-pulse">
                   <div className="h-64 bg-gray-800 rounded"></div>
@@ -430,15 +431,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
               <p className="text-gray-400">No images found in this gallery.</p>
             </div>
           ) : (
-            <div 
-              className={`${getGalleryLayoutClasses()}`}
-              style={{ 
-                // Force pixel-perfect alignment with exact gap control
-                display: gallerySettings?.layoutStyle === 'masonry' ? 'block' : 'grid',
-                gap: gallerySettings?.imageSpacing === 'tight' ? '4px' : '8px', // Exact pixel values
-                gridAutoRows: '256px' // Force consistent row height
-              }}
-            >
+            <div className={`${getGalleryLayoutClasses()} ${getGallerySpacingClasses()}`}>
               {images.slice(0, visibleImageCount)
                 .sort((a, b) => a.sequence - b.sequence)
                 .map((image, visibleIndex) => {
@@ -458,27 +451,14 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                         cursor-pointer transition-all duration-200
                       `}
                       onClick={() => openModal(actualIndex)}
-                      style={{
-                        // Ensure consistent box-sizing and prevent subpixel issues
-                        boxSizing: 'border-box',
-                        display: 'block',
-                        height: '256px', // Match grid-auto-rows
-                        width: '100%'
-                      }}
+
                   >
                     <img
                       src={ImageUrl.forViewing(image.storagePath)}
                       alt={image.filename}
                       className={`w-full object-cover ${getImageHeightClass()} transition-all duration-200 group-hover:brightness-90`}
                       loading="lazy"
-                      style={{
-                        // Force exact pixel alignment
-                        display: 'block',
-                        verticalAlign: 'top',
-                        height: '256px', // Exact height match
-                        width: '100%',
-                        objectFit: 'cover'
-                      }}
+
                     />
                     
                     {/* Selection indicator */}
