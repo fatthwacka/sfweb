@@ -580,6 +580,55 @@ export function AdminContent({ userRole }: AdminContentProps) {
     }
   });
 
+  // Bulk unmark featured images mutation
+  const unmarkFeaturedMutation = useMutation({
+    mutationFn: async (imageIds: string[]) => {
+      console.log('Bulk unmarking featured:', imageIds);
+      const results = [];
+      for (const imageId of imageIds) {
+        try {
+          await apiRequest("PATCH", `/api/images/${imageId}`, { featuredImage: false });
+          results.push({ id: imageId, success: true });
+        } catch (error) {
+          console.error(`Failed to unmark image ${imageId} as featured:`, error);
+          results.push({ id: imageId, success: false, error });
+        }
+      }
+      return results;
+    },
+    onSuccess: (results) => {
+      const successful = results.filter(r => r.success);
+      const failed = results.filter(r => !r.success);
+      
+      queryClient.invalidateQueries({ queryKey: ["/api/images"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/images/featured"] });
+      clearSelection();
+      
+      if (successful.length > 0) {
+        toast({
+          title: "Success",
+          description: `${successful.length} images unmarked as featured${failed.length > 0 ? ` (${failed.length} failed)` : ''}`
+        });
+      }
+      
+      if (failed.length > 0 && successful.length === 0) {
+        toast({
+          title: "Error", 
+          description: `Failed to unmark ${failed.length} images as featured`,
+          variant: "destructive"
+        });
+      }
+    },
+    onError: (error) => {
+      console.error('Bulk unmark featured error:', error);
+      toast({
+        title: "Error", 
+        description: "Failed to unmark images as featured",
+        variant: "destructive"
+      });
+    }
+  });
+
   // Individual toggle featured status mutation
   const toggleFeaturedMutation = useMutation({
     mutationFn: async ({ imageId, featured }: { imageId: string; featured: boolean }) => {
@@ -1634,6 +1683,16 @@ export function AdminContent({ userRole }: AdminContentProps) {
                           >
                             <Star className="w-3 h-3 mr-1" />
                             {markAsFeaturedMutation.isPending ? 'Marking...' : `Mark as Featured (${selectedImages.size})`}
+                          </Button>
+                          
+                          <Button
+                            size="sm"
+                            className="bg-gray-600 text-white hover:bg-gray-700 text-xs"
+                            onClick={() => unmarkFeaturedMutation.mutate(Array.from(selectedImages))}
+                            disabled={unmarkFeaturedMutation.isPending}
+                          >
+                            <Star className="w-3 h-3 mr-1 opacity-50" />
+                            {unmarkFeaturedMutation.isPending ? 'Unmarking...' : `Unmark Featured (${selectedImages.size})`}
                           </Button>
                           
                           <Button
