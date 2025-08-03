@@ -324,7 +324,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     if (gallerySettings?.imageSpacing === 'normal') {
       return 'gap-2';
     }
-    return 'gap-2'; // Default spacing
+    return 'gap-1'; // Default to tight spacing to match database setting
   };
 
   const getGalleryPaddingClasses = () => {
@@ -431,7 +431,13 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
               <p className="text-gray-400">No images found in this gallery.</p>
             </div>
           ) : (
-            <div className={`${getGalleryLayoutClasses()} ${getGallerySpacingClasses()}`}>
+            <div 
+              className={`${getGalleryLayoutClasses()} ${getGallerySpacingClasses()}`}
+              style={{ 
+                // Force pixel-perfect alignment
+                display: gallerySettings?.layoutStyle === 'masonry' ? 'block' : 'grid'
+              }}
+            >
               {images.slice(0, visibleImageCount)
                 .sort((a, b) => a.sequence - b.sequence)
                 .map((image, visibleIndex) => {
@@ -451,12 +457,22 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                         cursor-pointer transition-all duration-200
                       `}
                       onClick={() => openModal(actualIndex)}
+                      style={{
+                        // Ensure consistent box-sizing and prevent subpixel issues
+                        boxSizing: 'border-box',
+                        display: 'block'
+                      }}
                   >
                     <img
                       src={ImageUrl.forViewing(image.storagePath)}
                       alt={image.filename}
                       className={`w-full object-cover ${getImageHeightClass()} transition-all duration-200 group-hover:brightness-90`}
                       loading="lazy"
+                      style={{
+                        // Force exact pixel alignment
+                        display: 'block',
+                        verticalAlign: 'top'
+                      }}
                     />
                     
                     {/* Selection indicator */}
