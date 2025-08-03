@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -24,9 +24,6 @@ export function PortfolioShowcase() {
   const [filterOptions, setFilterOptions] = useState([{ label: "All Work", value: "all" }]);
   const [modalOpen, setModalOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [columnCount, setColumnCount] = useState(6);
-  const [imageHeights, setImageHeights] = useState<{ [key: string]: number }>({});
-  const gridRef = useRef<HTMLDivElement>(null);
 
   // Fetch featured images from Supabase
   const { data: featuredImages, isLoading: imagesLoading } = useQuery<Image[]>({
@@ -76,87 +73,9 @@ export function PortfolioShowcase() {
 
   const currentImage = filteredItems[currentImageIndex];
 
-  // Calculate responsive column count
-  const updateColumnCount = useCallback(() => {
-    const width = window.innerWidth;
-    if (width >= 1400) setColumnCount(6);       // 1400px+ = 6 columns
-    else if (width >= 1024) setColumnCount(5);  // 1024px+ = 5 columns
-    else if (width >= 768) setColumnCount(4);   // 768px+ = 4 columns
-    else if (width >= 640) setColumnCount(3);   // 640px+ = 3 columns
-    else setColumnCount(2);                     // < 640px = 2 columns
-  }, []);
-
-  // Handle window resize
-  useEffect(() => {
-    updateColumnCount();
-    const handleResize = () => updateColumnCount();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [updateColumnCount]);
-
-  // Calculate masonry layout
-  const getMasonryStyle = useCallback((index: number) => {
-    if (!gridRef.current || filteredItems.length === 0) return {};
-    
-    const gap = 8; // 8px gap
-    const containerWidth = gridRef.current.clientWidth;
-    const columnWidth = (containerWidth - (gap * (columnCount - 1))) / columnCount;
-    
-    const columnIndex = index % columnCount;
-    const rowIndex = Math.floor(index / columnCount);
-    
-    // Calculate heights of previous items in the same column
-    let columnHeight = 0;
-    for (let i = columnIndex; i < index; i += columnCount) {
-      const imageId = filteredItems[i]?.id;
-      if (imageId && imageHeights[imageId]) {
-        columnHeight += imageHeights[imageId] + gap;
-      }
-    }
-    
-    return {
-      position: 'absolute' as const,
-      left: columnIndex * (columnWidth + gap),
-      top: columnHeight,
-      width: columnWidth,
-    };
-  }, [columnCount, filteredItems, imageHeights]);
-
-  // Handle image load to calculate height
-  const handleImageLoad = useCallback((imageId: string, naturalWidth: number, naturalHeight: number) => {
-    if (!gridRef.current) return;
-    
-    const containerWidth = gridRef.current.clientWidth;
-    const gap = 8;
-    const columnWidth = (containerWidth - (gap * (columnCount - 1))) / columnCount;
-    const aspectRatio = naturalHeight / naturalWidth;
-    const calculatedHeight = columnWidth * aspectRatio;
-    
-    setImageHeights(prev => ({
-      ...prev,
-      [imageId]: calculatedHeight
-    }));
-  }, [columnCount]);
-
-  // Calculate total container height for masonry
-  const getTotalHeight = useCallback(() => {
-    if (filteredItems.length === 0 || Object.keys(imageHeights).length === 0) return 0;
-    
-    const gap = 8;
-    const columnHeights = Array(columnCount).fill(0);
-    
-    filteredItems.forEach((image, index) => {
-      const columnIndex = index % columnCount;
-      const height = imageHeights[image.id] || 0;
-      columnHeights[columnIndex] += height + gap;
-    });
-    
-    return Math.max(...columnHeights) - gap; // Remove last gap
-  }, [filteredItems, imageHeights, columnCount]);
-
   return (
     <section className="py-20 bg-gradient-to-br from-slate-900/60 via-background to-grey-800/40">
-      <div className="w-full px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-2 sm:px-3 lg:px-4">
         <div className="text-center mb-16">
           <h2 className="cyan text-4xl lg:text-5xl mb-6">
             Featured <span>Work</span>
@@ -184,32 +103,32 @@ export function PortfolioShowcase() {
           </div>
         </div>
 
-        {/* Portfolio Grid - Full Width Responsive */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 lg:gap-6">
+        {/* Portfolio Grid - Square Aspect Ratio with Thin Gaps */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-1 sm:gap-2">
           {imagesLoading ? (
-            // Loading skeleton - responsive count
+            // Loading skeleton - square aspect ratio
             Array.from({ length: 12 }).map((_, i) => (
               <div key={i} className="animate-pulse">
-                <div className="bg-gray-800/50 h-64 lg:h-80 rounded-xl"></div>
+                <div className="bg-gray-800/50 aspect-square rounded-lg"></div>
               </div>
             ))
           ) : filteredItems.length > 0 ? (
             filteredItems.map((image, index) => (
               <div key={image.id} className="group cursor-pointer" onClick={() => openModal(index)}>
-                <div className="relative overflow-hidden rounded-xl image-hover-effect">
+                <div className="relative overflow-hidden rounded-lg image-hover-effect aspect-square">
                   <img 
                     src={ImageUrl.forViewing(image.storagePath)} 
                     alt={image.filename} 
-                    className="w-full h-64 lg:h-80 object-cover"
+                    className="w-full h-full object-cover"
                     loading="lazy"
                   />
 
                   <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <div className="text-center">
-                      <h4 className="text-xl font-quicksand font-bold text-salmon mb-2">
+                    <div className="text-center p-2">
+                      <h4 className="text-sm sm:text-lg font-quicksand font-bold text-salmon mb-1 sm:mb-2">
                         {formatClassificationLabel(image.classification)}
                       </h4>
-                      <p className="text-gray-200 text-sm">
+                      <p className="text-gray-200 text-xs sm:text-sm">
                         {image.filename.replace(/\.[^/.]+$/, "")}
                       </p>
                     </div>
