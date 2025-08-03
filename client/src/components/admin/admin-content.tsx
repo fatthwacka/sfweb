@@ -455,10 +455,11 @@ export function AdminContent({ userRole }: AdminContentProps) {
   const deleteImagesMutation = useMutation({
     mutationFn: async (imageIds: string[]) => {
       console.log('Bulk deleting images:', imageIds);
+      console.log('Sanity check - first few actual image IDs from database:', images.slice(0, 3).map(img => img.id));
       const results = [];
       for (const imageId of imageIds) {
         try {
-          console.log(`Deleting image ${imageId}`);
+          console.log(`Deleting image ${imageId} (type: ${typeof imageId})`);
           const result = await apiRequest("DELETE", `/api/images/${imageId}`);
           results.push({ id: imageId, success: true });
         } catch (error) {
@@ -1559,7 +1560,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                         image.filename.toLowerCase().includes(searchTerm.toLowerCase())
                       )
                       .map((image) => {
-                        const associatedShoot = shoots.find(s => s.id === image.shootId.toString());
+                        const associatedShoot = shoots.find(s => s.id === image.shootId);
                         const isSelected = selectedImages.has(image.id);
                         return (
                           <Card 
