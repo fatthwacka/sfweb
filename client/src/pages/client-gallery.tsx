@@ -387,8 +387,8 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
               <img src="/images/logos/slyfox-logo-white.png" alt="SlyFox Studios" className="h-8 hover:opacity-80 transition-opacity" />
             </Link>
             
-            {/* Client Name (H1) */}
-            <h1 
+            {/* Client Name (H2 for SEO, but styled as main title) */}
+            <h2 
               style={{ 
                 color: 'white', 
                 fontSize: '18px', 
@@ -397,11 +397,11 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
               }}
             >
               {shoot.customTitle || shoot.title}
-            </h1>
+            </h2>
             
-            {/* Shoot Name (H2) */}
+            {/* Shoot Name (H1 for SEO, but styled as subtitle) */}
             {shoot.description && (
-              <h2 
+              <h1 
                 style={{ 
                   color: 'white', 
                   fontSize: '14px', 
@@ -412,7 +412,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                 }}
               >
                 {shoot.description}
-              </h2>
+              </h1>
             )}
           </div>
           
@@ -435,8 +435,8 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
             
             {/* Shoot Info Icon */}
             <div className="relative group">
-              <Info className="w-4 h-4 text-white cursor-help" />
-              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-black/90 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              <Info className="w-5 h-5 text-white cursor-default" />
+              <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-black/90 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 <div className="flex items-center gap-4">
                   {shoot.location && (
                     <div className="flex items-center">
@@ -473,7 +473,8 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
           {/* Right Section: Share Button */}
           <Button 
             onClick={handleShareGallery}
-            className="bg-white text-black p-2 hover:bg-gray-200 transition-all duration-300"
+            className="bg-white text-black hover:bg-gray-200 transition-all duration-300"
+            style={{ padding: '6px' }}
             title="Share Gallery"
           >
             <Share2 className="w-4 h-4" />
