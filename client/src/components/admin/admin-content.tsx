@@ -127,7 +127,10 @@ export function AdminContent({ userRole }: AdminContentProps) {
   });
 
   const { data: images = [], isLoading: imagesLoading } = useQuery<Image[]>({
-    queryKey: ["/api/images"]
+    queryKey: ["/api/images"],
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+    staleTime: 0 // Force fresh data
   });
 
   // Get shoots for each client via email matching
@@ -456,8 +459,15 @@ export function AdminContent({ userRole }: AdminContentProps) {
   // Bulk delete images mutation
   const deleteImagesMutation = useMutation({
     mutationFn: async (imageIds: string[]) => {
-      console.log('Bulk deleting images:', imageIds);
-      console.log('Sanity check - first few actual image IDs from database:', images.slice(0, 3).map(img => img.id));
+      console.log('BULK DELETE DEBUG:');
+      console.log('- Selected for deletion:', imageIds);
+      console.log('- Current images array length:', images.length);
+      console.log('- First 5 current image IDs:', images.slice(0, 5).map(img => img.id));
+      console.log('- Do any selected IDs exist in current images?', imageIds.map(id => ({
+        id,
+        exists: images.some(img => img.id === id)
+      })));
+      
       const results = [];
       for (const imageId of imageIds) {
         try {
