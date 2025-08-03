@@ -12,7 +12,8 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  Eye
+  Eye,
+  Info
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -72,6 +73,12 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
   const { data: images = [], isLoading: imagesLoading } = useQuery<Image[]>({
     queryKey: ["/api/shoots", shoot?.id, "images"],
     enabled: !!shoot?.id
+  });
+
+  // Fetch all shoots for the same client to enable next/previous album navigation
+  const { data: clientShoots = [] } = useQuery({
+    queryKey: ["/api/shoots", "client", shoot?.clientId],
+    enabled: !!shoot?.clientId
   });
 
   // Modal navigation functions - defined before useEffect
@@ -347,6 +354,24 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     return 'h-64'; // Default height
   };
 
+  // Get navigation for previous/next albums
+  const getCurrentShootIndex = () => {
+    return clientShoots.findIndex((s: any) => s.id === shoot.id);
+  };
+
+  const getPreviousShoot = () => {
+    const currentIndex = getCurrentShootIndex();
+    return currentIndex > 0 ? clientShoots[currentIndex - 1] : null;
+  };
+
+  const getNextShoot = () => {
+    const currentIndex = getCurrentShootIndex();
+    return currentIndex < clientShoots.length - 1 ? clientShoots[currentIndex + 1] : null;
+  };
+
+  const previousShoot = getPreviousShoot();
+  const nextShoot = getNextShoot();
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* SEO Meta Tags */}
@@ -356,31 +381,99 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
       {/* Custom Navigation Bar for Gallery */}
       <nav className={`fixed top-0 left-0 right-0 z-50 bg-black/10 backdrop-blur-sm transition-transform duration-300 ${navbarVisible ? 'translate-y-0' : '-translate-y-full'}`}>
         <div className="max-w-[1000px] mx-auto flex items-center justify-between h-16 px-6">
-          {/* SlyFox Logo - Left Side */}
-          <Link href="/">
-            <img src="/images/logos/slyfox-logo-white.png" alt="SlyFox Studios" className="h-8 hover:opacity-80 transition-opacity" />
-          </Link>
-          
-          {/* Location and Date - Center */}
-          <div className="flex items-center gap-6 text-sm text-gray-300">
-            {shoot.location && (
-              <div className="flex items-center">
-                <MapPin className="w-4 h-4 mr-1" />
-                {shoot.location}
-              </div>
-            )}
-            {shoot.shootDate && (
-              <div className="flex items-center">
-                <Calendar className="w-4 h-4 mr-1" />
-                {new Date(shoot.shootDate).toLocaleDateString()}
-              </div>
+          {/* Left Section: Logo + Client Name + Shoot Name */}
+          <div className="flex items-center gap-4">
+            <Link href="/">
+              <img src="/images/logos/slyfox-logo-white.png" alt="SlyFox Studios" className="h-8 hover:opacity-80 transition-opacity" />
+            </Link>
+            
+            {/* Client Name (H1) */}
+            <h1 
+              style={{ 
+                color: 'white', 
+                fontSize: '18px', 
+                fontWeight: 'bold', 
+                margin: 0 
+              }}
+            >
+              {shoot.customTitle || shoot.title}
+            </h1>
+            
+            {/* Shoot Name (H2) */}
+            {shoot.description && (
+              <h2 
+                style={{ 
+                  color: 'white', 
+                  fontSize: '14px', 
+                  fontWeight: 'normal', 
+                  margin: 0,
+                  fontStyle: 'italic',
+                  opacity: 0.8
+                }}
+              >
+                {shoot.description}
+              </h2>
             )}
           </div>
           
-          {/* Share Button - Right Side */}
+          {/* Center Section: Navigation + Info */}
+          <div className="flex items-center gap-4">
+            {/* Previous Album Button */}
+            {previousShoot && (
+              <Link href={`/gallery/${previousShoot.customSlug}`}>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-white hover:bg-white/10 text-xs"
+                  title="Previous Album"
+                >
+                  <ChevronLeft className="w-3 h-3 mr-1" />
+                  {previousShoot.customSlug}
+                </Button>
+              </Link>
+            )}
+            
+            {/* Shoot Info Icon */}
+            <div className="relative group">
+              <Info className="w-4 h-4 text-white cursor-help" />
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-black/90 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                <div className="flex items-center gap-4">
+                  {shoot.location && (
+                    <div className="flex items-center">
+                      <MapPin className="w-3 h-3 mr-1" />
+                      {shoot.location}
+                    </div>
+                  )}
+                  {shoot.shootDate && (
+                    <div className="flex items-center">
+                      <Calendar className="w-3 h-3 mr-1" />
+                      {new Date(shoot.shootDate).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            {/* Next Album Button */}
+            {nextShoot && (
+              <Link href={`/gallery/${nextShoot.customSlug}`}>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-white hover:bg-white/10 text-xs"
+                  title="Next Album"
+                >
+                  {nextShoot.customSlug}
+                  <ChevronRight className="w-3 h-3 ml-1" />
+                </Button>
+              </Link>
+            )}
+          </div>
+          
+          {/* Right Section: Share Button */}
           <Button 
             onClick={handleShareGallery}
-            className="bg-salmon text-white p-2 hover:bg-salmon-muted transition-all duration-300"
+            className="bg-white text-black p-2 hover:bg-gray-200 transition-all duration-300"
             title="Share Gallery"
           >
             <Share2 className="w-4 h-4" />
@@ -388,9 +481,9 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
         </div>
       </nav>
       
-      {/* Hero Section with Cover Image - 70% height */}
+      {/* Hero Section with Cover Image - 80% height */}
       <section 
-        className="relative h-[70vh] bg-gradient-to-br from-black via-charcoal to-black flex items-center"
+        className="relative h-[80vh] bg-gradient-to-br from-black via-charcoal to-black flex items-center"
         style={{
           backgroundColor: gallerySettings.backgroundColor || '#1a1a1a',
           ...(coverImage && {
@@ -400,16 +493,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
           })
         }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center">
-          <h1 className="text-5xl lg:text-6xl mb-6 text-white">
-            {shoot.customTitle || shoot.title}
-          </h1>
-          {shoot.description && (
-            <p className="text-4xl text-gray-200 max-w-3xl mx-auto mb-4 font-corinthia">
-              {shoot.description}
-            </p>
-          )}
-        </div>
+        {/* Hero content removed - titles now in navbar */}
       </section>
 
       {/* Image Gallery Section - Full Width */}
