@@ -292,14 +292,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public gallery endpoint - fetch shoot by custom slug
+  // Public gallery endpoint - fetch shoot by client slug
   app.get("/api/gallery/:slug", async (req, res) => {
     console.log(`🔍 Gallery API endpoint hit: ${req.params.slug}`);
     try {
       const { slug } = req.params;
-      console.log(`🔍 Looking for shoot with slug: ${slug}`);
-      const shoot = await storage.getShootBySlug(slug);
-      console.log(`🔍 Found shoot:`, shoot ? 'YES' : 'NO');
+      
+      // First try to find shoot by custom slug (existing behavior)
+      console.log(`🔍 Looking for shoot with custom slug: ${slug}`);
+      let shoot = await storage.getShootBySlug(slug);
+      
+      // If not found, try to find by client slug
+      if (!shoot) {
+        console.log(`🔍 Shoot not found by custom slug, trying client slug: ${slug}`);
+        const client = await storage.getClientBySlug(slug);
+        console.log(`🔍 Found client:`, client ? 'YES' : 'NO');
+        
+        if (client) {
+          // Find the client's active shoot
+          console.log(`🔍 Looking for shoots for client: ${client.email}`);
+          const clientShoots = await storage.getShootsByClient(client.email);
+          console.log(`🔍 Found ${clientShoots.length} shoots for client`);
+          
+          // Get the first public shoot for this client
+          shoot = clientShoots.find(s => !s.isPrivate);
+          console.log(`🔍 Found public shoot for client:`, shoot ? 'YES' : 'NO');
+        }
+      }
       
       if (!shoot) {
         console.log(`❌ Gallery not found: ${slug}`);
