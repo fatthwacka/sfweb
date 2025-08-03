@@ -3,21 +3,21 @@ import path from 'path';
 
 // Direct filename mapping - exactly as used in the pages
 export const ASSET_FILES = {
-  // Hero images (9 total)
-  'hero-main': 'cape-town-wedding-photography-slyfox-studios.jpg',
-  'hero-services': 'professional-photography-services-cape-town.jpg', 
-  'hero-weddings': 'cape-town-wedding-photographer-portfolio.jpg',
-  'hero-portraits': 'portrait-photographer-cape-town-studio.jpg',
-  'hero-corporate': 'corporate-photography-cape-town-business.jpg',
-  'hero-events': 'event-photographer-cape-town-professional.jpg',
-  'hero-graduation': 'graduation-photography-cape-town-ceremony.jpg',
-  'hero-products': 'product-photography-cape-town-commercial.jpg',
-  'hero-matric': 'matric-dance-photographer-cape-town.jpg',
+  // Hero images (9 total) - all in /images/hero/ folder
+  'hero-main': 'hero/homepage-main-hero.jpg',
+  'hero-services': 'hero/photography-hero.jpg', 
+  'hero-weddings': 'hero/wedding-photography-hero.jpg',
+  'hero-portraits': 'hero/portrait-photography-hero.jpg',
+  'hero-corporate': 'hero/corporate-photography-hero.jpg',
+  'hero-events': 'hero/Event-photography-hero.jpg',
+  'hero-graduation': 'hero/graduation-photography-hero.jpg',
+  'hero-products': 'hero/product-photography-hero.jpg',
+  'hero-matric': 'hero/matric-dance-photography-hero.jpg',
   
-  // Background images (3 total)
-  'bg-studio': 'photography-studio-cape-town-texture.jpg',
-  'bg-wedding': 'wedding-photography-background-elegant.jpg', 
-  'bg-portrait': 'portrait-photography-studio-backdrop.jpg'
+  // Background images (3 total) - need to identify actual usage
+  'bg-studio': 'backgrounds/photography-studio-cape-town-texture.jpg',
+  'bg-wedding': 'backgrounds/wedding-photography-background-elegant.jpg', 
+  'bg-portrait': 'backgrounds/portrait-photography-studio-backdrop.jpg'
 } as const;
 
 // Default alt text for all pages

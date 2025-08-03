@@ -26,7 +26,7 @@ const categoryData: Record<string, {
     title: "Wedding Photography Cape Town",
     description: "Capture your special day with timeless elegance and emotion. Professional wedding photography services in Cape Town.",
     longDescription: "Your wedding day is one of the most important days of your life, and we're here to ensure every precious moment is captured with artistic vision and emotional depth. Our wedding photography approach combines candid storytelling with stunning portraits, creating a comprehensive visual narrative of your celebration.",
-    heroImage: "/images/hero/wedding-photography-hero.webp",
+    heroImage: "/images/hero/wedding-photography-hero.jpg",
     features: [
       "Engagement session included",
       "Full ceremony coverage",
