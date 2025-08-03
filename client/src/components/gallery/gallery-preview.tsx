@@ -11,7 +11,7 @@ interface GalleryPreviewProps {
 }
 
 export function GalleryPreview({ images, shoot, className = "" }: GalleryPreviewProps) {
-  const [selectedImage, setSelectedImage] = useState<number | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const visibleImages = images.filter(img => !img.isPrivate);
 
@@ -30,8 +30,11 @@ export function GalleryPreview({ images, shoot, className = "" }: GalleryPreview
     setSelectedImage(visibleImages[newIndex].id);
   };
 
+  // Parse gallery settings from the gallerySettings JSONB field
+  const gallerySettings = shoot.gallerySettings as any || {};
+
   const getBackgroundStyle = () => {
-    switch (shoot.backgroundColor) {
+    switch (gallerySettings.backgroundColor || 'white') {
       case 'black': return 'bg-black';
       case 'dark-grey': return 'bg-slate-700';
       default: return 'bg-white';
@@ -39,15 +42,15 @@ export function GalleryPreview({ images, shoot, className = "" }: GalleryPreview
   };
 
   const getGridClasses = () => {
-    if (shoot.layoutType === 'square') {
+    if (gallerySettings.layoutStyle === 'square') {
       return 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
     }
     return 'masonry-grid'; // We'll need custom CSS for masonry
   };
 
   const getImageClasses = () => {
-    const borderRadius = `rounded-[${shoot.borderRadius}px]`;
-    const padding = `p-[${Math.floor(shoot.imagePadding / 2)}px]`;
+    const borderRadius = gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-lg';
+    const padding = gallerySettings.padding === 'tight' ? 'p-1' : 'p-2';
     return `${borderRadius} ${padding}`;
   };
 
@@ -57,19 +60,18 @@ export function GalleryPreview({ images, shoot, className = "" }: GalleryPreview
       <div 
         className={`p-4 ${getBackgroundStyle()}`}
         style={{ 
-          gap: `${shoot.imagePadding}px`,
+          gap: gallerySettings.imageSpacing === 'tight' ? '4px' : '8px',
         }}
       >
-        {shoot.layoutType === 'square' ? (
+        {gallerySettings.layoutStyle === 'square' ? (
           /* Square Grid Layout */
           <div 
-            className={`grid gap-[${shoot.imagePadding}px] ${getGridClasses()}`}
+            className={`grid ${gallerySettings.imageSpacing === 'tight' ? 'gap-1' : 'gap-2'} ${getGridClasses()}`}
           >
             {visibleImages.map((image, index) => (
               <div
                 key={image.id}
-                className="relative aspect-square group cursor-pointer overflow-hidden"
-                style={{ borderRadius: `${shoot.borderRadius}px` }}
+                className={`relative aspect-square group cursor-pointer overflow-hidden ${getImageClasses()}`}
                 onClick={() => setSelectedImage(image.id)}
               >
                 <img
@@ -86,16 +88,12 @@ export function GalleryPreview({ images, shoot, className = "" }: GalleryPreview
           /* Masonry Layout */
           <div 
             className="columns-2 sm:columns-3 lg:columns-4 xl:columns-5"
-            style={{ gap: `${shoot.imagePadding}px` }}
+            style={{ gap: gallerySettings.imageSpacing === 'tight' ? '4px' : '8px' }}
           >
             {visibleImages.map((image, index) => (
               <div
                 key={image.id}
-                className="relative group cursor-pointer overflow-hidden break-inside-avoid"
-                style={{ 
-                  borderRadius: `${shoot.borderRadius}px`,
-                  marginBottom: `${shoot.imagePadding}px`
-                }}
+                className={`relative ${gallerySettings.imageSpacing === 'tight' ? 'mb-1' : 'mb-2'} group cursor-pointer overflow-hidden break-inside-avoid ${getImageClasses()}`}
                 onClick={() => setSelectedImage(image.id)}
               >
                 <img
