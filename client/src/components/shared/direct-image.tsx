@@ -17,9 +17,12 @@ export const DirectImage: React.FC<DirectImageProps> = ({
   className, 
   style 
 }) => {
+  // Add timestamp to force cache invalidation
+  const cacheBuster = `?t=${Date.now()}`;
+  
   return (
     <img
-      src={`/images/${filename}`}
+      src={`/images/${filename}${cacheBuster}`}
       alt={alt}
       className={className}
       style={style}

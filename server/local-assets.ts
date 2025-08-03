@@ -1,6 +1,31 @@
 import fs from 'fs/promises';
 import path from 'path';
 
+// Load persisted alt text on startup
+async function loadPersistedAltText(): Promise<Record<string, string>> {
+  const altTextFile = path.join(process.cwd(), 'alt-text-storage.json');
+  try {
+    const data = await fs.readFile(altTextFile, 'utf-8');
+    return JSON.parse(data);
+  } catch (error) {
+    // File doesn't exist or is invalid, return defaults
+    return {
+      'hero-main': 'cape town wedding photographer slyfox studios',
+      'hero-services': 'food photography durban', 
+      'hero-portraits': 'professional portrait photography durban',
+      'hero-weddings': 'professional photography durban',
+      'hero-corporate': 'professional photography durban',
+      'hero-events': 'professional photography durban',
+      'hero-graduation': 'professional photography durban',
+      'hero-products': 'professional photography durban',
+      'hero-matric': 'professional photography durban',
+      'bg-studio': 'professional photography durban',
+      'bg-wedding': 'professional photography durban',
+      'bg-portrait': 'professional photography durban'
+    };
+  }
+}
+
 // Direct filename mapping - exactly as used in the pages
 export const ASSET_FILES = {
   // Hero images (9 total) - all in /images/hero/ folder
@@ -23,8 +48,8 @@ export const ASSET_FILES = {
 // Default alt text for all pages
 export const DEFAULT_ALT_TEXT = 'professional photography durban';
 
-// Alt text storage - maps asset keys to custom alt text
-const ALT_TEXT_STORAGE: Record<string, string> = {};
+// Alt text storage - will be initialized from persisted data
+let ALT_TEXT_STORAGE: Record<string, string> = {};
 
 export interface LocalAsset {
   key: keyof typeof ASSET_FILES;
@@ -36,8 +61,17 @@ export interface LocalAsset {
 
 export class LocalAssetsManager {
   private assetsDir = path.join(process.cwd(), 'public', 'images');
+  private initialized = false;
+
+  private async initialize() {
+    if (!this.initialized) {
+      ALT_TEXT_STORAGE = await loadPersistedAltText();
+      this.initialized = true;
+    }
+  }
 
   async getAllAssets(): Promise<LocalAsset[]> {
+    await this.initialize(); // Ensure initialization before use
     const assets: LocalAsset[] = [];
     
     for (const [key, filename] of Object.entries(ASSET_FILES)) {
@@ -87,13 +121,18 @@ export class LocalAssetsManager {
   }
 
   async updateAltText(key: keyof typeof ASSET_FILES, altText: string): Promise<void> {
-    // Store alt text in memory (could be persisted to file/database later)
+    await this.initialize(); // Ensure initialization
+    
+    // Store alt text in memory with persistent initialization
     ALT_TEXT_STORAGE[key] = altText;
     
-    // For now, just store in memory. In the future, this could:
-    // 1. Update a JSON file with alt text mappings
-    // 2. Update database records
-    // 3. Directly modify the page component files
-    console.log(`Alt text stored: ${key} -> "${altText}"`);
+    // Write to a JSON file for persistence across server restarts
+    const altTextFile = path.join(process.cwd(), 'alt-text-storage.json');
+    try {
+      await fs.writeFile(altTextFile, JSON.stringify(ALT_TEXT_STORAGE, null, 2));
+      console.log(`Alt text persisted: ${key} -> "${altText}"`);
+    } catch (error) {
+      console.error('Failed to persist alt text:', error);
+    }
   }
 }
