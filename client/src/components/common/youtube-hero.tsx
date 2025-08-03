@@ -11,7 +11,7 @@ interface YouTubeHeroProps {
 
 export function YouTubeHero({ videoId, title, subtitle, ctaText = "Get Started", ctaLink = "/contact" }: YouTubeHeroProps) {
   return (
-    <section className="relative min-h-screen flex items-center justify-center video-container">
+    <section className="relative h-[60vh] flex items-center justify-center video-container">
       {/* YouTube Video Background */}
       <div className="video-background">
         <iframe
