@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { ImageUrl } from "@/lib/image-utils";
 import type { Image } from "@shared/schema";
@@ -75,7 +75,7 @@ export function PortfolioShowcase() {
 
   return (
     <section className="py-20 bg-gradient-to-br from-slate-900/60 via-background to-grey-800/40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="cyan text-4xl lg:text-5xl mb-6">
             Featured <span>Work</span>
@@ -103,13 +103,13 @@ export function PortfolioShowcase() {
           </div>
         </div>
 
-        {/* Portfolio Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Portfolio Grid - Full Width Responsive */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 lg:gap-6">
           {imagesLoading ? (
-            // Loading skeleton
-            Array.from({ length: 6 }).map((_, i) => (
+            // Loading skeleton - responsive count
+            Array.from({ length: 12 }).map((_, i) => (
               <div key={i} className="animate-pulse">
-                <div className="bg-gray-800/50 h-80 rounded-xl"></div>
+                <div className="bg-gray-800/50 h-64 lg:h-80 rounded-xl"></div>
               </div>
             ))
           ) : filteredItems.length > 0 ? (
@@ -119,7 +119,7 @@ export function PortfolioShowcase() {
                   <img 
                     src={ImageUrl.forViewing(image.storagePath)} 
                     alt={image.filename} 
-                    className="w-full h-80 object-cover"
+                    className="w-full h-64 lg:h-80 object-cover"
                     loading="lazy"
                   />
 
@@ -159,7 +159,10 @@ export function PortfolioShowcase() {
 
       {/* Image Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-6xl w-full h-[90vh] p-0 border-none bg-black/95">
+        <DialogTitle className="sr-only">
+          {currentImage ? `Viewing ${formatClassificationLabel(currentImage.classification)} - ${currentImage.filename}` : 'Image Gallery'}
+        </DialogTitle>
+        <DialogContent className="max-w-6xl w-full h-[90vh] p-0 border-none bg-black/95" aria-describedby="image-modal-description">
           <div className="relative h-full flex items-center justify-center">
             {/* Close Button */}
             <Button
@@ -205,7 +208,7 @@ export function PortfolioShowcase() {
                 />
                 
                 {/* Image Info Overlay */}
-                <div className="absolute bottom-8 left-8 right-8 bg-black/70 text-white p-4 rounded-lg">
+                <div id="image-modal-description" className="absolute bottom-8 left-8 right-8 bg-black/70 text-white p-4 rounded-lg">
                   <h3 className="text-xl font-bold text-salmon mb-2">
                     {formatClassificationLabel(currentImage.classification)}
                   </h3>
