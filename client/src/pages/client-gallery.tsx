@@ -25,8 +25,8 @@ export const ClientGallery: React.FC<ClientGalleryProps> = ({
   shootId: propShootId,
   clientEmail: propClientEmail
 }) => {
-  const [match, params] = useRoute('/gallery/:shootId');
-  const shootId = propShootId || params?.shootId;
+  const [match, params] = useRoute('/gallery/:slug');
+  const shootId = propShootId || params?.slug;
   const { toast } = useToast();
   
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
@@ -38,17 +38,17 @@ export const ClientGallery: React.FC<ClientGalleryProps> = ({
 
   // Fetch shoot details and images
   const { data: shoot, isLoading: shootLoading } = useQuery({
-    queryKey: ['shoot', shootId],
+    queryKey: ['gallery', shootId],
     queryFn: async () => {
       if (!shootId) throw new Error('No shoot ID');
-      const response = await apiRequest(`/api/shoots/${shootId}`);
+      const response = await apiRequest(`/api/gallery/${shootId}`);
       return response as Shoot;
     },
     enabled: !!shootId
   });
 
   const { data: images = [], isLoading: imagesLoading } = useQuery({
-    queryKey: ['images', shootId],
+    queryKey: ['gallery-images', shootId],
     queryFn: async () => {
       if (!shootId) throw new Error('No shoot ID');
       const response = await apiRequest(`/api/shoots/${shootId}/images`);
