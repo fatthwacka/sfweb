@@ -92,6 +92,9 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     notes: '',
     seoTags: ''
   });
+
+  // Track original shoot type to detect changes
+  const [originalShootType, setOriginalShootType] = useState('');
   
   const [clientReassignDialogOpen, setClientReassignDialogOpen] = useState(false);
   
@@ -275,6 +278,9 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
         notes: shoot.notes || '',
         seoTags: Array.isArray(shoot.seoTags) ? shoot.seoTags.join(', ') : (shoot.seoTags || '')
       });
+      
+      // Track the original shoot type for change detection
+      setOriginalShootType(shoot.shootType || '');
     }
   }, [shoot?.id, images.length]);
 
@@ -568,7 +574,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
 
 
-  const handleSaveBasicInfo = () => {
+  const handleSaveBasicInfo = async () => {
     if (!editableShoot.title.trim() || !editableShoot.location.trim() || !editableShoot.shootDate) {
       toast({ title: "Error", description: "Please fill in all required fields", variant: "destructive" });
       return;
@@ -582,7 +588,45 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       shootType: editableShoot.shootType,
       clientId: editableShoot.clientId,
     };
-    saveBasicInfoMutation.mutate(data);
+
+    // Check if shoot type has changed
+    const shootTypeChanged = originalShootType !== editableShoot.shootType;
+    
+    try {
+      // Save basic info first
+      await saveBasicInfoMutation.mutateAsync(data);
+      
+      // If shoot type changed, update all images in this shoot
+      if (shootTypeChanged && editableShoot.shootType) {
+        console.log(`Shoot type changed from "${originalShootType}" to "${editableShoot.shootType}"`);
+        console.log(`Updating ${images.length} images to new classification`);
+        
+        const response = await apiRequest('PATCH', `/api/shoots/${shootId}/images/classification`, {
+          classification: editableShoot.shootType
+        });
+        
+        if (response.success) {
+          toast({ 
+            title: "Success", 
+            description: `Updated ${response.updatedCount} images to "${editableShoot.shootType}" classification` 
+          });
+          
+          // Update the original shoot type to the new value
+          setOriginalShootType(editableShoot.shootType);
+          
+          // Refresh image data to show updated classifications
+          queryClient.invalidateQueries({ queryKey: ['/api/images'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/images/featured'] });
+        }
+      }
+    } catch (error) {
+      console.error('Error saving basic info or updating classifications:', error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to save changes. Please try again.", 
+        variant: "destructive" 
+      });
+    }
   };
 
   const handleSaveAdvancedSettings = () => {

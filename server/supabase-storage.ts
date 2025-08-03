@@ -417,7 +417,7 @@ export class SupabaseStorage implements IStorage {
     return result[0];
   }
 
-  async bulkUpdateShootImageClassification(shootId: string, classification: any): Promise<Image[]> {
+  async updateShootImagesClassification(shootId: string, classification: any): Promise<Image[]> {
     const result = await db.update(images)
       .set({ classification })
       .where(eq(images.shootId, shootId))

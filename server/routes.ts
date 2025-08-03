@@ -798,6 +798,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk update image classifications by shoot
+  app.patch("/api/shoots/:shootId/images/classification", async (req, res) => {
+    try {
+      const { shootId } = req.params;
+      const { classification } = req.body;
+      
+      if (!classification) {
+        return res.status(400).json({ error: 'Classification is required' });
+      }
+
+      console.log(`Updating all images for shoot ${shootId} to classification: ${classification}`);
+      const updatedImages = await storage.updateShootImagesClassification(shootId, classification);
+      
+      res.json({ 
+        success: true, 
+        message: `Updated ${updatedImages.length} images to classification: ${classification}`,
+        updatedCount: updatedImages.length
+      });
+    } catch (error) {
+      console.error('Failed to update image classifications:', error);
+      res.status(500).json({ error: 'Failed to update image classifications' });
+    }
+  });
+
   // Analytics endpoint
   app.post("/api/analytics", async (req, res) => {
     try {
