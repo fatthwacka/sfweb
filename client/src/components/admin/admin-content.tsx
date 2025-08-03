@@ -1288,15 +1288,37 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                       </div>
                                       <div>
                                         <Label htmlFor={`shootType-${client.id}`}>Shoot Type *</Label>
-                                        <select id={`shootType-${client.id}`} name="shootType" required className="w-full px-3 py-2 bg-background border border-border rounded-md">
+                                        <select id={`shootType-${client.id}`} name="shootType" required className="w-full px-3 py-2 bg-background border border-border rounded-md" onChange={(e) => {
+                                          // Auto-populate SEO fields when shoot type changes
+                                          const locationInput = document.getElementById(`location-${client.id}`) as HTMLInputElement;
+                                          const seoInput = document.getElementById(`seoTags-${client.id}`) as HTMLInputElement;
+                                          const descriptionInput = document.getElementById(`description-${client.id}`) as HTMLTextAreaElement;
+                                          
+                                          if (e.target.value && locationInput?.value) {
+                                            const keywords = generateSEOKeywords(e.target.value, locationInput.value, client.name);
+                                            if (seoInput) seoInput.value = keywords;
+                                            
+                                            if (descriptionInput && !descriptionInput.value) {
+                                              const description = generateDescription(client.name, e.target.value, locationInput.value);
+                                              descriptionInput.value = description;
+                                            }
+                                          }
+                                        }}>
                                           <option value="">Select type...</option>
-                                          <option value="wedding">Wedding</option>
-                                          <option value="portrait">Portrait</option>
-                                          <option value="family">Family</option>
+                                          <option value="commercial">Commercial</option>
                                           <option value="corporate">Corporate</option>
-                                          <option value="event">Event</option>
-                                          <option value="maternity">Maternity</option>
                                           <option value="engagement">Engagement</option>
+                                          <option value="event">Event</option>
+                                          <option value="family">Family</option>
+                                          <option value="graduation">Graduation</option>
+                                          <option value="lifestyle">Lifestyle</option>
+                                          <option value="maternity">Maternity</option>
+                                          <option value="matric dance">Matric Dance</option>
+                                          <option value="newborn">Newborn</option>
+                                          <option value="other">Other</option>
+                                          <option value="portrait">Portrait</option>
+                                          <option value="product">Product</option>
+                                          <option value="wedding">Wedding</option>
                                         </select>
                                       </div>
                                     </div>
@@ -1332,7 +1354,22 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                       </div>
                                       <div>
                                         <Label htmlFor={`location-${client.id}`}>Location *</Label>
-                                        <Input id={`location-${client.id}`} name="location" required placeholder="Durban, KZN" />
+                                        <Input id={`location-${client.id}`} name="location" required defaultValue="La Lucia, Durban" onChange={(e) => {
+                                          // Auto-populate SEO fields when location changes
+                                          const shootTypeSelect = document.getElementById(`shootType-${client.id}`) as HTMLSelectElement;
+                                          const seoInput = document.getElementById(`seoTags-${client.id}`) as HTMLInputElement;
+                                          const descriptionInput = document.getElementById(`description-${client.id}`) as HTMLTextAreaElement;
+                                          
+                                          if (e.target.value && shootTypeSelect?.value) {
+                                            const keywords = generateSEOKeywords(shootTypeSelect.value, e.target.value, client.name);
+                                            if (seoInput) seoInput.value = keywords;
+                                            
+                                            if (descriptionInput && !descriptionInput.value) {
+                                              const description = generateDescription(client.name, shootTypeSelect.value, e.target.value);
+                                              descriptionInput.value = description;
+                                            }
+                                          }
+                                        }} />
                                       </div>
                                     </div>
                                     <div>
