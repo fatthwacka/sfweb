@@ -130,8 +130,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
     queryKey: ["/api/images"]
   });
   
-  // DEBUG: Log the actual data received from API vs what's being displayed
-  console.log('RAW API DATA - First 3 images from query:', images.slice(0, 3).map(img => ({ id: img.id, filename: img.filename })));
+  // Clean up debugging logs since the issue is resolved
 
   // Get shoots for each client via email matching
   const getClientShoots = (clientEmail: string) => {
@@ -140,14 +139,12 @@ export function AdminContent({ userRole }: AdminContentProps) {
 
   // Bulk selection helper functions
   const toggleImageSelection = (imageId: string) => {
-    console.log('Toggling selection for image ID:', imageId, 'Type:', typeof imageId);
     const newSelected = new Set(selectedImages);
     if (newSelected.has(imageId)) {
       newSelected.delete(imageId);
     } else {
       newSelected.add(imageId);
     }
-    console.log('New selection set:', Array.from(newSelected));
     setSelectedImages(newSelected);
   };
 
@@ -459,14 +456,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
   // Bulk delete images mutation
   const deleteImagesMutation = useMutation({
     mutationFn: async (imageIds: string[]) => {
-      console.log('BULK DELETE DEBUG:');
-      console.log('- Selected for deletion:', imageIds);
-      console.log('- Current images array length:', images.length);
-      console.log('- First 5 current image IDs:', images.slice(0, 5).map(img => img.id));
-      console.log('- Do any selected IDs exist in current images?', imageIds.map(id => ({
-        id,
-        exists: images.some(img => img.id === id)
-      })));
+      console.log('Bulk deleting images:', imageIds);
       
       const results = [];
       for (const imageId of imageIds) {

@@ -399,9 +399,23 @@ export class SupabaseStorage implements IStorage {
   async deleteImage(id: string): Promise<boolean> {
     console.log(`Storage: Attempting to delete image with ID: ${id}`);
     try {
+      // First check if image exists
+      const existingImage = await this.getImage(id);
+      if (!existingImage) {
+        console.log(`Storage: Image ${id} does not exist`);
+        return false;
+      }
+      
+      // Perform the delete
       const result = await db.delete(images).where(eq(images.id, id));
-      console.log(`Storage: Delete result - rowCount: ${result.rowCount}`);
-      return result.rowCount > 0;
+      console.log(`Storage: Delete result - rowCount: ${result.rowCount}, type: ${typeof result.rowCount}`);
+      
+      // Verify deletion by checking if image still exists
+      const verifyDeleted = await this.getImage(id);
+      const isDeleted = !verifyDeleted;
+      console.log(`Storage: Deletion verification - image still exists: ${!!verifyDeleted}, deleted: ${isDeleted}`);
+      
+      return isDeleted;
     } catch (error) {
       console.error(`Storage: Delete image error:`, error);
       throw error;
