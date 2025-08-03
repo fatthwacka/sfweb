@@ -137,12 +137,14 @@ export function AdminContent({ userRole }: AdminContentProps) {
 
   // Bulk selection helper functions
   const toggleImageSelection = (imageId: string) => {
+    console.log('Toggling selection for image ID:', imageId, 'Type:', typeof imageId);
     const newSelected = new Set(selectedImages);
     if (newSelected.has(imageId)) {
       newSelected.delete(imageId);
     } else {
       newSelected.add(imageId);
     }
+    console.log('New selection set:', Array.from(newSelected));
     setSelectedImages(newSelected);
   };
 
