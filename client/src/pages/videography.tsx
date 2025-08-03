@@ -10,42 +10,42 @@ const videographyCategories = [
     name: "Wedding Films",
     slug: "weddings",
     description: "Cinematic wedding films that tell your love story beautifully",
-    image: "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+    image: "/images/hero/wedding-videography-hero.jpg",
     features: ["Ceremony filming", "Reception highlights", "Couple interviews", "Same-day edits"]
   },
   {
     name: "Corporate Videos",
     slug: "corporate",
     description: "Professional corporate videos that enhance your business presence",
-    image: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+    image: "/images/hero/corporate-videography-hero.jpg",
     features: ["Company profiles", "Training videos", "Testimonials", "Promotional content"]
   },
   {
     name: "Events",
     slug: "events",
     description: "Dynamic event videography capturing every important moment",
-    image: "https://images.unsplash.com/photo-1511578314322-379afb476865?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+    image: "/images/hero/events-videography-hero.jpg",
     features: ["Conference coverage", "Live streaming", "Highlight reels", "Multi-camera setup"]
   },
   {
     name: "Product Videos",
     slug: "products",
     description: "Compelling product videos that showcase features and benefits",
-    image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+    image: "/images/hero/product-videography-hero.jpg",
     features: ["Product demonstrations", "Unboxing videos", "Commercial spots", "360° product views"]
   },
   {
     name: "Social Media",
     slug: "social",
     description: "Engaging social media content optimized for all platforms",
-    image: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+    image: "/images/hero/social-media-videography-hero.jpg",
     features: ["Instagram Reels", "TikTok content", "Facebook videos", "YouTube shorts"]
   },
   {
     name: "Animation",
     slug: "animation",
     description: "Creative animation and motion graphics for various applications",
-    image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+    image: "/images/hero/animation-videography-hero.jpg",
     features: ["Logo animations", "Explainer videos", "Motion graphics", "2D/3D animation"]
   }
 ];
@@ -70,7 +70,7 @@ export default function Videography() {
       />
 
       {/* Videography Categories */}
-      <section className="py-20 bg-gradient-to-br from-slate-900/40 via-background to-gray-900/30">
+      <section className="py-12 bg-gradient-to-br from-slate-900/40 via-background to-gray-900/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="cyan text-4xl lg:text-5xl mb-6">
@@ -84,7 +84,7 @@ export default function Videography() {
           <div className="grid md:grid-cols-2 gap-8">
             {videographyCategories.map((category, index) => (
               <Link key={category.slug} href={`/videography/${category.slug}`}>
-                <div className="group cursor-pointer bg-white rounded-2xl overflow-hidden shadow-2xl hover:shadow-gold/20 transition-all duration-500 transform hover:scale-[1.02]">
+                <div className="group cursor-pointer bg-gradient-to-br from-slate-800/60 to-gray-900/80 rounded-2xl overflow-hidden shadow-2xl hover:shadow-gold/20 transition-all duration-500 transform hover:scale-[1.02]">
                   <div className="relative h-64 overflow-hidden">
                     <img 
                       src={category.image}
