@@ -75,14 +75,16 @@ interface Shoot {
 }
 
 interface Image {
-  id: number;
-  shootId: number;
+  id: string;
+  shootId: string;
   filename: string;
   storagePath: string;
   isPrivate: boolean;
-  uploadOrder: number;
+  sequence: number;
   downloadCount: number;
   createdAt: string;
+  classification?: string;
+  featuredImage?: boolean;
 }
 
 interface AdminContentProps {
@@ -112,7 +114,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   
   // Bulk selection state for images
-  const [selectedImages, setSelectedImages] = useState<Set<number>>(new Set());
+  const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
   const [bulkActionOpen, setBulkActionOpen] = useState(false);
 
   // Fetch data with client-shoot relationships
@@ -134,7 +136,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
   };
 
   // Bulk selection helper functions
-  const toggleImageSelection = (imageId: number) => {
+  const toggleImageSelection = (imageId: string) => {
     const newSelected = new Set(selectedImages);
     if (newSelected.has(imageId)) {
       newSelected.delete(imageId);
@@ -451,20 +453,46 @@ export function AdminContent({ userRole }: AdminContentProps) {
 
   // Bulk delete images mutation
   const deleteImagesMutation = useMutation({
-    mutationFn: async (imageIds: number[]) => {
+    mutationFn: async (imageIds: string[]) => {
+      console.log('Bulk deleting images:', imageIds);
+      const results = [];
       for (const imageId of imageIds) {
-        await apiRequest("DELETE", `/api/images/${imageId}`);
+        try {
+          console.log(`Deleting image ${imageId}`);
+          const result = await apiRequest("DELETE", `/api/images/${imageId}`);
+          results.push({ id: imageId, success: true });
+        } catch (error) {
+          console.error(`Failed to delete image ${imageId}:`, error);
+          results.push({ id: imageId, success: false, error });
+        }
+      }
+      return results;
+    },
+    onSuccess: (results) => {
+      const successful = results.filter(r => r.success);
+      const failed = results.filter(r => !r.success);
+      
+      queryClient.invalidateQueries({ queryKey: ["/api/images"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/images/featured"] });
+      clearSelection();
+      
+      if (successful.length > 0) {
+        toast({
+          title: "Success",
+          description: `${successful.length} images deleted successfully${failed.length > 0 ? ` (${failed.length} failed)` : ''}`
+        });
+      }
+      
+      if (failed.length > 0 && successful.length === 0) {
+        toast({
+          title: "Error", 
+          description: `Failed to delete ${failed.length} images`,
+          variant: "destructive"
+        });
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/images"] });
-      clearSelection();
-      toast({
-        title: "Success",
-        description: `${selectedImages.size} images deleted successfully`
-      });
-    },
-    onError: () => {
+    onError: (error) => {
+      console.error('Bulk delete error:', error);
       toast({
         title: "Error", 
         description: "Failed to delete images",
@@ -475,20 +503,45 @@ export function AdminContent({ userRole }: AdminContentProps) {
 
   // Bulk mark as featured images mutation
   const markAsFeaturedMutation = useMutation({
-    mutationFn: async (imageIds: number[]) => {
+    mutationFn: async (imageIds: string[]) => {
+      console.log('Bulk marking as featured:', imageIds);
+      const results = [];
       for (const imageId of imageIds) {
-        await apiRequest("PATCH", `/api/images/${imageId}`, { featuredImage: true });
+        try {
+          await apiRequest("PATCH", `/api/images/${imageId}`, { featuredImage: true });
+          results.push({ id: imageId, success: true });
+        } catch (error) {
+          console.error(`Failed to mark image ${imageId} as featured:`, error);
+          results.push({ id: imageId, success: false, error });
+        }
+      }
+      return results;
+    },
+    onSuccess: (results) => {
+      const successful = results.filter(r => r.success);
+      const failed = results.filter(r => !r.success);
+      
+      queryClient.invalidateQueries({ queryKey: ["/api/images"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/images/featured"] });
+      clearSelection();
+      
+      if (successful.length > 0) {
+        toast({
+          title: "Success",
+          description: `${successful.length} images marked as featured${failed.length > 0 ? ` (${failed.length} failed)` : ''}`
+        });
+      }
+      
+      if (failed.length > 0 && successful.length === 0) {
+        toast({
+          title: "Error", 
+          description: `Failed to mark ${failed.length} images as featured`,
+          variant: "destructive"
+        });
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/images"] });
-      clearSelection();
-      toast({
-        title: "Success",
-        description: `${selectedImages.size} images marked as featured successfully`
-      });
-    },
-    onError: () => {
+    onError: (error) => {
+      console.error('Bulk mark as featured error:', error);
       toast({
         title: "Error", 
         description: "Failed to mark images as featured",
