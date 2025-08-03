@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { ImageUrl } from "@/lib/image-utils";
+import { SHOOT_TYPES } from "@shared/schema";
 import { EnhancedGalleryEditor } from "./enhanced-gallery-editor";
 import { StaffManagement } from "./staff-management";
 import { SimpleAssetsPanel } from "./simple-assets-panel";
@@ -924,20 +925,11 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                     <SelectValue placeholder="Select shoot type" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="commercial">Commercial</SelectItem>
-                                    <SelectItem value="corporate">Corporate</SelectItem>
-                                    <SelectItem value="engagement">Engagement</SelectItem>
-                                    <SelectItem value="event">Event</SelectItem>
-                                    <SelectItem value="family">Family</SelectItem>
-                                    <SelectItem value="graduation">Graduation</SelectItem>
-                                    <SelectItem value="lifestyle">Lifestyle</SelectItem>
-                                    <SelectItem value="maternity">Maternity</SelectItem>
-                                    <SelectItem value="matric dance">Matric Dance</SelectItem>
-                                    <SelectItem value="newborn">Newborn</SelectItem>
-                                    <SelectItem value="other">Other</SelectItem>
-                                    <SelectItem value="portrait">Portrait</SelectItem>
-                                    <SelectItem value="product">Product</SelectItem>
-                                    <SelectItem value="wedding">Wedding</SelectItem>
+                                    {SHOOT_TYPES.map(type => (
+                                      <SelectItem key={type} value={type}>
+                                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                                      </SelectItem>
+                                    ))}
                                   </SelectContent>
                                 </Select>
                               </div>
@@ -1305,20 +1297,11 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                           }
                                         }}>
                                           <option value="">Select type...</option>
-                                          <option value="commercial">Commercial</option>
-                                          <option value="corporate">Corporate</option>
-                                          <option value="engagement">Engagement</option>
-                                          <option value="event">Event</option>
-                                          <option value="family">Family</option>
-                                          <option value="graduation">Graduation</option>
-                                          <option value="lifestyle">Lifestyle</option>
-                                          <option value="maternity">Maternity</option>
-                                          <option value="matric dance">Matric Dance</option>
-                                          <option value="newborn">Newborn</option>
-                                          <option value="other">Other</option>
-                                          <option value="portrait">Portrait</option>
-                                          <option value="product">Product</option>
-                                          <option value="wedding">Wedding</option>
+                                          {SHOOT_TYPES.map(type => (
+                                            <option key={type} value={type}>
+                                              {type.charAt(0).toUpperCase() + type.slice(1)}
+                                            </option>
+                                          ))}
                                         </select>
                                       </div>
                                     </div>

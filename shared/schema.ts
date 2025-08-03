@@ -266,16 +266,24 @@ export type LocalSiteAsset = typeof localSiteAssets.$inferSelect;
 export type InsertLocalSiteAsset = z.infer<typeof insertLocalSiteAssetSchema>;
 
 // Classification constants
-export const IMAGE_CLASSIFICATIONS = [
-  'wedding',
-  'portrait', 
+export const SHOOT_TYPES = [
+  'commercial',
+  'corporate', 
+  'engagement',
   'event',
-  'product',
-  'corporate',
-  'lifestyle',
   'family',
-  'engagement'
+  'graduation',
+  'lifestyle',
+  'maternity',
+  'matric dance',
+  'newborn',
+  'other',
+  'portrait',
+  'product',
+  'wedding'
 ] as const;
+
+export const IMAGE_CLASSIFICATIONS = SHOOT_TYPES;
 
 export const ASSET_TYPES = [
   'hero',

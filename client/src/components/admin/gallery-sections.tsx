@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SHOOT_TYPES } from '@shared/schema';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -136,15 +137,11 @@ export function BasicInfoSection({
                 <SelectValue placeholder="Select shoot type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="commercial">Commercial</SelectItem>
-                <SelectItem value="corporate">Corporate</SelectItem>
-                <SelectItem value="event">Event</SelectItem>
-                <SelectItem value="fashion">Fashion</SelectItem>
-                <SelectItem value="lifestyle">Lifestyle</SelectItem>
-                <SelectItem value="maternity">Maternity</SelectItem>
-                <SelectItem value="portrait">Portrait</SelectItem>
-                <SelectItem value="product">Product</SelectItem>
-                <SelectItem value="wedding">Wedding</SelectItem>
+                {SHOOT_TYPES.map(type => (
+                  <SelectItem key={type} value={type}>
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

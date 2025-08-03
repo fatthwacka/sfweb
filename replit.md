@@ -41,6 +41,8 @@ RESTful API endpoints are defined for contact forms, packages, client access, an
 - **Gallery Settings Integration:** Fixed gallerySettings application for background colors, layout styles (masonry/grid/square), border styles, and image spacing
 - **Component Architecture:** Updated client-gallery.tsx to support both routing patterns (useParams and props) for maximum compatibility
 - **Custom Features Preserved:** All original hover overlays, download selected functionality, modal navigation, and professional design elements maintained
+- **Admin Panel Enhancements:** Added missing shoot types (graduation, newborn, product, matric dance), alphabetical sorting, default location "La Lucia, Durban", and auto-generated SEO keywords/descriptions
+- **Centralized Shoot Types:** Created SHOOT_TYPES constant in shared/schema.ts to ensure consistency across all admin panels, contact forms, and gallery components
 
 ## External Dependencies
 
