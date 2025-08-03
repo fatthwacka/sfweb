@@ -4,16 +4,16 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUrl } from "@/lib/image-utils";
 import { Link } from "wouter";
-import { 
-  Download, 
-  Share2, 
-  Calendar, 
+import {
+  Download,
+  Share2,
+  Calendar,
   MapPin,
   ChevronLeft,
   ChevronRight,
   X,
   Eye,
-  Info
+  Info,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -64,41 +64,49 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
   const slug = shootId || params.slug;
 
   // Fetch shoot data directly by slug - this is a public gallery for a single shoot
-  const { data: shoot, isLoading: shootLoading, error: shootError } = useQuery<Shoot>({
+  const {
+    data: shoot,
+    isLoading: shootLoading,
+    error: shootError,
+  } = useQuery<Shoot>({
     queryKey: ["/api/gallery", slug],
-    enabled: !!slug
+    enabled: !!slug,
   });
 
   // Fetch shoot images
   const { data: images = [], isLoading: imagesLoading } = useQuery<Image[]>({
     queryKey: ["/api/shoots", shoot?.id, "images"],
-    enabled: !!shoot?.id
+    enabled: !!shoot?.id,
   });
 
   // Fetch all shoots for the same client to enable next/previous album navigation
   const { data: clientShoots = [] } = useQuery({
     queryKey: ["/api/shoots", "client", shoot?.clientId],
-    enabled: !!shoot?.clientId
+    enabled: !!shoot?.clientId,
   });
 
   // Modal navigation functions - defined before useEffect
   const openModal = (imageIndex: number) => {
     setModalImageIndex(imageIndex);
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
   };
 
   const closeModal = () => {
     setModalImageIndex(null);
-    document.body.style.overflow = 'auto';
+    document.body.style.overflow = "auto";
   };
 
-  const navigateModal = (direction: 'prev' | 'next') => {
+  const navigateModal = (direction: "prev" | "next") => {
     if (modalImageIndex === null || images.length === 0) return;
-    
-    if (direction === 'prev') {
-      setModalImageIndex(modalImageIndex > 0 ? modalImageIndex - 1 : images.length - 1);
+
+    if (direction === "prev") {
+      setModalImageIndex(
+        modalImageIndex > 0 ? modalImageIndex - 1 : images.length - 1,
+      );
     } else {
-      setModalImageIndex(modalImageIndex < images.length - 1 ? modalImageIndex + 1 : 0);
+      setModalImageIndex(
+        modalImageIndex < images.length - 1 ? modalImageIndex + 1 : 0,
+      );
     }
   };
 
@@ -107,13 +115,13 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     if (modalImageIndex === null) return;
 
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') navigateModal('prev');
-      if (e.key === 'ArrowRight') navigateModal('next');
-      if (e.key === 'Escape') closeModal();
+      if (e.key === "ArrowLeft") navigateModal("prev");
+      if (e.key === "ArrowRight") navigateModal("next");
+      if (e.key === "Escape") closeModal();
     };
 
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
   }, [modalImageIndex, images.length]);
 
   // Navbar hide/show on scroll
@@ -122,7 +130,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      
+
       if (currentScrollY === 0) {
         // At the top, always show navbar
         setNavbarVisible(true);
@@ -133,29 +141,32 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
         // Scrolling up, show navbar
         setNavbarVisible(true);
       }
-      
+
       lastScrollY = currentScrollY;
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Share gallery functionality
   const handleShareGallery = () => {
     const currentUrl = window.location.href;
-    navigator.clipboard.writeText(currentUrl).then(() => {
-      toast({
-        title: "Gallery link copied!",
-        description: "Share this link to let others view this gallery.",
+    navigator.clipboard
+      .writeText(currentUrl)
+      .then(() => {
+        toast({
+          title: "Gallery link copied!",
+          description: "Share this link to let others view this gallery.",
+        });
+      })
+      .catch(() => {
+        toast({
+          title: "Failed to copy link",
+          description: "Please copy the URL manually from your browser.",
+          variant: "destructive",
+        });
       });
-    }).catch(() => {
-      toast({
-        title: "Failed to copy link",
-        description: "Please copy the URL manually from your browser.",
-        variant: "destructive",
-      });
-    });
   };
 
   const handleImageSelect = (imageId: string) => {
@@ -175,20 +186,21 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
       const response = await fetch(fullSizeUrl);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      
+
       // Generate proper filename - use provided name or fallback to shoot-based name
-      const downloadFilename = filename && filename !== 'null' 
-        ? filename 
-        : `${shoot?.title?.replace(/[^a-zA-Z0-9]/g, '-')}-image-${Date.now()}.jpg`;
-      
+      const downloadFilename =
+        filename && filename !== "null"
+          ? filename
+          : `${shoot?.title?.replace(/[^a-zA-Z0-9]/g, "-")}-image-${Date.now()}.jpg`;
+
       link.download = downloadFilename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       // Show success toast that auto-dismisses
       toast({
         title: "Download complete",
@@ -209,7 +221,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
       toast({
         title: "No images selected",
         description: "Please select images to download",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -217,7 +229,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     // TODO: Implement bulk download functionality
     toast({
       title: "Download started",
-      description: `Downloading ${selectedImages.size} images...`
+      description: `Downloading ${selectedImages.size} images...`,
     });
   };
 
@@ -225,28 +237,37 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
   const handleShareImage = (imageIndex: number, e: React.MouseEvent) => {
     e.stopPropagation();
     const imageUrl = `${window.location.origin}/gallery/${slug}?image=${imageIndex}`;
-    navigator.clipboard.writeText(imageUrl).then(() => {
-      toast({
-        title: "Image link copied!",
-        description: "Share this link to show this specific image.",
+    navigator.clipboard
+      .writeText(imageUrl)
+      .then(() => {
+        toast({
+          title: "Image link copied!",
+          description: "Share this link to show this specific image.",
+        });
+      })
+      .catch(() => {
+        toast({
+          title: "Failed to copy link",
+          description: "Please copy the URL manually from your browser.",
+          variant: "destructive",
+        });
       });
-    }).catch(() => {
-      toast({
-        title: "Failed to copy link",
-        description: "Please copy the URL manually from your browser.",
-        variant: "destructive",
-      });
-    });
   };
 
   if (shootLoading) {
     return (
       <div className="min-h-screen bg-background text-foreground">
         {/* Simple navbar for loading state */}
-        <nav className={`fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-b border-white/10 transition-transform duration-300 ${navbarVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+        <nav
+          className={`fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-b border-white/10 transition-transform duration-300 ${navbarVisible ? "translate-y-0" : "-translate-y-full"}`}
+        >
           <div className="flex items-center justify-between h-16 px-6">
             <Link href="/">
-              <img src="/images/logos/slyfox-logo-white.png" alt="SlyFox Studios" className="h-8" />
+              <img
+                src="/images/logos/slyfox-logo-white.png"
+                alt="SlyFox Studios"
+                className="h-8"
+              />
             </Link>
           </div>
         </nav>
@@ -266,19 +287,25 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
   if (shootError || !shoot) {
     // Check if it's a private gallery error - TanStack Query wraps fetch errors
-    const isPrivateGallery = 
-      shootError?.message?.includes('status code 403') || 
-      shootError?.message?.includes('403') ||
+    const isPrivateGallery =
+      shootError?.message?.includes("status code 403") ||
+      shootError?.message?.includes("403") ||
       (shootError as any)?.response?.status === 403 ||
       (shootError as any)?.status === 403;
-    
+
     return (
       <div className="min-h-screen bg-background text-foreground">
         {/* Simple navbar for error state */}
-        <nav className={`fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-b border-white/10 transition-transform duration-300 ${navbarVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+        <nav
+          className={`fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-b border-white/10 transition-transform duration-300 ${navbarVisible ? "translate-y-0" : "-translate-y-full"}`}
+        >
           <div className="flex items-center justify-between h-16 px-6">
             <Link href="/">
-              <img src="/images/logos/slyfox-logo-white.png" alt="SlyFox Studios" className="h-8" />
+              <img
+                src="/images/logos/slyfox-logo-white.png"
+                alt="SlyFox Studios"
+                className="h-8"
+              />
             </Link>
           </div>
         </nav>
@@ -298,7 +325,9 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
               ) : (
                 <>
                   <h1 className="text-4xl mb-4">Gallery Not Found</h1>
-                  <p className="text-muted-foreground mb-8">This gallery doesn't exist or has been removed.</p>
+                  <p className="text-muted-foreground mb-8">
+                    This gallery doesn't exist or has been removed.
+                  </p>
                 </>
               )}
             </div>
@@ -308,50 +337,50 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     );
   }
 
-  // Apply gallery settings from the shoot  
+  // Apply gallery settings from the shoot
   const { gallerySettings } = shoot;
-  const coverImage = images.find(img => img.id === shoot.bannerImageId);
+  const coverImage = images.find((img) => img.id === shoot.bannerImageId);
 
   // Gallery layout helper functions
   const getGalleryLayoutClasses = () => {
-    if (gallerySettings?.layoutStyle === 'masonry') {
-      return 'columns-2 md:columns-3 lg:columns-4 xl:columns-5';
+    if (gallerySettings?.layoutStyle === "masonry") {
+      return "columns-2 md:columns-3 lg:columns-4 xl:columns-5";
     }
-    if (gallerySettings?.layoutStyle === 'square') {
-      return 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
+    if (gallerySettings?.layoutStyle === "square") {
+      return "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5";
     }
     // Default grid layout
-    return 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
+    return "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5";
   };
 
   const getGallerySpacingClasses = () => {
-    if (gallerySettings?.imageSpacing === 'tight') {
-      return 'gap-1';
+    if (gallerySettings?.imageSpacing === "tight") {
+      return "gap-1";
     }
-    if (gallerySettings?.imageSpacing === 'normal') {
-      return 'gap-2';
+    if (gallerySettings?.imageSpacing === "normal") {
+      return "gap-2";
     }
-    return 'gap-1'; // Default to tight spacing to match database setting
+    return "gap-1"; // Default to tight spacing to match database setting
   };
 
   const getGalleryPaddingClasses = () => {
-    if (gallerySettings?.padding === 'tight') {
-      return 'p-1';
+    if (gallerySettings?.padding === "tight") {
+      return "p-1";
     }
-    if (gallerySettings?.padding === 'normal') {
-      return 'p-4';
+    if (gallerySettings?.padding === "normal") {
+      return "p-4";
     }
-    return 'p-2'; // Default padding
+    return "p-2"; // Default padding
   };
 
   const getImageHeightClass = () => {
-    if (gallerySettings?.layoutStyle === 'masonry') {
-      return 'h-auto'; // Let masonry determine height
+    if (gallerySettings?.layoutStyle === "masonry") {
+      return "h-auto"; // Let masonry determine height
     }
-    if (gallerySettings?.layoutStyle === 'square') {
-      return 'aspect-square h-full';
+    if (gallerySettings?.layoutStyle === "square") {
+      return "aspect-square h-full";
     }
-    return 'h-64'; // Default height
+    return "h-64"; // Default height
   };
 
   // Get navigation for previous/next albums
@@ -366,7 +395,9 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
   const getNextShoot = () => {
     const currentIndex = getCurrentShootIndex();
-    return currentIndex < clientShoots.length - 1 ? clientShoots[currentIndex + 1] : null;
+    return currentIndex < clientShoots.length - 1
+      ? clientShoots[currentIndex + 1]
+      : null;
   };
 
   const previousShoot = getPreviousShoot();
@@ -376,52 +407,61 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     <div className="min-h-screen bg-background text-foreground">
       {/* SEO Meta Tags */}
       <title>{shoot.customTitle || shoot.title} | SlyFox Studios</title>
-      <meta name="description" content={`View ${shoot.customTitle || shoot.title} gallery by SlyFox Studios. ${shoot.description || 'Professional photography showcasing beautiful moments.'}`} />
-      
+      <meta
+        name="description"
+        content={`View ${shoot.customTitle || shoot.title} gallery by SlyFox Studios. ${shoot.description || "Professional photography showcasing beautiful moments."}`}
+      />
+
       {/* Custom Navigation Bar for Gallery */}
-      <nav className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 ${navbarVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
-        <div className="bg-black/20 backdrop-blur-md border border-white/10 rounded-full px-6 py-3 shadow-lg">
+      <nav
+        className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 ${navbarVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"}`}
+      >
+        <div className="bg-black/05 backdrop-blur-md border border-white/10 rounded-full px-6 py-3 shadow-lg">
           {/* Centered Container with Equal Spacing */}
           <div className="flex items-center justify-center gap-8">
             {/* Logo */}
             <Link href="/">
-              <img src="/images/logos/slyfox-logo-white.png" alt="SlyFox Studios" className="h-8 hover:opacity-80 transition-opacity" />
+              <img
+                src="/images/logos/slyfox-logo-white.png"
+                alt="SlyFox Studios"
+                className="h-8 hover:opacity-80 transition-opacity"
+              />
             </Link>
-            
+
             {/* Client Name (H2 for SEO, but styled as main title) */}
-            <h2 
-              style={{ 
-                color: 'white', 
-                fontSize: '18px', 
-                fontWeight: 'bold', 
-                margin: 0 
+            <h2
+              style={{
+                color: "white",
+                fontSize: "18px",
+                fontWeight: "bold",
+                margin: 0,
               }}
             >
               {shoot.customTitle || shoot.title}
             </h2>
-            
+
             {/* Shoot Name (H1 for SEO, but styled as subtitle) */}
             {shoot.description && (
-              <h1 
+              <h1
                 className="gallery-nav-h1"
-                style={{ 
-                  fontSize: '14px', 
-                  fontWeight: '100', 
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "100",
                   margin: 0,
-                  fontStyle: 'italic',
-                  opacity: 0.8
+                  fontStyle: "italic",
+                  opacity: 0.8,
                 }}
               >
                 {shoot.description}
               </h1>
             )}
-            
+
             {/* Previous Album Button */}
             {previousShoot && (
               <Link href={`/gallery/${previousShoot.customSlug}`}>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="text-white hover:bg-white/10 text-xs"
                   title="Previous Album"
                 >
@@ -430,7 +470,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                 </Button>
               </Link>
             )}
-            
+
             {/* Shoot Info Icon */}
             <div className="relative group">
               <Info className="w-6 h-6 text-white cursor-default" />
@@ -451,13 +491,13 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                 </div>
               </div>
             </div>
-            
+
             {/* Next Album Button */}
             {nextShoot && (
               <Link href={`/gallery/${nextShoot.customSlug}`}>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="text-white hover:bg-white/10 text-xs"
                   title="Next Album"
                 >
@@ -466,12 +506,12 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                 </Button>
               </Link>
             )}
-            
+
             {/* Share Button */}
-            <Button 
+            <Button
               onClick={handleShareGallery}
               className="bg-white text-black hover:bg-gray-200 transition-all duration-300"
-              style={{ padding: '2px', minWidth: 'auto', height: 'auto' }}
+              style={{ padding: "2px", minWidth: "auto", height: "auto" }}
               title="Share Gallery"
             >
               <Share2 className="w-3 h-3" />
@@ -479,30 +519,34 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
           </div>
         </div>
       </nav>
-      
+
       {/* Hero Section with Cover Image - 80% height */}
-      <section 
+      <section
         className="relative h-[80vh] bg-gradient-to-br from-black via-charcoal to-black flex items-center"
         style={{
-          backgroundColor: gallerySettings.backgroundColor || '#1a1a1a',
+          backgroundColor: gallerySettings.backgroundColor || "#1a1a1a",
           ...(coverImage && {
             backgroundImage: `url(${ImageUrl.forFullSize(coverImage.storagePath)})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          })
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }),
         }}
       >
         {/* Hero content removed - titles now in navbar */}
       </section>
 
       {/* Image Gallery Section - Full Width */}
-      <section 
-        className="py-8" 
-        style={{ backgroundColor: gallerySettings.backgroundColor || 'transparent' }}
+      <section
+        className="py-8"
+        style={{
+          backgroundColor: gallerySettings.backgroundColor || "transparent",
+        }}
       >
         <div className={`max-w-none w-full ${getGalleryPaddingClasses()}`}>
           {imagesLoading ? (
-            <div className={`${getGalleryLayoutClasses()} ${getGallerySpacingClasses()}`}>
+            <div
+              className={`${getGalleryLayoutClasses()} ${getGallerySpacingClasses()}`}
+            >
               {[...Array(12)].map((_, i) => (
                 <div key={i} className="animate-pulse">
                   <div className="h-64 bg-gray-800 rounded"></div>
@@ -514,77 +558,86 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
               <p className="text-gray-400">No images found in this gallery.</p>
             </div>
           ) : (
-            <div className={`${getGalleryLayoutClasses()} ${getGallerySpacingClasses()}`}>
-              {images.slice(0, visibleImageCount)
+            <div
+              className={`${getGalleryLayoutClasses()} ${getGallerySpacingClasses()}`}
+            >
+              {images
+                .slice(0, visibleImageCount)
                 .sort((a, b) => a.sequence - b.sequence)
                 .map((image, visibleIndex) => {
                   // Find the actual index in the full sorted images array
-                  const sortedImages = images.sort((a, b) => a.sequence - b.sequence);
-                  const actualIndex = sortedImages.findIndex(img => img.id === image.id);
-                  
+                  const sortedImages = images.sort(
+                    (a, b) => a.sequence - b.sequence,
+                  );
+                  const actualIndex = sortedImages.findIndex(
+                    (img) => img.id === image.id,
+                  );
+
                   return (
                     <div
                       key={image.id}
                       className={`
                         relative group overflow-hidden
-                        ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-lg'}
-                        ${selectedImages.has(image.id) ? 'ring-2 ring-salmon' : ''}
-                        ${gallerySettings?.layoutStyle === 'masonry' ? 'break-inside-avoid mb-2' : ''}
-                        ${gallerySettings?.layoutStyle === 'square' ? 'aspect-square' : ''}
+                        ${gallerySettings.borderStyle === "rounded" ? "rounded-lg" : gallerySettings.borderStyle === "sharp" ? "rounded-none" : "rounded-lg"}
+                        ${selectedImages.has(image.id) ? "ring-2 ring-salmon" : ""}
+                        ${gallerySettings?.layoutStyle === "masonry" ? "break-inside-avoid mb-2" : ""}
+                        ${gallerySettings?.layoutStyle === "square" ? "aspect-square" : ""}
                         cursor-pointer transition-all duration-200
                       `}
                       onClick={() => openModal(actualIndex)}
+                    >
+                      <img
+                        src={ImageUrl.forViewing(image.storagePath)}
+                        alt={image.filename}
+                        className={`w-full object-cover ${getImageHeightClass()} transition-all duration-200 group-hover:brightness-90`}
+                        loading="lazy"
+                      />
 
-                  >
-                    <img
-                      src={ImageUrl.forViewing(image.storagePath)}
-                      alt={image.filename}
-                      className={`w-full object-cover ${getImageHeightClass()} transition-all duration-200 group-hover:brightness-90`}
-                      loading="lazy"
+                      {/* Selection indicator */}
+                      {selectedImages.has(image.id) && (
+                        <div className="absolute top-2 right-2 w-6 h-6 bg-salmon rounded-full flex items-center justify-center z-10">
+                          <div className="w-3 h-3 bg-white rounded-full"></div>
+                        </div>
+                      )}
 
-                    />
-                    
-                    {/* Selection indicator */}
-                    {selectedImages.has(image.id) && (
-                      <div className="absolute top-2 right-2 w-6 h-6 bg-salmon rounded-full flex items-center justify-center z-10">
-                        <div className="w-3 h-3 bg-white rounded-full"></div>
-                      </div>
-                    )}
-                    
-                    {/* Hover overlay with buttons at bottom */}
-                    <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <div className="absolute bottom-2 left-2 right-2 flex justify-center gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            downloadImage(image.storagePath, image.originalName);
-                          }}
-                          className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                          title="Download Image"
-                        >
-                          <Download className="w-4 h-4 text-white" />
-                        </button>
-                        <button
-                          onClick={(e) => handleShareImage(actualIndex, e)}
-                          className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                          title="Share Image"
-                        >
-                          <Share2 className="w-4 h-4 text-white" />
-                        </button>
-                        <a
-                          href={ImageUrl.forFullSize(image.storagePath)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                          title="View Full Resolution"
-                        >
-                          <Eye className="w-4 h-4 text-white" />
-                        </a>
+                      {/* Hover overlay with buttons at bottom */}
+                      <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <div className="absolute bottom-2 left-2 right-2 flex justify-center gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              downloadImage(
+                                image.storagePath,
+                                image.originalName,
+                              );
+                            }}
+                            className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
+                            title="Download Image"
+                          >
+                            <Download className="w-4 h-4 text-white" />
+                          </button>
+                          <button
+                            onClick={(e) => handleShareImage(actualIndex, e)}
+                            className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
+                            title="Share Image"
+                          >
+                            <Share2 className="w-4 h-4 text-white" />
+                          </button>
+                          <a
+                            href={ImageUrl.forFullSize(image.storagePath)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
+                            title="View Full Resolution"
+                          >
+                            <Eye className="w-4 h-4 text-white" />
+                          </a>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )})}
+                  );
+                })}
             </div>
           )}
 
@@ -592,7 +645,11 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
           {visibleImageCount < images.length && (
             <div className="text-center mt-8">
               <Button
-                onClick={() => setVisibleImageCount(prev => Math.min(prev + 30, images.length))}
+                onClick={() =>
+                  setVisibleImageCount((prev) =>
+                    Math.min(prev + 30, images.length),
+                  )
+                }
                 variant="outline"
                 className="border-salmon text-salmon hover:bg-salmon hover:text-white"
               >
@@ -629,14 +686,14 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
           {/* Navigation arrows */}
           <button
-            onClick={() => navigateModal('prev')}
+            onClick={() => navigateModal("prev")}
             className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors z-10"
           >
             <ChevronLeft className="w-8 h-8" />
           </button>
-          
+
           <button
-            onClick={() => navigateModal('next')}
+            onClick={() => navigateModal("next")}
             className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors z-10"
           >
             <ChevronRight className="w-8 h-8" />
@@ -653,12 +710,19 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
           {/* Image info bar */}
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-4 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full text-white text-sm">
-            <span>{modalImageIndex + 1} of {images.length}</span>
+            <span>
+              {modalImageIndex + 1} of {images.length}
+            </span>
             <span>•</span>
             <span>{images[modalImageIndex]?.originalName}</span>
             <span>•</span>
             <button
-              onClick={() => downloadImage(images[modalImageIndex]?.storagePath, images[modalImageIndex]?.originalName)}
+              onClick={() =>
+                downloadImage(
+                  images[modalImageIndex]?.storagePath,
+                  images[modalImageIndex]?.originalName,
+                )
+              }
               className="hover:text-salmon transition-colors"
               title="Download Image"
             >
