@@ -404,12 +404,17 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
             {shoot.description && (
               <h1 
                 style={{ 
-                  color: 'white', 
+                  color: 'white !important', 
                   fontSize: '14px', 
                   fontWeight: '100', 
                   margin: 0,
                   fontStyle: 'italic',
-                  opacity: 0.8
+                  opacity: 0.8,
+                  background: 'none !important',
+                  backgroundImage: 'none !important',
+                  backgroundClip: 'unset !important',
+                  WebkitBackgroundClip: 'unset !important',
+                  WebkitTextFillColor: 'white !important'
                 }}
               >
                 {shoot.description}
