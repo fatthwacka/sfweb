@@ -651,15 +651,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/images", async (req, res) => {
     try {
-      // For admin panel, get all images from all shoots
-      const allShoots = await storage.getAllShoots();
-      let allImages: any[] = [];
-      
-      for (const shoot of allShoots) {
-        const shootImages = await storage.getImagesByShoot(shoot.id);
-        allImages = allImages.concat(shootImages);
-      }
-      
+      // Use the direct getAllImages method for better performance and consistency
+      const allImages = await storage.getAllImages();
+      console.log(`Fetched ${allImages.length} images for admin panel`);
       res.json(allImages);
     } catch (error) {
       console.error("Fetch images error:", error);
