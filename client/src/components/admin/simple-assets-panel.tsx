@@ -169,11 +169,11 @@ export function SimpleAssetsPanel() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {[...Array(12)].map((_, i) => (
-            <Card key={i} className="border-purple-200 animate-pulse">
+            <Card key={i} className="border border-purple-500/30 bg-gradient-to-br from-slate-900/90 to-purple-900/50 animate-pulse">
               <CardContent className="p-4">
-                <div className="aspect-video bg-gray-200 rounded mb-4"></div>
-                <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                <div className="h-8 bg-gray-200 rounded"></div>
+                <div className="aspect-video bg-slate-700/50 rounded mb-4"></div>
+                <div className="h-4 bg-slate-600/50 rounded mb-2"></div>
+                <div className="h-8 bg-slate-600/50 rounded"></div>
               </CardContent>
             </Card>
           ))}
@@ -203,10 +203,10 @@ export function SimpleAssetsPanel() {
           {heroAssets.map((asset) => (
             <Card 
               key={asset.key}
-              className={`border-2 transition-all duration-200 ${
+              className={`border transition-all duration-200 bg-gradient-to-br from-slate-900/90 to-purple-900/50 backdrop-blur-sm ${
                 draggedOver === asset.key 
-                  ? 'border-purple-400 bg-purple-50 dark:bg-purple-900/20' 
-                  : 'border-purple-200 hover:border-purple-300'
+                  ? 'border-purple-400 shadow-lg shadow-purple-500/25 scale-[1.02]' 
+                  : 'border-purple-500/30 hover:border-purple-400/50 hover:shadow-md hover:shadow-purple-500/10'
               }`}
               onDragOver={(e) => handleDragOver(e, asset.key)}
               onDragLeave={handleDragLeave}
@@ -223,7 +223,7 @@ export function SimpleAssetsPanel() {
               
               <CardContent className="space-y-4">
                 {/* Image Preview */}
-                <div className="aspect-video rounded-lg overflow-hidden bg-gray-800 border border-purple-300">
+                <div className="aspect-video rounded-lg overflow-hidden bg-slate-800/50 border border-purple-500/30">
                   {asset.exists ? (
                     <DirectImage
                       filename={asset.filename}
@@ -323,10 +323,10 @@ export function SimpleAssetsPanel() {
           {backgroundAssets.map((asset) => (
             <Card 
               key={asset.key}
-              className={`border-2 transition-all duration-200 ${
+              className={`border transition-all duration-200 bg-gradient-to-br from-slate-900/90 to-purple-900/50 backdrop-blur-sm ${
                 draggedOver === asset.key 
-                  ? 'border-purple-400 bg-purple-50 dark:bg-purple-900/20' 
-                  : 'border-purple-200 hover:border-purple-300'
+                  ? 'border-purple-400 shadow-lg shadow-purple-500/25 scale-[1.02]' 
+                  : 'border-purple-500/30 hover:border-purple-400/50 hover:shadow-md hover:shadow-purple-500/10'
               }`}
               onDragOver={(e) => handleDragOver(e, asset.key)}
               onDragLeave={handleDragLeave}
@@ -343,7 +343,7 @@ export function SimpleAssetsPanel() {
               
               <CardContent className="space-y-4">
                 {/* Image Preview */}
-                <div className="aspect-video rounded-lg overflow-hidden bg-gray-800 border border-purple-300">
+                <div className="aspect-video rounded-lg overflow-hidden bg-slate-800/50 border border-purple-500/30">
                   {asset.exists ? (
                     <DirectImage
                       filename={asset.filename}

@@ -64,8 +64,9 @@ export class LocalAssetsManager {
     const filename = ASSET_FILES[key];
     const filePath = path.join(this.assetsDir, filename);
     
-    // Ensure directory exists
-    await fs.mkdir(this.assetsDir, { recursive: true });
+    // Ensure the full directory path exists (including subdirectories)
+    const dirPath = path.dirname(filePath);
+    await fs.mkdir(dirPath, { recursive: true });
     
     // Write file (overwrites if exists)
     await fs.writeFile(filePath, fileBuffer);
