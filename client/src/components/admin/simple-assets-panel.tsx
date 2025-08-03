@@ -62,7 +62,10 @@ export function SimpleAssetsPanel() {
       return response.json();
     },
     onSuccess: (data, { key }) => {
+      // Refresh the assets data to show new image immediately
       queryClient.invalidateQueries({ queryKey: ['/api/simple-assets'] });
+      queryClient.refetchQueries({ queryKey: ['/api/simple-assets'] });
+      
       toast({
         title: 'Upload Successful',
         description: `${ASSET_LABELS[key]} has been updated.`,
@@ -144,14 +147,46 @@ export function SimpleAssetsPanel() {
     setAltTextValue(asset.altText);
   };
 
+  // Alt text update mutation
+  const altTextMutation = useMutation({
+    mutationFn: async ({ key, altText }: { key: string; altText: string }) => {
+      const response = await fetch(`/api/simple-assets/${key}/alt-text`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ altText }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Alt text update failed');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data, { key }) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/simple-assets'] });
+      toast({
+        title: 'Alt Text Updated',
+        description: `${ASSET_LABELS[key]} alt text has been updated.`,
+      });
+      setEditingAlt(null);
+    },
+    onError: (error, { key }) => {
+      toast({
+        title: 'Update Failed',
+        description: `Failed to update alt text for ${ASSET_LABELS[key]}.`,
+        variant: 'destructive',
+      });
+    },
+  });
+
   const saveAltText = () => {
-    // For now, just close the editor since alt text is embedded in pages
-    // In the future, this could update a separate alt text storage system
-    setEditingAlt(null);
-    toast({
-      title: 'Alt Text Note',
-      description: 'Alt text is embedded in page code. Update manually in components.',
-    });
+    if (editingAlt && altTextValue.trim()) {
+      altTextMutation.mutate({ key: editingAlt, altText: altTextValue.trim() });
+    } else {
+      setEditingAlt(null);
+    }
   };
 
   const cancelEditingAlt = () => {
@@ -212,16 +247,13 @@ export function SimpleAssetsPanel() {
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, asset.key)}
             >
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-3">
                 <CardTitle className="text-lg text-white">
                   {ASSET_LABELS[asset.key]}
                 </CardTitle>
-                <p className="text-sm text-gray-400">
-                  {asset.exists ? 'Custom image active' : 'Using default image'}
-                </p>
               </CardHeader>
               
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3">
                 {/* Image Preview */}
                 <div className="aspect-video rounded-lg overflow-hidden bg-slate-800/50 border border-purple-500/30">
                   {asset.exists ? (
@@ -229,6 +261,7 @@ export function SimpleAssetsPanel() {
                       filename={asset.filename}
                       alt={asset.altText}
                       className="w-full h-full object-cover"
+                      key={`${asset.key}-${Date.now()}`}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -241,27 +274,47 @@ export function SimpleAssetsPanel() {
                   )}
                 </div>
 
-                {/* Alt Text */}
-                <div className="space-y-2">
-                  <Label className="text-white">Alt Text</Label>
-                  {editingAlt === asset.key ? (
-                    <div className="flex space-x-2">
-                      <Input
-                        value={altTextValue}
-                        onChange={(e) => setAltTextValue(e.target.value)}
-                        className="flex-1 bg-gray-800 border-purple-300"
-                        placeholder="Alt text description"
-                      />
-                      <Button size="sm" onClick={saveAltText} className="bg-purple-600 hover:bg-purple-700">
-                        <Check className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={cancelEditingAlt}>
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-300 flex-1">{asset.altText}</span>
+                {/* Alt Text with Upload Button */}
+                {editingAlt === asset.key ? (
+                  <div className="flex space-x-2">
+                    <Input
+                      value={altTextValue}
+                      onChange={(e) => {
+                        // Clean input: remove special chars and limit to 100 chars
+                        const cleaned = e.target.value.replace(/[^a-zA-Z0-9\s-]/g, '').slice(0, 100);
+                        setAltTextValue(cleaned);
+                      }}
+                      className="flex-1 bg-gray-800 border-purple-300 text-sm"
+                      placeholder="Alt text description (max 100 chars)"
+                      maxLength={100}
+                    />
+                    <Button size="sm" onClick={saveAltText} className="bg-purple-600 hover:bg-purple-700">
+                      <Check className="w-4 h-4" />
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={cancelEditingAlt}>
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm text-gray-300 flex-1 truncate">{asset.altText}</span>
+                    <div className="flex space-x-1">
+                      <Label htmlFor={`upload-${asset.key}`}>
+                        <Button 
+                          size="sm" 
+                          className="bg-purple-600 hover:bg-purple-700"
+                          disabled={uploadMutation.isPending}
+                        >
+                          <Upload className="w-4 h-4" />
+                        </Button>
+                        <input
+                          id={`upload-${asset.key}`}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleFileInput(asset.key, e.target.files?.[0] || null)}
+                        />
+                      </Label>
                       <Button
                         size="sm"
                         variant="ghost"
@@ -271,40 +324,8 @@ export function SimpleAssetsPanel() {
                         <Edit className="w-4 h-4" />
                       </Button>
                     </div>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="flex space-x-2">
-                  <Label htmlFor={`upload-${asset.key}`} className="flex-1">
-                    <Button 
-                      className="w-full bg-purple-600 hover:bg-purple-700"
-                      disabled={uploadMutation.isPending}
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      Upload Image
-                    </Button>
-                    <input
-                      id={`upload-${asset.key}`}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => handleFileInput(asset.key, e.target.files?.[0] || null)}
-                    />
-                  </Label>
-                  
-                  {asset.exists && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => deleteMutation.mutate(asset.key)}
-                      disabled={deleteMutation.isPending}
-                      className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  )}
-                </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
@@ -332,16 +353,13 @@ export function SimpleAssetsPanel() {
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, asset.key)}
             >
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-3">
                 <CardTitle className="text-lg text-white">
                   {ASSET_LABELS[asset.key]}
                 </CardTitle>
-                <p className="text-sm text-gray-400">
-                  {asset.exists ? 'Custom image active' : 'Using default image'}
-                </p>
               </CardHeader>
               
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3">
                 {/* Image Preview */}
                 <div className="aspect-video rounded-lg overflow-hidden bg-slate-800/50 border border-purple-500/30">
                   {asset.exists ? (
@@ -349,6 +367,7 @@ export function SimpleAssetsPanel() {
                       filename={asset.filename}
                       alt={asset.altText}
                       className="w-full h-full object-cover"
+                      key={`${asset.key}-${Date.now()}`}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -361,11 +380,11 @@ export function SimpleAssetsPanel() {
                   )}
                 </div>
 
-                {/* Actions */}
-                <div className="flex space-x-2">
-                  <Label htmlFor={`upload-bg-${asset.key}`} className="flex-1">
+                {/* Upload Button for Background Assets (no alt text editing) */}
+                <div className="flex justify-center">
+                  <Label htmlFor={`upload-bg-${asset.key}`}>
                     <Button 
-                      className="w-full bg-purple-600 hover:bg-purple-700"
+                      className="bg-purple-600 hover:bg-purple-700"
                       disabled={uploadMutation.isPending}
                     >
                       <Upload className="w-4 h-4 mr-2" />

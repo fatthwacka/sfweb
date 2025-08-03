@@ -23,6 +23,9 @@ export const ASSET_FILES = {
 // Default alt text for all pages
 export const DEFAULT_ALT_TEXT = 'professional photography durban';
 
+// Alt text storage - maps asset keys to custom alt text
+const ALT_TEXT_STORAGE: Record<string, string> = {};
+
 export interface LocalAsset {
   key: keyof typeof ASSET_FILES;
   filename: string;
@@ -51,7 +54,7 @@ export class LocalAssetsManager {
       assets.push({
         key: key as keyof typeof ASSET_FILES,
         filename,
-        altText: DEFAULT_ALT_TEXT,
+        altText: ALT_TEXT_STORAGE[key] || DEFAULT_ALT_TEXT,
         exists,
         filePath: `/images/${filename}`
       });
@@ -81,5 +84,16 @@ export class LocalAssetsManager {
     } catch (error) {
       // File doesn't exist, which is fine
     }
+  }
+
+  async updateAltText(key: keyof typeof ASSET_FILES, altText: string): Promise<void> {
+    // Store alt text in memory (could be persisted to file/database later)
+    ALT_TEXT_STORAGE[key] = altText;
+    
+    // For now, just store in memory. In the future, this could:
+    // 1. Update a JSON file with alt text mappings
+    // 2. Update database records
+    // 3. Directly modify the page component files
+    console.log(`Alt text stored: ${key} -> "${altText}"`);
   }
 }

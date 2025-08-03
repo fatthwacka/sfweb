@@ -64,6 +64,41 @@ router.post('/:key', upload.single('file'), async (req: Request, res: Response) 
   }
 });
 
+// PATCH /api/simple-assets/:key/alt-text - Update alt text for asset
+router.patch('/:key/alt-text', async (req: Request, res: Response) => {
+  try {
+    const { key } = req.params;
+    const { altText } = req.body;
+
+    if (!(key in ASSET_FILES)) {
+      return res.status(400).json({ message: 'Invalid asset key' });
+    }
+
+    if (!altText || typeof altText !== 'string') {
+      return res.status(400).json({ message: 'Alt text is required and must be a string' });
+    }
+
+    // Clean alt text: remove special characters and limit length
+    const cleanedAltText = altText.replace(/[^a-zA-Z0-9\s-]/g, '').slice(0, 100);
+
+    console.log(`🔄 Updating alt text for: ${key} -> "${cleanedAltText}"`);
+
+    await assetsManager.updateAltText(key as keyof typeof ASSET_FILES, cleanedAltText);
+
+    console.log(`✅ Alt text for ${key} updated successfully`);
+
+    res.json({
+      success: true,
+      message: `Alt text for ${key} updated successfully`,
+      altText: cleanedAltText
+    });
+
+  } catch (error) {
+    console.error('Error updating alt text:', error);
+    res.status(500).json({ message: 'Failed to update alt text' });
+  }
+});
+
 // DELETE /api/simple-assets/:key - Delete asset by key
 router.delete('/:key', async (req: Request, res: Response) => {
   try {
