@@ -379,10 +379,11 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
       <meta name="description" content={`View ${shoot.customTitle || shoot.title} gallery by SlyFox Studios. ${shoot.description || 'Professional photography showcasing beautiful moments.'}`} />
       
       {/* Custom Navigation Bar for Gallery */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 bg-black/10 backdrop-blur-sm transition-transform duration-300 ${navbarVisible ? 'translate-y-0' : '-translate-y-full'}`}>
-        <div className="max-w-[1000px] mx-auto flex items-center justify-between h-16 px-6">
-          {/* Left Section: Logo + Client Name + Shoot Name */}
-          <div className="flex items-center gap-4">
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${navbarVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+        <div className="max-w-[1000px] mx-auto flex items-center justify-center h-16 px-6">
+          {/* Centered Container with Equal Spacing */}
+          <div className="flex items-center justify-center gap-8 w-full">
+            {/* Logo */}
             <Link href="/">
               <img src="/images/logos/slyfox-logo-white.png" alt="SlyFox Studios" className="h-8 hover:opacity-80 transition-opacity" />
             </Link>
@@ -414,10 +415,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                 {shoot.description}
               </h1>
             )}
-          </div>
-          
-          {/* Center Section: Navigation + Info */}
-          <div className="flex items-center gap-4">
+            
             {/* Previous Album Button */}
             {previousShoot && (
               <Link href={`/gallery/${previousShoot.customSlug}`}>
@@ -435,7 +433,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
             
             {/* Shoot Info Icon */}
             <div className="relative group">
-              <Info className="w-5 h-5 text-white cursor-default" />
+              <Info className="w-6 h-6 text-white cursor-default" />
               <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-black/90 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 <div className="flex items-center gap-4">
                   {shoot.location && (
@@ -468,17 +466,17 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                 </Button>
               </Link>
             )}
+            
+            {/* Share Button */}
+            <Button 
+              onClick={handleShareGallery}
+              className="bg-white text-black hover:bg-gray-200 transition-all duration-300"
+              style={{ padding: '4px' }}
+              title="Share Gallery"
+            >
+              <Share2 className="w-4 h-4" />
+            </Button>
           </div>
-          
-          {/* Right Section: Share Button */}
-          <Button 
-            onClick={handleShareGallery}
-            className="bg-white text-black hover:bg-gray-200 transition-all duration-300"
-            style={{ padding: '6px' }}
-            title="Share Gallery"
-          >
-            <Share2 className="w-4 h-4" />
-          </Button>
         </div>
       </nav>
       
