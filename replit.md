@@ -8,6 +8,7 @@ Preferred communication style: Simple, everyday language.
 Technical approach: Always fix everything at the root cause, never patch, workaround, or temporary fix.
 **Critical:** Never test uploads using real attachment screenshots - this overwrites professional hero images with random files. Always use dedicated test files or validate without actual uploads.
 **Important:** NEVER make code changes without approval when suspecting cache or stale data issues. Always investigate and present findings first. Never assume cache/stale data issues - fix the actual root cause.
+**Gallery Restoration Lesson:** When custom design is lost, restore from git history instead of recreating (5 minutes vs 5 hours). User becomes extremely frustrated when custom design features are lost - prioritize restoration over recreation.
 
 ## System Architecture
 This application follows a **monorepo structure** with clear separation between frontend, backend, and shared code.
@@ -34,6 +35,12 @@ The application uses core entities such as Users, Clients, Shoots, Images, Packa
 
 ### API Structure
 RESTful API endpoints are defined for contact forms, packages, client access, and planned authentication/admin management.
+
+## Recent Changes (August 2025)
+- **Gallery System Restoration (Aug 3):** Successfully restored original working gallery from git commit 331c09f after component interface issues
+- **Gallery Settings Integration:** Fixed gallerySettings application for background colors, layout styles (masonry/grid/square), border styles, and image spacing
+- **Component Architecture:** Updated client-gallery.tsx to support both routing patterns (useParams and props) for maximum compatibility
+- **Custom Features Preserved:** All original hover overlays, download selected functionality, modal navigation, and professional design elements maintained
 
 ## External Dependencies
 
