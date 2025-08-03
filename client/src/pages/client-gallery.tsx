@@ -415,11 +415,11 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
       {/* Custom Navigation Bar for Gallery */}
       <nav
-        className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 ${navbarVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"}`}
+        className={`fixed top-4 left-4 z-50 transition-all duration-300 ${navbarVisible ? "translate-y-0 opacity-75" : "-translate-y-full opacity-0"}`}
       >
         <div className="bg-black/05 backdrop-blur-md border border-white/10 rounded-full px-6 py-3 shadow-lg">
-          {/* Centered Container with Equal Spacing */}
-          <div className="flex items-center justify-center gap-8">
+          {/* Left-aligned Container with Equal Spacing */}
+          <div className="flex items-center gap-8">
             {/* Logo */}
             <Link href="/">
               <img
