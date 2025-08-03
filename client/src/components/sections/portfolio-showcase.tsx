@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ImageUrl } from "@/lib/image-utils";
 import type { Image } from "@shared/schema";
 
 // Helper function to format classification for display
@@ -19,6 +22,8 @@ const createFilterValue = (classification: string) => {
 export function PortfolioShowcase() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [filterOptions, setFilterOptions] = useState([{ label: "All Work", value: "all" }]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Fetch featured images from Supabase
   const { data: featuredImages, isLoading: imagesLoading } = useQuery<Image[]>({
@@ -51,6 +56,22 @@ export function PortfolioShowcase() {
     activeFilter === "all" 
       ? featuredImages 
       : featuredImages.filter(image => image.classification === activeFilter);
+
+  // Modal navigation functions
+  const openModal = (index: number) => {
+    setCurrentImageIndex(index);
+    setModalOpen(true);
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % filteredItems.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + filteredItems.length) % filteredItems.length);
+  };
+
+  const currentImage = filteredItems[currentImageIndex];
 
   return (
     <section className="py-20 bg-gradient-to-br from-slate-900/60 via-background to-grey-800/40">
@@ -92,13 +113,14 @@ export function PortfolioShowcase() {
               </div>
             ))
           ) : filteredItems.length > 0 ? (
-            filteredItems.map(image => (
-              <div key={image.id} className="group cursor-pointer">
+            filteredItems.map((image, index) => (
+              <div key={image.id} className="group cursor-pointer" onClick={() => openModal(index)}>
                 <div className="relative overflow-hidden rounded-xl image-hover-effect">
                   <img 
-                    src={image.storagePath} 
+                    src={ImageUrl.forViewing(image.storagePath)} 
                     alt={image.filename} 
                     className="w-full h-80 object-cover"
+                    loading="lazy"
                   />
 
                   <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
@@ -134,6 +156,73 @@ export function PortfolioShowcase() {
           </Button>
         </div>
       </div>
+
+      {/* Image Modal */}
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogContent className="max-w-6xl w-full h-[90vh] p-0 border-none bg-black/95">
+          <div className="relative h-full flex items-center justify-center">
+            {/* Close Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 z-50 text-white hover:bg-white/20"
+              onClick={() => setModalOpen(false)}
+            >
+              <X className="w-6 h-6" />
+            </Button>
+
+            {/* Previous Button */}
+            {filteredItems.length > 1 && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-50 text-white hover:bg-white/20"
+                onClick={prevImage}
+              >
+                <ChevronLeft className="w-8 h-8" />
+              </Button>
+            )}
+
+            {/* Next Button */}
+            {filteredItems.length > 1 && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-50 text-white hover:bg-white/20"
+                onClick={nextImage}
+              >
+                <ChevronRight className="w-8 h-8" />
+              </Button>
+            )}
+
+            {/* Image Display */}
+            {currentImage && (
+              <div className="relative w-full h-full flex items-center justify-center p-8">
+                <img
+                  src={ImageUrl.forFullSize(currentImage.storagePath)}
+                  alt={currentImage.filename}
+                  className="max-w-full max-h-full object-contain"
+                />
+                
+                {/* Image Info Overlay */}
+                <div className="absolute bottom-8 left-8 right-8 bg-black/70 text-white p-4 rounded-lg">
+                  <h3 className="text-xl font-bold text-salmon mb-2">
+                    {formatClassificationLabel(currentImage.classification)}
+                  </h3>
+                  <p className="text-gray-300">
+                    {currentImage.filename.replace(/\.[^/.]+$/, "")}
+                  </p>
+                  {filteredItems.length > 1 && (
+                    <p className="text-sm text-gray-400 mt-2">
+                      {currentImageIndex + 1} of {filteredItems.length}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
