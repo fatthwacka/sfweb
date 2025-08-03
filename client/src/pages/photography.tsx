@@ -9,42 +9,42 @@ const photographyCategories = [
     name: "Weddings",
     slug: "weddings",
     description: "Capturing your special day with timeless elegance and emotion",
-    image: "/images/portfolio/wedding-couple-1.jpg",
+    image: "/images/hero/wedding-photography-hero.jpg",
     features: ["Engagement sessions", "Ceremony coverage", "Reception photography", "Bridal portraits"]
   },
   {
     name: "Portraits",
     slug: "portraits",
     description: "Professional headshots and personal portraits that tell your story",
-    image: "/images/portfolio/portrait-professional-1.jpg",
+    image: "/images/hero/portrait-photography-hero.jpg",
     features: ["Executive headshots", "Family portraits", "Personal branding", "Studio sessions"]
   },
   {
     name: "Corporate",
     slug: "corporate",
     description: "Elevate your business image with professional corporate photography",
-    image: "/images/portfolio/wedding-couple-2.jpg",
+    image: "/images/hero/corporate-photography-hero.jpg",
     features: ["Team headshots", "Office photography", "Corporate events", "Brand documentation"]
   },
   {
     name: "Events",
     slug: "events",
     description: "Documenting memorable moments at conferences, parties, and gatherings",
-    image: "/images/portfolio/portrait-professional-2.jpg",
+    image: "/images/hero/Event-photography-hero.jpg",
     features: ["Conference photography", "Party coverage", "Award ceremonies", "Networking events"]
   },
   {
     name: "Products",
     slug: "products",
     description: "Showcase your products with stunning commercial photography",
-    image: "/images/portfolio/wedding-couple-3.jpg",
+    image: "/images/hero/product-photography-hero.jpg",
     features: ["E-commerce photography", "Catalog shoots", "Lifestyle product shots", "360° product views"]
   },
   {
     name: "Graduation",
     slug: "graduation",
     description: "Celebrate academic achievements with memorable graduation photos",
-    image: "/images/portfolio/portrait-professional-3.jpg",
+    image: "/images/hero/graduation-photography-hero.jpg",
     features: ["Graduation ceremonies", "Individual portraits", "Family group shots", "Campus photography"]
   }
 ];
