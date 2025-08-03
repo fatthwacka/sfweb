@@ -46,11 +46,9 @@ app.use((req, res, next) => {
   
   const server = await registerRoutes(app);
   
-  // Serve static files from public directory BEFORE vite setup
-  if (app.get("env") === "development") {
-    const path = await import("path");
-    app.use(express.static(path.resolve(import.meta.dirname, "..", "public")));
-  }
+  // Serve static files from public directory ALWAYS (both dev and production)
+  const path = await import("path");
+  app.use(express.static(path.resolve(import.meta.dirname, "..", "public")));
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
