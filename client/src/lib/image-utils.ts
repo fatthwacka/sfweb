@@ -55,7 +55,7 @@ export const IMAGE_PRESETS = {
   optimized: { width: 2400, height: 2400, quality: 80, resize: 'contain' as const },
   
   // Modal viewing - maintains aspect ratio, optimized for modal display
-  modal: { width: 2400, quality: 80 },
+  modal: { width: 2400, height: 2400, quality: 80, resize: 'contain' as const },
   
   // Full size for downloads and detailed inspection (no transformation)
   fullSize: {} as ImageTransformOptions,
