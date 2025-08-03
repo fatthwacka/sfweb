@@ -305,6 +305,35 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
   const { gallerySettings } = shoot;
   const coverImage = images.find(img => img.id === shoot.bannerImageId);
 
+  // Gallery layout helper functions
+  const getGalleryLayoutClasses = () => {
+    if (gallerySettings?.layoutStyle === 'masonry') {
+      return 'columns-2 md:columns-3 lg:columns-4 xl:columns-5';
+    }
+    if (gallerySettings?.layoutStyle === 'square') {
+      return 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
+    }
+    // Default grid layout
+    return 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
+  };
+
+  const getGallerySpacingClasses = () => {
+    if (gallerySettings?.imageSpacing === 'tight') {
+      return 'gap-1';
+    }
+    return 'gap-2';
+  };
+
+  const getImageHeightClass = () => {
+    if (gallerySettings?.layoutStyle === 'masonry') {
+      return 'h-auto'; // Let masonry determine height
+    }
+    if (gallerySettings?.layoutStyle === 'square') {
+      return 'aspect-square h-full';
+    }
+    return 'h-64'; // Default height
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* SEO Meta Tags */}
@@ -371,10 +400,13 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
       </section>
 
       {/* Image Gallery Section - Full Width */}
-      <section className="py-8">
+      <section 
+        className="py-8" 
+        style={{ backgroundColor: gallerySettings.backgroundColor || 'transparent' }}
+      >
         <div className="px-4 max-w-none w-full">
           {imagesLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+            <div className={`${getGalleryLayoutClasses()} ${getGallerySpacingClasses()}`}>
               {[...Array(12)].map((_, i) => (
                 <div key={i} className="animate-pulse">
                   <div className="h-64 bg-gray-800 rounded"></div>
@@ -386,7 +418,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
               <p className="text-gray-400">No images found in this gallery.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+            <div className={`${getGalleryLayoutClasses()} ${getGallerySpacingClasses()}`}>
               {images.slice(0, visibleImageCount)
                 .sort((a, b) => a.sequence - b.sequence)
                 .map((image, visibleIndex) => {
@@ -399,8 +431,10 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                       key={image.id}
                       className={`
                         relative group overflow-hidden
-                        ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full aspect-square'}
+                        ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-lg'}
                         ${selectedImages.has(image.id) ? 'ring-2 ring-salmon' : ''}
+                        ${gallerySettings?.layoutStyle === 'masonry' ? 'break-inside-avoid mb-2' : ''}
+                        ${gallerySettings?.layoutStyle === 'square' ? 'aspect-square' : ''}
                         cursor-pointer transition-all duration-200
                       `}
                       onClick={() => openModal(actualIndex)}
@@ -408,7 +442,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                     <img
                       src={ImageUrl.forViewing(image.storagePath)}
                       alt={image.filename}
-                      className={`w-full object-cover ${gallerySettings.borderStyle === 'circular' ? 'h-full aspect-square' : 'h-64'} transition-all duration-200 group-hover:brightness-90`}
+                      className={`w-full object-cover ${getImageHeightClass()} transition-all duration-200 group-hover:brightness-90`}
                       loading="lazy"
                     />
                     
