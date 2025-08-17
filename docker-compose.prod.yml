@@ -1,0 +1,15 @@
+# Production overrides for docker-compose.yml
+services:
+  app:
+    build:
+      target: runner
+    environment:
+      NODE_ENV: production
+    volumes: []  # Remove all development volume mounts
+    command: npm start
+    profiles: []  # Remove dev profile restriction
+
+  # Remove adminer from production
+  adminer:
+    profiles:
+      - never  # Effectively disables adminer in production

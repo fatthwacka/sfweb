@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SlyFox Studios - Professional Photography & Videography | Cape Town</title>
+    <meta name="description" content="SlyFox Studios offers professional photography and videography services in Cape Town. Specializing in weddings, portraits, corporate events, and commercial photography.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700;800;900&family=Great+Vibes:wght@400&family=Forum:wght@400&family=Barlow+Semi+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Heroicons -->
+    <script src="https://unpkg.com/heroicons@2.0.18/24/outline/index.js" type="module"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'saira': ['Saira Condensed', 'sans-serif'],
+                        'vibes': ['Great Vibes', 'cursive'],
+                        'forum': ['Forum', 'serif'],
+                        'barlow': ['Barlow Semi Condensed', 'sans-serif']
+                    },
+                    colors: {
+                        'gold': '#D4AF37',
+                        'gold-muted': '#C9A876',
+                        'charcoal': '#1A1A1A',
+                        'off-white': '#F5F5F5'
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.6s ease-in-out',
+                        'slide-up': 'slideUp 0.8s ease-out',
+                        'float': 'float 3s ease-in-out infinite'
+                    }
+                }
+            }
+        };
+    </script>
+    
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(26,26,26,0.8) 100%);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .image-hover-effect {
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        
+        .image-hover-effect:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #1A1A1A;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #D4AF37;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body class="bg-black text-white font-forum overflow-x-hidden">
+    <!-- @COMPONENT: NavigationHeader [floating nav with logo, menu items, theme toggle, login button] -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass-effect transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <div class="text-2xl font-saira font-black text-gold">
+                        SlyFox <span class="text-white">Studios</span>
+                    </div>
+                </div>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden lg:flex items-center space-x-8">
+                    <div class="relative group">
+                        <button class="font-barlow font-medium hover:text-gold transition-colors duration-300 flex items-center">
+                            Photography 
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <!-- Dropdown Menu -->
+                        <div class="absolute top-full left-0 w-64 bg-charcoal border border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 mt-2">
+                            <div class="p-2">
+                                <a href="/photography/weddings" class="block px-4 py-2 hover:bg-gold hover:text-black rounded transition-colors">Weddings</a>
+                                <a href="/photography/portraits" class="block px-4 py-2 hover:bg-gold hover:text-black rounded transition-colors">Portraits</a>
+                                <a href="/photography/corporate" class="block px-4 py-2 hover:bg-gold hover:text-black rounded transition-colors">Corporate</a>
+                                <a href="/photography/events" class="block px-4 py-2 hover:bg-gold hover:text-black rounded transition-colors">Events</a>
+                                <a href="/photography/products" class="block px-4 py-2 hover:bg-gold hover:text-black rounded transition-colors">Products</a>
+                                <a href="/photography/graduation" class="block px-4 py-2 hover:bg-gold hover:text-black rounded transition-colors">Graduation</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative group">
+                        <button class="font-barlow font-medium hover:text-gold transition-colors duration-300 flex items-center">
+                            Videography 
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <!-- Dropdown Menu -->
+                        <div class="absolute top-full left-0 w-64 bg-charcoal border border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 mt-2">
+                            <div class="p-2">
+                                <a href="/videography/weddings" class="block px-4 py-2 hover:bg-gold hover:text-black rounded transition-colors">Wedding Films</a>
+                                <a href="/videography/corporate" class="block px-4 py-2 hover:bg-gold hover:text-black rounded transition-colors">Corporate Videos</a>
+                                <a href="/videography/events" class="block px-4 py-2 hover:bg-gold hover:text-black rounded transition-colors">Events</a>
+                                <a href="/videography/products" class="block px-4 py-2 hover:bg-gold hover:text-black rounded transition-colors">Product Videos</a>
+                                <a href="/videography/social" class="block px-4 py-2 hover:bg-gold hover:text-black rounded transition-colors">Social Media</a>
+                                <a href="/videography/animation" class="block px-4 py-2 hover:bg-gold hover:text-black rounded transition-colors">Animation</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <a href="/about" class="font-barlow font-medium hover:text-gold transition-colors duration-300">About</a>
+                    <a href="/pricing" class="font-barlow font-medium hover:text-gold transition-colors duration-300">Pricing</a>
+                    <a href="/contact" class="font-barlow font-medium hover:text-gold transition-colors duration-300">Contact</a>
+                </div>
+                
+                <!-- Right side controls -->
+                <div class="flex items-center space-x-4">
+                    <!-- Theme Toggle -->
+                    <button class="p-2 rounded-full hover:bg-gray-800 transition-colors duration-300" data-mock="true" data-functionality="Toggle between dark and light themes">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                        </svg>
+                    </button>
+                    
+                    <!-- Login Button -->
+                    <button class="bg-gold text-black px-6 py-2 rounded-full font-barlow font-semibold hover:bg-gold-muted transition-all duration-300 transform hover:scale-105" data-mock="true" data-functionality="Login/Register modal or redirect to auth page">
+                        Client Login
+                    </button>
+                    
+                    <!-- Mobile Menu Button -->
+                    <button class="lg:hidden p-2 rounded-md hover:bg-gray-800 transition-colors duration-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- @END_COMPONENT: NavigationHeader -->
+
+    <!-- @COMPONENT: HeroSection [full-screen hero with background image, overlay text, CTA buttons] -->
+    <section class="relative h-screen flex items-center justify-center overflow-hidden">
+        <!-- Background Image -->
+        <!-- Professional wedding photography shot with bride and groom in golden hour lighting -->
+        <div class="absolute inset-0 bg-cover bg-center bg-no-repeat" style="background-image: url('https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2069&h=1380');">
+            <div class="hero-gradient absolute inset-0"></div>
+        </div>
+        
+        <!-- Content -->
+        <div class="relative z-10 text-center max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="animate-slide-up">
+                <h1 class="text-5xl sm:text-6xl lg:text-7xl font-saira font-black mb-6 leading-tight">
+                    Capturing Life's
+                    <span class="text-gold font-vibes text-6xl sm:text-7xl lg:text-8xl block mt-2">
+                        Beautiful Moments
+                    </span>
+                </h1>
+                
+                <p class="text-xl sm:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto font-forum">
+                    Professional photography and videography services in Cape Town. 
+                    Creating timeless memories through our lens, one frame at a time.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <button class="bg-gold text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold-muted transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        View Our Work
+                    </button>
+                    <button class="border-2 border-white text-white px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-white hover:text-black transition-all duration-300 transform hover:scale-105">
+                        Get a Quote
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Scroll indicator -->
+            <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-float">
+                <svg class="w-6 h-6 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                </svg>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: HeroSection -->
+
+    <!-- @COMPONENT: ServicesOverview [photography and videography service categories with hover effects] -->
+    <section class="py-20 bg-charcoal">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl lg:text-5xl font-saira font-black mb-6">
+                    Our <span class="text-gold">Services</span>
+                </h2>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                    From intimate portraits to grand celebrations, we capture every moment with artistic vision and technical excellence.
+                </p>
+            </div>
+            
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- Photography Services -->
+                <div class="group cursor-pointer">
+                    <div class="relative overflow-hidden rounded-2xl shadow-2xl image-hover-effect">
+                        <!-- Professional portrait photography studio setup with dramatic lighting -->
+                        <img src="https://pixabay.com/get/g85ff80686ac2dcf5e33fd9e2cc8f8509a8fbdc0a45faacba1a6d6834002ffbd2f9f902a49383a182815b15bac3c77043481bcee139b743be7266e61e0d73cfeb_1280.jpg" alt="Professional photography services" class="w-full h-96 object-cover">
+                        
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
+                        
+                        <div class="absolute bottom-0 left-0 right-0 p-8">
+                            <h3 class="text-3xl font-saira font-bold mb-4 text-gold">Photography</h3>
+                            <p class="text-gray-200 mb-6">
+                                Capture life's precious moments with our professional photography services. From weddings to corporate events, we create stunning visual narratives.
+                            </p>
+                            
+                            <div class="grid grid-cols-2 gap-4 mb-6">
+                                <div class="text-sm">
+                                    <span class="block text-gold font-semibold">• Weddings</span>
+                                    <span class="block text-gold font-semibold">• Portraits</span>
+                                    <span class="block text-gold font-semibold">• Corporate</span>
+                                </div>
+                                <div class="text-sm">
+                                    <span class="block text-gold font-semibold">• Events</span>
+                                    <span class="block text-gold font-semibold">• Products</span>
+                                    <span class="block text-gold font-semibold">• Graduation</span>
+                                </div>
+                            </div>
+                            
+                            <button class="text-white font-barlow font-semibold hover:text-gold transition-colors duration-300 flex items-center">
+                                Explore Photography
+                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Videography Services -->
+                <div class="group cursor-pointer">
+                    <div class="relative overflow-hidden rounded-2xl shadow-2xl image-hover-effect">
+                        <!-- Professional videography equipment and film crew on location -->
+                        <img src="https://images.unsplash.com/photo-1556075798-4825dfaaf498?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&h=600" alt="Professional videography services" class="w-full h-96 object-cover">
+                        
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
+                        
+                        <div class="absolute bottom-0 left-0 right-0 p-8">
+                            <h3 class="text-3xl font-saira font-bold mb-4 text-gold">Videography</h3>
+                            <p class="text-gray-200 mb-6">
+                                Bring your stories to life with cinematic videography. From wedding films to corporate content, we create compelling visual experiences.
+                            </p>
+                            
+                            <div class="grid grid-cols-2 gap-4 mb-6">
+                                <div class="text-sm">
+                                    <span class="block text-gold font-semibold">• Wedding Films</span>
+                                    <span class="block text-gold font-semibold">• Corporate Videos</span>
+                                    <span class="block text-gold font-semibold">• Events</span>
+                                </div>
+                                <div class="text-sm">
+                                    <span class="block text-gold font-semibold">• Product Videos</span>
+                                    <span class="block text-gold font-semibold">• Social Media</span>
+                                    <span class="block text-gold font-semibold">• Animation</span>
+                                </div>
+                            </div>
+                            
+                            <button class="text-white font-barlow font-semibold hover:text-gold transition-colors duration-300 flex items-center">
+                                Explore Videography
+                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: ServicesOverview -->
+
+    <!-- @COMPONENT: PortfolioShowcase [featured work gallery with filtering] -->
+    <section class="py-20 bg-black">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl lg:text-5xl font-saira font-black mb-6">
+                    Featured <span class="text-gold">Work</span>
+                </h2>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+                    A glimpse into our creative journey - showcasing moments that matter, stories that inspire, and memories that last forever.
+                </p>
+                
+                <!-- Filter buttons -->
+                <div class="flex flex-wrap justify-center gap-4 mb-12">
+                    <button class="px-6 py-3 bg-gold text-black font-barlow font-semibold rounded-full hover:bg-gold-muted transition-all duration-300" data-filter="all">
+                        All Work
+                    </button>
+                    <button class="px-6 py-3 bg-transparent border border-gray-600 text-gray-300 font-barlow font-semibold rounded-full hover:border-gold hover:text-gold transition-all duration-300" data-filter="weddings">
+                        Weddings
+                    </button>
+                    <button class="px-6 py-3 bg-transparent border border-gray-600 text-gray-300 font-barlow font-semibold rounded-full hover:border-gold hover:text-gold transition-all duration-300" data-filter="portraits">
+                        Portraits
+                    </button>
+                    <button class="px-6 py-3 bg-transparent border border-gray-600 text-gray-300 font-barlow font-semibold rounded-full hover:border-gold hover:text-gold transition-all duration-300" data-filter="corporate">
+                        Corporate
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Portfolio Grid -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Portfolio Item 1 -->
+                <div class="group cursor-pointer" data-category="weddings">
+                    <div class="relative overflow-hidden rounded-xl image-hover-effect">
+                        <!-- Elegant wedding ceremony with beautiful lighting and romantic atmosphere -->
+                        <img src="https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" alt="Wedding photography showcase" class="w-full h-80 object-cover">
+                        
+                        <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <div class="text-center">
+                                <h4 class="text-xl font-saira font-bold text-gold mb-2">Garden Wedding</h4>
+                                <p class="text-gray-200 text-sm">Cape Town • 2024</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Portfolio Item 2 -->
+                <div class="group cursor-pointer" data-category="portraits">
+                    <div class="relative overflow-hidden rounded-xl image-hover-effect">
+                        <!-- Professional business portrait with dramatic lighting and confident pose -->
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" alt="Portrait photography showcase" class="w-full h-80 object-cover">
+                        
+                        <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <div class="text-center">
+                                <h4 class="text-xl font-saira font-bold text-gold mb-2">Executive Portrait</h4>
+                                <p class="text-gray-200 text-sm">Corporate • 2024</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Portfolio Item 3 -->
+                <div class="group cursor-pointer" data-category="corporate">
+                    <div class="relative overflow-hidden rounded-xl image-hover-effect">
+                        <!-- Modern corporate event with professional networking and presentations -->
+                        <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" alt="Corporate event photography" class="w-full h-80 object-cover">
+                        
+                        <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <div class="text-center">
+                                <h4 class="text-xl font-saira font-bold text-gold mb-2">Tech Conference</h4>
+                                <p class="text-gray-200 text-sm">Event • 2024</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Portfolio Item 4 -->
+                <div class="group cursor-pointer" data-category="weddings">
+                    <div class="relative overflow-hidden rounded-xl image-hover-effect">
+                        <!-- Romantic wedding couple dancing during golden hour with beautiful scenery -->
+                        <img src="https://pixabay.com/get/g4e9ef85ac37ceb5eb0714d2b75bde8706dcc1635b2277108b50c985dd68db9e3c2d0258cda8cb9c3051e135e0823601839b06a2d35743d7b1226865788741979_1280.jpg" alt="Wedding couple dance photography" class="w-full h-80 object-cover">
+                        
+                        <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <div class="text-center">
+                                <h4 class="text-xl font-saira font-bold text-gold mb-2">Beach Wedding</h4>
+                                <p class="text-gray-200 text-sm">Cape Town • 2024</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Portfolio Item 5 -->
+                <div class="group cursor-pointer" data-category="portraits">
+                    <div class="relative overflow-hidden rounded-xl image-hover-effect">
+                        <!-- Artistic family portrait with warm lighting and natural expressions -->
+                        <img src="https://images.unsplash.com/photo-1511895426328-dc8714191300?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" alt="Family portrait photography" class="w-full h-80 object-cover">
+                        
+                        <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <div class="text-center">
+                                <h4 class="text-xl font-saira font-bold text-gold mb-2">Family Session</h4>
+                                <p class="text-gray-200 text-sm">Portrait • 2024</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Portfolio Item 6 -->
+                <div class="group cursor-pointer" data-category="corporate">
+                    <div class="relative overflow-hidden rounded-xl image-hover-effect">
+                        <!-- Sleek product photography with professional lighting and clean background -->
+                        <img src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" alt="Product photography showcase" class="w-full h-80 object-cover">
+                        
+                        <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <div class="text-center">
+                                <h4 class="text-xl font-saira font-bold text-gold mb-2">Product Shoot</h4>
+                                <p class="text-gray-200 text-sm">Commercial • 2024</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-12">
+                <button class="bg-transparent border-2 border-gold text-gold px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold hover:text-black transition-all duration-300 transform hover:scale-105">
+                    View Full Portfolio
+                </button>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: PortfolioShowcase -->
+
+    <!-- @COMPONENT: PricingSection [tiered packages with features and pricing] -->
+    <section class="py-20 bg-charcoal">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl lg:text-5xl font-saira font-black mb-6">
+                    Transparent <span class="text-gold">Pricing</span>
+                </h2>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                    Choose the perfect package for your needs. All packages include professional editing, online gallery, and high-resolution downloads.
+                </p>
+            </div>
+            
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Essential Package -->
+                <div class="bg-black rounded-2xl p-8 border border-gray-700 hover:border-gold transition-all duration-300 transform hover:-translate-y-2">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-saira font-bold text-gold mb-4">Essential</h3>
+                        <div class="text-4xl font-saira font-black mb-2">R2,500</div>
+                        <p class="text-gray-400">Perfect for smaller events</p>
+                    </div>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-gold mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            2-3 hour coverage
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-gold mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            50-100 edited photos
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-gold mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            Online gallery
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-gold mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            High-res downloads
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-gold mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            Basic editing
+                        </li>
+                    </ul>
+                    
+                    <button class="w-full bg-transparent border-2 border-gold text-gold py-3 rounded-full font-barlow font-semibold hover:bg-gold hover:text-black transition-all duration-300">
+                        Choose Essential
+                    </button>
+                </div>
+                
+                <!-- Premium Package (Featured) -->
+                <div class="bg-black rounded-2xl p-8 border-2 border-gold relative transform scale-105">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                        <span class="bg-gold text-black px-6 py-2 rounded-full font-barlow font-semibold text-sm">Most Popular</span>
+                    </div>
+                    
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-saira font-bold text-gold mb-4">Premium</h3>
+                        <div class="text-4xl font-saira font-black mb-2">R5,500</div>
+                        <p class="text-gray-400">Perfect for weddings & events</p>
+                    </div>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-gold mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            6-8 hour coverage
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-gold mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            200-400 edited photos
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-gold mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            Premium online gallery
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-gold mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            All high-res downloads
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-gold mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            Advanced editing
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-gold mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            USB drive included
+                        </li>
+                    </ul>
+                    
+                    <button class="w-full bg-gold text-black py-3 rounded-full font-barlow font-semibold hover:bg-gold-muted transition-all duration-300">
+                        Choose Premium
+                    </button>
+                </div>
+                
+                <!-- Elite Package -->
+                <div class="bg-black rounded-2xl p-8 border border-gray-700 hover:border-gold transition-all duration-300 transform hover:-translate-y-2">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-saira font-bold text-gold mb-4">Elite</h3>
+                        <div class="text-4xl font-saira font-black mb-2">R9,500</div>
+                        <p class="text-gray-400">Complete luxury experience</p>
+                    </div>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-gold mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            Full day coverage
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-gold mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            500+ edited photos
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-gold mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            Luxury gallery experience
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-gold mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            Multiple format downloads
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-gold mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            Cinema-grade editing
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-gold mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            2 photographers included
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-gold mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            Custom photo album
+                        </li>
+                    </ul>
+                    
+                    <button class="w-full bg-transparent border-2 border-gold text-gold py-3 rounded-full font-barlow font-semibold hover:bg-gold hover:text-black transition-all duration-300">
+                        Choose Elite
+                    </button>
+                </div>
+            </div>
+            
+            <div class="text-center mt-12">
+                <p class="text-gray-400 mb-6">All packages include travel within Cape Town metro area. Custom packages available.</p>
+                <button class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-white hover:text-black transition-all duration-300">
+                    Download Price Guide (PDF)
+                </button>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: PricingSection -->
+
+    <!-- @COMPONENT: ClientGalleryAccess [showcase of client gallery features] -->
+    <section class="py-20 bg-black">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div>
+                    <h2 class="text-4xl lg:text-5xl font-saira font-black mb-6">
+                        Your Private <span class="text-gold">Gallery</span>
+                    </h2>
+                    <p class="text-xl text-gray-300 mb-8">
+                        Access your photos anytime, anywhere. Share with family and friends, download high-resolution images, and relive your special moments through our secure client portal.
+                    </p>
+                    
+                    <div class="space-y-6 mb-8">
+                        <div class="flex items-start">
+                            <div class="bg-gold rounded-full p-2 mr-4 mt-1">
+                                <svg class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-saira font-bold text-lg mb-2">Secure Access</h4>
+                                <p class="text-gray-400">Private, password-protected galleries accessible only to you and those you invite.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="bg-gold rounded-full p-2 mr-4 mt-1">
+                                <svg class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-saira font-bold text-lg mb-2">Easy Downloads</h4>
+                                <p class="text-gray-400">Download individual photos or entire albums in various resolutions for different uses.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="bg-gold rounded-full p-2 mr-4 mt-1">
+                                <svg class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-saira font-bold text-lg mb-2">Share Anywhere</h4>
+                                <p class="text-gray-400">Share your gallery link on social media, email, or create custom invitations.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <button class="bg-gold text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold-muted transition-all duration-300 transform hover:scale-105">
+                            Access My Gallery
+                        </button>
+                        <button class="border-2 border-gray-600 text-gray-300 px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:border-gold hover:text-gold transition-all duration-300">
+                            Gallery Demo
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="relative">
+                    <!-- Modern laptop or tablet showing a photo gallery interface -->
+                    <img src="https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&h=600" alt="Client gallery interface mockup" class="w-full rounded-2xl shadow-2xl">
+                    
+                    <!-- Floating gallery preview -->
+                    <div class="absolute -bottom-10 -left-10 bg-charcoal rounded-xl p-4 shadow-2xl glass-effect">
+                        <div class="grid grid-cols-3 gap-2 mb-3">
+                            <!-- Thumbnail grid showing wedding photos -->
+                            <img src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" alt="Gallery thumbnail 1" class="w-12 h-12 rounded object-cover">
+                            <img src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" alt="Gallery thumbnail 2" class="w-12 h-12 rounded object-cover">
+                            <img src="https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" alt="Gallery thumbnail 3" class="w-12 h-12 rounded object-cover">
+                        </div>
+                        <p class="text-xs text-gray-400">Sarah & James Wedding</p>
+                        <p class="text-xs text-gold">247 photos available</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: ClientGalleryAccess -->
+
+    <!-- @COMPONENT: AboutSection [team introduction and studio story] -->
+    <section class="py-20 bg-charcoal">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div class="order-2 lg:order-1">
+                    <!-- Professional photography team in studio environment -->
+                    <img src="https://images.unsplash.com/photo-1556075798-4825dfaaf498?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&h=700" alt="SlyFox Studios team at work" class="w-full rounded-2xl shadow-2xl">
+                </div>
+                
+                <div class="order-1 lg:order-2">
+                    <h2 class="text-4xl lg:text-5xl font-saira font-black mb-6">
+                        About <span class="text-gold">SlyFox Studios</span>
+                    </h2>
+                    
+                    <p class="text-xl text-gray-300 mb-6">
+                        Founded in the heart of Cape Town, SlyFox Studios is more than just a photography business—we're storytellers, memory makers, and artists passionate about capturing life's most precious moments.
+                    </p>
+                    
+                    <p class="text-lg text-gray-400 mb-8">
+                        Our team combines technical expertise with creative vision to deliver stunning visual narratives that stand the test of time. Whether it's your wedding day, a corporate milestone, or a personal portrait session, we approach every project with the same dedication to excellence.
+                    </p>
+                    
+                    <div class="grid grid-cols-2 gap-8 mb-8">
+                        <div>
+                            <div class="text-3xl font-saira font-bold text-gold mb-2">500+</div>
+                            <p class="text-gray-400">Happy Clients</p>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-saira font-bold text-gold mb-2">5 Years</div>
+                            <p class="text-gray-400">Experience</p>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-saira font-bold text-gold mb-2">1000+</div>
+                            <p class="text-gray-400">Events Captured</p>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-saira font-bold text-gold mb-2">Cape Town</div>
+                            <p class="text-gray-400">Based & Proud</p>
+                        </div>
+                    </div>
+                    
+                    <button class="bg-transparent border-2 border-gold text-gold px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold hover:text-black transition-all duration-300 transform hover:scale-105">
+                        Meet Our Team
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: AboutSection -->
+
+    <!-- @COMPONENT: TestimonialsSection [client reviews and testimonials] -->
+    <section class="py-20 bg-black">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl lg:text-5xl font-saira font-black mb-6">
+                    What Our <span class="text-gold">Clients Say</span>
+                </h2>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                    Don't just take our word for it. Here's what our clients have to say about their experience with SlyFox Studios.
+                </p>
+            </div>
+            
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Testimonial 1 -->
+                <div class="bg-charcoal rounded-2xl p-8 border border-gray-700 hover:border-gold transition-all duration-300">
+                    <div class="flex items-center mb-6">
+                        <div class="flex text-gold">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <blockquote class="text-gray-300 mb-6 italic">
+                        "SlyFox Studios made our wedding day absolutely magical. The attention to detail and artistic vision exceeded all our expectations. Our photos are truly works of art."
+                    </blockquote>
+                    
+                    <div class="flex items-center">
+                        <!-- Happy bride portrait photo -->
+                        <img src="https://images.unsplash.com/photo-1488716820095-cbe80883c496?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" alt="Sarah Mitchell testimonial" class="w-12 h-12 rounded-full mr-4 object-cover">
+                        <div>
+                            <div class="font-saira font-bold text-gold">Sarah Mitchell</div>
+                            <div class="text-gray-400 text-sm">Wedding Client</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Testimonial 2 -->
+                <div class="bg-charcoal rounded-2xl p-8 border border-gray-700 hover:border-gold transition-all duration-300">
+                    <div class="flex items-center mb-6">
+                        <div class="flex text-gold">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <blockquote class="text-gray-300 mb-6 italic">
+                        "Professional, creative, and incredibly talented. The corporate headshots they took for our team elevated our brand image significantly. Highly recommended!"
+                    </blockquote>
+                    
+                    <div class="flex items-center">
+                        <!-- Professional businessman portrait -->
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" alt="Michael Thompson testimonial" class="w-12 h-12 rounded-full mr-4 object-cover">
+                        <div>
+                            <div class="font-saira font-bold text-gold">Michael Thompson</div>
+                            <div class="text-gray-400 text-sm">Corporate Client</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Testimonial 3 -->
+                <div class="bg-charcoal rounded-2xl p-8 border border-gray-700 hover:border-gold transition-all duration-300">
+                    <div class="flex items-center mb-6">
+                        <div class="flex text-gold">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <blockquote class="text-gray-300 mb-6 italic">
+                        "The family portrait session was comfortable and fun. They captured our personalities perfectly, and the online gallery made sharing with relatives so easy."
+                    </blockquote>
+                    
+                    <div class="flex items-center">
+                        <!-- Happy family mother portrait -->
+                        <img src="https://pixabay.com/get/g2f9f17ec7d2323906732acf59260c5fd308903cad2ce0d10b74a25748c57f9f69c676228767f4a5fce64741de9143f32866b735c105c02d7b1c85076c7cadea1_1280.jpg" alt="Emma Rodriguez testimonial" class="w-12 h-12 rounded-full mr-4 object-cover">
+                        <div>
+                            <div class="font-saira font-bold text-gold">Emma Rodriguez</div>
+                            <div class="text-gray-400 text-sm">Family Portrait Client</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: TestimonialsSection -->
+
+    <!-- @COMPONENT: ContactSection [contact form and studio information] -->
+    <section class="py-20 bg-charcoal">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-16">
+                <!-- Contact Form -->
+                <div>
+                    <h2 class="text-4xl lg:text-5xl font-saira font-black mb-6">
+                        Let's Create <span class="text-gold">Something Beautiful</span>
+                    </h2>
+                    <p class="text-xl text-gray-300 mb-8">
+                        Ready to capture your special moments? Get in touch with us and let's discuss how we can bring your vision to life.
+                    </p>
+                    
+                    <form class="space-y-6" data-mock="true" data-functionality="Contact form should POST to API endpoint and send email to info@slyfox.co.za">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="firstName" class="block text-sm font-barlow font-semibold text-gray-300 mb-2">First Name</label>
+                                <input type="text" id="firstName" name="firstName" class="w-full bg-black border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-gold focus:outline-none transition-colors duration-300" placeholder="John">
+                            </div>
+                            <div>
+                                <label for="lastName" class="block text-sm font-barlow font-semibold text-gray-300 mb-2">Last Name</label>
+                                <input type="text" id="lastName" name="lastName" class="w-full bg-black border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-gold focus:outline-none transition-colors duration-300" placeholder="Doe">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="email" class="block text-sm font-barlow font-semibold text-gray-300 mb-2">Email Address</label>
+                            <input type="email" id="email" name="email" class="w-full bg-black border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-gold focus:outline-none transition-colors duration-300" placeholder="john@example.com">
+                        </div>
+                        
+                        <div>
+                            <label for="phone" class="block text-sm font-barlow font-semibold text-gray-300 mb-2">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" class="w-full bg-black border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-gold focus:outline-none transition-colors duration-300" placeholder="+27 12 345 6789">
+                        </div>
+                        
+                        <div>
+                            <label for="service" class="block text-sm font-barlow font-semibold text-gray-300 mb-2">Service Interested In</label>
+                            <select id="service" name="service" class="w-full bg-black border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-gold focus:outline-none transition-colors duration-300">
+                                <option value="">Select a service</option>
+                                <option value="wedding">Wedding Photography</option>
+                                <option value="portrait">Portrait Session</option>
+                                <option value="corporate">Corporate Photography</option>
+                                <option value="event">Event Photography</option>
+                                <option value="videography">Videography</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="message" class="block text-sm font-barlow font-semibold text-gray-300 mb-2">Message</label>
+                            <textarea id="message" name="message" rows="5" class="w-full bg-black border border-gray-600 rounded-lg px-4 py-3 text-white focus:border-gold focus:outline-none transition-colors duration-300" placeholder="Tell us about your project, event date, and any specific requirements..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-gold text-black py-4 rounded-full font-barlow font-semibold text-lg hover:bg-gold-muted transition-all duration-300 transform hover:scale-105">
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Contact Information -->
+                <div>
+                    <div class="bg-black rounded-2xl p-8 border border-gray-700">
+                        <h3 class="text-2xl font-saira font-bold text-gold mb-6">Get in Touch</h3>
+                        
+                        <div class="space-y-6">
+                            <div class="flex items-start">
+                                <div class="bg-gold rounded-full p-3 mr-4 mt-1">
+                                    <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-barlow font-semibold text-lg mb-2">Studio Location</h4>
+                                    <p class="text-gray-300">Cape Town, South Africa</p>
+                                    <p class="text-gray-400 text-sm">Serving Cape Town and surrounding areas</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="bg-gold rounded-full p-3 mr-4 mt-1">
+                                    <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-barlow font-semibold text-lg mb-2">Email Us</h4>
+                                    <p class="text-gray-300">info@slyfox.co.za</p>
+                                    <p class="text-gray-400 text-sm">We respond within 24 hours</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="bg-gold rounded-full p-3 mr-4 mt-1">
+                                    <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-barlow font-semibold text-lg mb-2">Call Us</h4>
+                                    <p class="text-gray-300">+27 12 345 6789</p>
+                                    <p class="text-gray-400 text-sm">Mon - Fri: 9AM - 6PM</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="bg-gold rounded-full p-3 mr-4 mt-1">
+                                    <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-barlow font-semibold text-lg mb-2">Business Hours</h4>
+                                    <p class="text-gray-300">Monday - Friday: 9AM - 6PM</p>
+                                    <p class="text-gray-300">Saturday: 10AM - 4PM</p>
+                                    <p class="text-gray-400 text-sm">Sunday: By appointment only</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-8 pt-8 border-t border-gray-700">
+                            <h4 class="font-barlow font-semibold text-lg mb-4">Follow Us</h4>
+                            <div class="flex space-x-4">
+                                <a href="#" class="bg-gray-700 p-3 rounded-full hover:bg-gold hover:text-black transition-all duration-300">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                                    </svg>
+                                </a>
+                                <a href="#" class="bg-gray-700 p-3 rounded-full hover:bg-gold hover:text-black transition-all duration-300">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.219-.359-1.219c0-1.142.662-1.995 1.488-1.995.703 0 1.042.527 1.042 1.159 0 .705-.449 1.759-.681 2.734-.194.820.412 1.488 1.221 1.488 1.466 0 2.594-1.548 2.594-3.782 0-1.975-1.419-3.355-3.449-3.355-2.349 0-3.728 1.763-3.728 3.582 0 .709.273 1.468.614 1.881.067.081.077.152.057.234-.061.252-.196.796-.223.907-.035.146-.116.177-.268.107-1.001-.465-1.624-1.926-1.624-3.101 0-2.523 1.834-4.84 5.287-4.84 2.781 0 4.943 1.98 4.943 4.628 0 2.757-1.739 4.976-4.151 4.976-.811 0-1.573-.421-1.834-.919l-.498 1.902c-.181.695-.669 1.566-.995 2.097A12.013 12.013 0 0 0 12.017 24c6.624 0 11.99-5.367 11.99-11.987C24.007 5.367 18.641.001.017 0z"/>
+                                    </svg>
+                                </a>
+                                <a href="#" class="bg-gray-700 p-3 rounded-full hover:bg-gold hover:text-black transition-all duration-300">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: ContactSection -->
+
+    <!-- @COMPONENT: Footer [site links, copyright, social media] -->
+    <footer class="bg-black py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-4 gap-8 mb-8">
+                <!-- Brand -->
+                <div class="lg:col-span-1">
+                    <div class="text-3xl font-saira font-black text-gold mb-4">
+                        SlyFox <span class="text-white">Studios</span>
+                    </div>
+                    <p class="text-gray-400 mb-6">
+                        Capturing life's beautiful moments through the lens of creativity and passion in Cape Town, South Africa.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-gold transition-colors duration-300">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-gold transition-colors duration-300">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.40z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-gold transition-colors duration-300">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Photography Services -->
+                <div>
+                    <h4 class="font-saira font-bold text-lg text-gold mb-6">Photography</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/photography/weddings" class="text-gray-400 hover:text-white transition-colors duration-300">Weddings</a></li>
+                        <li><a href="/photography/portraits" class="text-gray-400 hover:text-white transition-colors duration-300">Portraits</a></li>
+                        <li><a href="/photography/corporate" class="text-gray-400 hover:text-white transition-colors duration-300">Corporate</a></li>
+                        <li><a href="/photography/events" class="text-gray-400 hover:text-white transition-colors duration-300">Events</a></li>
+                        <li><a href="/photography/products" class="text-gray-400 hover:text-white transition-colors duration-300">Products</a></li>
+                        <li><a href="/photography/graduation" class="text-gray-400 hover:text-white transition-colors duration-300">Graduation</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Videography Services -->
+                <div>
+                    <h4 class="font-saira font-bold text-lg text-gold mb-6">Videography</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/videography/weddings" class="text-gray-400 hover:text-white transition-colors duration-300">Wedding Films</a></li>
+                        <li><a href="/videography/corporate" class="text-gray-400 hover:text-white transition-colors duration-300">Corporate Videos</a></li>
+                        <li><a href="/videography/events" class="text-gray-400 hover:text-white transition-colors duration-300">Events</a></li>
+                        <li><a href="/videography/products" class="text-gray-400 hover:text-white transition-colors duration-300">Product Videos</a></li>
+                        <li><a href="/videography/social" class="text-gray-400 hover:text-white transition-colors duration-300">Social Media</a></li>
+                        <li><a href="/videography/animation" class="text-gray-400 hover:text-white transition-colors duration-300">Animation</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Company Links -->
+                <div>
+                    <h4 class="font-saira font-bold text-lg text-gold mb-6">Company</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/about" class="text-gray-400 hover:text-white transition-colors duration-300">About Us</a></li>
+                        <li><a href="/pricing" class="text-gray-400 hover:text-white transition-colors duration-300">Pricing</a></li>
+                        <li><a href="/contact" class="text-gray-400 hover:text-white transition-colors duration-300">Contact</a></li>
+                        <li><a href="/admin" class="text-gray-400 hover:text-white transition-colors duration-300">Client Login</a></li>
+                        <li><a href="/privacy" class="text-gray-400 hover:text-white transition-colors duration-300">Privacy Policy</a></li>
+                        <li><a href="/terms" class="text-gray-400 hover:text-white transition-colors duration-300">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8 mt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-gray-400 text-sm mb-4 md:mb-0">
+                        © 2024 SlyFox Studios. All rights reserved. | Designed and developed for Cape Town's creative community.
+                    </p>
+                    <div class="flex space-x-6">
+                        <a href="/sitemap.xml" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Sitemap</a>
+                        <a href="/robots.txt" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Robots</a>
+                        <a href="mailto:info@slyfox.co.za" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">info@slyfox.co.za</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- @END_COMPONENT: Footer -->
+
+    <script>
+        (function() {
+            // Navbar scroll effect
+            const navbar = document.getElementById('navbar');
+            let lastScrollY = window.scrollY;
+            
+            window.addEventListener('scroll', () => {
+                const currentScrollY = window.scrollY;
+                
+                if (currentScrollY > 100) {
+                    navbar.classList.add('bg-black', 'bg-opacity-90');
+                    navbar.classList.remove('glass-effect');
+                } else {
+                    navbar.classList.remove('bg-black', 'bg-opacity-90');
+                    navbar.classList.add('glass-effect');
+                }
+                
+                lastScrollY = currentScrollY;
+            });
+            
+            // Portfolio filter functionality
+            const filterButtons = document.querySelectorAll('[data-filter]');
+            const portfolioItems = document.querySelectorAll('[data-category]');
+            
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const filter = button.getAttribute('data-filter');
+                    
+                    // Update active button
+                    filterButtons.forEach(btn => {
+                        btn.classList.remove('bg-gold', 'text-black');
+                        btn.classList.add('bg-transparent', 'border-gray-600', 'text-gray-300');
+                    });
+                    button.classList.add('bg-gold', 'text-black');
+                    button.classList.remove('bg-transparent', 'border-gray-600', 'text-gray-300');
+                    
+                    // Filter portfolio items
+                    portfolioItems.forEach(item => {
+                        const category = item.getAttribute('data-category');
+                        if (filter === 'all' || category === filter) {
+                            item.style.display = 'block';
+                            item.classList.add('animate-fade-in');
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            });
+            
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+            
+            // Form submission handler (placeholder)
+            const contactForm = document.querySelector('form[data-mock="true"]');
+            if (contactForm) {
+                contactForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    // TODO: Implement actual form submission to API endpoint
+                    alert('Thank you for your message! We will get back to you within 24 hours.');
+                });
+            }
+            
+            // Intersection Observer for animations
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-slide-up');
+                    }
+                });
+            }, observerOptions);
+            
+            // Observe elements for animation
+            document.querySelectorAll('section > div').forEach(el => {
+                observer.observe(el);
+            });
+        })();
+    </script>
+    
+    <!-- Schema.org structured data for SEO -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "ProfessionalService",
+        "name": "SlyFox Studios",
+        "image": "https://www.slyfox.co.za/logo.jpg",
+        "description": "Professional photography and videography services in Cape Town, South Africa. Specializing in weddings, corporate events, portraits, and commercial photography.",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Cape Town",
+            "addressCountry": "ZA"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": -33.9249,
+            "longitude": 18.4241
+        },
+        "url": "https://www.slyfox.co.za",
+        "telephone": "+27123456789",
+        "email": "info@slyfox.co.za",
+        "priceRange": "R2500-R9500",
+        "serviceType": ["Wedding Photography", "Corporate Photography", "Portrait Photography", "Event Photography", "Videography"],
+        "areaServed": {
+            "@type": "City",
+            "name": "Cape Town"
+        },
+        "openingHours": ["Mo-Fr 09:00-18:00", "Sa 10:00-16:00"],
+        "sameAs": [
+            "https://www.instagram.com/slyfoxstudios",
+            "https://www.facebook.com/slyfoxstudios",
+            "https://www.linkedin.com/company/slyfoxstudios"
+        ]
+    }
+    </script>
+</body>
+</html>

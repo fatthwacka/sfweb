@@ -14,7 +14,7 @@ export default function Admin() {
       <div className="min-h-screen bg-background text-foreground">
         <Navigation />
         <div className="pt-32 pb-20">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="px-6 sm:px-8 lg:px-12 xl:px-16 text-center">
             <Shield className="w-16 h-16 text-muted-foreground mx-auto mb-6" />
             <h1 className="text-4xl font-saira font-black mb-6">Access Denied</h1>
             <p className="text-xl text-muted-foreground mb-8">
@@ -41,7 +41,7 @@ export default function Admin() {
       
       {/* Header */}
       <section className="pt-32 pb-8 bg-gradient-to-br from-purple-dark via-background to-grey-dark">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="px-6 sm:px-8 lg:px-12 xl:px-16">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Shield className="w-12 h-12 icon-salmon" />

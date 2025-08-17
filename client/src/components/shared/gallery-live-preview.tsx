@@ -89,13 +89,13 @@ export const GalleryLivePreview: React.FC<GalleryLivePreviewProps> = ({
     }
     
     if (galleryLayout === 'masonry') {
-      return 'columns-2 md:columns-3 lg:columns-4 xl:columns-5';
+      return 'masonry-grid-seamless';
     }
     
     // Automatic layout based on aspect ratio analysis
     const dominantCategory = aspectRatioData[0]?.category;
     if (dominantCategory === 'landscape') return 'grid-cols-2 md:grid-cols-3';
-    if (dominantCategory === 'portrait') return 'grid-cols-3 md:grid-cols-4 lg:grid-cols-5';
+    if (dominantCategory === 'portrait') return 'grid-cols-3 md:grid-cols-4 2xl:grid-cols-5';
     return 'grid-cols-3 md:grid-cols-4';
   };
 
@@ -112,8 +112,8 @@ export const GalleryLivePreview: React.FC<GalleryLivePreviewProps> = ({
   const PreviewImage = ({ image, index }: { image: Image, index: number }) => (
     <div 
       className={`
-        relative group cursor-pointer transition-transform hover:scale-105
-        ${galleryLayout === 'masonry' ? 'break-inside-avoid mb-4' : 'aspect-square'}
+        relative group cursor-pointer transition-all hover:brightness-90
+        ${galleryLayout === 'masonry' ? 'break-inside-avoid' : 'aspect-square'}
         ${galleryLayout === 'automatic' && aspectRatioData[0]?.category === 'landscape' ? 'aspect-[4/3]' : ''}
         ${galleryLayout === 'automatic' && aspectRatioData[0]?.category === 'portrait' ? 'aspect-[3/4]' : ''}
       `}
@@ -121,8 +121,9 @@ export const GalleryLivePreview: React.FC<GalleryLivePreviewProps> = ({
       {/* Mock image placeholder */}
       <div 
         className={`
-          w-full h-full bg-gradient-to-br from-gray-600 to-gray-800 rounded-lg
+          seamless-image bg-gradient-to-br from-gray-600 to-gray-800
           flex items-center justify-center text-white text-sm
+          ${galleryLayout === 'masonry' ? '' : 'rounded-none'}
         `}
         style={{ 
           background: `linear-gradient(${45 + (index * 23) % 180}deg, #4a5568, #2d3748)`
@@ -297,7 +298,7 @@ export const GalleryLivePreview: React.FC<GalleryLivePreviewProps> = ({
             {filteredImages.length > 0 ? (
               <div 
                 className={`
-                  ${galleryLayout === 'masonry' ? getGridColumns() : `grid gap-4 ${getGridColumns()}`}
+                  ${galleryLayout === 'masonry' ? getGridColumns() : `grid grid-seamless ${getGridColumns()}`}
                 `}
               >
                 {filteredImages.slice(0, 20).map((image, index) => (

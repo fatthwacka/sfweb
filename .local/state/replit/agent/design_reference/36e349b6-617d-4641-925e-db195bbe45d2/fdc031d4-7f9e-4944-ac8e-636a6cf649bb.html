@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SlyFox Studios - Professional Photography & Videography</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@900&family=Great+Vibes&family=Forum&family=Barlow+Semi+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'heading': ['Saira Condensed', 'sans-serif'],
+                        'script': ['Great Vibes', 'cursive'],
+                        'body': ['Forum', 'serif'],
+                        'ui': ['Barlow Semi Condensed', 'sans-serif']
+                    },
+                    colors: {
+                        'rich-black': '#0A0A0A',
+                        'dark-gray': '#1A1A1A',
+                        'off-white': '#F5F5F5',
+                        'light-gray': '#E5E5E5',
+                        'elegant-gold': '#D4AF37',
+                        'muted-gold': '#8B7355'
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        .hero-gradient {
+            background: linear-gradient(135deg, rgba(10, 10, 10, 0.8) 0%, rgba(26, 26, 26, 0.6) 100%);
+        }
+        .gold-gradient {
+            background: linear-gradient(135deg, #D4AF37 0%, #8B7355 100%);
+        }
+        .gallery-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .gallery-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+    </style>
+</head>
+<body class="bg-rich-black text-off-white font-body">
+    <!-- @COMPONENT: Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-rich-black/90 backdrop-blur-md border-b border-dark-gray">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-elegant-gold rounded-full flex items-center justify-center">
+                        <i class="fas fa-camera text-rich-black text-lg"></i>
+                    </div>
+                    <span class="font-heading text-2xl font-black tracking-wide">SlyFox Studios</span>
+                </div>
+
+                <!-- Navigation Links -->
+                <div class="hidden lg:flex items-center space-x-8">
+                    <div class="relative group">
+                        <button class="font-ui text-sm font-medium hover:text-elegant-gold transition-colors duration-200 flex items-center">
+                            Photography <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                        </button>
+                        <!-- @FUNCTIONALITY: Dropdown menu for photography categories -->
+                        <div class="absolute top-full left-0 mt-2 w-64 bg-dark-gray rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <div class="p-4 grid grid-cols-2 gap-2">
+                                <a href="/photography/weddings" class="block px-3 py-2 text-sm hover:bg-elegant-gold/10 rounded">Weddings</a>
+                                <a href="/photography/portraits" class="block px-3 py-2 text-sm hover:bg-elegant-gold/10 rounded">Portraits</a>
+                                <a href="/photography/products" class="block px-3 py-2 text-sm hover:bg-elegant-gold/10 rounded">Products</a>
+                                <a href="/photography/corporate" class="block px-3 py-2 text-sm hover:bg-elegant-gold/10 rounded">Corporate</a>
+                                <a href="/photography/graduation" class="block px-3 py-2 text-sm hover:bg-elegant-gold/10 rounded">Graduation</a>
+                                <a href="/photography/events" class="block px-3 py-2 text-sm hover:bg-elegant-gold/10 rounded">Events</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative group">
+                        <button class="font-ui text-sm font-medium hover:text-elegant-gold transition-colors duration-200 flex items-center">
+                            Videography <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                        </button>
+                        <!-- @FUNCTIONALITY: Dropdown menu for videography categories -->
+                        <div class="absolute top-full left-0 mt-2 w-64 bg-dark-gray rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <div class="p-4 grid grid-cols-2 gap-2">
+                                <a href="/videography/weddings" class="block px-3 py-2 text-sm hover:bg-elegant-gold/10 rounded">Weddings</a>
+                                <a href="/videography/corporate" class="block px-3 py-2 text-sm hover:bg-elegant-gold/10 rounded">Corporate</a>
+                                <a href="/videography/social-media" class="block px-3 py-2 text-sm hover:bg-elegant-gold/10 rounded">Social Media</a>
+                                <a href="/videography/events" class="block px-3 py-2 text-sm hover:bg-elegant-gold/10 rounded">Events</a>
+                                <a href="/videography/animation" class="block px-3 py-2 text-sm hover:bg-elegant-gold/10 rounded">Animation</a>
+                                <a href="/videography/ugc" class="block px-3 py-2 text-sm hover:bg-elegant-gold/10 rounded">UGC Videos</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="/pricing" class="font-ui text-sm font-medium hover:text-elegant-gold transition-colors duration-200">Pricing</a>
+                    <a href="/about" class="font-ui text-sm font-medium hover:text-elegant-gold transition-colors duration-200">About</a>
+                    <a href="/contact" class="font-ui text-sm font-medium hover:text-elegant-gold transition-colors duration-200">Contact</a>
+                </div>
+
+                <!-- CTA Buttons -->
+                <div class="hidden lg:flex items-center space-x-4">
+                    <button data-event="click:openClientLogin" class="font-ui px-4 py-2 text-sm font-medium border border-elegant-gold text-elegant-gold hover:bg-elegant-gold hover:text-rich-black transition-all duration-200 rounded">
+                        Client Login
+                    </button>
+                    <button data-event="click:openAdminLogin" class="font-ui px-4 py-2 text-sm font-medium bg-elegant-gold text-rich-black hover:bg-muted-gold transition-all duration-200 rounded">
+                        Staff Login
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button class="lg:hidden text-elegant-gold">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+    <!-- @END_COMPONENT: Navigation -->
+
+    <!-- @COMPONENT: Hero Section -->
+    <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <!-- Hero background image with overlay -->
+        <!-- A dramatic black and white portrait of a bride in elegant lighting -->
+        <div class="absolute inset-0 hero-gradient">
+            <img src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1920&h=1080" 
+                 alt="Elegant bride portrait in dramatic lighting" 
+                 class="w-full h-full object-cover" />
+        </div>
+
+        <div class="relative z-10 text-center px-6 max-w-4xl mx-auto">
+            <div class="font-script text-4xl md:text-6xl text-elegant-gold mb-6">Capturing</div>
+            <h1 class="font-heading text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-6">
+                UNFORGETTABLE<br>
+                <span class="text-elegant-gold">MOMENTS</span>
+            </h1>
+            <p class="text-lg md:text-xl text-light-gray max-w-2xl mx-auto leading-relaxed mb-8">
+                Professional photography and videography services that transform your special moments into timeless memories. From intimate weddings to corporate events, we capture the story behind every frame.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button data-event="click:scrollToPortfolio" class="font-ui px-8 py-4 bg-elegant-gold text-rich-black font-semibold hover:bg-muted-gold transition-all duration-200 rounded-lg transform hover:scale-105">
+                    View Our Work
+                </button>
+                <button data-event="click:openContact" class="font-ui px-8 py-4 border-2 border-elegant-gold text-elegant-gold font-semibold hover:bg-elegant-gold hover:text-rich-black transition-all duration-200 rounded-lg">
+                    Get Started
+                </button>
+            </div>
+        </div>
+
+        <!-- Scroll indicator -->
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <i class="fas fa-chevron-down text-elegant-gold text-xl"></i>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Hero Section -->
+
+    <!-- @COMPONENT: Services Overview -->
+    <section class="py-20 bg-gradient-to-b from-rich-black to-dark-gray">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <div class="font-script text-3xl text-elegant-gold mb-4">Our Services</div>
+                <h2 class="font-heading text-4xl md:text-5xl font-black mb-6">
+                    PHOTOGRAPHY & VIDEOGRAPHY
+                </h2>
+                <p class="text-lg text-light-gray max-w-3xl mx-auto">
+                    From capturing the delicate details of your wedding day to creating compelling corporate content, 
+                    we offer comprehensive visual storytelling services.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+                <!-- Photography Card -->
+                <div class="group relative overflow-hidden rounded-2xl gallery-hover">
+                    <!-- A professional wedding photographer capturing a ceremony -->
+                    <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
+                         alt="Professional wedding photographer at work" 
+                         class="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-rich-black/90 via-transparent to-transparent">
+                        <div class="absolute bottom-6 left-6 right-6">
+                            <h3 class="font-heading text-2xl font-black mb-2">PHOTOGRAPHY</h3>
+                            <p class="text-light-gray mb-4">Weddings • Portraits • Corporate • Events • Products</p>
+                            <a href="/photography" class="inline-flex items-center font-ui font-semibold text-elegant-gold hover:text-muted-gold transition-colors">
+                                Explore Photography <i class="fas fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Videography Card -->
+                <div class="group relative overflow-hidden rounded-2xl gallery-hover">
+                    <!-- A videographer filming with professional equipment -->
+                    <img src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
+                         alt="Professional videographer with camera equipment" 
+                         class="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-rich-black/90 via-transparent to-transparent">
+                        <div class="absolute bottom-6 left-6 right-6">
+                            <h3 class="font-heading text-2xl font-black mb-2">VIDEOGRAPHY</h3>
+                            <p class="text-light-gray mb-4">Weddings • Corporate • Social Media • Animation</p>
+                            <a href="/videography" class="inline-flex items-center font-ui font-semibold text-elegant-gold hover:text-muted-gold transition-colors">
+                                Explore Videography <i class="fas fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Services Overview -->
+
+    <!-- @COMPONENT: Featured Work Gallery -->
+    <section class="py-20 bg-dark-gray">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <div class="font-script text-3xl text-elegant-gold mb-4">Portfolio</div>
+                <h2 class="font-heading text-4xl md:text-5xl font-black mb-6">
+                    FEATURED WORK
+                </h2>
+                <p class="text-lg text-light-gray max-w-3xl mx-auto">
+                    A curated selection of our recent projects showcasing the diverse range of moments we've had the privilege to capture.
+                </p>
+            </div>
+
+            <!-- @MAP: featuredProjects.map(project => ( -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                <!-- Featured Project 1 -->
+                <div class="group relative overflow-hidden rounded-xl gallery-hover">
+                    <!-- An elegant wedding ceremony in a grand venue -->
+                    <img src="https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&h=400" 
+                         alt="Elegant wedding ceremony in grand venue" 
+                         class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-rich-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <h3 class="font-ui font-semibold text-sm mb-1" data-bind="project.category">Wedding Photography</h3>
+                            <p class="font-body text-xs text-light-gray" data-bind="project.title">Sarah & Michael's Wedding</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Featured Project 2 -->
+                <div class="group relative overflow-hidden rounded-xl gallery-hover">
+                    <!-- A professional corporate headshot session -->
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&h=400" 
+                         alt="Professional corporate headshot session" 
+                         class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-rich-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <h3 class="font-ui font-semibold text-sm mb-1" data-bind="project.category">Corporate Photography</h3>
+                            <p class="font-body text-xs text-light-gray" data-bind="project.title">Executive Portraits</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Featured Project 3 -->
+                <div class="group relative overflow-hidden rounded-xl gallery-hover">
+                    <!-- A beautiful graduation ceremony moment -->
+                    <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&h=400" 
+                         alt="Beautiful graduation ceremony moment" 
+                         class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-rich-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <h3 class="font-ui font-semibold text-sm mb-1" data-bind="project.category">Graduation Photography</h3>
+                            <p class="font-body text-xs text-light-gray" data-bind="project.title">Class of 2024</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Featured Project 4 -->
+                <div class="group relative overflow-hidden rounded-xl gallery-hover">
+                    <!-- A creative product photography setup -->
+                    <img src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&h=400" 
+                         alt="Creative product photography setup" 
+                         class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-rich-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <h3 class="font-ui font-semibold text-sm mb-1" data-bind="project.category">Product Photography</h3>
+                            <p class="font-body text-xs text-light-gray" data-bind="project.title">Brand Campaign</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Featured Project 5 -->
+                <div class="group relative overflow-hidden rounded-xl gallery-hover">
+                    <!-- A dynamic event photography shot -->
+                    <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&h=400" 
+                         alt="Dynamic event photography shot" 
+                         class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-rich-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <h3 class="font-ui font-semibold text-sm mb-1" data-bind="project.category">Event Photography</h3>
+                            <p class="font-body text-xs text-light-gray" data-bind="project.title">Festival Coverage</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Featured Project 6 -->
+                <div class="group relative overflow-hidden rounded-xl gallery-hover">
+                    <!-- A professional portrait session -->
+                    <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&h=400" 
+                         alt="Professional portrait session" 
+                         class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-rich-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <h3 class="font-ui font-semibold text-sm mb-1" data-bind="project.category">Portrait Photography</h3>
+                            <p class="font-body text-xs text-light-gray" data-bind="project.title">Personal Branding</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_MAP )) -->
+
+            <div class="text-center">
+                <a href="/portfolio" class="inline-flex items-center font-ui px-8 py-4 bg-elegant-gold text-rich-black font-semibold hover:bg-muted-gold transition-all duration-200 rounded-lg">
+                    View Full Portfolio <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Featured Work Gallery -->
+
+    <!-- @COMPONENT: Pricing Section -->
+    <section class="py-20 bg-rich-black">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <div class="font-script text-3xl text-elegant-gold mb-4">Investment</div>
+                <h2 class="font-heading text-4xl md:text-5xl font-black mb-6">
+                    CONTENT PACKAGES
+                </h2>
+                <p class="text-lg text-light-gray max-w-3xl mx-auto">
+                    Transparent pricing for professional photography and videography services. 
+                    Each package is designed to meet different needs and budgets.
+                </p>
+            </div>
+
+            <!-- @MAP: packages.map(package => ( -->
+            <div class="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+                <!-- Essential Package -->
+                <div class="bg-dark-gray rounded-2xl p-8 border border-gray-800 hover:border-elegant-gold/30 transition-all duration-300">
+                    <div class="text-center mb-8">
+                        <h3 class="font-heading text-2xl font-black mb-2" data-bind="package.name">ESSENTIAL</h3>
+                        <div class="font-script text-lg text-elegant-gold mb-4">Perfect for small events</div>
+                        <div class="text-4xl font-black mb-2" data-bind="package.price">R2,500</div>
+                        <p class="text-light-gray text-sm">Starting from</p>
+                    </div>
+                    
+                    <ul class="space-y-3 mb-8" data-bind="package.features">
+                        <li class="flex items-center text-sm">
+                            <i class="fas fa-check text-elegant-gold mr-3"></i>
+                            2-hour photo session
+                        </li>
+                        <li class="flex items-center text-sm">
+                            <i class="fas fa-check text-elegant-gold mr-3"></i>
+                            50+ edited high-resolution images
+                        </li>
+                        <li class="flex items-center text-sm">
+                            <i class="fas fa-check text-elegant-gold mr-3"></i>
+                            Online gallery for 30 days
+                        </li>
+                        <li class="flex items-center text-sm">
+                            <i class="fas fa-check text-elegant-gold mr-3"></i>
+                            Digital download rights
+                        </li>
+                        <li class="flex items-center text-sm">
+                            <i class="fas fa-check text-elegant-gold mr-3"></i>
+                            Social media ready files
+                        </li>
+                    </ul>
+                    
+                    <button data-event="click:selectPackage" data-package="essential" class="w-full font-ui py-3 border-2 border-elegant-gold text-elegant-gold font-semibold hover:bg-elegant-gold hover:text-rich-black transition-all duration-200 rounded-lg">
+                        Choose Essential
+                    </button>
+                </div>
+
+                <!-- Premium Package (Featured) -->
+                <div class="bg-dark-gray rounded-2xl p-8 border-2 border-elegant-gold relative transform lg:scale-105">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                        <span class="bg-elegant-gold text-rich-black px-4 py-1 rounded-full text-xs font-ui font-semibold">MOST POPULAR</span>
+                    </div>
+                    
+                    <div class="text-center mb-8">
+                        <h3 class="font-heading text-2xl font-black mb-2" data-bind="package.name">PREMIUM</h3>
+                        <div class="font-script text-lg text-elegant-gold mb-4">Complete coverage</div>
+                        <div class="text-4xl font-black mb-2" data-bind="package.price">R5,500</div>
+                        <p class="text-light-gray text-sm">Starting from</p>
+                    </div>
+                    
+                    <ul class="space-y-3 mb-8" data-bind="package.features">
+                        <li class="flex items-center text-sm">
+                            <i class="fas fa-check text-elegant-gold mr-3"></i>
+                            6-hour photo & video session
+                        </li>
+                        <li class="flex items-center text-sm">
+                            <i class="fas fa-check text-elegant-gold mr-3"></i>
+                            200+ edited high-resolution images
+                        </li>
+                        <li class="flex items-center text-sm">
+                            <i class="fas fa-check text-elegant-gold mr-3"></i>
+                            3-5 minute highlight video
+                        </li>
+                        <li class="flex items-center text-sm">
+                            <i class="fas fa-check text-elegant-gold mr-3"></i>
+                            Online gallery for 90 days
+                        </li>
+                        <li class="flex items-center text-sm">
+                            <i class="fas fa-check text-elegant-gold mr-3"></i>
+                            Print release & USB drive
+                        </li>
+                        <li class="flex items-center text-sm">
+                            <i class="fas fa-check text-elegant-gold mr-3"></i>
+                            Same-day sneak peeks
+                        </li>
+                    </ul>
+                    
+                    <button data-event="click:selectPackage" data-package="premium" class="w-full font-ui py-3 bg-elegant-gold text-rich-black font-semibold hover:bg-muted-gold transition-all duration-200 rounded-lg">
+                        Choose Premium
+                    </button>
+                </div>
+
+                <!-- Elite Package -->
+                <div class="bg-dark-gray rounded-2xl p-8 border border-gray-800 hover:border-elegant-gold/30 transition-all duration-300">
+                    <div class="text-center mb-8">
+                        <h3 class="font-heading text-2xl font-black mb-2" data-bind="package.name">ELITE</h3>
+                        <div class="font-script text-lg text-elegant-gold mb-4">Ultimate experience</div>
+                        <div class="text-4xl font-black mb-2" data-bind="package.price">R12,000</div>
+                        <p class="text-light-gray text-sm">Starting from</p>
+                    </div>
+                    
+                    <ul class="space-y-3 mb-8" data-bind="package.features">
+                        <li class="flex items-center text-sm">
+                            <i class="fas fa-check text-elegant-gold mr-3"></i>
+                            Full day coverage (10+ hours)
+                        </li>
+                        <li class="flex items-center text-sm">
+                            <i class="fas fa-check text-elegant-gold mr-3"></i>
+                            500+ edited high-resolution images
+                        </li>
+                        <li class="flex items-center text-sm">
+                            <i class="fas fa-check text-elegant-gold mr-3"></i>
+                            10-15 minute cinematic film
+                        </li>
+                        <li class="flex items-center text-sm">
+                            <i class="fas fa-check text-elegant-gold mr-3"></i>
+                            Second photographer/videographer
+                        </li>
+                        <li class="flex items-center text-sm">
+                            <i class="fas fa-check text-elegant-gold mr-3"></i>
+                            Premium album & presentation box
+                        </li>
+                        <li class="flex items-center text-sm">
+                            <i class="fas fa-check text-elegant-gold mr-3"></i>
+                            Lifetime online gallery access
+                        </li>
+                    </ul>
+                    
+                    <button data-event="click:selectPackage" data-package="elite" class="w-full font-ui py-3 border-2 border-elegant-gold text-elegant-gold font-semibold hover:bg-elegant-gold hover:text-rich-black transition-all duration-200 rounded-lg">
+                        Choose Elite
+                    </button>
+                </div>
+            </div>
+            <!-- @END_MAP )) -->
+
+            <div class="text-center mt-12">
+                <p class="text-light-gray mb-6">All packages include consultation and custom planning</p>
+                <div class="space-x-4">
+                    <a href="/pricing" class="inline-flex items-center font-ui px-6 py-3 bg-elegant-gold text-rich-black font-semibold hover:bg-muted-gold transition-all duration-200 rounded-lg">
+                        View Detailed Pricing <i class="fas fa-download ml-2"></i>
+                    </a>
+                    <button data-event="click:requestQuote" class="inline-flex items-center font-ui px-6 py-3 border border-elegant-gold text-elegant-gold font-semibold hover:bg-elegant-gold hover:text-rich-black transition-all duration-200 rounded-lg">
+                        Request Custom Quote
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Pricing Section -->
+
+    <!-- @COMPONENT: Client Testimonials -->
+    <section class="py-20 bg-dark-gray">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <div class="font-script text-3xl text-elegant-gold mb-4">Testimonials</div>
+                <h2 class="font-heading text-4xl md:text-5xl font-black mb-6">
+                    WHAT CLIENTS SAY
+                </h2>
+            </div>
+
+            <!-- @MAP: testimonials.map(testimonial => ( -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+                <!-- Testimonial 1 -->
+                <div class="bg-rich-black rounded-xl p-8 border border-gray-800">
+                    <div class="flex items-center mb-4">
+                        <div class="flex text-elegant-gold text-sm">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <p class="text-light-gray mb-6" data-bind="testimonial.content">
+                        "SlyFox Studios captured our wedding day perfectly. Every moment, every emotion was beautifully documented. The team was professional and made us feel so comfortable."
+                    </p>
+                    <div class="flex items-center">
+                        <!-- A happy couple smiling together -->
+                        <img src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=64&h=64" 
+                             alt="Happy couple testimonial" 
+                             class="w-12 h-12 rounded-full object-cover mr-4" />
+                        <div>
+                            <h4 class="font-ui font-semibold text-sm" data-bind="testimonial.client_name">Sarah & Michael</h4>
+                            <p class="text-elegant-gold text-xs" data-bind="testimonial.event_type">Wedding Photography</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 2 -->
+                <div class="bg-rich-black rounded-xl p-8 border border-gray-800">
+                    <div class="flex items-center mb-4">
+                        <div class="flex text-elegant-gold text-sm">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <p class="text-light-gray mb-6" data-bind="testimonial.content">
+                        "Outstanding corporate photography service. The team understood our brand perfectly and delivered headshots that truly represent our company's professionalism."
+                    </p>
+                    <div class="flex items-center">
+                        <!-- A professional businesswoman smiling -->
+                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=64&h=64" 
+                             alt="Professional businesswoman testimonial" 
+                             class="w-12 h-12 rounded-full object-cover mr-4" />
+                        <div>
+                            <h4 class="font-ui font-semibold text-sm" data-bind="testimonial.client_name">Jennifer Chen</h4>
+                            <p class="text-elegant-gold text-xs" data-bind="testimonial.event_type">Corporate Headshots</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 3 -->
+                <div class="bg-rich-black rounded-xl p-8 border border-gray-800">
+                    <div class="flex items-center mb-4">
+                        <div class="flex text-elegant-gold text-sm">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <p class="text-light-gray mb-6" data-bind="testimonial.content">
+                        "My graduation photos are absolutely stunning! The attention to detail and creative compositions made this milestone even more special. Highly recommend!"
+                    </p>
+                    <div class="flex items-center">
+                        <!-- A young graduate in cap and gown smiling -->
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=64&h=64" 
+                             alt="Young graduate testimonial" 
+                             class="w-12 h-12 rounded-full object-cover mr-4" />
+                        <div>
+                            <h4 class="font-ui font-semibold text-sm" data-bind="testimonial.client_name">David Martinez</h4>
+                            <p class="text-elegant-gold text-xs" data-bind="testimonial.event_type">Graduation Photography</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_MAP )) -->
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Client Testimonials -->
+
+    <!-- @COMPONENT: Contact Section -->
+    <section class="py-20 bg-rich-black">
+        <div class="container mx-auto px-6">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-16">
+                    <div class="font-script text-3xl text-elegant-gold mb-4">Get In Touch</div>
+                    <h2 class="font-heading text-4xl md:text-5xl font-black mb-6">
+                        START YOUR STORY
+                    </h2>
+                    <p class="text-lg text-light-gray max-w-2xl mx-auto">
+                        Ready to capture your special moments? Let's discuss your vision and create something beautiful together.
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-12">
+                    <!-- Contact Form -->
+                    <div>
+                        <form data-event="submit:handleContactForm" class="space-y-6">
+                            <!-- @FUNCTIONALITY: Form should validate and send email notification -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block font-ui text-sm font-medium mb-2">First Name</label>
+                                    <input type="text" data-bind="form.firstName" required 
+                                           class="w-full px-4 py-3 bg-dark-gray border border-gray-700 rounded-lg focus:border-elegant-gold focus:outline-none transition-colors text-off-white" 
+                                           placeholder="John" />
+                                </div>
+                                <div>
+                                    <label class="block font-ui text-sm font-medium mb-2">Last Name</label>
+                                    <input type="text" data-bind="form.lastName" required 
+                                           class="w-full px-4 py-3 bg-dark-gray border border-gray-700 rounded-lg focus:border-elegant-gold focus:outline-none transition-colors text-off-white" 
+                                           placeholder="Doe" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block font-ui text-sm font-medium mb-2">Email</label>
+                                <input type="email" data-bind="form.email" required 
+                                       class="w-full px-4 py-3 bg-dark-gray border border-gray-700 rounded-lg focus:border-elegant-gold focus:outline-none transition-colors text-off-white" 
+                                       placeholder="john@example.com" />
+                            </div>
+
+                            <div>
+                                <label class="block font-ui text-sm font-medium mb-2">Service Needed</label>
+                                <select data-bind="form.service" required 
+                                        class="w-full px-4 py-3 bg-dark-gray border border-gray-700 rounded-lg focus:border-elegant-gold focus:outline-none transition-colors text-off-white">
+                                    <option value="">Select a service</option>
+                                    <option value="wedding-photography">Wedding Photography</option>
+                                    <option value="wedding-videography">Wedding Videography</option>
+                                    <option value="corporate-photography">Corporate Photography</option>
+                                    <option value="event-photography">Event Photography</option>
+                                    <option value="portrait-photography">Portrait Photography</option>
+                                    <option value="product-photography">Product Photography</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block font-ui text-sm font-medium mb-2">Event Date</label>
+                                <input type="date" data-bind="form.eventDate" 
+                                       class="w-full px-4 py-3 bg-dark-gray border border-gray-700 rounded-lg focus:border-elegant-gold focus:outline-none transition-colors text-off-white" />
+                            </div>
+
+                            <div>
+                                <label class="block font-ui text-sm font-medium mb-2">Tell us about your project</label>
+                                <textarea data-bind="form.message" rows="4" required 
+                                          class="w-full px-4 py-3 bg-dark-gray border border-gray-700 rounded-lg focus:border-elegant-gold focus:outline-none transition-colors text-off-white resize-none" 
+                                          placeholder="Share your vision, event details, and any specific requirements..."></textarea>
+                            </div>
+
+                            <button type="submit" 
+                                    class="w-full font-ui py-4 bg-elegant-gold text-rich-black font-semibold hover:bg-muted-gold transition-all duration-200 rounded-lg">
+                                Send Message
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="font-heading text-xl font-black mb-4">CONTACT INFO</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-start">
+                                    <i class="fas fa-envelope text-elegant-gold mr-4 mt-1"></i>
+                                    <div>
+                                        <p class="font-ui font-medium">Email</p>
+                                        <p class="text-light-gray">hello@slyfoxstudios.com</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <i class="fas fa-phone text-elegant-gold mr-4 mt-1"></i>
+                                    <div>
+                                        <p class="font-ui font-medium">Phone</p>
+                                        <p class="text-light-gray">+27 11 123 4567</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <i class="fas fa-map-marker-alt text-elegant-gold mr-4 mt-1"></i>
+                                    <div>
+                                        <p class="font-ui font-medium">Location</p>
+                                        <p class="text-light-gray">Cape Town, South Africa</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="font-heading text-xl font-black mb-4">FOLLOW US</h3>
+                            <div class="flex space-x-4">
+                                <a href="#" class="w-12 h-12 bg-dark-gray rounded-lg flex items-center justify-center hover:bg-elegant-gold hover:text-rich-black transition-all duration-200">
+                                    <i class="fab fa-instagram text-lg"></i>
+                                </a>
+                                <a href="#" class="w-12 h-12 bg-dark-gray rounded-lg flex items-center justify-center hover:bg-elegant-gold hover:text-rich-black transition-all duration-200">
+                                    <i class="fab fa-facebook text-lg"></i>
+                                </a>
+                                <a href="#" class="w-12 h-12 bg-dark-gray rounded-lg flex items-center justify-center hover:bg-elegant-gold hover:text-rich-black transition-all duration-200">
+                                    <i class="fab fa-youtube text-lg"></i>
+                                </a>
+                                <a href="#" class="w-12 h-12 bg-dark-gray rounded-lg flex items-center justify-center hover:bg-elegant-gold hover:text-rich-black transition-all duration-200">
+                                    <i class="fab fa-linkedin text-lg"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="font-heading text-xl font-black mb-4">RESPONSE TIME</h3>
+                            <p class="text-light-gray">We typically respond to inquiries within 24 hours. For urgent requests, please call us directly.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Contact Section -->
+
+    <!-- @COMPONENT: Footer -->
+    <footer class="bg-dark-gray border-t border-gray-800 py-16">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+                <!-- Company Info -->
+                <div>
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-8 h-8 bg-elegant-gold rounded-full flex items-center justify-center">
+                            <i class="fas fa-camera text-rich-black text-sm"></i>
+                        </div>
+                        <span class="font-heading text-xl font-black">SlyFox Studios</span>
+                    </div>
+                    <p class="text-light-gray text-sm mb-6">
+                        Professional photography and videography services capturing your most precious moments with artistry and precision.
+                    </p>
+                    <div class="flex space-x-3">
+                        <a href="#" class="w-8 h-8 bg-rich-black rounded-full flex items-center justify-center hover:bg-elegant-gold hover:text-rich-black transition-all duration-200">
+                            <i class="fab fa-instagram text-xs"></i>
+                        </a>
+                        <a href="#" class="w-8 h-8 bg-rich-black rounded-full flex items-center justify-center hover:bg-elegant-gold hover:text-rich-black transition-all duration-200">
+                            <i class="fab fa-facebook text-xs"></i>
+                        </a>
+                        <a href="#" class="w-8 h-8 bg-rich-black rounded-full flex items-center justify-center hover:bg-elegant-gold hover:text-rich-black transition-all duration-200">
+                            <i class="fab fa-youtube text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Services -->
+                <div>
+                    <h3 class="font-ui font-semibold mb-6">SERVICES</h3>
+                    <ul class="space-y-3 text-sm text-light-gray">
+                        <li><a href="/photography/weddings" class="hover:text-elegant-gold transition-colors">Wedding Photography</a></li>
+                        <li><a href="/photography/corporate" class="hover:text-elegant-gold transition-colors">Corporate Photography</a></li>
+                        <li><a href="/photography/events" class="hover:text-elegant-gold transition-colors">Event Photography</a></li>
+                        <li><a href="/videography/weddings" class="hover:text-elegant-gold transition-colors">Wedding Videography</a></li>
+                        <li><a href="/videography/corporate" class="hover:text-elegant-gold transition-colors">Corporate Videos</a></li>
+                    </ul>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h3 class="font-ui font-semibold mb-6">QUICK LINKS</h3>
+                    <ul class="space-y-3 text-sm text-light-gray">
+                        <li><a href="/portfolio" class="hover:text-elegant-gold transition-colors">Portfolio</a></li>
+                        <li><a href="/pricing" class="hover:text-elegant-gold transition-colors">Pricing</a></li>
+                        <li><a href="/about" class="hover:text-elegant-gold transition-colors">About Us</a></li>
+                        <li><a href="/contact" class="hover:text-elegant-gold transition-colors">Contact</a></li>
+                        <li><a href="/blog" class="hover:text-elegant-gold transition-colors">Blog</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact -->
+                <div>
+                    <h3 class="font-ui font-semibold mb-6">CONTACT</h3>
+                    <div class="space-y-3 text-sm text-light-gray">
+                        <p><i class="fas fa-envelope text-elegant-gold mr-2"></i> hello@slyfoxstudios.com</p>
+                        <p><i class="fas fa-phone text-elegant-gold mr-2"></i> +27 11 123 4567</p>
+                        <p><i class="fas fa-map-marker-alt text-elegant-gold mr-2"></i> Cape Town, South Africa</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-light-gray text-sm mb-4 md:mb-0">
+                        © 2024 SlyFox Studios. All rights reserved.
+                    </p>
+                    <div class="flex space-x-6 text-sm text-light-gray">
+                        <a href="/privacy" class="hover:text-elegant-gold transition-colors">Privacy Policy</a>
+                        <a href="/terms" class="hover:text-elegant-gold transition-colors">Terms of Service</a>
+                        <a href="/cookies" class="hover:text-elegant-gold transition-colors">Cookie Policy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- @END_COMPONENT: Footer -->
+
+    <!-- @COMPONENT: Authentication Modals -->
+    <!-- @STATE: isClientLoginOpen:boolean = false -->
+    <!-- @STATE: isAdminLoginOpen:boolean = false -->
+    
+    <!-- Client Login Modal -->
+    <div id="clientLoginModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-dark-gray rounded-2xl p-8 max-w-md w-full mx-4 border border-gray-700">
+            <div class="text-center mb-6">
+                <h3 class="font-heading text-2xl font-black mb-2">CLIENT LOGIN</h3>
+                <p class="text-light-gray text-sm">Access your private gallery</p>
+            </div>
+            
+            <form data-event="submit:handleClientLogin" class="space-y-4">
+                <div>
+                    <label class="block font-ui text-sm font-medium mb-2">Email or Client Code</label>
+                    <input type="text" data-bind="clientLogin.identifier" required 
+                           class="w-full px-4 py-3 bg-rich-black border border-gray-700 rounded-lg focus:border-elegant-gold focus:outline-none transition-colors text-off-white" 
+                           placeholder="your-email@example.com or CLIENT123" />
+                </div>
+                
+                <div>
+                    <label class="block font-ui text-sm font-medium mb-2">Password (if registered)</label>
+                    <input type="password" data-bind="clientLogin.password" 
+                           class="w-full px-4 py-3 bg-rich-black border border-gray-700 rounded-lg focus:border-elegant-gold focus:outline-none transition-colors text-off-white" 
+                           placeholder="Leave blank for guest access" />
+                </div>
+                
+                <button type="submit" class="w-full font-ui py-3 bg-elegant-gold text-rich-black font-semibold hover:bg-muted-gold transition-all duration-200 rounded-lg">
+                    Access Gallery
+                </button>
+            </form>
+            
+            <div class="text-center mt-6">
+                <button data-event="click:closeClientLogin" class="text-light-gray text-sm hover:text-elegant-gold transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-dark-gray rounded-2xl p-8 max-w-md w-full mx-4 border border-gray-700">
+            <div class="text-center mb-6">
+                <h3 class="font-heading text-2xl font-black mb-2">STAFF LOGIN</h3>
+                <p class="text-light-gray text-sm">Admin access required</p>
+            </div>
+            
+            <form data-event="submit:handleAdminLogin" class="space-y-4">
+                <div>
+                    <label class="block font-ui text-sm font-medium mb-2">Email</label>
+                    <input type="email" data-bind="adminLogin.email" required 
+                           class="w-full px-4 py-3 bg-rich-black border border-gray-700 rounded-lg focus:border-elegant-gold focus:outline-none transition-colors text-off-white" 
+                           placeholder="admin@slyfoxstudios.com" />
+                </div>
+                
+                <div>
+                    <label class="block font-ui text-sm font-medium mb-2">Password</label>
+                    <input type="password" data-bind="adminLogin.password" required 
+                           class="w-full px-4 py-3 bg-rich-black border border-gray-700 rounded-lg focus:border-elegant-gold focus:outline-none transition-colors text-off-white" 
+                           placeholder="••••••••" />
+                </div>
+                
+                <button type="submit" class="w-full font-ui py-3 bg-elegant-gold text-rich-black font-semibold hover:bg-muted-gold transition-all duration-200 rounded-lg">
+                    Login to Admin
+                </button>
+            </form>
+            
+            <div class="text-center mt-6">
+                <button data-event="click:closeAdminLogin" class="text-light-gray text-sm hover:text-elegant-gold transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: Authentication Modals -->
+
+    <script>
+        // Basic JavaScript for modal interactions and smooth scrolling
+        (function() {
+            // TODO: Implement authentication, form submissions, and gallery management
+            // TODO: Connect to Supabase for data management
+            // TODO: Implement image upload and storage functionality
+            
+            // Modal controls
+            const clientLoginBtn = document.querySelector('[data-event="click:openClientLogin"]');
+            const adminLoginBtn = document.querySelector('[data-event="click:openAdminLogin"]');
+            const clientModal = document.getElementById('clientLoginModal');
+            const adminModal = document.getElementById('adminLoginModal');
+            
+            if (clientLoginBtn && clientModal) {
+                clientLoginBtn.addEventListener('click', () => {
+                    clientModal.classList.remove('hidden');
+                });
+            }
+            
+            if (adminLoginBtn && adminModal) {
+                adminLoginBtn.addEventListener('click', () => {
+                    adminModal.classList.remove('hidden');
+                });
+            }
+            
+            // Close modals
+            document.addEventListener('click', (e) => {
+                if (e.target.matches('[data-event="click:closeClientLogin"]') || 
+                    e.target === clientModal) {
+                    if (clientModal) clientModal.classList.add('hidden');
+                }
+                
+                if (e.target.matches('[data-event="click:closeAdminLogin"]') || 
+                    e.target === adminModal) {
+                    if (adminModal) adminModal.classList.add('hidden');
+                }
+            });
+            
+            // Smooth scroll to portfolio
+            const portfolioBtn = document.querySelector('[data-event="click:scrollToPortfolio"]');
+            if (portfolioBtn) {
+                portfolioBtn.addEventListener('click', () => {
+                    document.querySelector('[data-bind="portfolio"]')?.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            }
+            
+            // Form validations (placeholder)
+            document.addEventListener('submit', (e) => {
+                const form = e.target;
+                if (form.matches('[data-event*="submit:"]')) {
+                    e.preventDefault();
+                    // TODO: Implement form submission logic
+                    console.log('Form submission intercepted for:', form);
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

@@ -39,6 +39,7 @@ interface Shoot {
     layoutStyle: string;
     imageSpacing: string;
     backgroundColor: string;
+    dominantAspectRatio?: 'landscape' | 'portrait' | 'square';
   };
   createdAt: string;
   updatedAt: string;
@@ -345,43 +346,44 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
   // Gallery layout helper functions
   const getGalleryLayoutClasses = () => {
     if (gallerySettings?.layoutStyle === "masonry") {
-      return "columns-2 md:columns-3 lg:columns-4 xl:columns-5";
+      return "columns-2 md:columns-3 lg:columns-4 2xl:columns-5";
     }
-    if (gallerySettings?.layoutStyle === "square") {
-      return "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5";
+    if (gallerySettings?.layoutStyle === "grid") {
+      return "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5";
     }
-    // Default grid layout
-    return "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5";
-  };
-
-  const getGallerySpacingClasses = () => {
-    if (gallerySettings?.imageSpacing === "tight") {
-      return "gap-1";
-    }
-    if (gallerySettings?.imageSpacing === "normal") {
-      return "gap-2";
-    }
-    return "gap-1"; // Default to tight spacing to match database setting
+    // Default automatic layout (smart ratio) - uses masonry for natural aspect ratios
+    return "columns-2 md:columns-3 lg:columns-4 2xl:columns-5";
   };
 
   const getGalleryPaddingClasses = () => {
+    // Container padding - separate from image spacing
     if (gallerySettings?.padding === "tight") {
-      return "p-1";
+      return "p-2"; // Small padding
     }
     if (gallerySettings?.padding === "normal") {
       return "p-4";
     }
-    return "p-2"; // Default padding
+    return "p-4"; // Default padding
+  };
+
+  const getImageSpacing = () => {
+    // Return the gap value based on imageSpacing setting
+    switch (gallerySettings?.imageSpacing) {
+      case 'tight': return '2px';
+      case 'normal': return '8px';
+      case 'loose': return '16px';
+      default: return '8px'; // default to normal
+    }
   };
 
   const getImageHeightClass = () => {
-    if (gallerySettings?.layoutStyle === "masonry") {
-      return "h-auto"; // Let masonry determine height
+    if (gallerySettings?.layoutStyle === "masonry" || !gallerySettings?.layoutStyle || gallerySettings?.layoutStyle === "auto") {
+      return "h-auto"; // Let masonry determine height naturally
     }
-    if (gallerySettings?.layoutStyle === "square") {
+    if (gallerySettings?.layoutStyle === "grid") {
       return "aspect-square h-full";
     }
-    return "h-64"; // Default height
+    return "h-auto"; // Default to natural height for auto-ratio
   };
 
   // Get navigation for previous/next albums
@@ -550,7 +552,11 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
         <div className={`max-w-none w-full ${getGalleryPaddingClasses()}`}>
           {imagesLoading ? (
             <div
-              className={`${getGalleryLayoutClasses()} ${getGallerySpacingClasses()}`}
+              className={`${getGalleryLayoutClasses()}`}
+              style={(gallerySettings?.layoutStyle === 'masonry' || !gallerySettings?.layoutStyle || gallerySettings?.layoutStyle === 'auto') ? 
+                { columnGap: getImageSpacing() } : 
+                { gap: getImageSpacing() }
+              }
             >
               {[...Array(12)].map((_, i) => (
                 <div key={i} className="animate-pulse">
@@ -563,8 +569,12 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
               <p className="text-gray-400">No images found in this gallery.</p>
             </div>
           ) : (
-            <div
-              className={`${getGalleryLayoutClasses()} ${getGallerySpacingClasses()}`}
+            <div 
+              className={`${getGalleryLayoutClasses()}`}
+              style={(gallerySettings?.layoutStyle === 'masonry' || !gallerySettings?.layoutStyle || gallerySettings?.layoutStyle === 'auto') ? 
+                { columnGap: getImageSpacing() } : 
+                { gap: getImageSpacing() }
+              }
             >
               {images
                 .slice(0, visibleImageCount)
@@ -585,10 +595,18 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                         relative group overflow-hidden
                         ${gallerySettings.borderStyle === "rounded" ? "rounded-lg" : gallerySettings.borderStyle === "sharp" ? "rounded-none" : "rounded-lg"}
                         ${selectedImages.has(image.id) ? "ring-2 ring-salmon" : ""}
-                        ${gallerySettings?.layoutStyle === "masonry" ? "break-inside-avoid mb-2" : ""}
-                        ${gallerySettings?.layoutStyle === "square" ? "aspect-square" : ""}
+                        ${(gallerySettings?.layoutStyle === "masonry" || !gallerySettings?.layoutStyle || gallerySettings?.layoutStyle === "auto") ? "break-inside-avoid" : ""}
+                        ${gallerySettings?.layoutStyle === "grid" ? "aspect-square" : ""}
+                        ${gallerySettings?.layoutStyle === "columns" ? (
+                          gallerySettings?.dominantAspectRatio === 'landscape' ? 'aspect-[4/3]' :
+                          gallerySettings?.dominantAspectRatio === 'portrait' ? 'aspect-[3/4]' :
+                          'aspect-square'
+                        ) : ""}
                         cursor-pointer transition-all duration-200
                       `}
+                      style={(gallerySettings?.layoutStyle === "masonry" || !gallerySettings?.layoutStyle || gallerySettings?.layoutStyle === "auto") ? 
+                        { marginBottom: getImageSpacing() } : undefined
+                      }
                       onClick={() => openModal(actualIndex)}
                     >
                       <img

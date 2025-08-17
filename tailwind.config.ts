@@ -4,6 +4,13 @@ export default {
 
   content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
   theme: {
+    screens: {
+      'sm': '640px',
+      'md': '768px',
+      'lg': '1024px',
+      'xl': '1280px',
+      '2xl': '1405px', // Custom breakpoint for 5-column gallery layout (125px wider than xl)
+    },
     extend: {
       borderRadius: {
         lg: "var(--radius)",

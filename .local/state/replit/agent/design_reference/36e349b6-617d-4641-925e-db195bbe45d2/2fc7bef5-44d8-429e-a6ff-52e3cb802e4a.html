@@ -1,0 +1,690 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SlyFox Studios - Professional Photography & Videography</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'display': ['Playfair Display', 'serif'],
+                        'sans': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'gold': '#d4af37',
+                        'rich-black': '#1a1a1a',
+                        'medium-grey': '#666666',
+                        'border-grey': '#e5e5e5',
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        .hover-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .image-overlay {
+            background: linear-gradient(45deg, rgba(212, 175, 55, 0.9), rgba(26, 26, 26, 0.8));
+        }
+        .gallery-masonry {
+            column-count: 3;
+            column-gap: 1rem;
+        }
+        @media (max-width: 768px) {
+            .gallery-masonry {
+                column-count: 2;
+            }
+        }
+        @media (max-width: 480px) {
+            .gallery-masonry {
+                column-count: 1;
+            }
+        }
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body class="bg-white text-rich-black font-sans">
+
+    <!-- @COMPONENT: Navigation -->
+    <nav class="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-border-grey">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- @COMPONENT: Logo -->
+                <div class="flex-shrink-0">
+                    <a href="/" class="text-2xl font-display font-bold text-rich-black">
+                        SlyFox <span class="text-gold">Studios</span>
+                    </a>
+                </div>
+
+                <!-- @COMPONENT: Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <div class="relative group">
+                        <button class="flex items-center text-rich-black hover:text-gold transition-colors">
+                            Photography <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                        </button>
+                        <!-- @COMPONENT: Photography Dropdown -->
+                        <div class="absolute top-full left-0 mt-2 w-64 bg-white shadow-lg rounded-lg border border-border-grey opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <div class="p-4 grid grid-cols-2 gap-2">
+                                <a href="/photography/weddings" class="block p-2 text-sm hover:bg-gray-50 rounded">Weddings</a>
+                                <a href="/photography/portraits" class="block p-2 text-sm hover:bg-gray-50 rounded">Portraits</a>
+                                <a href="/photography/products" class="block p-2 text-sm hover:bg-gray-50 rounded">Products</a>
+                                <a href="/photography/corporate" class="block p-2 text-sm hover:bg-gray-50 rounded">Corporate</a>
+                                <a href="/photography/graduation" class="block p-2 text-sm hover:bg-gray-50 rounded">Graduation</a>
+                                <a href="/photography/matric-dance" class="block p-2 text-sm hover:bg-gray-50 rounded">Matric Dance</a>
+                                <a href="/photography/events" class="block p-2 text-sm hover:bg-gray-50 rounded">Events</a>
+                                <a href="/photography/festivals" class="block p-2 text-sm hover:bg-gray-50 rounded">Festivals</a>
+                                <a href="/photography/brands" class="block p-2 text-sm hover:bg-gray-50 rounded">Brands</a>
+                                <a href="/photography/personal" class="block p-2 text-sm hover:bg-gray-50 rounded">Personal</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative group">
+                        <button class="flex items-center text-rich-black hover:text-gold transition-colors">
+                            Videography <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                        </button>
+                        <!-- @COMPONENT: Videography Dropdown -->
+                        <div class="absolute top-full left-0 mt-2 w-64 bg-white shadow-lg rounded-lg border border-border-grey opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <div class="p-4 grid grid-cols-2 gap-2">
+                                <a href="/videography/weddings" class="block p-2 text-sm hover:bg-gray-50 rounded">Weddings</a>
+                                <a href="/videography/product-videos" class="block p-2 text-sm hover:bg-gray-50 rounded">Product Videos</a>
+                                <a href="/videography/ugc-videos" class="block p-2 text-sm hover:bg-gray-50 rounded">UGC Videos</a>
+                                <a href="/videography/events" class="block p-2 text-sm hover:bg-gray-50 rounded">Events</a>
+                                <a href="/videography/festivals" class="block p-2 text-sm hover:bg-gray-50 rounded">Festivals</a>
+                                <a href="/videography/corporate" class="block p-2 text-sm hover:bg-gray-50 rounded">Corporate</a>
+                                <a href="/videography/social-media" class="block p-2 text-sm hover:bg-gray-50 rounded">Social Media</a>
+                                <a href="/videography/logo-builds" class="block p-2 text-sm hover:bg-gray-50 rounded">Logo Builds</a>
+                                <a href="/videography/animation" class="block p-2 text-sm hover:bg-gray-50 rounded">Animation</a>
+                                <a href="/videography/personal" class="block p-2 text-sm hover:bg-gray-50 rounded">Personal</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="/about" class="text-rich-black hover:text-gold transition-colors">About</a>
+                    <a href="/pricing" class="text-rich-black hover:text-gold transition-colors">Pricing</a>
+                    <a href="/contact" class="text-rich-black hover:text-gold transition-colors">Contact</a>
+                    <a href="/admin" class="bg-gold text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors">Staff Login</a>
+                </div>
+
+                <!-- @COMPONENT: Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button class="text-rich-black hover:text-gold">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- @END_COMPONENT: Navigation -->
+
+    <!-- @COMPONENT: Hero Section -->
+    <section class="relative h-screen flex items-center justify-center overflow-hidden">
+        <!-- Professional photography studio with dramatic lighting and equipment -->
+        <div class="absolute inset-0 bg-cover bg-center bg-no-repeat" style="background-image: url('https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&h=1380');">
+            <div class="absolute inset-0 bg-rich-black/60"></div>
+        </div>
+        
+        <div class="relative z-10 text-center text-white max-w-4xl mx-auto px-4">
+            <h1 class="text-5xl md:text-7xl font-display font-bold mb-6">
+                Capturing Life's
+                <span class="text-gold">Precious Moments</span>
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 text-gray-200 max-w-2xl mx-auto">
+                Professional photography and videography services that tell your unique story with artistry and passion.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/photography" class="bg-gold text-rich-black px-8 py-4 rounded-lg font-semibold hover:bg-yellow-500 transition-colors">
+                    View Photography
+                </a>
+                <a href="/contact" class="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-rich-black transition-colors">
+                    Book a Session
+                </a>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Hero Section -->
+
+    <!-- @COMPONENT: Services Overview -->
+    <section class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-display font-bold text-rich-black mb-6">Our Services</h2>
+                <p class="text-xl text-medium-grey max-w-3xl mx-auto">
+                    From intimate portraits to grand celebrations, we bring artistic vision and technical excellence to every project.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12">
+                <!-- @COMPONENT: Photography Service Card -->
+                <div class="group cursor-pointer">
+                    <div class="relative overflow-hidden rounded-2xl mb-6 hover-lift">
+                        <!-- Beautiful wedding photography with bride and groom -->
+                        <img src="https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
+                             alt="Professional wedding photography" 
+                             class="w-full h-80 object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div class="absolute inset-0 image-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <div class="text-center text-white">
+                                <h3 class="text-2xl font-display font-bold mb-2">Photography</h3>
+                                <p class="mb-4">Explore our visual storytelling</p>
+                                <span class="inline-flex items-center text-white font-semibold">
+                                    View Gallery <i class="fas fa-arrow-right ml-2"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-display font-bold mb-3">Photography Services</h3>
+                    <p class="text-medium-grey mb-4">
+                        Weddings, portraits, corporate events, and more. Each image crafted with artistic vision and attention to detail.
+                    </p>
+                    <a href="/photography" class="text-gold font-semibold hover:text-yellow-600 transition-colors">
+                        Explore Photography <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+                <!-- @END_COMPONENT: Photography Service Card -->
+
+                <!-- @COMPONENT: Videography Service Card -->
+                <div class="group cursor-pointer">
+                    <div class="relative overflow-hidden rounded-2xl mb-6 hover-lift">
+                        <!-- Professional videography equipment and setup -->
+                        <img src="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
+                             alt="Professional videography setup" 
+                             class="w-full h-80 object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div class="absolute inset-0 image-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <div class="text-center text-white">
+                                <h3 class="text-2xl font-display font-bold mb-2">Videography</h3>
+                                <p class="mb-4">Cinematic storytelling in motion</p>
+                                <span class="inline-flex items-center text-white font-semibold">
+                                    View Work <i class="fas fa-arrow-right ml-2"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-display font-bold mb-3">Videography Services</h3>
+                    <p class="text-medium-grey mb-4">
+                        From wedding films to corporate videos, we create compelling visual narratives that captivate and inspire.
+                    </p>
+                    <a href="/videography" class="text-gold font-semibold hover:text-yellow-600 transition-colors">
+                        Explore Videography <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+                <!-- @END_COMPONENT: Videography Service Card -->
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Services Overview -->
+
+    <!-- @COMPONENT: Featured Gallery Section -->
+    <section class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-display font-bold text-rich-black mb-6">Recent Work</h2>
+                <p class="text-xl text-medium-grey max-w-3xl mx-auto">
+                    A glimpse into our latest photography and videography projects, showcasing our commitment to excellence.
+                </p>
+            </div>
+
+            <!-- @COMPONENT: Masonry Gallery -->
+            <div class="gallery-masonry">
+                <!-- @MAP: featuredImages.map(image => ( -->
+                
+                <div class="masonry-item group cursor-pointer">
+                    <!-- Elegant wedding portrait with beautiful lighting -->
+                    <img src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=600" 
+                         alt="Wedding portrait photography" 
+                         class="w-full rounded-lg shadow-lg group-hover:shadow-2xl transition-all duration-300" />
+                    <div class="absolute inset-0 bg-rich-black/0 group-hover:bg-rich-black/20 transition-all duration-300 rounded-lg"></div>
+                </div>
+
+                <div class="masonry-item group cursor-pointer">
+                    <!-- Professional corporate headshot -->
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=500" 
+                         alt="Professional corporate portrait" 
+                         class="w-full rounded-lg shadow-lg group-hover:shadow-2xl transition-all duration-300" />
+                </div>
+
+                <div class="masonry-item group cursor-pointer">
+                    <!-- Beautiful product photography setup -->
+                    <img src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=350" 
+                         alt="Professional product photography" 
+                         class="w-full rounded-lg shadow-lg group-hover:shadow-2xl transition-all duration-300" />
+                </div>
+
+                <div class="masonry-item group cursor-pointer">
+                    <!-- Graduation ceremony photography -->
+                    <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=600" 
+                         alt="Graduation ceremony photography" 
+                         class="w-full rounded-lg shadow-lg group-hover:shadow-2xl transition-all duration-300" />
+                </div>
+
+                <div class="masonry-item group cursor-pointer">
+                    <!-- Event photography with dramatic lighting -->
+                    <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=450" 
+                         alt="Event photography with dramatic lighting" 
+                         class="w-full rounded-lg shadow-lg group-hover:shadow-2xl transition-all duration-300" />
+                </div>
+
+                <div class="masonry-item group cursor-pointer">
+                    <!-- Fashion portrait photography -->
+                    <img src="https://pixabay.com/get/g62ce942abcd501242609bed62eb9e034627f411c549bb73e9ef3d52d9e5dc156b6f81578d3b7f94df1078c7cbe2a2eb26914b1fe4fc42808f39ba231b32a632c_1280.jpg" 
+                         alt="Fashion portrait photography" 
+                         class="w-full rounded-lg shadow-lg group-hover:shadow-2xl transition-all duration-300" />
+                </div>
+
+                <!-- @END_MAP )) -->
+            </div>
+            <!-- @END_COMPONENT: Masonry Gallery -->
+
+            <div class="text-center mt-12">
+                <a href="/photography" class="bg-gold text-rich-black px-8 py-4 rounded-lg font-semibold hover:bg-yellow-500 transition-colors">
+                    View Full Portfolio
+                </a>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Featured Gallery Section -->
+
+    <!-- @COMPONENT: Client Gallery Preview -->
+    <section class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-display font-bold text-rich-black mb-6">Client Galleries</h2>
+                <p class="text-xl text-medium-grey max-w-3xl mx-auto">
+                    Private, shareable galleries for our clients to view, download, and share their professional photos.
+                </p>
+            </div>
+
+            <!-- @COMPONENT: Gallery Demo Card -->
+            <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+                <div class="p-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 class="text-2xl font-display font-bold text-rich-black">Sarah & Michael's Wedding</h3>
+                            <p class="text-medium-grey">December 15, 2023 • 127 photos</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <button class="flex items-center gap-2 bg-gold text-rich-black px-4 py-2 rounded-lg font-semibold hover:bg-yellow-500 transition-colors">
+                                <i class="fas fa-download"></i> Download All
+                            </button>
+                            <button class="flex items-center gap-2 border border-border-grey text-rich-black px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-share"></i> Share
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- @COMPONENT: Gallery Grid -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <!-- @MAP: galleryImages.map(image => ( -->
+                        
+                        <div class="relative group cursor-pointer">
+                            <!-- Wedding couple dancing -->
+                            <img src="https://images.unsplash.com/photo-1469371670807-013ccf25f16a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=300&h=300" 
+                                 alt="Wedding couple dancing" 
+                                 class="w-full h-32 md:h-48 object-cover rounded-lg" />
+                            <div class="absolute inset-0 bg-rich-black/0 group-hover:bg-rich-black/30 transition-all duration-300 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-search-plus text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-xl"></i>
+                            </div>
+                        </div>
+
+                        <div class="relative group cursor-pointer">
+                            <!-- Wedding ceremony moment -->
+                            <img src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=300&h=300" 
+                                 alt="Wedding ceremony moment" 
+                                 class="w-full h-32 md:h-48 object-cover rounded-lg" />
+                            <div class="absolute inset-0 bg-rich-black/0 group-hover:bg-rich-black/30 transition-all duration-300 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-search-plus text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-xl"></i>
+                            </div>
+                        </div>
+
+                        <div class="relative group cursor-pointer">
+                            <!-- Wedding rings detail shot -->
+                            <img src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=300&h=300" 
+                                 alt="Wedding rings detail shot" 
+                                 class="w-full h-32 md:h-48 object-cover rounded-lg" />
+                            <div class="absolute inset-0 bg-rich-black/0 group-hover:bg-rich-black/30 transition-all duration-300 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-search-plus text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-xl"></i>
+                            </div>
+                        </div>
+
+                        <div class="relative group cursor-pointer">
+                            <!-- Wedding reception celebration -->
+                            <img src="https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=300&h=300" 
+                                 alt="Wedding reception celebration" 
+                                 class="w-full h-32 md:h-48 object-cover rounded-lg" />
+                            <div class="absolute inset-0 bg-rich-black/0 group-hover:bg-rich-black/30 transition-all duration-300 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-search-plus text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-xl"></i>
+                            </div>
+                        </div>
+
+                        <!-- @END_MAP )) -->
+                    </div>
+                    <!-- @END_COMPONENT: Gallery Grid -->
+
+                    <div class="mt-6 text-center">
+                        <a href="/clients/sarah-michael-wedding" class="text-gold font-semibold hover:text-yellow-600 transition-colors">
+                            View Complete Gallery <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: Gallery Demo Card -->
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Client Gallery Preview -->
+
+    <!-- @COMPONENT: Admin Dashboard Preview -->
+    <section class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-display font-bold text-rich-black mb-6">Staff Dashboard</h2>
+                <p class="text-xl text-medium-grey max-w-3xl mx-auto">
+                    Streamlined admin interface for managing clients, shoots, and gallery permissions.
+                </p>
+            </div>
+
+            <!-- @COMPONENT: Admin Dashboard Mock -->
+            <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-border-grey">
+                <!-- @COMPONENT: Dashboard Header -->
+                <div class="bg-gray-50 border-b border-border-grey p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-2xl font-display font-bold text-rich-black">Client Management</h3>
+                            <p class="text-medium-grey">Manage shoots, uploads, and client access</p>
+                        </div>
+                        <button class="bg-gold text-rich-black px-6 py-3 rounded-lg font-semibold hover:bg-yellow-500 transition-colors">
+                            <i class="fas fa-plus mr-2"></i> New Client
+                        </button>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: Dashboard Header -->
+
+                <!-- @COMPONENT: Admin Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="text-left py-4 px-6 font-semibold text-rich-black">Client</th>
+                                <th class="text-left py-4 px-6 font-semibold text-rich-black">Shoot</th>
+                                <th class="text-left py-4 px-6 font-semibold text-rich-black">Images</th>
+                                <th class="text-left py-4 px-6 font-semibold text-rich-black">Status</th>
+                                <th class="text-left py-4 px-6 font-semibold text-rich-black">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- @MAP: clients.map(client => ( -->
+                            
+                            <tr class="border-b border-border-grey hover:bg-gray-50 transition-colors" data-mock="true">
+                                <td class="py-4 px-6">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-gold rounded-full flex items-center justify-center text-rich-black font-semibold mr-3">
+                                            SM
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-rich-black" data-bind="client.name">Sarah & Michael</div>
+                                            <div class="text-sm text-medium-grey" data-bind="client.email">sarah.michael@email.com</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <div class="font-medium text-rich-black" data-bind="shoot.title">Wedding Photography</div>
+                                    <div class="text-sm text-medium-grey" data-bind="shoot.date">Dec 15, 2023</div>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium" data-bind="shoot.imageCount">127 uploaded</span>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">Active</span>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <div class="flex gap-2">
+                                        <button class="text-gold hover:text-yellow-600 transition-colors" data-event="click:editClient">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-blue-600 hover:text-blue-700 transition-colors" data-event="click:viewGallery">
+                                            <i class="fas fa-images"></i>
+                                        </button>
+                                        <button class="text-green-600 hover:text-green-700 transition-colors" data-event="click:uploadImages">
+                                            <i class="fas fa-upload"></i>
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-700 transition-colors" data-event="click:deleteClient">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="border-b border-border-grey hover:bg-gray-50 transition-colors" data-mock="true">
+                                <td class="py-4 px-6">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-gold rounded-full flex items-center justify-center text-rich-black font-semibold mr-3">
+                                            JD
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-rich-black">Jessica Davis</div>
+                                            <div class="text-sm text-medium-grey">jessica.davis@email.com</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <div class="font-medium text-rich-black">Corporate Headshots</div>
+                                    <div class="text-sm text-medium-grey">Dec 10, 2023</div>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">45 processing</span>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">Processing</span>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <div class="flex gap-2">
+                                        <button class="text-gold hover:text-yellow-600 transition-colors">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-blue-600 hover:text-blue-700 transition-colors">
+                                            <i class="fas fa-images"></i>
+                                        </button>
+                                        <button class="text-green-600 hover:text-green-700 transition-colors">
+                                            <i class="fas fa-upload"></i>
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-700 transition-colors">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- @END_MAP )) -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- @END_COMPONENT: Admin Table -->
+            </div>
+            <!-- @END_COMPONENT: Admin Dashboard Mock -->
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Admin Dashboard Preview -->
+
+    <!-- @COMPONENT: Contact Section -->
+    <section class="py-20 bg-rich-black text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-4xl md:text-5xl font-display font-bold mb-6">
+                        Let's Create Something
+                        <span class="text-gold">Beautiful Together</span>
+                    </h2>
+                    <p class="text-xl text-gray-300 mb-8">
+                        Ready to capture your special moments? Get in touch with us to discuss your photography or videography needs.
+                    </p>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-phone text-gold mr-4 text-xl"></i>
+                            <span class="text-lg">+27 (0) 123 456 789</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-envelope text-gold mr-4 text-xl"></i>
+                            <span class="text-lg">hello@slyfoxstudios.co.za</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-map-marker-alt text-gold mr-4 text-xl"></i>
+                            <span class="text-lg">Cape Town, South Africa</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- @COMPONENT: Contact Form -->
+                <div class="bg-white rounded-2xl p-8">
+                    <h3 class="text-2xl font-display font-bold text-rich-black mb-6">Send us a message</h3>
+                    <form class="space-y-6">
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-rich-black mb-2">First Name</label>
+                                <input type="text" class="w-full px-4 py-3 border border-border-grey rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent" placeholder="John" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-rich-black mb-2">Last Name</label>
+                                <input type="text" class="w-full px-4 py-3 border border-border-grey rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent" placeholder="Doe" />
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-rich-black mb-2">Email</label>
+                            <input type="email" class="w-full px-4 py-3 border border-border-grey rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent" placeholder="john@example.com" />
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-rich-black mb-2">Service Type</label>
+                            <select class="w-full px-4 py-3 border border-border-grey rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent">
+                                <option>Photography</option>
+                                <option>Videography</option>
+                                <option>Both Photography & Videography</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-rich-black mb-2">Message</label>
+                            <textarea rows="4" class="w-full px-4 py-3 border border-border-grey rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent" placeholder="Tell us about your project..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-gold text-rich-black py-4 rounded-lg font-semibold hover:bg-yellow-500 transition-colors" data-event="submit:handleContactForm">
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+                <!-- @END_COMPONENT: Contact Form -->
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Contact Section -->
+
+    <!-- @COMPONENT: Footer -->
+    <footer class="bg-gray-900 text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div class="md:col-span-2">
+                    <div class="text-2xl font-display font-bold mb-4">
+                        SlyFox <span class="text-gold">Studios</span>
+                    </div>
+                    <p class="text-gray-400 mb-6 max-w-md">
+                        Professional photography and videography services in Cape Town, South Africa. Capturing life's precious moments with artistry and passion.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-gold transition-colors">
+                            <i class="fab fa-instagram text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-gold transition-colors">
+                            <i class="fab fa-facebook text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-gold transition-colors">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-gold transition-colors">
+                            <i class="fab fa-youtube text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-white mb-4">Services</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="/photography" class="hover:text-gold transition-colors">Photography</a></li>
+                        <li><a href="/videography" class="hover:text-gold transition-colors">Videography</a></li>
+                        <li><a href="/photography/weddings" class="hover:text-gold transition-colors">Weddings</a></li>
+                        <li><a href="/photography/corporate" class="hover:text-gold transition-colors">Corporate</a></li>
+                        <li><a href="/photography/events" class="hover:text-gold transition-colors">Events</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-white mb-4">Company</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="/about" class="hover:text-gold transition-colors">About Us</a></li>
+                        <li><a href="/pricing" class="hover:text-gold transition-colors">Pricing</a></li>
+                        <li><a href="/contact" class="hover:text-gold transition-colors">Contact</a></li>
+                        <li><a href="/admin" class="hover:text-gold transition-colors">Staff Portal</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 text-sm">
+                    © 2023 SlyFox Studios. All rights reserved.
+                </p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="/privacy" class="text-gray-400 hover:text-gold transition-colors text-sm">Privacy Policy</a>
+                    <a href="/terms" class="text-gray-400 hover:text-gold transition-colors text-sm">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- @END_COMPONENT: Footer -->
+
+    <script>
+        // TODO: Implement mobile menu toggle functionality
+        // TODO: Implement image lightbox/modal functionality
+        // TODO: Implement contact form submission with validation
+        // TODO: Implement admin dashboard CRUD operations
+        // TODO: Implement client gallery authentication
+        // TODO: Implement drag-and-drop image reordering
+        // TODO: Implement bulk image upload with progress tracking
+        // TODO: Implement gallery sharing functionality
+        // TODO: Implement image download tracking
+
+        (function() {
+            // Smooth scrolling for anchor links
+            const links = document.querySelectorAll('a[href^="#"]');
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+
+            // Simple gallery hover effects (placeholder for real functionality)
+            const galleryItems = document.querySelectorAll('.masonry-item');
+            galleryItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    console.log('Gallery item clicked - implement lightbox here');
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

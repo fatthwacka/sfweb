@@ -1,0 +1,1037 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SlyFox Studios - Professional Photography & Videography</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: {
+                    'saira': ['Saira Condensed', 'sans-serif'],
+                    'vibes': ['Great Vibes', 'cursive'],
+                    'forum': ['Forum', 'serif'],
+                    'barlow': ['Barlow Semi Condensed', 'sans-serif'],
+                },
+                colors: {
+                    'brand-dark': '#1a1a1a',
+                    'brand-light': '#f8f9fa',
+                    'brand-gold': '#d4af37',
+                }
+            }
+        }
+    };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@900&family=Great+Vibes&family=Forum&family=Barlow+Semi+Condensed:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="font-forum bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm z-50 border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <span class="font-saira font-black text-2xl text-brand-dark dark:text-white">SlyFox</span>
+                    <span class="font-vibes text-brand-gold ml-2 text-lg">Studios</span>
+                </div>
+
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <div class="relative group">
+                        <button class="font-barlow font-semibold hover:text-brand-gold transition-colors">Photography</button>
+                        <div class="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border border-gray-200 dark:border-gray-700">
+                            <a href="#" class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">Weddings</a>
+                            <a href="#" class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">Portraits</a>
+                            <a href="#" class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">Corporate</a>
+                            <a href="#" class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">Events</a>
+                        </div>
+                    </div>
+                    <div class="relative group">
+                        <button class="font-barlow font-semibold hover:text-brand-gold transition-colors">Videography</button>
+                        <div class="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border border-gray-200 dark:border-gray-700">
+                            <a href="#" class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">Wedding Films</a>
+                            <a href="#" class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">Product Videos</a>
+                            <a href="#" class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">UGC Content</a>
+                            <a href="#" class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">Corporate</a>
+                        </div>
+                    </div>
+                    <a href="#pricing" class="font-barlow font-semibold hover:text-brand-gold transition-colors">Pricing</a>
+                    <a href="#about" class="font-barlow font-semibold hover:text-brand-gold transition-colors">About</a>
+                    <a href="#contact" class="font-barlow font-semibold hover:text-brand-gold transition-colors">Contact</a>
+                </div>
+
+                <!-- Auth & Theme Toggle -->
+                <div class="flex items-center space-x-4">
+                    <!-- Theme Toggle -->
+                    <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i class="fas fa-moon dark:hidden"></i>
+                        <i class="fas fa-sun hidden dark:inline"></i>
+                    </button>
+                    
+                    <!-- User Avatar/Login -->
+                    <div class="relative group">
+                        <!-- When logged out -->
+                        <button class="font-barlow bg-brand-gold text-white px-4 py-2 rounded-lg font-semibold hover:bg-brand-gold/90 transition-colors">
+                            Login
+                        </button>
+                        
+                        <!-- When logged in (hidden by default) -->
+                        <div class="hidden relative">
+                            <div class="w-10 h-10 bg-brand-gold rounded-full flex items-center justify-center text-white font-semibold cursor-pointer">
+                                JD
+                            </div>
+                            <div class="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border border-gray-200 dark:border-gray-700">
+                                <a href="#dashboard" class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">Dashboard</a>
+                                <a href="#admin" class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">Admin Panel</a>
+                                <hr class="border-gray-200 dark:border-gray-600">
+                                <a href="#logout" class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-red-600">Logout</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Mobile Menu Button -->
+                    <button class="md:hidden p-2">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <!-- Hero background image with a professional photography studio setup -->
+        <div class="absolute inset-0 bg-gradient-to-br from-black/50 to-black/30 z-10"></div>
+        <div class="absolute inset-0 bg-cover bg-center bg-no-repeat" style="background-image: url('https://images.unsplash.com/photo-1452587925148-ce544e77e70d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080');"></div>
+        
+        <div class="relative z-20 text-center text-white max-w-4xl mx-auto px-4">
+            <h1 class="font-saira font-black text-5xl md:text-7xl lg:text-8xl mb-6 leading-tight">
+                CAPTURE THE
+                <span class="text-brand-gold">EXTRAORDINARY</span>
+            </h1>
+            <p class="font-vibes text-2xl md:text-3xl mb-8 text-brand-gold">Where moments become memories</p>
+            <p class="text-xl md:text-2xl mb-12 max-w-2xl mx-auto leading-relaxed">
+                Professional photography and videography services that bring your vision to life with stunning clarity and artistic excellence.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button class="font-barlow bg-brand-gold text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-brand-gold/90 transition-all duration-300 transform hover:scale-105">
+                    View Our Work
+                </button>
+                <button class="font-barlow border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-brand-dark transition-all duration-300">
+                    Get a Quote
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Overview -->
+    <section class="py-20 bg-gray-50 dark:bg-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="font-saira font-black text-4xl md:text-5xl text-brand-dark dark:text-white mb-4">
+                    OUR SERVICES
+                </h2>
+                <p class="font-vibes text-2xl text-brand-gold mb-6">Crafted with passion, delivered with precision</p>
+                <p class="text-lg max-w-3xl mx-auto text-gray-600 dark:text-gray-300">
+                    From intimate moments to grand celebrations, we specialize in capturing the essence of every occasion with artistic flair and technical excellence.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 lg:gap-12">
+                <!-- Photography -->
+                <div class="group cursor-pointer">
+                    <!-- Professional wedding photography with couple in elegant setting -->
+                    <div class="relative overflow-hidden rounded-2xl aspect-[4/3] mb-6">
+                        <img src="https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" alt="Professional wedding photography" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div class="absolute bottom-6 left-6 text-white">
+                            <h3 class="font-saira font-black text-3xl mb-2">PHOTOGRAPHY</h3>
+                            <p class="font-vibes text-xl text-brand-gold">Still moments, lasting memories</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
+                            <span>Weddings</span>
+                            <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                        <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
+                            <span>Portraits</span>
+                            <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                        <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
+                            <span>Corporate Events</span>
+                            <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                        <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
+                            <span>Product Photography</span>
+                            <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Videography -->
+                <div class="group cursor-pointer">
+                    <!-- Professional videography setup with camera equipment -->
+                    <div class="relative overflow-hidden rounded-2xl aspect-[4/3] mb-6">
+                        <img src="https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" alt="Professional videography equipment and setup" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div class="absolute bottom-6 left-6 text-white">
+                            <h3 class="font-saira font-black text-3xl mb-2">VIDEOGRAPHY</h3>
+                            <p class="font-vibes text-xl text-brand-gold">Stories in motion</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
+                            <span>Wedding Films</span>
+                            <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                        <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
+                            <span>Product Videos</span>
+                            <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                        <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
+                            <span>UGC Content</span>
+                            <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                        <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
+                            <span>Brand Stories</span>
+                            <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Work Gallery -->
+    <section class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="font-saira font-black text-4xl md:text-5xl text-brand-dark dark:text-white mb-4">
+                    FEATURED WORK
+                </h2>
+                <p class="font-vibes text-2xl text-brand-gold mb-6">A glimpse into our portfolio</p>
+            </div>
+
+            <!-- Masonry Grid -->
+            <div class="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
+                <!-- Beautiful sunset wedding ceremony with bride and groom -->
+                <div class="break-inside-avoid bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 group cursor-pointer">
+                    <div class="relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=500" alt="Sunset wedding ceremony" class="w-full h-auto group-hover:scale-105 transition-transform duration-300" />
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                            <i class="fas fa-expand text-white text-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-barlow font-semibold text-lg mb-1">Sarah & Michael</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm">Wedding Photography</p>
+                    </div>
+                </div>
+
+                <!-- Professional corporate headshot in modern office -->
+                <div class="break-inside-avoid bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 group cursor-pointer">
+                    <div class="relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300" alt="Professional corporate headshot" class="w-full h-auto group-hover:scale-105 transition-transform duration-300" />
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                            <i class="fas fa-expand text-white text-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-barlow font-semibold text-lg mb-1">Corporate Portraits</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm">Business Photography</p>
+                    </div>
+                </div>
+
+                <!-- Elegant product photography with luxury watch -->
+                <div class="break-inside-avoid bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 group cursor-pointer">
+                    <div class="relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400" alt="Luxury watch product photography" class="w-full h-auto group-hover:scale-105 transition-transform duration-300" />
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                            <i class="fas fa-expand text-white text-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-barlow font-semibold text-lg mb-1">Luxury Products</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm">Product Photography</p>
+                    </div>
+                </div>
+
+                <!-- Matric dance couple in elegant formal wear -->
+                <div class="break-inside-avoid bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 group cursor-pointer">
+                    <div class="relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=600" alt="Matric dance couple in elegant formal wear" class="w-full h-auto group-hover:scale-105 transition-transform duration-300" />
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                            <i class="fas fa-expand text-white text-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-barlow font-semibold text-lg mb-1">Matric Dance</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm">Event Photography</p>
+                    </div>
+                </div>
+
+                <!-- Graduation ceremony with proud graduate -->
+                <div class="break-inside-avoid bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 group cursor-pointer">
+                    <div class="relative overflow-hidden">
+                        <img src="https://pixabay.com/get/gf31be1d9e20c1e77891de160539b5ec578ff3baec7a9627ef0cfdf52f86065cc5633fc57ca7f8a4a632458e7fdc9ae4016bd62710fc994aef88de603427f5a34_1280.jpg" alt="Graduation ceremony with graduate in cap and gown" class="w-full h-auto group-hover:scale-105 transition-transform duration-300" />
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                            <i class="fas fa-expand text-white text-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-barlow font-semibold text-lg mb-1">Graduation Day</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm">Milestone Photography</p>
+                    </div>
+                </div>
+
+                <!-- Music festival crowd with dynamic lighting -->
+                <div class="break-inside-avoid bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 group cursor-pointer">
+                    <div class="relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300" alt="Music festival with crowd and stage lights" class="w-full h-auto group-hover:scale-105 transition-transform duration-300" />
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                            <i class="fas fa-expand text-white text-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-barlow font-semibold text-lg mb-1">Festival Energy</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm">Event Photography</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-12">
+                <button class="font-barlow bg-brand-gold text-white px-8 py-3 rounded-lg font-semibold hover:bg-brand-gold/90 transition-colors">
+                    View Full Portfolio
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Client Gallery Preview -->
+    <section class="py-20 bg-gray-50 dark:bg-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="font-saira font-black text-4xl md:text-5xl text-brand-dark dark:text-white mb-4">
+                    CLIENT GALLERIES
+                </h2>
+                <p class="font-vibes text-2xl text-brand-gold mb-6">Your memories, beautifully organized</p>
+                <p class="text-lg max-w-3xl mx-auto text-gray-600 dark:text-gray-300">
+                    Every client receives a personalized gallery to view, download, and share their photos with family and friends.
+                </p>
+            </div>
+
+            <!-- Sample Client Gallery Interface -->
+            <div class="max-w-4xl mx-auto">
+                <!-- Gallery Header -->
+                <div class="bg-white dark:bg-gray-900 rounded-t-2xl p-8 border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 class="font-saira font-black text-2xl text-brand-dark dark:text-white">Sarah & Michael's Wedding</h3>
+                            <p class="text-gray-600 dark:text-gray-400">December 15, 2023 • 156 Photos</p>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <button class="font-barlow bg-brand-gold text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-brand-gold/90 transition-colors">
+                                <i class="fas fa-download mr-2"></i>Download All
+                            </button>
+                            <button class="font-barlow border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-share mr-2"></i>Share
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Gallery Controls -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <button class="font-barlow text-sm text-gray-600 dark:text-gray-400 hover:text-brand-gold transition-colors">
+                                <i class="fas fa-th-large mr-1"></i>Grid View
+                            </button>
+                            <button class="font-barlow text-sm text-gray-600 dark:text-gray-400 hover:text-brand-gold transition-colors">
+                                <i class="fas fa-list mr-1"></i>List View
+                            </button>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="font-barlow text-sm text-gray-600 dark:text-gray-400">Sort by:</span>
+                            <select class="font-barlow text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                                <option>Date Added</option>
+                                <option>Alphabetical</option>
+                                <option>Most Downloaded</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gallery Grid -->
+                <div class="bg-white dark:bg-gray-900 rounded-b-2xl p-8">
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <!-- Sample gallery images -->
+                        <!-- Beautiful bride and groom first look moment -->
+                        <div class="relative group cursor-pointer aspect-square overflow-hidden rounded-lg">
+                            <img src="https://pixabay.com/get/gb7391b08e3da887b742ca62708e1d563526eb861ec3de80aa9b51f501b3dac5f90adf8e298f8783dfc1c9cab6f2e08c2251664c1b7a65431b3ef626d2ab95b39_1280.jpg" alt="Bride and groom first look moment" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
+                                <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center space-x-2">
+                                    <button class="text-white hover:text-brand-gold transition-colors">
+                                        <i class="fas fa-download text-lg"></i>
+                                    </button>
+                                    <button class="text-white hover:text-brand-gold transition-colors">
+                                        <i class="fas fa-heart text-lg"></i>
+                                    </button>
+                                    <button class="text-white hover:text-brand-gold transition-colors">
+                                        <i class="fas fa-expand text-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Wedding ceremony with guests watching -->
+                        <div class="relative group cursor-pointer aspect-square overflow-hidden rounded-lg">
+                            <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300" alt="Wedding ceremony with guests" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
+                                <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center space-x-2">
+                                    <button class="text-white hover:text-brand-gold transition-colors">
+                                        <i class="fas fa-download text-lg"></i>
+                                    </button>
+                                    <button class="text-white hover:text-brand-gold transition-colors">
+                                        <i class="fas fa-heart text-lg"></i>
+                                    </button>
+                                    <button class="text-white hover:text-brand-gold transition-colors">
+                                        <i class="fas fa-expand text-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Wedding rings detail shot -->
+                        <div class="relative group cursor-pointer aspect-square overflow-hidden rounded-lg">
+                            <img src="https://images.unsplash.com/photo-1478146896981-b80fe463b330?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300" alt="Wedding rings detail shot" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
+                                <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center space-x-2">
+                                    <button class="text-white hover:text-brand-gold transition-colors">
+                                        <i class="fas fa-download text-lg"></i>
+                                    </button>
+                                    <button class="text-white hover:text-brand-gold transition-colors">
+                                        <i class="fas fa-heart text-lg"></i>
+                                    </button>
+                                    <button class="text-white hover:text-brand-gold transition-colors">
+                                        <i class="fas fa-expand text-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dancing couple at reception -->
+                        <div class="relative group cursor-pointer aspect-square overflow-hidden rounded-lg">
+                            <img src="https://images.unsplash.com/photo-1520854221256-17451cc331bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300" alt="Dancing couple at wedding reception" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
+                                <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center space-x-2">
+                                    <button class="text-white hover:text-brand-gold transition-colors">
+                                        <i class="fas fa-download text-lg"></i>
+                                    </button>
+                                    <button class="text-white hover:text-brand-gold transition-colors">
+                                        <i class="fas fa-heart text-lg"></i>
+                                    </button>
+                                    <button class="text-white hover:text-brand-gold transition-colors">
+                                        <i class="fas fa-expand text-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-8">
+                        <p class="text-gray-600 dark:text-gray-400 text-sm">Showing 4 of 156 photos</p>
+                        <button class="font-barlow mt-4 text-brand-gold hover:text-brand-gold/80 transition-colors">
+                            Load More Photos
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="font-saira font-black text-4xl md:text-5xl text-brand-dark dark:text-white mb-4">
+                    CONTENT PACKAGES
+                </h2>
+                <p class="font-vibes text-2xl text-brand-gold mb-6">Transparent pricing for exceptional value</p>
+                <p class="text-lg max-w-3xl mx-auto text-gray-600 dark:text-gray-300">
+                    Choose the perfect package for your needs. All packages include professional editing and a private client gallery.
+                </p>
+            </div>
+
+            <!-- Pricing Cards -->
+            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <!-- Essential Package -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-shadow duration-300">
+                    <div class="text-center mb-8">
+                        <h3 class="font-saira font-black text-2xl text-brand-dark dark:text-white mb-2">ESSENTIAL</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">Perfect for small events</p>
+                        <div class="text-brand-gold">
+                            <span class="font-saira font-black text-4xl">R2,500</span>
+                            <span class="text-lg">/session</span>
+                        </div>
+                    </div>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>Up to 2 hours coverage</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>50+ edited photos</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>Private client gallery</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>High-resolution downloads</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>Basic retouching</span>
+                        </li>
+                    </ul>
+                    
+                    <button class="w-full font-barlow bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-3 rounded-lg font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                        Get Started
+                    </button>
+                </div>
+
+                <!-- Professional Package (Featured) -->
+                <div class="bg-brand-gold text-white rounded-2xl p-8 shadow-2xl transform scale-105 relative">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-brand-dark text-white px-4 py-1 rounded-full text-sm font-semibold">
+                        MOST POPULAR
+                    </div>
+                    <div class="text-center mb-8">
+                        <h3 class="font-saira font-black text-2xl mb-2">PROFESSIONAL</h3>
+                        <p class="text-brand-gold/80 mb-4">For special occasions</p>
+                        <div>
+                            <span class="font-saira font-black text-4xl">R5,000</span>
+                            <span class="text-lg">/session</span>
+                        </div>
+                    </div>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center">
+                            <i class="fas fa-check mr-3"></i>
+                            <span>Up to 6 hours coverage</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check mr-3"></i>
+                            <span>150+ edited photos</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check mr-3"></i>
+                            <span>Premium client gallery</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check mr-3"></i>
+                            <span>Professional retouching</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check mr-3"></i>
+                            <span>Print release included</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check mr-3"></i>
+                            <span>Social media ready files</span>
+                        </li>
+                    </ul>
+                    
+                    <button class="w-full font-barlow bg-white text-brand-gold py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                        Choose Professional
+                    </button>
+                </div>
+
+                <!-- Premium Package -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-shadow duration-300">
+                    <div class="text-center mb-8">
+                        <h3 class="font-saira font-black text-2xl text-brand-dark dark:text-white mb-2">PREMIUM</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">Full-day coverage</p>
+                        <div class="text-brand-gold">
+                            <span class="font-saira font-black text-4xl">R8,500</span>
+                            <span class="text-lg">/session</span>
+                        </div>
+                    </div>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>Full day coverage (8+ hours)</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>300+ edited photos</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>Premium gallery with video</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>Advanced retouching</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>Second photographer</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>Custom USB delivery</span>
+                        </li>
+                    </ul>
+                    
+                    <button class="w-full font-barlow bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-3 rounded-lg font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                        Go Premium
+                    </button>
+                </div>
+            </div>
+
+            <div class="text-center mt-12">
+                <p class="text-gray-600 dark:text-gray-300 mb-4">Need something custom? We create bespoke packages for unique requirements.</p>
+                <button class="font-barlow border-2 border-brand-gold text-brand-gold px-6 py-3 rounded-lg font-semibold hover:bg-brand-gold hover:text-white transition-colors">
+                    Request Custom Quote
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin Dashboard Preview -->
+    <section class="py-20 bg-gray-50 dark:bg-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="font-saira font-black text-4xl md:text-5xl text-brand-dark dark:text-white mb-4">
+                    ADMIN DASHBOARD
+                </h2>
+                <p class="font-vibes text-2xl text-brand-gold mb-6">Streamlined workflow management</p>
+                <p class="text-lg max-w-3xl mx-auto text-gray-600 dark:text-gray-300">
+                    Powerful tools for managing clients, organizing shoots, and delivering exceptional gallery experiences.
+                </p>
+            </div>
+
+            <!-- Dashboard Preview -->
+            <div class="max-w-6xl mx-auto bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden">
+                <!-- Dashboard Header -->
+                <div class="bg-brand-dark text-white p-6 border-b border-gray-700">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-saira font-black text-xl">Admin Dashboard</h3>
+                            <p class="text-gray-300 text-sm">Welcome back, John</p>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <button class="font-barlow bg-brand-gold text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-gold/90 transition-colors">
+                                <i class="fas fa-plus mr-2"></i>New Client
+                            </button>
+                            <button class="font-barlow bg-brand-gold text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-gold/90 transition-colors">
+                                <i class="fas fa-upload mr-2"></i>Upload Images
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Content -->
+                <div class="p-6">
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-600 dark:text-gray-400 text-sm">Total Clients</p>
+                                    <p class="font-saira font-black text-2xl text-brand-dark dark:text-white">47</p>
+                                </div>
+                                <i class="fas fa-users text-brand-gold text-2xl"></i>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-600 dark:text-gray-400 text-sm">Active Shoots</p>
+                                    <p class="font-saira font-black text-2xl text-brand-dark dark:text-white">12</p>
+                                </div>
+                                <i class="fas fa-camera text-brand-gold text-2xl"></i>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-600 dark:text-gray-400 text-sm">Total Images</p>
+                                    <p class="font-saira font-black text-2xl text-brand-dark dark:text-white">2,847</p>
+                                </div>
+                                <i class="fas fa-images text-brand-gold text-2xl"></i>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-600 dark:text-gray-400 text-sm">Gallery Views</p>
+                                    <p class="font-saira font-black text-2xl text-brand-dark dark:text-white">1,234</p>
+                                </div>
+                                <i class="fas fa-eye text-brand-gold text-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <!-- Recent Clients -->
+                        <div>
+                            <h4 class="font-saira font-black text-lg text-brand-dark dark:text-white mb-4">Recent Clients</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-brand-gold rounded-full flex items-center justify-center text-white font-semibold mr-3">
+                                            SM
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold text-brand-dark dark:text-white">Sarah & Michael</p>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">Wedding - Dec 15</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 px-2 py-1 rounded text-xs">Active</span>
+                                        <button class="text-gray-400 hover:text-brand-gold transition-colors">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-brand-gold rounded-full flex items-center justify-center text-white font-semibold mr-3">
+                                            JC
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold text-brand-dark dark:text-white">Johnson Corp</p>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">Corporate - Dec 10</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 px-2 py-1 rounded text-xs">Delivered</span>
+                                        <button class="text-gray-400 hover:text-brand-gold transition-colors">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-brand-gold rounded-full flex items-center justify-center text-white font-semibold mr-3">
+                                            LM
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold text-brand-dark dark:text-white">Lisa's Matric Dance</p>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">Event - Dec 8</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 px-2 py-1 rounded text-xs">Processing</span>
+                                        <button class="text-gray-400 hover:text-brand-gold transition-colors">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div>
+                            <h4 class="font-saira font-black text-lg text-brand-dark dark:text-white mb-4">Quick Actions</h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                <button class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-center">
+                                    <i class="fas fa-user-plus text-brand-gold text-2xl mb-2"></i>
+                                    <p class="font-barlow font-semibold text-sm">Add Client</p>
+                                </button>
+                                <button class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-center">
+                                    <i class="fas fa-camera-retro text-brand-gold text-2xl mb-2"></i>
+                                    <p class="font-barlow font-semibold text-sm">New Shoot</p>
+                                </button>
+                                <button class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-center">
+                                    <i class="fas fa-upload text-brand-gold text-2xl mb-2"></i>
+                                    <p class="font-barlow font-semibold text-sm">Bulk Upload</p>
+                                </button>
+                                <button class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-center">
+                                    <i class="fas fa-chart-bar text-brand-gold text-2xl mb-2"></i>
+                                    <p class="font-barlow font-semibold text-sm">Analytics</p>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="font-saira font-black text-4xl md:text-5xl text-brand-dark dark:text-white mb-4">
+                    LET'S CREATE TOGETHER
+                </h2>
+                <p class="font-vibes text-2xl text-brand-gold mb-6">Ready to capture your story?</p>
+                <p class="text-lg max-w-3xl mx-auto text-gray-600 dark:text-gray-300">
+                    Get in touch to discuss your project and receive a personalized quote. We're excited to bring your vision to life.
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+                <!-- Contact Form -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg">
+                    <h3 class="font-saira font-black text-2xl text-brand-dark dark:text-white mb-6">Send us a message</h3>
+                    <form class="space-y-6">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">First Name</label>
+                                <input type="text" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-gold focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="John" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Last Name</label>
+                                <input type="text" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-gold focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Doe" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Email</label>
+                            <input type="email" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-gold focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="john@example.com" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Service Type</label>
+                            <select class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-gold focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                <option>Photography</option>
+                                <option>Videography</option>
+                                <option>Both Photography & Videography</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Event Date</label>
+                            <input type="date" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-gold focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Message</label>
+                            <textarea rows="4" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-gold focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Tell us about your event and vision..."></textarea>
+                        </div>
+                        <button type="submit" class="w-full font-barlow bg-brand-gold text-white py-3 rounded-lg font-semibold hover:bg-brand-gold/90 transition-colors">
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="space-y-8">
+                    <div>
+                        <h3 class="font-saira font-black text-2xl text-brand-dark dark:text-white mb-6">Get in touch</h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-8">
+                            We're here to help bring your vision to life. Reach out through any of these channels and we'll get back to you within 24 hours.
+                        </p>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-brand-gold rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-phone text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-brand-dark dark:text-white">Phone</p>
+                                <p class="text-gray-600 dark:text-gray-300">+27 123 456 7890</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-brand-gold rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-envelope text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-brand-dark dark:text-white">Email</p>
+                                <p class="text-gray-600 dark:text-gray-300">hello@slyfoxstudios.com</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-brand-gold rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-map-marker-alt text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-brand-dark dark:text-white">Studio</p>
+                                <p class="text-gray-600 dark:text-gray-300">Cape Town, South Africa</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-200 dark:border-gray-700 pt-8">
+                        <h4 class="font-semibold text-brand-dark dark:text-white mb-4">Follow our work</h4>
+                        <div class="flex space-x-4">
+                            <a href="#" class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center hover:bg-brand-gold hover:text-white transition-colors">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center hover:bg-brand-gold hover:text-white transition-colors">
+                                <i class="fab fa-facebook"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center hover:bg-brand-gold hover:text-white transition-colors">
+                                <i class="fab fa-tiktok"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center hover:bg-brand-gold hover:text-white transition-colors">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-brand-dark text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <!-- Logo & Description -->
+                <div class="md:col-span-2">
+                    <div class="flex items-center mb-4">
+                        <span class="font-saira font-black text-2xl">SlyFox</span>
+                        <span class="font-vibes text-brand-gold ml-2 text-lg">Studios</span>
+                    </div>
+                    <p class="text-gray-300 mb-4 max-w-md">
+                        Professional photography and videography services capturing life's most precious moments with artistic excellence and technical precision.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-brand-gold transition-colors">
+                            <i class="fab fa-instagram text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-brand-gold transition-colors">
+                            <i class="fab fa-facebook text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-brand-gold transition-colors">
+                            <i class="fab fa-tiktok text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-brand-gold transition-colors">
+                            <i class="fab fa-youtube text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Services -->
+                <div>
+                    <h4 class="font-saira font-black text-lg mb-4">SERVICES</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li><a href="#" class="hover:text-brand-gold transition-colors">Wedding Photography</a></li>
+                        <li><a href="#" class="hover:text-brand-gold transition-colors">Portrait Sessions</a></li>
+                        <li><a href="#" class="hover:text-brand-gold transition-colors">Corporate Events</a></li>
+                        <li><a href="#" class="hover:text-brand-gold transition-colors">Product Photography</a></li>
+                        <li><a href="#" class="hover:text-brand-gold transition-colors">Videography</a></li>
+                    </ul>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="font-saira font-black text-lg mb-4">QUICK LINKS</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li><a href="#" class="hover:text-brand-gold transition-colors">About Us</a></li>
+                        <li><a href="#pricing" class="hover:text-brand-gold transition-colors">Pricing</a></li>
+                        <li><a href="#" class="hover:text-brand-gold transition-colors">Portfolio</a></li>
+                        <li><a href="#contact" class="hover:text-brand-gold transition-colors">Contact</a></li>
+                        <li><a href="#" class="hover:text-brand-gold transition-colors">Client Login</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-700 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-gray-400 text-sm mb-4 md:mb-0">
+                        © 2023 SlyFox Studios. All rights reserved.
+                    </p>
+                    <div class="flex space-x-6 text-sm text-gray-400">
+                        <a href="#" class="hover:text-brand-gold transition-colors">Privacy Policy</a>
+                        <a href="#" class="hover:text-brand-gold transition-colors">Terms of Service</a>
+                        <a href="#" class="hover:text-brand-gold transition-colors">Cookie Policy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    (function() {
+        // Theme Toggle Functionality
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.contains('dark');
+            
+            if (isDark) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Initialize theme from localStorage
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                document.documentElement.classList.add('dark');
+            }
+        }
+
+        // Smooth scrolling for anchor links
+        function initSmoothScrolling() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        }
+
+        // Gallery image interactions
+        function initGalleryInteractions() {
+            // Add click handlers for gallery images
+            document.querySelectorAll('.group[data-mock="gallery-item"]').forEach(item => {
+                item.addEventListener('click', function() {
+                    // TODO: Implement lightbox/modal functionality
+                    console.log('Gallery item clicked - implement modal');
+                });
+            });
+        }
+
+        // Initialize all functionality
+        initTheme();
+        initSmoothScrolling();
+        initGalleryInteractions();
+
+        // Make toggleTheme available globally
+        window.toggleTheme = toggleTheme;
+
+        // Form submission handling
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                // TODO: Implement form submission logic
+                console.log('Form submitted - implement backend integration');
+            });
+        });
+
+        // Admin dashboard interactions
+        document.querySelectorAll('[data-action]').forEach(button => {
+            button.addEventListener('click', function() {
+                const action = this.getAttribute('data-action');
+                // TODO: Implement admin actions
+                console.log(`Admin action: ${action}`);
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

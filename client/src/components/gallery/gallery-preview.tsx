@@ -42,31 +42,35 @@ export function GalleryPreview({ images, shoot, className = "" }: GalleryPreview
   };
 
   const getGridClasses = () => {
-    if (gallerySettings.layoutStyle === 'square') {
-      return 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
+    if (gallerySettings.layoutStyle === 'grid') {
+      return 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5';
     }
-    return 'masonry-grid'; // We'll need custom CSS for masonry
+    return 'columns-2 md:columns-3 lg:columns-4 2xl:columns-5'; // Use CSS columns for masonry
+  };
+
+  const getGridGap = () => {
+    switch (gallerySettings.imageSpacing) {
+      case 'tight': return '2px';
+      case 'normal': return '8px';
+      case 'loose': return '16px';
+      default: return '8px'; // default to normal
+    }
   };
 
   const getImageClasses = () => {
     const borderRadius = gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-lg';
-    const padding = gallerySettings.padding === 'tight' ? 'p-1' : 'p-2';
-    return `${borderRadius} ${padding}`;
+    return borderRadius;
   };
 
   return (
     <div className={`${className}`}>
       {/* Gallery Container */}
-      <div 
-        className={`p-4 ${getBackgroundStyle()}`}
-        style={{ 
-          gap: gallerySettings.imageSpacing === 'tight' ? '4px' : '8px',
-        }}
-      >
-        {gallerySettings.layoutStyle === 'square' ? (
+      <div className={`${getBackgroundStyle()}`}>
+        {gallerySettings.layoutStyle === 'grid' ? (
           /* Square Grid Layout */
           <div 
-            className={`grid ${gallerySettings.imageSpacing === 'tight' ? 'gap-1' : 'gap-2'} ${getGridClasses()}`}
+            className={`grid ${getGridClasses()}`}
+            style={{ gap: getGridGap() }}
           >
             {visibleImages.map((image, index) => (
               <div
@@ -77,7 +81,7 @@ export function GalleryPreview({ images, shoot, className = "" }: GalleryPreview
                 <img
                   src={ImageUrl.forViewing(image.storagePath)}
                   alt={`Gallery image ${index + 1}`}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  className="w-full h-full object-cover transition-all duration-300 group-hover:brightness-90"
                   loading="lazy"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
@@ -87,19 +91,20 @@ export function GalleryPreview({ images, shoot, className = "" }: GalleryPreview
         ) : (
           /* Masonry Layout */
           <div 
-            className="columns-2 sm:columns-3 lg:columns-4 xl:columns-5"
-            style={{ gap: gallerySettings.imageSpacing === 'tight' ? '4px' : '8px' }}
+            className={`${getGridClasses()}`}
+            style={{ columnGap: getGridGap() }}
           >
             {visibleImages.map((image, index) => (
               <div
                 key={image.id}
-                className={`relative ${gallerySettings.imageSpacing === 'tight' ? 'mb-1' : 'mb-2'} group cursor-pointer overflow-hidden break-inside-avoid ${getImageClasses()}`}
+                className={`relative group cursor-pointer overflow-hidden break-inside-avoid ${getImageClasses()}`}
                 onClick={() => setSelectedImage(image.id)}
+                style={{ marginBottom: getGridGap() }}
               >
                 <img
                   src={ImageUrl.forViewing(image.storagePath)}
                   alt={`Gallery image ${index + 1}`}
-                  className="w-full h-auto transition-transform duration-300 group-hover:scale-105"
+                  className="w-full h-auto object-cover transition-all duration-300 group-hover:brightness-90"
                   loading="lazy"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
