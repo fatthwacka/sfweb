@@ -10,7 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 import { ImageUrl } from "@/lib/image-utils";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest } from "@/lib/queryClient";
-import { GalleryLivePreview } from "@/components/shared/gallery-live-preview";
 import { 
   Camera, 
   Calendar, 
@@ -743,21 +742,6 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                 )}
               </Card>
 
-              {/* Gallery Live Preview - Using Shared Component */}
-              <GalleryLivePreview
-                shoot={shoot}
-                images={images}
-                gallerySettings={gallerySettings}
-                selectedCover={selectedCover}
-                setSelectedCover={setSelectedCover}
-                imageOrder={imageOrder}
-                setImageOrder={setImageOrder}
-                visibleImageCount={visibleImageCount}
-                setVisibleImageCount={setVisibleImageCount}
-                getOrderedImages={getOrderedImages}
-                onSaveOrder={handleSaveOrder}
-                isSaving={false}
-              />
             </div>
 
 

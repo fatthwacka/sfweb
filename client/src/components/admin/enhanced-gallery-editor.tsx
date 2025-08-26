@@ -14,6 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { ImageUrl } from '@/lib/image-utils';
+import { useAutoSaveImageOrder } from '@/hooks/use-auto-save-image-order';
 import {
   Settings,
   Save,
@@ -48,6 +49,7 @@ import {
   GalleryAppearanceSection 
 } from './gallery-sections';
 import { GalleryImageCard } from './gallery-image-card';
+import { GalleryRenderer } from '@/components/gallery/gallery-renderer';
 
 interface GalleryImage {
   id: string;
@@ -77,6 +79,16 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   const [imageToRemove, setImageToRemove] = useState<string | null>(null);
   const [visibleImageCount, setVisibleImageCount] = useState(20); // Show 20 images initially (4 rows of 5)
   const [imageToDelete, setImageToDelete] = useState<string | null>(null);
+  
+  // Optimized auto-save hook for image sequences and cover selection
+  const { debouncedSave: debouncedSaveImageOrder, saveStatus: imageOrderSaveStatus } = useAutoSaveImageOrder({
+    shootId
+  });
+
+  // Function to trigger auto-save for image order and cover
+  const triggerImageOrderAutoSave = useCallback(() => {
+    debouncedSaveImageOrder(imageOrder, selectedCover);
+  }, [imageOrder, selectedCover, debouncedSaveImageOrder]);
   
   // All editable shoot parameters
   const [editableShoot, setEditableShoot] = useState({
@@ -365,6 +377,11 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       return newOrder;
     });
     
+    // Trigger auto-save after order change
+    setTimeout(() => {
+      triggerImageOrderAutoSave();
+    }, 0);
+    
     setDraggedImage(null);
   }, [draggedImage]);
 
@@ -529,6 +546,10 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
   const setAlbumCover = (imageId: string) => {
     setSelectedCover(selectedCover === imageId ? null : imageId);
+    // Trigger auto-save after cover change
+    setTimeout(() => {
+      triggerImageOrderAutoSave();
+    }, 0);
   };
 
   const handleDeleteImage = (imageId: string) => {
@@ -720,8 +741,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
         clients={clients as any[]}
         clientReassignDialogOpen={clientReassignDialogOpen}
         setClientReassignDialogOpen={setClientReassignDialogOpen}
-        onSave={handleSaveBasicInfo}
-        isSaving={saveBasicInfoMutation.isPending}
+        shootId={shootId}
         toast={toast}
       />
 
@@ -729,8 +749,8 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       <AdvancedSettingsSection
         editableShoot={editableShoot}
         setEditableShoot={setEditableShoot}
-        onSave={handleSaveAdvancedSettings}
-        isSaving={saveAdvancedSettingsMutation.isPending}
+        shootId={shootId}
+        toast={toast}
       />
 
       {/* Add Images */}
@@ -738,6 +758,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
         onUpload={handleUploadImages}
         isUploading={uploadImagesMutation.isPending}
         toast={toast}
+        shootId={shootId}
       />
 
       {/* Gallery Appearance */}
@@ -747,8 +768,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
         selectedCover={selectedCover}
         setSelectedCover={setSelectedCover}
         imageOrder={imageOrder}
-        onSave={handleSaveAppearance}
-        isSaving={saveAppearanceMutation.isPending}
+        shootId={shootId}
       />
 
       {/* Live Preview Card */}
@@ -759,28 +779,39 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
               <Eye className="w-5 h-5" />
               Gallery Live Preview
             </CardTitle>
-            <Button 
-              onClick={() => {
-                const imageSequences = imageOrder.length > 0 
-                  ? Object.fromEntries(imageOrder.map((id, index) => [id, index + 1]))
-                  : {};
-                updateImageSequencesMutation.mutate(imageSequences);
-              }}
-              disabled={updateImageSequencesMutation.isPending}
-              className="bg-salmon hover:bg-salmon-muted text-white"
-            >
-              {updateImageSequencesMutation.isPending ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Order
-                </>
-              )}
-            </Button>
+            <div className="flex items-center gap-3">
+              {(() => {
+                switch (imageOrderSaveStatus.status) {
+                  case 'saving':
+                    return (
+                      <div className="flex items-center gap-2 text-blue-400">
+                        <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                        <span className="text-sm">Saving...</span>
+                      </div>
+                    );
+                  case 'saved':
+                    return (
+                      <div className="flex items-center gap-2 text-green-400">
+                        <div className="w-4 h-4 border-2 border-green-400 rounded-full flex items-center justify-center">
+                          <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                        </div>
+                        <span className="text-sm">Saved</span>
+                      </div>
+                    );
+                  case 'error':
+                    return (
+                      <div className="flex items-center gap-2 text-red-400">
+                        <div className="w-4 h-4 border-2 border-red-400 rounded-full flex items-center justify-center">
+                          <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+                        </div>
+                        <span className="text-sm">Save failed</span>
+                      </div>
+                    );
+                  default:
+                    return null;
+                }
+              })()}
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -799,9 +830,17 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
               
               return coverImageUrl ? (
                 <div 
-                  className="relative h-48 w-full bg-cover bg-center flex items-center justify-center"
+                  className="relative h-48 w-full bg-cover flex items-center justify-center"
                   style={{
                     backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${coverImageUrl})`,
+                    backgroundPosition: (() => {
+                      switch (gallerySettings.coverPicAlignment) {
+                        case 'top': return 'center top';
+                        case 'bottom': return 'center bottom';
+                        case 'centre':
+                        default: return 'center center';
+                      }
+                    })(),
                     marginBottom: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px'
                   }}
                 >
@@ -819,491 +858,41 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
               );
             })()}
             
-            {/* Image Grid */}
-            <div className="p-4">
-              {!selectedCover && (
+            {/* Gallery Title when no cover */}
+            {!selectedCover && (
+              <div className="p-4">
                 <h2 className="text-xl font-bold text-white mb-4 text-center">
                   {shoot?.customTitle || shoot?.title || 'Gallery'}
                 </h2>
-              )}
-            
-            {gallerySettings.layoutStyle === 'masonry' ? (
-              <div 
-                className="columns-2 md:columns-3 lg:columns-4 2xl:columns-5"
-                style={{ 
-                  columnGap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px',
-                  columnFill: 'balance',
-                  orphans: 1,
-                  widows: 1
-                }}
-              >
-                {getOrderedImages().slice(0, visibleImageCount).map((image, index) => {
-                  const imageUrl = image?.storagePath ? ImageUrl.forViewing(image.storagePath) : null;
-                  
-                  return (
-                    <div 
-                      key={image.id}
-                      className={`
-                        relative group overflow-hidden break-inside-avoid inline-block w-full
-                        ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full aspect-square'}
-                        ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
-                        ${draggedImage === image.id ? 'opacity-50 scale-95' : ''}
-                        cursor-pointer transition-all duration-200
-                      `}
-                      style={{ 
-                        marginBottom: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px',
-                        pageBreakInside: 'avoid',
-                        breakInside: 'avoid',
-                        transform: draggedImage === image.id ? 'scale(0.95)' : 'scale(1)',
-                        transition: 'transform 0.2s ease, opacity 0.2s ease'
-                      }}
-                      draggable={isDragReorderingEnabled}
-                      onDragStart={(e) => {
-                        if (!isDragReorderingEnabled) {
-                          e.preventDefault();
-                          return;
-                        }
-                        setDraggedImage(image.id);
-                        e.dataTransfer.effectAllowed = 'move';
-                      }}
-                      onDragEnd={() => setDraggedImage(null)}
-                      onDragOver={(e) => isDragReorderingEnabled && e.preventDefault()}
-                      onDrop={(e) => {
-                        if (!isDragReorderingEnabled) return;
-                        e.preventDefault();
-                        if (draggedImage && draggedImage !== image.id) {
-                          setImageOrder(currentOrder => {
-                            const newOrder = [...currentOrder];
-                            const draggedIndex = newOrder.indexOf(draggedImage);
-                            const targetIndex = newOrder.indexOf(image.id);
-                            
-                            if (draggedIndex !== -1 && targetIndex !== -1) {
-                              // Remove from old position
-                              newOrder.splice(draggedIndex, 1);
-                              // Insert at new position  
-                              newOrder.splice(targetIndex, 0, draggedImage);
-                            }
-                            return newOrder;
-                          });
-                        }
-                        setDraggedImage(null);
-                      }}
-                      onMouseDown={(e) => setDragStartTime(Date.now())}
-                      onClick={(e) => {
-                        const clickDuration = Date.now() - dragStartTime;
-                        if (clickDuration < 200) { // Quick click = modal
-                          setSelectedImageModal(image.id);
-                        }
-                      }}
-                    >
-                      {imageUrl ? (
-                        <img
-                          src={imageUrl}
-                          alt={image.filename}
-                          className={`w-full object-cover block ${gallerySettings.borderStyle === 'circular' ? 'h-full aspect-square' : 'h-auto'}`}
-                          style={{ verticalAlign: 'top' }}
-                          onError={(e) => {
-                            // Fallback to a placeholder on image load error
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            const parent = target.parentElement;
-                            if (parent && !parent.querySelector('.image-error-placeholder')) {
-                              const placeholder = document.createElement('div');
-                              placeholder.className = 'image-error-placeholder flex items-center justify-center h-32 bg-gray-800 text-gray-400 text-sm';
-                              placeholder.innerHTML = 'Image unavailable';
-                              parent.appendChild(placeholder);
-                            }
-                          }}
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center h-32 bg-gray-800 text-gray-400 text-sm">
-                          Loading...
-                        </div>
-                      )}
-                    
-                    {/* Hover Buttons */}
-                    <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          className="bg-purple-600 text-white hover:bg-purple-700"
-                          title="View Full Resolution"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewFullRes(image.storagePath);
-                          }}
-                        >
-                          <Eye className="w-3 h-3" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          className="bg-salmon text-white hover:bg-salmon-muted"
-                          title="Make Cover"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const newCover = selectedCover === image.id ? null : image.id;
-                            setSelectedCover(newCover);
-                            
-                            // Save cover selection immediately to database
-                            saveAppearanceMutation.mutate({
-                              bannerImageId: newCover,
-                              gallerySettings,
-                              imageSequences: imageOrder.length > 0 
-                                ? Object.fromEntries(imageOrder.map((id, index) => [id, index + 1]))
-                                : {}
-                            });
-                          }}
-                        >
-                          <Crown className="w-3 h-3" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="secondary" 
-                          className="bg-yellow-600 text-white hover:bg-yellow-700"
-                          title="Remove from Album"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemoveImage(image.id);
-                          }}
-                        >
-                          <X className="w-3 h-3" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          title="Delete from Database"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteImage(image.id);
-                          }}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    {selectedCover === image.id && (
-                      <div className="absolute top-2 right-2 bg-salmon text-white px-2 py-1 rounded text-xs font-bold">
-                        Cover
-                      </div>
-                    )}
-                  </div>
-                  );
-                })}
-              </div>
-            ) : gallerySettings.layoutStyle === 'grid' ? (
-              <div 
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5"
-                style={{ 
-                  gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
-                }}
-              >
-                {getOrderedImages().slice(0, visibleImageCount).map((image, index) => {
-                  const imageUrl = image?.storagePath ? ImageUrl.forViewing(image.storagePath) : null;
-                  
-                  return (
-                    <div 
-                      key={image.id}
-                      className={`
-                        relative group overflow-hidden aspect-square
-                        ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full'}
-                        ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
-                        ${draggedImage === image.id ? 'opacity-50' : ''}
-                        cursor-pointer transition-all duration-200
-                      `}
-                      draggable={isDragReorderingEnabled}
-                      onDragStart={(e) => {
-                        if (!isDragReorderingEnabled) {
-                          e.preventDefault();
-                          return;
-                        }
-                        setDraggedImage(image.id);
-                        e.dataTransfer.effectAllowed = 'move';
-                      }}
-                    onDragEnd={() => setDraggedImage(null)}
-                    onDragOver={(e) => isDragReorderingEnabled && e.preventDefault()}
-                    onDrop={(e) => {
-                      if (!isDragReorderingEnabled) return;
-                      e.preventDefault();
-                      if (draggedImage && draggedImage !== image.id) {
-                        setImageOrder(currentOrder => {
-                          const newOrder = [...currentOrder];
-                          const draggedIndex = newOrder.indexOf(draggedImage);
-                          const targetIndex = newOrder.indexOf(image.id);
-                          
-                          if (draggedIndex !== -1 && targetIndex !== -1) {
-                            // Remove from old position
-                            newOrder.splice(draggedIndex, 1);
-                            // Insert at new position
-                            newOrder.splice(targetIndex, 0, draggedImage);
-                          }
-                          return newOrder;
-                        });
-                      }
-                      setDraggedImage(null);
-                    }}
-                    onMouseDown={(e) => setDragStartTime(Date.now())}
-                    onClick={(e) => {
-                      const clickDuration = Date.now() - dragStartTime;
-                      if (clickDuration < 200) { // Quick click = modal
-                        setSelectedImageModal(image.id);
-                      }
-                    }}
-                  >
-                    {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt={image.filename}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          const parent = target.parentElement;
-                          if (parent && !parent.querySelector('.image-error-placeholder')) {
-                            const placeholder = document.createElement('div');
-                            placeholder.className = 'image-error-placeholder flex items-center justify-center w-full h-full bg-gray-800 text-gray-400 text-sm';
-                            placeholder.innerHTML = 'Image unavailable';
-                            parent.appendChild(placeholder);
-                          }
-                        }}
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center w-full h-full bg-gray-800 text-gray-400 text-sm">
-                        Loading...
-                      </div>
-                    )}
-                    
-                    {/* Hover Buttons */}
-                    <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          className="bg-purple-600 text-white hover:bg-purple-700"
-                          title="View Full Resolution"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewFullRes(image.storagePath);
-                          }}
-                        >
-                          <Eye className="w-3 h-3" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          className="bg-salmon text-white hover:bg-salmon-muted"
-                          title="Make Cover"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const newCover = selectedCover === image.id ? null : image.id;
-                            setSelectedCover(newCover);
-                            
-                            // Save cover selection immediately to database
-                            saveAppearanceMutation.mutate({
-                              bannerImageId: newCover,
-                              gallerySettings,
-                              imageSequences: imageOrder.length > 0 
-                                ? Object.fromEntries(imageOrder.map((id, index) => [id, index + 1]))
-                                : {}
-                            });
-                          }}
-                        >
-                          <Crown className="w-3 h-3" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="secondary" 
-                          className="bg-yellow-600 text-white hover:bg-yellow-700"
-                          title="Remove from Album"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemoveImage(image.id);
-                          }}
-                        >
-                          <X className="w-3 h-3" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          title="Delete from Database"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteImage(image.id);
-                          }}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    {selectedCover === image.id && (
-                      <div className="absolute top-2 right-2 bg-salmon text-white px-2 py-1 rounded text-xs font-bold">
-                        Cover
-                      </div>
-                    )}
-                  </div>
-                  );
-                })}
-              </div>
-            ) : (
-              // Columns layout - flexible grid with natural aspect ratios
-              <div 
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5"
-                style={{ 
-                  gap: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px' 
-                }}
-              >
-                {getOrderedImages().slice(0, visibleImageCount).map((image) => {
-                  const imageUrl = image?.storagePath ? ImageUrl.forViewing(image.storagePath) : null;
-                  
-                  return (
-                    <div 
-                      key={image.id}
-                      className={`
-                        relative group overflow-hidden
-                        ${gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-full aspect-square'}
-                        ${selectedCover === image.id ? 'ring-2 ring-salmon' : ''}
-                        ${draggedImage === image.id ? 'opacity-50 scale-95' : ''}
-                        cursor-pointer transition-all duration-200
-                      `}
-                      draggable={isDragReorderingEnabled}
-                      onDragStart={(e) => {
-                        if (!isDragReorderingEnabled) {
-                          e.preventDefault();
-                          return;
-                        }
-                        setDraggedImage(image.id);
-                        e.dataTransfer.effectAllowed = 'move';
-                      }}
-                      onDragEnd={() => setDraggedImage(null)}
-                      onDragOver={(e) => isDragReorderingEnabled && e.preventDefault()}
-                      onDrop={(e) => {
-                        if (!isDragReorderingEnabled) return;
-                        e.preventDefault();
-                        if (draggedImage && draggedImage !== image.id) {
-                          setImageOrder(currentOrder => {
-                            const newOrder = [...currentOrder];
-                            const draggedIndex = newOrder.indexOf(draggedImage);
-                            const targetIndex = newOrder.indexOf(image.id);
-                            
-                            if (draggedIndex !== -1 && targetIndex !== -1) {
-                              newOrder.splice(draggedIndex, 1);
-                              newOrder.splice(targetIndex, 0, draggedImage);
-                            }
-                            return newOrder;
-                          });
-                        }
-                        setDraggedImage(null);
-                      }}
-                      onMouseDown={() => setDragStartTime(Date.now())}
-                      onClick={() => {
-                        const clickDuration = Date.now() - dragStartTime;
-                        if (clickDuration < 200) {
-                          setSelectedImageModal(image.id);
-                        }
-                      }}
-                    >
-                      {imageUrl ? (
-                        <img
-                          src={imageUrl}
-                          alt={image.filename}
-                          className="w-full h-auto object-cover"
-                          style={{ verticalAlign: 'top' }}
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            const parent = target.parentElement;
-                            if (parent && !parent.querySelector('.image-error-placeholder')) {
-                              const placeholder = document.createElement('div');
-                              placeholder.className = 'image-error-placeholder flex items-center justify-center w-full h-full bg-gray-800 text-gray-400 text-sm';
-                              placeholder.innerHTML = 'Image unavailable';
-                              parent.appendChild(placeholder);
-                            }
-                          }}
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center w-full h-full bg-gray-800 text-gray-400 text-sm">
-                          Loading...
-                        </div>
-                      )}
-                      
-                      {/* Hover Buttons */}
-                      <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            className="bg-purple-600 text-white hover:bg-purple-700"
-                            title="View Full Resolution"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewFullRes(image.storagePath);
-                            }}
-                          >
-                            <Eye className="w-3 h-3" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            className="bg-salmon text-white hover:bg-salmon-muted"
-                            title="Make Cover"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const newCover = selectedCover === image.id ? null : image.id;
-                              setSelectedCover(newCover);
-                              
-                              saveAppearanceMutation.mutate({
-                                bannerImageId: newCover,
-                                gallerySettings,
-                                imageSequences: imageOrder.length > 0 
-                                  ? Object.fromEntries(imageOrder.map((id, index) => [id, index + 1]))
-                                  : {}
-                              });
-                            }}
-                          >
-                            <Crown className="w-3 h-3" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="secondary" 
-                            className="bg-yellow-600 text-white hover:bg-yellow-700"
-                            title="Remove from Album"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRemoveImage(image.id);
-                            }}
-                          >
-                            <X className="w-3 h-3" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            title="Delete from Database"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteImage(image.id);
-                            }}
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      {selectedCover === image.id && (
-                        <div className="absolute top-2 right-2 bg-salmon text-white px-2 py-1 rounded text-xs font-bold">
-                          Cover
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
               </div>
             )}
             
+            {/* Gallery Renderer */}
+            <GalleryRenderer
+              images={getOrderedImages()}
+              gallerySettings={gallerySettings}
+              selectedCover={selectedCover}
+              onCoverChange={setSelectedCover}
+              draggedImage={draggedImage}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+              onImageClick={setSelectedImageModal}
+              onViewFullRes={handleViewFullRes}
+              onRemoveImage={handleRemoveImage}
+              onDeleteImage={handleDeleteImage}
+              isDragReorderingEnabled={isDragReorderingEnabled}
+              visibleImageCount={visibleImageCount}
+              dragStartTime={dragStartTime}
+              onMouseDown={() => setDragStartTime(Date.now())}
+              isAdminMode={true}
+              saveAppearanceMutation={saveAppearanceMutation}
+            />
+            
+            {/* Load More Button */}
             {images.length > visibleImageCount && visibleImageCount < 100 && (
-              <div className="text-center mt-6">
+              <div className="text-center mt-6 p-4">
                 <Button
                   variant="outline"
                   onClick={loadMoreImages}
@@ -1314,8 +903,9 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
               </div>
             )}
             
+            {/* Large Album Notice */}
             {images.length > 100 && (
-              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mt-4">
+              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mt-4 mx-4">
                 <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
                   <AlertTriangle className="w-4 h-4" />
                   <span className="font-medium">Large Album Notice</span>
@@ -1325,7 +915,6 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                 </p>
               </div>
             )}
-            </div>
           </div>
         </CardContent>
       </Card>

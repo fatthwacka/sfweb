@@ -1,6 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
 import { storage } from './storage';
 import { seedCompleteDatabase } from './seed-database.js';
 import { createSupabaseUser, type CreateUserData } from './supabase-auth.js';
@@ -8,6 +10,7 @@ import { populateWithExistingAuth } from './populate-with-existing-auth.js';
 import { initializeAdmin } from './init-admin.js';
 import { createClient } from '@supabase/supabase-js';
 import simpleAssetsRouter from './routes/simple-assets';
+import siteConfigRouter from './site-config-api';
 import { 
   insertUserSchema, insertClientSchema, insertShootSchema, 
   insertImageSchema, insertBookingSchema, insertAnalyticsSchema,
@@ -561,12 +564,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const shootId = req.params.id; // Use string ID for UUID
       const updates = req.body;
       
-      // Handle image sequence updates if provided
+      // Handle image sequence updates if provided - PERFORMANCE OPTIMIZED
       if (updates.imageSequences) {
         const imageSequences = updates.imageSequences;
-        for (const [imageId, sequence] of Object.entries(imageSequences)) {
-          await storage.updateImage(imageId, { sequence: sequence as number });
-        }
+        console.log(`🚀 Batch updating ${Object.keys(imageSequences).length} image sequences`);
+        
+        // Use batch update for much better performance
+        await storage.batchUpdateImageSequences(imageSequences);
+        
         // Remove imageSequences from shoot updates since it's not a shoot field
         delete updates.imageSequences;
       }
@@ -1287,8 +1292,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generic file upload endpoint for homepage settings and other admin features
+  app.post("/api/upload", upload.single('file'), async (req, res) => {
+    try {
+      const file = req.file;
+      
+      if (!file) {
+        return res.status(400).json({ message: 'No file provided' });
+      }
+      
+      console.log(`🔄 Uploading file: ${file.originalname} (${file.mimetype})`);
+      
+      // Create uploads directory if it doesn't exist
+      const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      
+      // Generate unique filename to avoid conflicts
+      const timestamp = Date.now();
+      const fileExtension = path.extname(file.originalname);
+      const fileName = `${path.basename(file.originalname, fileExtension)}_${timestamp}${fileExtension}`;
+      const filePath = path.join(uploadsDir, fileName);
+      
+      // Write file to disk
+      fs.writeFileSync(filePath, file.buffer);
+      
+      const relativePath = `/uploads/${fileName}`;
+      
+      console.log(`✅ File uploaded: ${fileName} -> ${relativePath}`);
+      
+      res.json({
+        success: true,
+        path: relativePath,
+        filename: fileName,
+        originalName: file.originalname,
+        size: file.size,
+        mimetype: file.mimetype
+      });
+      
+    } catch (error) {
+      console.error('File upload error:', error);
+      res.status(500).json({ message: 'Failed to upload file' });
+    }
+  });
+
   // Use the simple assets router for direct file management
   app.use('/api/simple-assets', simpleAssetsRouter);
+  
+  // Use the site config router for configuration management
+  app.use(siteConfigRouter);
 
   // GET /api/images/featured - Get featured images
   app.get("/api/images/featured", async (req, res) => {

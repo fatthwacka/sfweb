@@ -365,10 +365,10 @@ export default function PhotographyCategory() {
 
           
           <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-5xl lg:text-6xl mb-6">
+            <h1 className="mb-6">
               {data.name.split(' ')[0]} <span className="text-gold">{data.name.split(' ')[1]}</span>
             </h1>
-            <p className="script-tagline text-cyan mb-8">
+            <p className="script-tagline mb-8">
               {data.name === "Wedding Photography" ? "Love stories captured timelessly" :
                data.name === "Portrait Photography" ? "Professional portraits with confidence" :
                data.name === "Corporate Photography" ? "Professional business imagery excellence" :

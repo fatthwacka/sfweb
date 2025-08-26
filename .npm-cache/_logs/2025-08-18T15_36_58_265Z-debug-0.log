@@ -1,0 +1,2019 @@
+0 verbose cli /usr/local/bin/node /usr/local/bin/npm
+1 info using npm@10.9.3
+2 info using node@v22.18.0
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/.npmrc
+5 silly config load:file:/Users/daddapiggy/.npmrc
+6 silly config load:file:/usr/local/etc/npmrc
+7 verbose title npm install
+8 verbose argv "install" "--cache" "./.npm-cache"
+9 verbose logfile logs-max:10 dir:/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/.npm-cache/_logs/2025-08-18T15_36_58_265Z-
+10 verbose logfile /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/.npm-cache/_logs/2025-08-18T15_36_58_265Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:2197815296 maxSize:549453824 maxEntrySize:274726912
+13 silly idealTree buildDeps
+14 silly reify mark retired [
+14 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/caniuse-lite'
+14 silly reify ]
+15 silly reify mark retired [
+15 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/date-fns'
+15 silly reify ]
+16 silly reify mark retired [
+16 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/dom-helpers'
+16 silly reify ]
+17 silly reify mark retired [
+17 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit'
+17 silly reify ]
+18 silly reify mark retired [
+18 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-orm'
+18 silly reify ]
+19 silly reify mark retired [
+19 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/embla-carousel'
+19 silly reify ]
+20 silly reify mark retired [
+20 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/framer-motion'
+20 silly reify ]
+21 silly reify mark retired [
+21 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-darwin-x64'
+21 silly reify ]
+22 silly reify mark retired [
+22 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-arm64-gnu'
+22 silly reify ]
+23 silly reify mark retired [
+23 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-freebsd-x64'
+23 silly reify ]
+24 silly reify mark retired [
+24 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-arm64-musl'
+24 silly reify ]
+25 silly reify mark retired [
+25 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-x64-gnu'
+25 silly reify ]
+26 silly reify mark retired [
+26 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-win32-arm64-msvc'
+26 silly reify ]
+27 silly reify mark retired [
+27 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-win32-x64-msvc'
+27 silly reify ]
+28 silly reify mark retired [
+28 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-x64-musl'
+28 silly reify ]
+29 silly reify mark retired [
+29 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-arm-gnueabihf'
+29 silly reify ]
+30 silly reify mark retired [
+30 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lodash'
+30 silly reify ]
+31 silly reify mark retired [
+31 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lucide-react'
+31 silly reify ]
+32 silly reify mark retired [
+32 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/react-dom'
+32 silly reify ]
+33 silly reify mark retired [
+33 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/react-icons'
+33 silly reify ]
+34 silly reify mark retired [
+34 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/resolve'
+34 silly reify ]
+35 silly reify mark retired [
+35 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/rollup'
+35 silly reify ]
+36 silly reify mark retired [
+36 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/recharts'
+36 silly reify ]
+37 silly reify mark retired [
+37 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/sucrase'
+37 silly reify ]
+38 silly reify mark retired [
+38 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/tailwindcss'
+38 silly reify ]
+39 silly reify mark retired [
+39 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/typescript'
+39 silly reify ]
+40 silly reify mark retired [
+40 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite'
+40 silly reify ]
+41 silly reify mark retired [
+41 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/victory-vendor'
+41 silly reify ]
+42 silly reify mark retired [
+42 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/yaml'
+42 silly reify ]
+43 silly reify mark retired [
+43 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/zod'
+43 silly reify ]
+44 silly reify mark retired [
+44 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@babel/core'
+44 silly reify ]
+45 silly reify mark retired [
+45 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@babel/helpers'
+45 silly reify ]
+46 silly reify mark retired [
+46 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@babel/runtime'
+46 silly reify ]
+47 silly reify mark retired [
+47 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@babel/types'
+47 silly reify ]
+48 silly reify mark retired [
+48 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/aix-ppc64'
+48 silly reify ]
+49 silly reify mark retired [
+49 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/android-arm'
+49 silly reify ]
+50 silly reify mark retired [
+50 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/android-arm64'
+50 silly reify ]
+51 silly reify mark retired [
+51 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/android-x64'
+51 silly reify ]
+52 silly reify mark retired [
+52 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/darwin-arm64'
+52 silly reify ]
+53 silly reify mark retired [
+53 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/darwin-x64'
+53 silly reify ]
+54 silly reify mark retired [
+54 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/freebsd-x64'
+54 silly reify ]
+55 silly reify mark retired [
+55 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/freebsd-arm64'
+55 silly reify ]
+56 silly reify mark retired [
+56 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-arm'
+56 silly reify ]
+57 silly reify mark retired [
+57 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-arm64'
+57 silly reify ]
+58 silly reify mark retired [
+58 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-ia32'
+58 silly reify ]
+59 silly reify mark retired [
+59 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-loong64'
+59 silly reify ]
+60 silly reify mark retired [
+60 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-ppc64'
+60 silly reify ]
+61 silly reify mark retired [
+61 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-mips64el'
+61 silly reify ]
+62 silly reify mark retired [
+62 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-s390x'
+62 silly reify ]
+63 silly reify mark retired [
+63 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-x64'
+63 silly reify ]
+64 silly reify mark retired [
+64 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-riscv64'
+64 silly reify ]
+65 silly reify mark retired [
+65 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/netbsd-arm64'
+65 silly reify ]
+66 silly reify mark retired [
+66 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/openharmony-arm64'
+66 silly reify ]
+67 silly reify mark retired [
+67 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/sunos-x64'
+67 silly reify ]
+68 silly reify mark retired [
+68 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/win32-arm64'
+68 silly reify ]
+69 silly reify mark retired [
+69 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/openbsd-x64'
+69 silly reify ]
+70 silly reify mark retired [
+70 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/netbsd-x64'
+70 silly reify ]
+71 silly reify mark retired [
+71 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/openbsd-arm64'
+71 silly reify ]
+72 silly reify mark retired [
+72 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/win32-x64'
+72 silly reify ]
+73 silly reify mark retired [
+73 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/win32-ia32'
+73 silly reify ]
+74 silly reify mark retired [
+74 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-android-arm-eabi'
+74 silly reify ]
+75 silly reify mark retired [
+75 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-android-arm64'
+75 silly reify ]
+76 silly reify mark retired [
+76 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm-gnueabihf'
+76 silly reify ]
+77 silly reify mark retired [
+77 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-freebsd-arm64'
+77 silly reify ]
+78 silly reify mark retired [
+78 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-darwin-x64'
+78 silly reify ]
+79 silly reify mark retired [
+79 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm-musleabihf'
+79 silly reify ]
+80 silly reify mark retired [
+80 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm64-gnu'
+80 silly reify ]
+81 silly reify mark retired [
+81 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-ppc64-gnu'
+81 silly reify ]
+82 silly reify mark retired [
+82 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-freebsd-x64'
+82 silly reify ]
+83 silly reify mark retired [
+83 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-riscv64-musl'
+83 silly reify ]
+84 silly reify mark retired [
+84 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm64-musl'
+84 silly reify ]
+85 silly reify mark retired [
+85 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-s390x-gnu'
+85 silly reify ]
+86 silly reify mark retired [
+86 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-riscv64-gnu'
+86 silly reify ]
+87 silly reify mark retired [
+87 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-loongarch64-gnu'
+87 silly reify ]
+88 silly reify mark retired [
+88 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-x64-musl'
+88 silly reify ]
+89 silly reify mark retired [
+89 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-x64-gnu'
+89 silly reify ]
+90 silly reify mark retired [
+90 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-win32-x64-msvc'
+90 silly reify ]
+91 silly reify mark retired [
+91 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-win32-arm64-msvc'
+91 silly reify ]
+92 silly reify mark retired [
+92 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-win32-ia32-msvc'
+92 silly reify ]
+93 silly reify mark retired [
+93 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-android-arm64'
+93 silly reify ]
+94 silly reify mark retired [
+94 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-darwin-x64'
+94 silly reify ]
+95 silly reify mark retired [
+95 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-freebsd-x64'
+95 silly reify ]
+96 silly reify mark retired [
+96 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-arm-gnueabihf'
+96 silly reify ]
+97 silly reify mark retired [
+97 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-arm64-gnu'
+97 silly reify ]
+98 silly reify mark retired [
+98 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-arm64-musl'
+98 silly reify ]
+99 silly reify mark retired [
+99 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-x64-musl'
+99 silly reify ]
+100 silly reify mark retired [
+100 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-wasm32-wasi'
+100 silly reify ]
+101 silly reify mark retired [
+101 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-win32-x64-msvc'
+101 silly reify ]
+102 silly reify mark retired [
+102 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-win32-arm64-msvc'
+102 silly reify ]
+103 silly reify mark retired [
+103 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tanstack/query-core'
+103 silly reify ]
+104 silly reify mark retired [
+104 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tanstack/react-query'
+104 silly reify ]
+105 silly reify mark retired [
+105 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-x64-gnu'
+105 silly reify ]
+106 silly reify mark retired [
+106 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/autoprefixer',
+106 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/autoprefixer'
+106 silly reify ]
+107 silly reify mark retired [
+107 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/bcryptjs',
+107 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/bcrypt'
+107 silly reify ]
+108 silly reify mark retired [
+108 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/browserslist',
+108 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/browserslist'
+108 silly reify ]
+109 silly reify mark retired [
+109 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/cross-spawn/node_modules/which',
+109 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/cross-spawn/node_modules/.bin/node-which'
+109 silly reify ]
+110 silly reify mark retired [
+110 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/cssesc',
+110 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/cssesc'
+110 silly reify ]
+111 silly reify mark retired [
+111 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/esbuild',
+111 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/esbuild'
+111 silly reify ]
+112 silly reify mark retired [
+112 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/gel',
+112 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/gel'
+112 silly reify ]
+113 silly reify mark retired [
+113 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/glob',
+113 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/glob'
+113 silly reify ]
+114 silly reify mark retired [
+114 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/jiti',
+114 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/jiti'
+114 silly reify ]
+115 silly reify mark retired [
+115 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/jsesc',
+115 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/jsesc'
+115 silly reify ]
+116 silly reify mark retired [
+116 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/json5',
+116 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/json5'
+116 silly reify ]
+117 silly reify mark retired [
+117 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/loose-envify',
+117 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/loose-envify'
+117 silly reify ]
+118 silly reify mark retired [
+118 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/mime',
+118 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/mime'
+118 silly reify ]
+119 silly reify mark retired [
+119 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/nanoid',
+119 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/nanoid'
+119 silly reify ]
+120 silly reify mark retired [
+120 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/mkdirp',
+120 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/mkdirp'
+120 silly reify ]
+121 silly reify mark retired [
+121 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/node-gyp-build',
+121 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/node-gyp-build',
+121 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/node-gyp-build-optional',
+121 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/node-gyp-build-test'
+121 silly reify ]
+122 silly reify mark retired [
+122 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/semver',
+122 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/semver'
+122 silly reify ]
+123 silly reify mark retired [
+123 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/tar/node_modules/mkdirp',
+123 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/tar/node_modules/.bin/mkdirp'
+123 silly reify ]
+124 silly reify mark retired [
+124 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/tsx',
+124 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/tsx'
+124 silly reify ]
+125 silly reify mark retired [
+125 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/update-browserslist-db',
+125 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/update-browserslist-db'
+125 silly reify ]
+126 silly reify mark retired [
+126 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/which',
+126 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/node-which'
+126 silly reify ]
+127 silly reify mark retired [
+127 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@babel/parser',
+127 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/parser'
+127 silly reify ]
+128 silly reify mark retired [
+128 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-arm'
+128 silly reify ]
+129 silly reify mark retired [
+129 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-x64'
+129 silly reify ]
+130 silly reify mark retired [
+130 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/darwin-arm64'
+130 silly reify ]
+131 silly reify mark retired [
+131 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/darwin-x64'
+131 silly reify ]
+132 silly reify mark retired [
+132 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/freebsd-arm64'
+132 silly reify ]
+133 silly reify mark retired [
+133 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/freebsd-x64'
+133 silly reify ]
+134 silly reify mark retired [
+134 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-arm'
+134 silly reify ]
+135 silly reify mark retired [
+135 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-arm64'
+135 silly reify ]
+136 silly reify mark retired [
+136 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-ia32'
+136 silly reify ]
+137 silly reify mark retired [
+137 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-loong64'
+137 silly reify ]
+138 silly reify mark retired [
+138 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-mips64el'
+138 silly reify ]
+139 silly reify mark retired [
+139 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-arm64'
+139 silly reify ]
+140 silly reify mark retired [
+140 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-riscv64'
+140 silly reify ]
+141 silly reify mark retired [
+141 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-ppc64'
+141 silly reify ]
+142 silly reify mark retired [
+142 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-x64'
+142 silly reify ]
+143 silly reify mark retired [
+143 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/netbsd-x64'
+143 silly reify ]
+144 silly reify mark retired [
+144 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/openbsd-x64'
+144 silly reify ]
+145 silly reify mark retired [
+145 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/sunos-x64'
+145 silly reify ]
+146 silly reify mark retired [
+146 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-arm64'
+146 silly reify ]
+147 silly reify mark retired [
+147 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-ia32'
+147 silly reify ]
+148 silly reify mark retired [
+148 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-s390x'
+148 silly reify ]
+149 silly reify mark retired [
+149 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-x64'
+149 silly reify ]
+150 silly reify mark retired [
+150 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/esbuild',
+150 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/.bin/esbuild'
+150 silly reify ]
+151 silly reify moves {
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/caniuse-lite': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.caniuse-lite-1IHbotRX',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/date-fns': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.date-fns-trterFcx',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/dom-helpers': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.dom-helpers-4dCAXIy6',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.drizzle-kit-ER3Jey6I',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-orm': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.drizzle-orm-tvyGVBQi',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/embla-carousel': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.embla-carousel-I97dDJYY',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/framer-motion': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.framer-motion-BIBIdFGp',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-darwin-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.lightningcss-darwin-x64-5HSYQrr2',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-arm64-gnu': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.lightningcss-linux-arm64-gnu-r80HbTAx',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-freebsd-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.lightningcss-freebsd-x64-i52edG2X',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-arm64-musl': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.lightningcss-linux-arm64-musl-M44tCVKT',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-x64-gnu': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.lightningcss-linux-x64-gnu-qq9wTvho',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-win32-arm64-msvc': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.lightningcss-win32-arm64-msvc-DE7nIsvR',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-win32-x64-msvc': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.lightningcss-win32-x64-msvc-1Cqd2P7w',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-x64-musl': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.lightningcss-linux-x64-musl-mOAF0lgY',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-arm-gnueabihf': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.lightningcss-linux-arm-gnueabihf-ljk7nI8g',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lodash': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.lodash-SJqDXiew',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lucide-react': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.lucide-react-BoKokAGG',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/react-dom': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.react-dom-JE3lkFBC',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/react-icons': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.react-icons-4cFwabGL',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/resolve': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.resolve-onz1gpKQ',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/rollup': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.rollup-ox8MYncq',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/recharts': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.recharts-a9c3bF04',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/sucrase': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.sucrase-iqa7xTWY',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/tailwindcss': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.tailwindcss-t5UthCGP',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/typescript': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.typescript-69KVbD32',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.vite-ur5wtkka',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/victory-vendor': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.victory-vendor-tktX9dCr',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/yaml': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.yaml-Xo19HT9w',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/zod': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.zod-p2Yn1bnB',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@babel/core': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@babel/.core-4xjzP2g8',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@babel/helpers': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@babel/.helpers-fW7sztBx',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@babel/runtime': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@babel/.runtime-OMMTcRcS',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@babel/types': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@babel/.types-b1ykzX3W',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/aix-ppc64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.aix-ppc64-bYhwiDWU',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/android-arm': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.android-arm-G6iBVi8T',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/android-arm64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.android-arm64-rvalNm9Z',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/android-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.android-x64-QThjEOs9',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/darwin-arm64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.darwin-arm64-ejsgqtag',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/darwin-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.darwin-x64-5I3jsrvx',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/freebsd-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.freebsd-x64-dE4hhBTE',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/freebsd-arm64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.freebsd-arm64-g5qv9wia',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-arm': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.linux-arm-KUhAAPjv',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-arm64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.linux-arm64-69wxwkxZ',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-ia32': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.linux-ia32-MF2uzPsI',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-loong64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.linux-loong64-MXULIuBC',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-ppc64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.linux-ppc64-pKEqNdJJ',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-mips64el': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.linux-mips64el-nmikTWhS',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-s390x': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.linux-s390x-0DcwOZxM',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.linux-x64-vLGX5QMO',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-riscv64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.linux-riscv64-0DvbxgIN',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/netbsd-arm64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.netbsd-arm64-fuDk0YlK',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/openharmony-arm64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.openharmony-arm64-fUE24Zuz',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/sunos-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.sunos-x64-hFru1rnW',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/win32-arm64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.win32-arm64-b9mhOHtv',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/openbsd-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.openbsd-x64-FtdBrVcm',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/netbsd-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.netbsd-x64-8nMLHKnN',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/openbsd-arm64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.openbsd-arm64-Nmr1LuhA',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/win32-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.win32-x64-xrgS8T7q',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/win32-ia32': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/.win32-ia32-5VYCYSLZ',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-android-arm-eabi': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/.rollup-android-arm-eabi-KlkiYoV5',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-android-arm64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/.rollup-android-arm64-8sEbbk3Z',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm-gnueabihf': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/.rollup-linux-arm-gnueabihf-OupuQcUB',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-freebsd-arm64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/.rollup-freebsd-arm64-LoXcJQ9G',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-darwin-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/.rollup-darwin-x64-lXIOceaS',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm-musleabihf': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/.rollup-linux-arm-musleabihf-XQM3JCsL',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm64-gnu': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/.rollup-linux-arm64-gnu-tbpxCWNm',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-ppc64-gnu': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/.rollup-linux-ppc64-gnu-d6XQ0Ie4',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-freebsd-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/.rollup-freebsd-x64-oAzM3TOQ',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-riscv64-musl': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/.rollup-linux-riscv64-musl-QqAduCOJ',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm64-musl': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/.rollup-linux-arm64-musl-UJHz4oKd',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-s390x-gnu': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/.rollup-linux-s390x-gnu-4PCInXaP',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-riscv64-gnu': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/.rollup-linux-riscv64-gnu-C574t4l8',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-loongarch64-gnu': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/.rollup-linux-loongarch64-gnu-OK88cYP1',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-x64-musl': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/.rollup-linux-x64-musl-c2QrUgas',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-x64-gnu': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/.rollup-linux-x64-gnu-PuJhIZRS',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-win32-x64-msvc': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/.rollup-win32-x64-msvc-sU7KTsmC',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-win32-arm64-msvc': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/.rollup-win32-arm64-msvc-xKQzzR0Q',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-win32-ia32-msvc': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/.rollup-win32-ia32-msvc-GZW9XqrY',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-android-arm64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/.oxide-android-arm64-V7m5Qi2Q',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-darwin-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/.oxide-darwin-x64-t4josSz7',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-freebsd-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/.oxide-freebsd-x64-yEzGznZd',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-arm-gnueabihf': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/.oxide-linux-arm-gnueabihf-uGbasIuQ',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-arm64-gnu': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/.oxide-linux-arm64-gnu-h3Iu5J7r',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-arm64-musl': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/.oxide-linux-arm64-musl-FVNrDhnd',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-x64-musl': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/.oxide-linux-x64-musl-RiRUhEv3',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-wasm32-wasi': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/.oxide-wasm32-wasi-cB5brSaA',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-win32-x64-msvc': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/.oxide-win32-x64-msvc-LOjd3LT1',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-win32-arm64-msvc': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/.oxide-win32-arm64-msvc-ngwHndtC',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tanstack/query-core': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tanstack/.query-core-fHWFTOB8',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tanstack/react-query': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tanstack/.react-query-I4wYjIT7',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-x64-gnu': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/.oxide-linux-x64-gnu-WWLZ57SO',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/autoprefixer': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.autoprefixer-y41W2fRh',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/autoprefixer': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.autoprefixer-jrEIpOQN',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/bcryptjs': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bcryptjs-t3xHVQpB',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/bcrypt': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.bcrypt-l7qMoMKW',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/browserslist': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.browserslist-rc6vzc1I',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/browserslist': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.browserslist-4HtFkktD',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/cross-spawn/node_modules/which': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/cross-spawn/node_modules/.which-yH7Mvun7',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/cross-spawn/node_modules/.bin/node-which': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/cross-spawn/node_modules/.bin/.node-which-tpsbLpRr',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/cssesc': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.cssesc-4MBuSHSp',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/cssesc': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.cssesc-yT6wLf38',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/esbuild': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.esbuild-YSMrio5v',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/esbuild': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.esbuild-bAw8Uz9E',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/gel': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.gel-JouSc0Ay',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/gel': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.gel-ywblHFZ3',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/glob': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.glob-BPfvQDQz',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/glob': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.glob-O59qnYO6',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/jiti': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.jiti-Zo60OAqb',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/jiti': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.jiti-TpOLSmYs',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/jsesc': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.jsesc-RrecC81I',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/jsesc': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.jsesc-GfDtXiHn',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/json5': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.json5-jcLXrmtC',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/json5': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.json5-R5c5gIbv',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/loose-envify': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.loose-envify-vBl0vhVm',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/loose-envify': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.loose-envify-QrsNVYKz',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/mime': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.mime-EXl3SWbN',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/mime': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.mime-yy2qcHdp',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/nanoid': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.nanoid-MEuqL037',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/nanoid': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.nanoid-bYuWTAaA',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/mkdirp': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.mkdirp-Q42XeO2W',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/mkdirp': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.mkdirp-NxHHzEJL',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/node-gyp-build': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.node-gyp-build-a14xYNA9',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/node-gyp-build': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.node-gyp-build-IXk2Iox1',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/node-gyp-build-optional': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.node-gyp-build-optional-5HHOgCYL',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/node-gyp-build-test': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.node-gyp-build-test-UifLHfIS',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/semver': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.semver-IEHJlKqV',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/semver': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.semver-FGBqlQMq',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/tar/node_modules/mkdirp': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/tar/node_modules/.mkdirp-QQxd0yhV',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/tar/node_modules/.bin/mkdirp': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/tar/node_modules/.bin/.mkdirp-utNfZ6J2',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/tsx': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.tsx-5q5ZIHYj',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/tsx': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.tsx-4M3jlVsq',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/update-browserslist-db': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.update-browserslist-db-5w7JjaWF',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/update-browserslist-db': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.update-browserslist-db-nvsftSlL',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/which': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.which-qeaeysF3',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/node-which': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.node-which-x3dFTEO5',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@babel/parser': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@babel/.parser-tyzmQ8s9',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/parser': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/.bin/.parser-Z7ZvNbsL',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-arm': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.android-arm-uKyJQbU8',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.android-x64-bXXjVd1B',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/darwin-arm64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.darwin-arm64-eTAJCPgQ',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/darwin-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.darwin-x64-vSVANuVt',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/freebsd-arm64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.freebsd-arm64-1HIJDtkj',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/freebsd-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.freebsd-x64-PlDX22nV',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-arm': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.linux-arm-rotuKcxb',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-arm64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.linux-arm64-NdcOJpWd',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-ia32': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.linux-ia32-0rvWYvL2',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-loong64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.linux-loong64-ZZZWfXlD',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-mips64el': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.linux-mips64el-9sqhDYDu',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-arm64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.android-arm64-0HBKvNbB',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-riscv64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.linux-riscv64-oVNgw8yD',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-ppc64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.linux-ppc64-6vIrvASu',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.linux-x64-MkU1NA2r',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/netbsd-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.netbsd-x64-nXMmxGpD',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/openbsd-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.openbsd-x64-VDdDR1ER',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/sunos-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.sunos-x64-zuJcRfSK',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-arm64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.win32-arm64-NpVSsU9T',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-ia32': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.win32-ia32-ZS8RrK6G',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-s390x': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.linux-s390x-OMuwczrF',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-x64': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/.win32-x64-UWPvmOE4',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/esbuild': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/.esbuild-fCqOoP9F',
+151 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/.bin/esbuild': '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/.bin/.esbuild-HFPmO4RX'
+151 silly reify }
+152 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-wasm32-wasi
+153 silly reify mark deleted [
+153 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-wasm32-wasi'
+153 silly reify ]
+154 silly audit bulk request {
+154 silly audit   '@alloc/quick-lru': [ '5.2.0' ],
+154 silly audit   '@ampproject/remapping': [ '2.3.0' ],
+154 silly audit   '@babel/code-frame': [ '7.27.1' ],
+154 silly audit   '@babel/compat-data': [ '7.28.0' ],
+154 silly audit   '@babel/core': [ '7.28.3' ],
+154 silly audit   '@babel/generator': [ '7.28.3' ],
+154 silly audit   '@babel/helper-compilation-targets': [ '7.27.2' ],
+154 silly audit   '@babel/helper-globals': [ '7.28.0' ],
+154 silly audit   '@babel/helper-module-imports': [ '7.27.1' ],
+154 silly audit   '@babel/helper-module-transforms': [ '7.28.3' ],
+154 silly audit   '@babel/helper-plugin-utils': [ '7.27.1' ],
+154 silly audit   '@babel/helper-string-parser': [ '7.27.1' ],
+154 silly audit   '@babel/helper-validator-identifier': [ '7.27.1' ],
+154 silly audit   '@babel/helper-validator-option': [ '7.27.1' ],
+154 silly audit   '@babel/helpers': [ '7.28.3' ],
+154 silly audit   '@babel/parser': [ '7.28.3' ],
+154 silly audit   '@babel/plugin-transform-react-jsx-self': [ '7.27.1' ],
+154 silly audit   '@babel/plugin-transform-react-jsx-source': [ '7.27.1' ],
+154 silly audit   '@babel/runtime': [ '7.28.3' ],
+154 silly audit   '@babel/template': [ '7.27.2' ],
+154 silly audit   '@babel/traverse': [ '7.28.3' ],
+154 silly audit   '@babel/types': [ '7.28.2' ],
+154 silly audit   '@drizzle-team/brocli': [ '0.10.2' ],
+154 silly audit   '@esbuild-kit/core-utils': [ '3.3.2' ],
+154 silly audit   '@esbuild/android-arm': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/android-arm64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/android-x64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/darwin-arm64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/darwin-x64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/freebsd-arm64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/freebsd-x64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/linux-arm': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/linux-arm64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/linux-ia32': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/linux-loong64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/linux-mips64el': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/linux-ppc64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/linux-riscv64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/linux-s390x': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/linux-x64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/netbsd-x64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/openbsd-x64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/sunos-x64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/win32-arm64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/win32-ia32': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/win32-x64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   esbuild: [ '0.18.20', '0.19.12', '0.25.9', '0.21.5' ],
+154 silly audit   '@esbuild-kit/esm-loader': [ '2.6.5' ],
+154 silly audit   '@esbuild/aix-ppc64': [ '0.25.9', '0.19.12', '0.21.5' ],
+154 silly audit   '@esbuild/netbsd-arm64': [ '0.25.9' ],
+154 silly audit   '@esbuild/openbsd-arm64': [ '0.25.9' ],
+154 silly audit   '@esbuild/openharmony-arm64': [ '0.25.9' ],
+154 silly audit   '@floating-ui/core': [ '1.7.3' ],
+154 silly audit   '@floating-ui/dom': [ '1.7.3' ],
+154 silly audit   '@floating-ui/react-dom': [ '2.1.5' ],
+154 silly audit   '@floating-ui/utils': [ '0.2.10' ],
+154 silly audit   '@hookform/resolvers': [ '3.10.0' ],
+154 silly audit   '@isaacs/cliui': [ '8.0.2' ],
+154 silly audit   '@isaacs/fs-minipass': [ '4.0.1' ],
+154 silly audit   '@jridgewell/gen-mapping': [ '0.3.13' ],
+154 silly audit   '@jridgewell/remapping': [ '2.3.5' ],
+154 silly audit   '@jridgewell/resolve-uri': [ '3.1.2' ],
+154 silly audit   '@jridgewell/sourcemap-codec': [ '1.5.5' ],
+154 silly audit   '@jridgewell/trace-mapping': [ '0.3.30' ],
+154 silly audit   '@neondatabase/serverless': [ '0.10.4' ],
+154 silly audit   '@nodelib/fs.scandir': [ '2.1.5' ],
+154 silly audit   '@nodelib/fs.stat': [ '2.0.5' ],
+154 silly audit   '@nodelib/fs.walk': [ '1.2.8' ],
+154 silly audit   '@petamoriken/float16': [ '3.9.2' ],
+154 silly audit   '@pkgjs/parseargs': [ '0.11.0' ],
+154 silly audit   '@radix-ui/number': [ '1.1.1' ],
+154 silly audit   '@radix-ui/primitive': [ '1.1.3' ],
+154 silly audit   '@radix-ui/react-accordion': [ '1.2.12' ],
+154 silly audit   '@radix-ui/react-alert-dialog': [ '1.1.15' ],
+154 silly audit   '@radix-ui/react-arrow': [ '1.1.7' ],
+154 silly audit   '@radix-ui/react-aspect-ratio': [ '1.1.7' ],
+154 silly audit   '@radix-ui/react-avatar': [ '1.1.10' ],
+154 silly audit   '@radix-ui/react-checkbox': [ '1.3.3' ],
+154 silly audit   '@radix-ui/react-collapsible': [ '1.1.12' ],
+154 silly audit   '@radix-ui/react-collection': [ '1.1.7' ],
+154 silly audit   '@radix-ui/react-compose-refs': [ '1.1.2' ],
+154 silly audit   '@radix-ui/react-context': [ '1.1.2' ],
+154 silly audit   '@radix-ui/react-context-menu': [ '2.2.16' ],
+154 silly audit   '@radix-ui/react-dialog': [ '1.1.15' ],
+154 silly audit   '@radix-ui/react-direction': [ '1.1.1' ],
+154 silly audit   '@radix-ui/react-dismissable-layer': [ '1.1.11' ],
+154 silly audit   '@radix-ui/react-dropdown-menu': [ '2.1.16' ],
+154 silly audit   '@radix-ui/react-focus-guards': [ '1.1.3' ],
+154 silly audit   '@radix-ui/react-focus-scope': [ '1.1.7' ],
+154 silly audit   '@radix-ui/react-hover-card': [ '1.1.15' ],
+154 silly audit   '@radix-ui/react-id': [ '1.1.1' ],
+154 silly audit   '@radix-ui/react-label': [ '2.1.7' ],
+154 silly audit   '@radix-ui/react-menu': [ '2.1.16' ],
+154 silly audit   '@radix-ui/react-menubar': [ '1.1.16' ],
+154 silly audit   '@radix-ui/react-navigation-menu': [ '1.2.14' ],
+154 silly audit   '@radix-ui/react-popover': [ '1.1.15' ],
+154 silly audit   '@radix-ui/react-popper': [ '1.2.8' ],
+154 silly audit   '@radix-ui/react-portal': [ '1.1.9' ],
+154 silly audit   '@radix-ui/react-presence': [ '1.1.5' ],
+154 silly audit   '@radix-ui/react-primitive': [ '2.1.3' ],
+154 silly audit   '@radix-ui/react-progress': [ '1.1.7' ],
+154 silly audit   '@radix-ui/react-radio-group': [ '1.3.8' ],
+154 silly audit   '@radix-ui/react-roving-focus': [ '1.1.11' ],
+154 silly audit   '@radix-ui/react-scroll-area': [ '1.2.10' ],
+154 silly audit   '@radix-ui/react-select': [ '2.2.6' ],
+154 silly audit   '@radix-ui/react-separator': [ '1.1.7' ],
+154 silly audit   '@radix-ui/react-slider': [ '1.3.6' ],
+154 silly audit   '@radix-ui/react-slot': [ '1.2.3' ],
+154 silly audit   '@radix-ui/react-switch': [ '1.2.6' ],
+154 silly audit   '@radix-ui/react-tabs': [ '1.1.13' ],
+154 silly audit   '@radix-ui/react-toast': [ '1.2.15' ],
+154 silly audit   '@radix-ui/react-toggle': [ '1.1.10' ],
+154 silly audit   '@radix-ui/react-toggle-group': [ '1.1.11' ],
+154 silly audit   '@radix-ui/react-tooltip': [ '1.2.8' ],
+154 silly audit   '@radix-ui/react-use-callback-ref': [ '1.1.1' ],
+154 silly audit   '@radix-ui/react-use-controllable-state': [ '1.2.2' ],
+154 silly audit   '@radix-ui/react-use-effect-event': [ '0.0.2' ],
+154 silly audit   '@radix-ui/react-use-escape-keydown': [ '1.1.1' ],
+154 silly audit   '@radix-ui/react-use-is-hydrated': [ '0.1.0' ],
+154 silly audit   '@radix-ui/react-use-layout-effect': [ '1.1.1' ],
+154 silly audit   '@radix-ui/react-use-previous': [ '1.1.1' ],
+154 silly audit   '@radix-ui/react-use-rect': [ '1.1.1' ],
+154 silly audit   '@radix-ui/react-use-size': [ '1.1.1' ],
+154 silly audit   '@radix-ui/react-visually-hidden': [ '1.2.3' ],
+154 silly audit   '@radix-ui/rect': [ '1.1.1' ],
+154 silly audit   '@replit/vite-plugin-cartographer': [ '0.2.8' ],
+154 silly audit   '@replit/vite-plugin-runtime-error-modal': [ '0.0.3' ],
+154 silly audit   '@rolldown/pluginutils': [ '1.0.0-beta.27' ],
+154 silly audit   '@rollup/rollup-android-arm-eabi': [ '4.46.2' ],
+154 silly audit   '@rollup/rollup-android-arm64': [ '4.46.2' ],
+154 silly audit   '@rollup/rollup-darwin-arm64': [ '4.46.2' ],
+154 silly audit   '@rollup/rollup-darwin-x64': [ '4.46.2' ],
+154 silly audit   '@rollup/rollup-freebsd-arm64': [ '4.46.2' ],
+154 silly audit   '@rollup/rollup-freebsd-x64': [ '4.46.2' ],
+154 silly audit   '@rollup/rollup-linux-arm-gnueabihf': [ '4.46.2' ],
+154 silly audit   '@rollup/rollup-linux-arm-musleabihf': [ '4.46.2' ],
+154 silly audit   '@rollup/rollup-linux-arm64-gnu': [ '4.46.2' ],
+154 silly audit   '@rollup/rollup-linux-arm64-musl': [ '4.46.2' ],
+154 silly audit   '@rollup/rollup-linux-loongarch64-gnu': [ '4.46.2' ],
+154 silly audit   '@rollup/rollup-linux-ppc64-gnu': [ '4.46.2' ],
+154 silly audit   '@rollup/rollup-linux-riscv64-gnu': [ '4.46.2' ],
+154 silly audit   '@rollup/rollup-linux-riscv64-musl': [ '4.46.2' ],
+154 silly audit   '@rollup/rollup-linux-s390x-gnu': [ '4.46.2' ],
+154 silly audit   '@rollup/rollup-linux-x64-gnu': [ '4.46.2' ],
+154 silly audit   '@rollup/rollup-linux-x64-musl': [ '4.46.2' ],
+154 silly audit   '@rollup/rollup-win32-arm64-msvc': [ '4.46.2' ],
+154 silly audit   '@rollup/rollup-win32-ia32-msvc': [ '4.46.2' ],
+154 silly audit   '@rollup/rollup-win32-x64-msvc': [ '4.46.2' ],
+154 silly audit   '@supabase/auth-js': [ '2.71.1' ],
+154 silly audit   '@supabase/functions-js': [ '2.4.5' ],
+154 silly audit   '@supabase/node-fetch': [ '2.6.15' ],
+154 silly audit   '@supabase/postgrest-js': [ '1.19.4' ],
+154 silly audit   '@supabase/realtime-js': [ '2.15.1' ],
+154 silly audit   '@supabase/storage-js': [ '2.11.0' ],
+154 silly audit   '@supabase/supabase-js': [ '2.55.0' ],
+154 silly audit   '@tailwindcss/node': [ '4.1.12' ],
+154 silly audit   tailwindcss: [ '4.1.12', '3.4.17' ],
+154 silly audit   '@tailwindcss/oxide': [ '4.1.12' ],
+154 silly audit   '@tailwindcss/oxide-android-arm64': [ '4.1.12' ],
+154 silly audit   '@tailwindcss/oxide-darwin-arm64': [ '4.1.12' ],
+154 silly audit   '@tailwindcss/oxide-darwin-x64': [ '4.1.12' ],
+154 silly audit   '@tailwindcss/oxide-freebsd-x64': [ '4.1.12' ],
+154 silly audit   '@tailwindcss/oxide-linux-arm-gnueabihf': [ '4.1.12' ],
+154 silly audit   '@tailwindcss/oxide-linux-arm64-gnu': [ '4.1.12' ],
+154 silly audit   '@tailwindcss/oxide-linux-arm64-musl': [ '4.1.12' ],
+154 silly audit   '@tailwindcss/oxide-linux-x64-gnu': [ '4.1.12' ],
+154 silly audit   '@tailwindcss/oxide-linux-x64-musl': [ '4.1.12' ],
+154 silly audit   '@tailwindcss/oxide-win32-arm64-msvc': [ '4.1.12' ],
+154 silly audit   '@tailwindcss/oxide-win32-x64-msvc': [ '4.1.12' ],
+154 silly audit   '@tailwindcss/typography': [ '0.5.16' ],
+154 silly audit   '@tailwindcss/vite': [ '4.1.12' ],
+154 silly audit   '@tanstack/query-core': [ '5.85.3' ],
+154 silly audit   '@tanstack/react-query': [ '5.85.3' ],
+154 silly audit   '@types/babel__core': [ '7.20.5' ],
+154 silly audit   '@types/babel__generator': [ '7.27.0' ],
+154 silly audit   '@types/babel__template': [ '7.4.4' ],
+154 silly audit   '@types/babel__traverse': [ '7.28.0' ],
+154 silly audit   '@types/bcryptjs': [ '2.4.6' ],
+154 silly audit   '@types/body-parser': [ '1.19.6' ],
+154 silly audit   '@types/connect': [ '3.4.38' ],
+154 silly audit   '@types/connect-pg-simple': [ '7.0.3' ],
+154 silly audit   '@types/d3-array': [ '3.2.1' ],
+154 silly audit   '@types/d3-color': [ '3.1.3' ],
+154 silly audit   '@types/d3-ease': [ '3.0.2' ],
+154 silly audit   '@types/d3-interpolate': [ '3.0.4' ],
+154 silly audit   '@types/d3-path': [ '3.1.1' ],
+154 silly audit   '@types/d3-scale': [ '4.0.9' ],
+154 silly audit   '@types/d3-shape': [ '3.1.7' ],
+154 silly audit   '@types/d3-time': [ '3.0.4' ],
+154 silly audit   '@types/d3-timer': [ '3.0.2' ],
+154 silly audit   '@types/estree': [ '1.0.8' ],
+154 silly audit   '@types/express': [ '4.17.21' ],
+154 silly audit   '@types/express-serve-static-core': [ '4.19.6' ],
+154 silly audit   '@types/express-session': [ '1.18.2' ],
+154 silly audit   '@types/http-errors': [ '2.0.5' ],
+154 silly audit   '@types/mime': [ '1.3.5' ],
+154 silly audit   '@types/multer': [ '2.0.0' ],
+154 silly audit   '@types/node': [ '20.16.11' ],
+154 silly audit   '@types/passport': [ '1.0.17' ],
+154 silly audit   '@types/passport-local': [ '1.0.38' ],
+154 silly audit   '@types/passport-strategy': [ '0.2.38' ],
+154 silly audit   '@types/pg': [ '8.11.6' ],
+154 silly audit   '@types/phoenix': [ '1.6.6' ],
+154 silly audit   '@types/prop-types': [ '15.7.15' ],
+154 silly audit   '@types/qs': [ '6.14.0' ],
+154 silly audit   '@types/range-parser': [ '1.2.7' ],
+154 silly audit   '@types/react': [ '18.3.23' ],
+154 silly audit   '@types/react-dom': [ '18.3.7' ],
+154 silly audit   '@types/send': [ '0.17.5' ],
+154 silly audit   '@types/serve-static': [ '1.15.8' ],
+154 silly audit   '@types/ws': [ '8.18.1' ],
+154 silly audit   '@vitejs/plugin-react': [ '4.7.0' ],
+154 silly audit   accepts: [ '1.3.8' ],
+154 silly audit   'ansi-regex': [ '6.1.0', '5.0.1' ],
+154 silly audit   'ansi-styles': [ '6.2.1', '4.3.0' ],
+154 silly audit   'any-promise': [ '1.3.0' ],
+154 silly audit   anymatch: [ '3.1.3' ],
+154 silly audit   'append-field': [ '1.0.0' ],
+154 silly audit   arg: [ '5.0.2' ],
+154 silly audit   'aria-hidden': [ '1.2.6' ],
+154 silly audit   'array-flatten': [ '1.1.1' ],
+154 silly audit   autoprefixer: [ '10.4.21' ],
+154 silly audit   'balanced-match': [ '1.0.2' ],
+154 silly audit   bcryptjs: [ '3.0.2' ],
+154 silly audit   'binary-extensions': [ '2.3.0' ],
+154 silly audit   'body-parser': [ '1.20.3' ],
+154 silly audit   debug: [ '2.6.9', '4.4.1' ],
+154 silly audit   ms: [ '2.0.0', '2.1.3' ],
+154 silly audit   'brace-expansion': [ '2.0.2' ],
+154 silly audit   braces: [ '3.0.3' ],
+154 silly audit   browserslist: [ '4.25.2' ],
+154 silly audit   'buffer-from': [ '1.1.2' ],
+154 silly audit   bufferutil: [ '4.0.9' ],
+154 silly audit   busboy: [ '1.6.0' ],
+154 silly audit   bytes: [ '3.1.2' ],
+154 silly audit   'call-bind-apply-helpers': [ '1.0.2' ],
+154 silly audit   'call-bound': [ '1.0.4' ],
+154 silly audit   'camelcase-css': [ '2.0.1' ],
+154 silly audit   'caniuse-lite': [ '1.0.30001735' ],
+154 silly audit   chokidar: [ '3.6.0' ],
+154 silly audit   'glob-parent': [ '5.1.2', '6.0.2' ],
+154 silly audit   chownr: [ '3.0.0' ],
+154 silly audit   'class-variance-authority': [ '0.7.1' ],
+154 silly audit   clsx: [ '2.1.1' ],
+154 silly audit   cmdk: [ '1.1.1' ],
+154 silly audit   'color-convert': [ '2.0.1' ],
+154 silly audit   'color-name': [ '1.1.4' ],
+154 silly audit   commander: [ '4.1.1' ],
+154 silly audit   'concat-stream': [ '2.0.0' ],
+154 silly audit   'connect-pg-simple': [ '10.0.0' ],
+154 silly audit   'content-disposition': [ '0.5.4' ],
+154 silly audit   'content-type': [ '1.0.5' ],
+154 silly audit   'convert-source-map': [ '2.0.0' ],
+154 silly audit   cookie: [ '0.7.1', '0.7.2' ],
+154 silly audit   'cookie-signature': [ '1.0.6', '1.0.7' ],
+154 silly audit   'cross-spawn': [ '7.0.6' ],
+154 silly audit   isexe: [ '2.0.0', '3.1.1' ],
+154 silly audit   which: [ '2.0.2', '4.0.0' ],
+154 silly audit   cssesc: [ '3.0.0' ],
+154 silly audit   csstype: [ '3.1.3' ],
+154 silly audit   'd3-array': [ '3.2.4' ],
+154 silly audit   'd3-color': [ '3.1.0' ],
+154 silly audit   'd3-ease': [ '3.0.1' ],
+154 silly audit   'd3-format': [ '3.1.0' ],
+154 silly audit   'd3-interpolate': [ '3.0.1' ],
+154 silly audit   'd3-path': [ '3.1.0' ],
+154 silly audit   'd3-scale': [ '4.0.2' ],
+154 silly audit   'd3-shape': [ '3.2.0' ],
+154 silly audit   'd3-time': [ '3.1.0' ],
+154 silly audit   'd3-time-format': [ '4.1.0' ],
+154 silly audit   'd3-timer': [ '3.0.1' ],
+154 silly audit   'date-fns': [ '3.6.0' ],
+154 silly audit   'decimal.js-light': [ '2.5.1' ],
+154 silly audit   depd: [ '2.0.0' ],
+154 silly audit   destroy: [ '1.2.0' ],
+154 silly audit   'detect-libc': [ '2.0.4' ],
+154 silly audit   'detect-node-es': [ '1.1.0' ],
+154 silly audit   didyoumean: [ '1.2.2' ],
+154 silly audit   dlv: [ '1.1.3' ],
+154 silly audit   'dom-helpers': [ '5.2.1' ],
+154 silly audit   dotenv: [ '17.2.1' ],
+154 silly audit   'drizzle-kit': [ '0.30.6' ],
+154 silly audit   'drizzle-orm': [ '0.39.3' ],
+154 silly audit   'drizzle-zod': [ '0.7.1' ],
+154 silly audit   'dunder-proto': [ '1.0.1' ],
+154 silly audit   eastasianwidth: [ '0.2.0' ],
+154 silly audit   'ee-first': [ '1.1.1' ],
+154 silly audit   'electron-to-chromium': [ '1.5.203' ],
+154 silly audit   'embla-carousel': [ '8.6.0' ],
+154 silly audit   'embla-carousel-react': [ '8.6.0' ],
+154 silly audit   'embla-carousel-reactive-utils': [ '8.6.0' ],
+154 silly audit   'emoji-regex': [ '9.2.2', '8.0.0' ],
+154 silly audit   encodeurl: [ '2.0.0', '1.0.2' ],
+154 silly audit   'enhanced-resolve': [ '5.18.3' ],
+154 silly audit   'env-paths': [ '3.0.0' ],
+154 silly audit   'es-define-property': [ '1.0.1' ],
+154 silly audit   'es-errors': [ '1.3.0' ],
+154 silly audit   'es-object-atoms': [ '1.1.1' ],
+154 silly audit   'esbuild-register': [ '3.6.0' ],
+154 silly audit   escalade: [ '3.2.0' ],
+154 silly audit   'escape-html': [ '1.0.3' ],
+154 silly audit   etag: [ '1.8.1' ],
+154 silly audit   eventemitter3: [ '4.0.7' ],
+154 silly audit   express: [ '4.21.2' ],
+154 silly audit   'express-session': [ '1.18.2' ],
+154 silly audit   'fast-equals': [ '5.2.2' ],
+154 silly audit   'fast-glob': [ '3.3.3' ],
+154 silly audit   fastq: [ '1.19.1' ],
+154 silly audit   'fill-range': [ '7.1.1' ],
+154 silly audit   finalhandler: [ '1.3.1' ],
+154 silly audit   'foreground-child': [ '3.3.1' ],
+154 silly audit   forwarded: [ '0.2.0' ],
+154 silly audit   'fraction.js': [ '4.3.7' ],
+154 silly audit   'framer-motion': [ '11.18.2' ],
+154 silly audit   fresh: [ '0.5.2' ],
+154 silly audit   fsevents: [ '2.3.3' ],
+154 silly audit   'function-bind': [ '1.1.2' ],
+154 silly audit   gel: [ '2.1.1' ],
+154 silly audit   semver: [ '7.7.2', '6.3.1' ],
+154 silly audit   gensync: [ '1.0.0-beta.2' ],
+154 silly audit   'get-intrinsic': [ '1.3.0' ],
+154 silly audit   'get-nonce': [ '1.0.1' ],
+154 silly audit   'get-proto': [ '1.0.1' ],
+154 silly audit   'get-tsconfig': [ '4.10.1' ],
+154 silly audit   glob: [ '10.4.5' ],
+154 silly audit   gopd: [ '1.2.0' ],
+154 silly audit   'graceful-fs': [ '4.2.11' ],
+154 silly audit   'has-symbols': [ '1.1.0' ],
+154 silly audit   hasown: [ '2.0.2' ],
+154 silly audit   'http-errors': [ '2.0.0' ],
+154 silly audit   'iconv-lite': [ '0.4.24' ],
+154 silly audit   inherits: [ '2.0.4' ],
+154 silly audit   'input-otp': [ '1.4.2' ],
+154 silly audit   internmap: [ '2.0.3' ],
+154 silly audit   'ipaddr.js': [ '1.9.1' ],
+154 silly audit   'is-binary-path': [ '2.1.0' ],
+154 silly audit   'is-core-module': [ '2.16.1' ],
+154 silly audit   'is-extglob': [ '2.1.1' ],
+154 silly audit   'is-fullwidth-code-point': [ '3.0.0' ],
+154 silly audit   'is-glob': [ '4.0.3' ],
+154 silly audit   'is-number': [ '7.0.0' ],
+154 silly audit   jackspeak: [ '3.4.3' ],
+154 silly audit   jiti: [ '2.5.1', '1.21.7' ],
+154 silly audit   'js-tokens': [ '4.0.0' ],
+154 silly audit   jsesc: [ '3.1.0' ],
+154 silly audit   json5: [ '2.2.3' ],
+154 silly audit   lightningcss: [ '1.30.1' ],
+154 silly audit   'lightningcss-darwin-arm64': [ '1.30.1' ],
+154 silly audit   'lightningcss-darwin-x64': [ '1.30.1' ],
+154 silly audit   'lightningcss-freebsd-x64': [ '1.30.1' ],
+154 silly audit   'lightningcss-linux-arm-gnueabihf': [ '1.30.1' ],
+154 silly audit   'lightningcss-linux-arm64-gnu': [ '1.30.1' ],
+154 silly audit   'lightningcss-linux-arm64-musl': [ '1.30.1' ],
+154 silly audit   'lightningcss-linux-x64-gnu': [ '1.30.1' ],
+154 silly audit   'lightningcss-linux-x64-musl': [ '1.30.1' ],
+154 silly audit   'lightningcss-win32-arm64-msvc': [ '1.30.1' ],
+154 silly audit   'lightningcss-win32-x64-msvc': [ '1.30.1' ],
+154 silly audit   lilconfig: [ '3.1.3' ],
+154 silly audit   'lines-and-columns': [ '1.2.4' ],
+154 silly audit   lodash: [ '4.17.21' ],
+154 silly audit   'lodash.castarray': [ '4.4.0' ],
+154 silly audit   'lodash.isplainobject': [ '4.0.6' ],
+154 silly audit   'lodash.merge': [ '4.6.2' ],
+154 silly audit   'loose-envify': [ '1.4.0' ],
+154 silly audit   'lru-cache': [ '5.1.1', '4.1.5', '10.4.3' ],
+154 silly audit   'lucide-react': [ '0.453.0' ],
+154 silly audit   'magic-string': [ '0.30.17' ],
+154 silly audit   'math-intrinsics': [ '1.1.0' ],
+154 silly audit   'media-typer': [ '0.3.0' ],
+154 silly audit   memorystore: [ '1.6.7' ],
+154 silly audit   yallist: [ '2.1.2', '5.0.0', '3.1.1' ],
+154 silly audit   'merge-descriptors': [ '1.0.3' ],
+154 silly audit   merge2: [ '1.4.1' ],
+154 silly audit   methods: [ '1.1.2' ],
+154 silly audit   micromatch: [ '4.0.8' ],
+154 silly audit   mime: [ '1.6.0' ],
+154 silly audit   'mime-db': [ '1.52.0' ],
+154 silly audit   'mime-types': [ '2.1.35' ],
+154 silly audit   minimatch: [ '9.0.5' ],
+154 silly audit   minimist: [ '1.2.8' ],
+154 silly audit   minipass: [ '7.1.2' ],
+154 silly audit   minizlib: [ '3.0.2' ],
+154 silly audit   mitt: [ '3.0.1' ],
+154 silly audit   mkdirp: [ '0.5.6', '3.0.1' ],
+154 silly audit   'modern-screenshot': [ '4.6.5' ],
+154 silly audit   'motion-dom': [ '11.18.1' ],
+154 silly audit   'motion-utils': [ '11.18.1' ],
+154 silly audit   multer: [ '2.0.2' ],
+154 silly audit   mz: [ '2.7.0' ],
+154 silly audit   nanoid: [ '3.3.11' ],
+154 silly audit   negotiator: [ '0.6.3' ],
+154 silly audit   'next-themes': [ '0.4.6' ],
+154 silly audit   'node-gyp-build': [ '4.8.4' ],
+154 silly audit   'node-releases': [ '2.0.19' ],
+154 silly audit   'normalize-path': [ '3.0.0' ],
+154 silly audit   'normalize-range': [ '0.1.2' ],
+154 silly audit   'object-assign': [ '4.1.1' ],
+154 silly audit   'object-hash': [ '3.0.0' ],
+154 silly audit   'object-inspect': [ '1.13.4' ],
+154 silly audit   obuf: [ '1.1.2' ],
+154 silly audit   'on-finished': [ '2.4.1' ],
+154 silly audit   'on-headers': [ '1.1.0' ],
+154 silly audit   'package-json-from-dist': [ '1.0.1' ],
+154 silly audit   parseurl: [ '1.3.3' ],
+154 silly audit   passport: [ '0.7.0' ],
+154 silly audit   'passport-local': [ '1.0.0' ],
+154 silly audit   'passport-strategy': [ '1.0.0' ],
+154 silly audit   'path-key': [ '3.1.1' ],
+154 silly audit   'path-parse': [ '1.0.7' ],
+154 silly audit   'path-scurry': [ '1.11.1' ],
+154 silly audit   'path-to-regexp': [ '0.1.12' ],
+154 silly audit   pause: [ '0.0.1' ],
+154 silly audit   pg: [ '8.16.3' ],
+154 silly audit   'pg-cloudflare': [ '1.2.7' ],
+154 silly audit   'pg-connection-string': [ '2.9.1' ],
+154 silly audit   'pg-int8': [ '1.0.1' ],
+154 silly audit   'pg-numeric': [ '1.0.2' ],
+154 silly audit   'pg-pool': [ '3.10.1' ],
+154 silly audit   'pg-protocol': [ '1.10.3' ],
+154 silly audit   'pg-types': [ '4.1.0', '2.2.0' ],
+154 silly audit   'postgres-array': [ '2.0.0', '3.0.4' ],
+154 silly audit   'postgres-bytea': [ '1.0.0', '3.0.0' ],
+154 silly audit   'postgres-date': [ '1.0.7', '2.1.0' ],
+154 silly audit   'postgres-interval': [ '1.2.0', '3.0.0' ],
+154 silly audit   pgpass: [ '1.0.5' ],
+154 silly audit   picocolors: [ '1.1.1' ],
+154 silly audit   picomatch: [ '2.3.1' ],
+154 silly audit   pify: [ '2.3.0' ],
+154 silly audit   pirates: [ '4.0.7' ],
+154 silly audit   postcss: [ '8.5.6' ],
+154 silly audit   'postcss-import': [ '15.1.0' ],
+154 silly audit   'postcss-js': [ '4.0.1' ],
+154 silly audit   'postcss-load-config': [ '4.0.2' ],
+154 silly audit   'postcss-nested': [ '6.2.0' ],
+154 silly audit   'postcss-selector-parser': [ '6.1.2', '6.0.10' ],
+154 silly audit   'postcss-value-parser': [ '4.2.0' ],
+154 silly audit   postgres: [ '3.4.7' ],
+154 silly audit   'postgres-range': [ '1.1.4' ],
+154 silly audit   'prop-types': [ '15.8.1' ],
+154 silly audit   'react-is': [ '16.13.1', '18.3.1' ],
+154 silly audit   'proxy-addr': [ '2.0.7' ],
+154 silly audit   pseudomap: [ '1.0.2' ],
+154 silly audit   qs: [ '6.13.0' ],
+154 silly audit   'queue-microtask': [ '1.2.3' ],
+154 silly audit   'random-bytes': [ '1.0.0' ],
+154 silly audit   'range-parser': [ '1.2.1' ],
+154 silly audit   'raw-body': [ '2.5.2' ],
+154 silly audit   react: [ '18.3.1' ],
+154 silly audit   'react-day-picker': [ '8.10.1' ],
+154 silly audit   'react-dom': [ '18.3.1' ],
+154 silly audit   'react-hook-form': [ '7.62.0' ],
+154 silly audit   'react-icons': [ '5.5.0' ],
+154 silly audit   'react-refresh': [ '0.17.0' ],
+154 silly audit   'react-remove-scroll': [ '2.7.1' ],
+154 silly audit   'react-remove-scroll-bar': [ '2.3.8' ],
+154 silly audit   'react-resizable-panels': [ '2.1.9' ],
+154 silly audit   'react-smooth': [ '4.0.4' ],
+154 silly audit   'react-style-singleton': [ '2.2.3' ],
+154 silly audit   'react-transition-group': [ '4.4.5' ],
+154 silly audit   'read-cache': [ '1.0.0' ],
+154 silly audit   'readable-stream': [ '3.6.2' ],
+154 silly audit   readdirp: [ '3.6.0' ],
+154 silly audit   recharts: [ '2.15.4' ],
+154 silly audit   'recharts-scale': [ '0.4.5' ],
+154 silly audit   regexparam: [ '3.0.0' ],
+154 silly audit   resolve: [ '1.22.10' ],
+154 silly audit   'resolve-pkg-maps': [ '1.0.0' ],
+154 silly audit   reusify: [ '1.1.0' ],
+154 silly audit   rollup: [ '4.46.2' ],
+154 silly audit   'run-parallel': [ '1.2.0' ],
+154 silly audit   'safe-buffer': [ '5.2.1' ],
+154 silly audit   'safer-buffer': [ '2.1.2' ],
+154 silly audit   scheduler: [ '0.23.2' ],
+154 silly audit   send: [ '0.19.0' ],
+154 silly audit   'serve-static': [ '1.16.2' ],
+154 silly audit   setprototypeof: [ '1.2.0' ],
+154 silly audit   'shebang-command': [ '2.0.0' ],
+154 silly audit   'shebang-regex': [ '3.0.0' ],
+154 silly audit   'shell-quote': [ '1.8.3' ],
+154 silly audit   'side-channel': [ '1.1.0' ],
+154 silly audit   'side-channel-list': [ '1.0.0' ],
+154 silly audit   'side-channel-map': [ '1.0.1' ],
+154 silly audit   'side-channel-weakmap': [ '1.0.2' ],
+154 silly audit   'signal-exit': [ '4.1.0' ],
+154 silly audit   'source-map': [ '0.6.1' ],
+154 silly audit   'source-map-js': [ '1.2.1' ],
+154 silly audit   'source-map-support': [ '0.5.21' ],
+154 silly audit   split2: [ '4.2.0' ],
+154 silly audit   statuses: [ '2.0.1' ],
+154 silly audit   streamsearch: [ '1.1.0' ],
+154 silly audit   string_decoder: [ '1.3.0' ],
+154 silly audit   'string-width': [ '5.1.2', '4.2.3' ],
+154 silly audit   'strip-ansi': [ '6.0.1', '7.1.0' ],
+154 silly audit   sucrase: [ '3.35.0' ],
+154 silly audit   'supports-preserve-symlinks-flag': [ '1.0.0' ],
+154 silly audit   'tailwind-merge': [ '2.6.0' ],
+154 silly audit   'tailwindcss-animate': [ '1.0.7' ],
+154 silly audit   tapable: [ '2.2.2' ],
+154 silly audit   tar: [ '7.4.3' ],
+154 silly audit   thenify: [ '3.3.1' ],
+154 silly audit   'thenify-all': [ '1.6.0' ],
+154 silly audit   'tiny-invariant': [ '1.3.3' ],
+154 silly audit   'to-regex-range': [ '5.0.1' ],
+154 silly audit   toidentifier: [ '1.0.1' ],
+154 silly audit   tr46: [ '0.0.3' ],
+154 silly audit   'ts-interface-checker': [ '0.1.13' ],
+154 silly audit   tslib: [ '2.8.1' ],
+154 silly audit   tsx: [ '4.20.4' ],
+154 silly audit   'tw-animate-css': [ '1.3.7' ],
+154 silly audit   'type-is': [ '1.6.18' ],
+154 silly audit   typedarray: [ '0.0.6' ],
+154 silly audit   typescript: [ '5.6.3' ],
+154 silly audit   'uid-safe': [ '2.1.5' ],
+154 silly audit   'undici-types': [ '6.19.8' ],
+154 silly audit   unpipe: [ '1.0.0' ],
+154 silly audit   'update-browserslist-db': [ '1.1.3' ],
+154 silly audit   'use-callback-ref': [ '1.3.3' ],
+154 silly audit   'use-sidecar': [ '1.1.3' ],
+154 silly audit   'use-sync-external-store': [ '1.5.0' ],
+154 silly audit   'util-deprecate': [ '1.0.2' ],
+154 silly audit   'utils-merge': [ '1.0.1' ],
+154 silly audit   vary: [ '1.1.2' ],
+154 silly audit   vaul: [ '1.1.2' ],
+154 silly audit   'victory-vendor': [ '36.9.2' ],
+154 silly audit   vite: [ '5.4.19' ],
+154 silly audit   'webidl-conversions': [ '3.0.1' ],
+154 silly audit   'whatwg-url': [ '5.0.0' ],
+154 silly audit   wouter: [ '3.7.1' ],
+154 silly audit   'wrap-ansi': [ '8.1.0', '7.0.0' ],
+154 silly audit   ws: [ '8.18.3' ],
+154 silly audit   xtend: [ '4.0.2' ],
+154 silly audit   yaml: [ '2.8.1' ],
+154 silly audit   zod: [ '3.25.76' ],
+154 silly audit   'zod-validation-error': [ '3.5.3' ],
+154 silly audit   '@tailwindcss/oxide-wasm32-wasi': [ '4.1.12' ]
+154 silly audit }
+155 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-x64
+156 silly reify mark deleted [
+156 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-x64'
+156 silly reify ]
+157 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-s390x
+158 silly reify mark deleted [
+158 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-s390x'
+158 silly reify ]
+159 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-ia32
+160 silly reify mark deleted [
+160 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-ia32'
+160 silly reify ]
+161 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-arm64
+162 silly reify mark deleted [
+162 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-arm64'
+162 silly reify ]
+163 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/sunos-x64
+164 silly reify mark deleted [
+164 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/sunos-x64'
+164 silly reify ]
+165 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/openbsd-x64
+166 silly reify mark deleted [
+166 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/openbsd-x64'
+166 silly reify ]
+167 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/netbsd-x64
+168 silly reify mark deleted [
+168 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/netbsd-x64'
+168 silly reify ]
+169 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-x64
+170 silly reify mark deleted [
+170 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-x64'
+170 silly reify ]
+171 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-ppc64
+172 silly reify mark deleted [
+172 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-ppc64'
+172 silly reify ]
+173 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-riscv64
+174 silly reify mark deleted [
+174 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-riscv64'
+174 silly reify ]
+175 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-arm64
+176 silly reify mark deleted [
+176 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-arm64'
+176 silly reify ]
+177 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-mips64el
+178 silly reify mark deleted [
+178 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-mips64el'
+178 silly reify ]
+179 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-loong64
+180 silly reify mark deleted [
+180 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-loong64'
+180 silly reify ]
+181 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-ia32
+182 silly reify mark deleted [
+182 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-ia32'
+182 silly reify ]
+183 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-arm64
+184 silly reify mark deleted [
+184 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-arm64'
+184 silly reify ]
+185 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-arm
+186 silly reify mark deleted [
+186 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-arm'
+186 silly reify ]
+187 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/freebsd-x64
+188 silly reify mark deleted [
+188 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/freebsd-x64'
+188 silly reify ]
+189 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/freebsd-arm64
+190 silly reify mark deleted [
+190 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/freebsd-arm64'
+190 silly reify ]
+191 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/darwin-x64
+192 silly reify mark deleted [
+192 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/darwin-x64'
+192 silly reify ]
+193 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-x64
+194 silly reify mark deleted [
+194 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-x64'
+194 silly reify ]
+195 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-arm
+196 silly reify mark deleted [
+196 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-arm'
+196 silly reify ]
+197 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-x64-gnu
+198 silly reify mark deleted [
+198 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-x64-gnu'
+198 silly reify ]
+199 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-win32-arm64-msvc
+200 silly reify mark deleted [
+200 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-win32-arm64-msvc'
+200 silly reify ]
+201 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-win32-x64-msvc
+202 silly reify mark deleted [
+202 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-win32-x64-msvc'
+202 silly reify ]
+203 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-x64-musl
+204 silly reify mark deleted [
+204 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-x64-musl'
+204 silly reify ]
+205 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-arm64-musl
+206 silly reify mark deleted [
+206 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-arm64-musl'
+206 silly reify ]
+207 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-arm64-gnu
+208 silly reify mark deleted [
+208 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-arm64-gnu'
+208 silly reify ]
+209 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-arm-gnueabihf
+210 silly reify mark deleted [
+210 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-arm-gnueabihf'
+210 silly reify ]
+211 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-freebsd-x64
+212 silly reify mark deleted [
+212 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-freebsd-x64'
+212 silly reify ]
+213 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-darwin-x64
+214 silly reify mark deleted [
+214 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-darwin-x64'
+214 silly reify ]
+215 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-android-arm64
+216 silly reify mark deleted [
+216 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-android-arm64'
+216 silly reify ]
+217 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-win32-ia32-msvc
+218 silly reify mark deleted [
+218 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-win32-ia32-msvc'
+218 silly reify ]
+219 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-win32-arm64-msvc
+220 silly reify mark deleted [
+220 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-win32-arm64-msvc'
+220 silly reify ]
+221 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-win32-x64-msvc
+222 silly reify mark deleted [
+222 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-win32-x64-msvc'
+222 silly reify ]
+223 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-x64-gnu
+224 silly reify mark deleted [
+224 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-x64-gnu'
+224 silly reify ]
+225 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-x64-musl
+226 silly reify mark deleted [
+226 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-x64-musl'
+226 silly reify ]
+227 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-loongarch64-gnu
+228 silly reify mark deleted [
+228 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-loongarch64-gnu'
+228 silly reify ]
+229 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-riscv64-gnu
+230 silly reify mark deleted [
+230 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-riscv64-gnu'
+230 silly reify ]
+231 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-s390x-gnu
+232 silly reify mark deleted [
+232 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-s390x-gnu'
+232 silly reify ]
+233 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm64-musl
+234 silly reify mark deleted [
+234 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm64-musl'
+234 silly reify ]
+235 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-riscv64-musl
+236 silly reify mark deleted [
+236 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-riscv64-musl'
+236 silly reify ]
+237 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-freebsd-x64
+238 silly reify mark deleted [
+238 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-freebsd-x64'
+238 silly reify ]
+239 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-ppc64-gnu
+240 silly reify mark deleted [
+240 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-ppc64-gnu'
+240 silly reify ]
+241 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm64-gnu
+242 silly reify mark deleted [
+242 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm64-gnu'
+242 silly reify ]
+243 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm-musleabihf
+244 silly reify mark deleted [
+244 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm-musleabihf'
+244 silly reify ]
+245 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-darwin-x64
+246 silly reify mark deleted [
+246 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-darwin-x64'
+246 silly reify ]
+247 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-freebsd-arm64
+248 silly reify mark deleted [
+248 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-freebsd-arm64'
+248 silly reify ]
+249 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm-gnueabihf
+250 silly reify mark deleted [
+250 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm-gnueabihf'
+250 silly reify ]
+251 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-android-arm64
+252 silly reify mark deleted [
+252 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-android-arm64'
+252 silly reify ]
+253 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-android-arm-eabi
+254 silly reify mark deleted [
+254 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-android-arm-eabi'
+254 silly reify ]
+255 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/win32-ia32
+256 silly reify mark deleted [
+256 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/win32-ia32'
+256 silly reify ]
+257 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/win32-x64
+258 silly reify mark deleted [
+258 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/win32-x64'
+258 silly reify ]
+259 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/openbsd-arm64
+260 silly reify mark deleted [
+260 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/openbsd-arm64'
+260 silly reify ]
+261 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/netbsd-x64
+262 silly reify mark deleted [
+262 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/netbsd-x64'
+262 silly reify ]
+263 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/openbsd-x64
+264 silly reify mark deleted [
+264 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/openbsd-x64'
+264 silly reify ]
+265 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/win32-arm64
+266 silly reify mark deleted [
+266 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/win32-arm64'
+266 silly reify ]
+267 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/sunos-x64
+268 silly reify mark deleted [
+268 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/sunos-x64'
+268 silly reify ]
+269 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/openharmony-arm64
+270 silly reify mark deleted [
+270 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/openharmony-arm64'
+270 silly reify ]
+271 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/netbsd-arm64
+272 silly reify mark deleted [
+272 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/netbsd-arm64'
+272 silly reify ]
+273 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-riscv64
+274 silly reify mark deleted [
+274 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-riscv64'
+274 silly reify ]
+275 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-x64
+276 silly reify mark deleted [
+276 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-x64'
+276 silly reify ]
+277 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-s390x
+278 silly reify mark deleted [
+278 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-s390x'
+278 silly reify ]
+279 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-mips64el
+280 silly reify mark deleted [
+280 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-mips64el'
+280 silly reify ]
+281 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-ppc64
+282 silly reify mark deleted [
+282 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-ppc64'
+282 silly reify ]
+283 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-loong64
+284 silly reify mark deleted [
+284 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-loong64'
+284 silly reify ]
+285 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-ia32
+286 silly reify mark deleted [
+286 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-ia32'
+286 silly reify ]
+287 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-arm64
+288 silly reify mark deleted [
+288 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-arm64'
+288 silly reify ]
+289 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-arm
+290 silly reify mark deleted [
+290 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-arm'
+290 silly reify ]
+291 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/freebsd-arm64
+292 silly reify mark deleted [
+292 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/freebsd-arm64'
+292 silly reify ]
+293 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/freebsd-x64
+294 silly reify mark deleted [
+294 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/freebsd-x64'
+294 silly reify ]
+295 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/darwin-x64
+296 silly reify mark deleted [
+296 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/darwin-x64'
+296 silly reify ]
+297 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/android-x64
+298 silly reify mark deleted [
+298 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/android-x64'
+298 silly reify ]
+299 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/android-arm64
+300 silly reify mark deleted [
+300 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/android-arm64'
+300 silly reify ]
+301 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/android-arm
+302 silly reify mark deleted [
+302 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/android-arm'
+302 silly reify ]
+303 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/aix-ppc64
+304 silly reify mark deleted [
+304 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/aix-ppc64'
+304 silly reify ]
+305 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-mips64el
+306 silly reify mark deleted [
+306 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-mips64el'
+306 silly reify ]
+307 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/sunos-x64
+308 silly reify mark deleted [
+308 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/sunos-x64'
+308 silly reify ]
+309 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/win32-x64
+310 silly reify mark deleted [
+310 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/win32-x64'
+310 silly reify ]
+311 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/win32-ia32
+312 silly reify mark deleted [
+312 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/win32-ia32'
+312 silly reify ]
+313 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/win32-arm64
+314 silly reify mark deleted [
+314 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/win32-arm64'
+314 silly reify ]
+315 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/openbsd-x64
+316 silly reify mark deleted [
+316 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/openbsd-x64'
+316 silly reify ]
+317 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-riscv64
+318 silly reify mark deleted [
+318 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-riscv64'
+318 silly reify ]
+319 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/netbsd-x64
+320 silly reify mark deleted [
+320 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/netbsd-x64'
+320 silly reify ]
+321 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-s390x
+322 silly reify mark deleted [
+322 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-s390x'
+322 silly reify ]
+323 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-ppc64
+324 silly reify mark deleted [
+324 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-ppc64'
+324 silly reify ]
+325 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/darwin-x64
+326 silly reify mark deleted [
+326 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/darwin-x64'
+326 silly reify ]
+327 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-x64
+328 silly reify mark deleted [
+328 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-x64'
+328 silly reify ]
+329 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-ia32
+330 silly reify mark deleted [
+330 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-ia32'
+330 silly reify ]
+331 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/freebsd-x64
+332 silly reify mark deleted [
+332 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/freebsd-x64'
+332 silly reify ]
+333 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-loong64
+334 silly reify mark deleted [
+334 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-loong64'
+334 silly reify ]
+335 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-arm64
+336 silly reify mark deleted [
+336 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-arm64'
+336 silly reify ]
+337 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/freebsd-arm64
+338 silly reify mark deleted [
+338 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/freebsd-arm64'
+338 silly reify ]
+339 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-arm
+340 silly reify mark deleted [
+340 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-arm'
+340 silly reify ]
+341 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/aix-ppc64
+342 silly reify mark deleted [
+342 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/aix-ppc64'
+342 silly reify ]
+343 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/android-x64
+344 silly reify mark deleted [
+344 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/android-x64'
+344 silly reify ]
+345 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/android-arm64
+346 silly reify mark deleted [
+346 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/android-arm64'
+346 silly reify ]
+347 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/android-arm
+348 silly reify mark deleted [
+348 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/android-arm'
+348 silly reify ]
+349 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-arm-gnueabihf
+350 silly reify mark deleted [
+350 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-arm-gnueabihf'
+350 silly reify ]
+351 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-x64-musl
+352 silly reify mark deleted [
+352 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-x64-musl'
+352 silly reify ]
+353 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-win32-x64-msvc
+354 silly reify mark deleted [
+354 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-win32-x64-msvc'
+354 silly reify ]
+355 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-win32-arm64-msvc
+356 silly reify mark deleted [
+356 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-win32-arm64-msvc'
+356 silly reify ]
+357 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-x64-gnu
+358 silly reify mark deleted [
+358 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-x64-gnu'
+358 silly reify ]
+359 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-arm64-musl
+360 silly reify mark deleted [
+360 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-arm64-musl'
+360 silly reify ]
+361 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-freebsd-x64
+362 silly reify mark deleted [
+362 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-freebsd-x64'
+362 silly reify ]
+363 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-arm64-gnu
+364 silly reify mark deleted [
+364 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-arm64-gnu'
+364 silly reify ]
+365 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-darwin-x64
+366 silly reify mark deleted [
+366 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-darwin-x64'
+366 silly reify ]
+367 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/sunos-x64
+368 silly reify mark deleted [
+368 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/sunos-x64'
+368 silly reify ]
+369 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/win32-arm64
+370 silly reify mark deleted [
+370 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/win32-arm64'
+370 silly reify ]
+371 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/win32-x64
+372 silly reify mark deleted [
+372 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/win32-x64'
+372 silly reify ]
+373 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/openbsd-x64
+374 silly reify mark deleted [
+374 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/openbsd-x64'
+374 silly reify ]
+375 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/win32-ia32
+376 silly reify mark deleted [
+376 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/win32-ia32'
+376 silly reify ]
+377 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-mips64el
+378 silly reify mark deleted [
+378 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-mips64el'
+378 silly reify ]
+379 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-ia32
+380 silly reify mark deleted [
+380 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-ia32'
+380 silly reify ]
+381 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/netbsd-x64
+382 silly reify mark deleted [
+382 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/netbsd-x64'
+382 silly reify ]
+383 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-x64
+384 silly reify mark deleted [
+384 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-x64'
+384 silly reify ]
+385 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-s390x
+386 silly reify mark deleted [
+386 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-s390x'
+386 silly reify ]
+387 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-ppc64
+388 silly reify mark deleted [
+388 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-ppc64'
+388 silly reify ]
+389 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-riscv64
+390 silly reify mark deleted [
+390 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-riscv64'
+390 silly reify ]
+391 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-loong64
+392 silly reify mark deleted [
+392 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-loong64'
+392 silly reify ]
+393 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-arm64
+394 silly reify mark deleted [
+394 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-arm64'
+394 silly reify ]
+395 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-arm
+396 silly reify mark deleted [
+396 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-arm'
+396 silly reify ]
+397 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/android-arm64
+398 silly reify mark deleted [
+398 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/android-arm64'
+398 silly reify ]
+399 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/freebsd-x64
+400 silly reify mark deleted [
+400 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/freebsd-x64'
+400 silly reify ]
+401 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/darwin-x64
+402 silly reify mark deleted [
+402 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/darwin-x64'
+402 silly reify ]
+403 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/freebsd-arm64
+404 silly reify mark deleted [
+404 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/freebsd-arm64'
+404 silly reify ]
+405 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/android-x64
+406 silly reify mark deleted [
+406 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/android-x64'
+406 silly reify ]
+407 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/android-arm
+408 silly reify mark deleted [
+408 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/android-arm'
+408 silly reify ]
+409 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/aix-ppc64
+410 silly reify mark deleted [
+410 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/aix-ppc64'
+410 silly reify ]
+411 http cache @babel/parser@https://registry.npmjs.org/@babel/parser/-/parser-7.28.3.tgz 0ms (cache hit)
+412 http cache which@https://registry.npmjs.org/which/-/which-4.0.0.tgz 0ms (cache hit)
+413 http cache update-browserslist-db@https://registry.npmjs.org/update-browserslist-db/-/update-browserslist-db-1.1.3.tgz 1ms (cache hit)
+414 http cache tsx@https://registry.npmjs.org/tsx/-/tsx-4.20.4.tgz 0ms (cache hit)
+415 http cache semver@https://registry.npmjs.org/semver/-/semver-6.3.1.tgz 0ms (cache hit)
+416 http cache node-gyp-build@https://registry.npmjs.org/node-gyp-build/-/node-gyp-build-4.8.4.tgz 0ms (cache hit)
+417 http cache mkdirp@https://registry.npmjs.org/mkdirp/-/mkdirp-0.5.6.tgz 0ms (cache hit)
+418 http cache nanoid@https://registry.npmjs.org/nanoid/-/nanoid-3.3.11.tgz 0ms (cache hit)
+419 http cache mime@https://registry.npmjs.org/mime/-/mime-1.6.0.tgz 1ms (cache hit)
+420 http cache loose-envify@https://registry.npmjs.org/loose-envify/-/loose-envify-1.4.0.tgz 0ms (cache hit)
+421 http cache json5@https://registry.npmjs.org/json5/-/json5-2.2.3.tgz 0ms (cache hit)
+422 http cache jsesc@https://registry.npmjs.org/jsesc/-/jsesc-3.1.0.tgz 0ms (cache hit)
+423 http cache jiti@https://registry.npmjs.org/jiti/-/jiti-2.5.1.tgz 0ms (cache hit)
+424 http cache glob@https://registry.npmjs.org/glob/-/glob-10.4.5.tgz 0ms (cache hit)
+425 http cache gel@https://registry.npmjs.org/gel/-/gel-2.1.1.tgz 0ms (cache hit)
+426 http cache esbuild@https://registry.npmjs.org/esbuild/-/esbuild-0.25.9.tgz 0ms (cache hit)
+427 http cache cssesc@https://registry.npmjs.org/cssesc/-/cssesc-3.0.0.tgz 0ms (cache hit)
+428 http cache browserslist@https://registry.npmjs.org/browserslist/-/browserslist-4.25.2.tgz 0ms (cache hit)
+429 http cache bcryptjs@https://registry.npmjs.org/bcryptjs/-/bcryptjs-3.0.2.tgz 0ms (cache hit)
+430 http cache autoprefixer@https://registry.npmjs.org/autoprefixer/-/autoprefixer-10.4.21.tgz 0ms (cache hit)
+431 http cache @tanstack/react-query@https://registry.npmjs.org/@tanstack/react-query/-/react-query-5.85.3.tgz 0ms (cache hit)
+432 http cache @tanstack/query-core@https://registry.npmjs.org/@tanstack/query-core/-/query-core-5.85.3.tgz 0ms (cache hit)
+433 http cache @esbuild/darwin-arm64@https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.25.9.tgz 0ms (cache hit)
+434 http cache @babel/types@https://registry.npmjs.org/@babel/types/-/types-7.28.2.tgz 0ms (cache hit)
+435 http cache @babel/core@https://registry.npmjs.org/@babel/core/-/core-7.28.3.tgz 0ms (cache hit)
+436 http cache @babel/runtime@https://registry.npmjs.org/@babel/runtime/-/runtime-7.28.3.tgz 0ms (cache hit)
+437 http cache zod@https://registry.npmjs.org/zod/-/zod-3.25.76.tgz 0ms (cache hit)
+438 http cache yaml@https://registry.npmjs.org/yaml/-/yaml-2.8.1.tgz 0ms (cache hit)
+439 http cache @babel/helpers@https://registry.npmjs.org/@babel/helpers/-/helpers-7.28.3.tgz 0ms (cache hit)
+440 http cache victory-vendor@https://registry.npmjs.org/victory-vendor/-/victory-vendor-36.9.2.tgz 0ms (cache hit)
+441 http cache vite@https://registry.npmjs.org/vite/-/vite-5.4.19.tgz 0ms (cache hit)
+442 http cache typescript@https://registry.npmjs.org/typescript/-/typescript-5.6.3.tgz 0ms (cache hit)
+443 http cache tailwindcss@https://registry.npmjs.org/tailwindcss/-/tailwindcss-3.4.17.tgz 0ms (cache hit)
+444 http cache sucrase@https://registry.npmjs.org/sucrase/-/sucrase-3.35.0.tgz 0ms (cache hit)
+445 http cache recharts@https://registry.npmjs.org/recharts/-/recharts-2.15.4.tgz 0ms (cache hit)
+446 http cache rollup@https://registry.npmjs.org/rollup/-/rollup-4.46.2.tgz 0ms (cache hit)
+447 http cache resolve@https://registry.npmjs.org/resolve/-/resolve-1.22.10.tgz 0ms (cache hit)
+448 http cache react-dom@https://registry.npmjs.org/react-dom/-/react-dom-18.3.1.tgz 0ms (cache hit)
+449 http cache react-icons@https://registry.npmjs.org/react-icons/-/react-icons-5.5.0.tgz 0ms (cache hit)
+450 http cache lucide-react@https://registry.npmjs.org/lucide-react/-/lucide-react-0.453.0.tgz 0ms (cache hit)
+451 http cache lodash@https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz 0ms (cache hit)
+452 http cache framer-motion@https://registry.npmjs.org/framer-motion/-/framer-motion-11.18.2.tgz 0ms (cache hit)
+453 http cache embla-carousel@https://registry.npmjs.org/embla-carousel/-/embla-carousel-8.6.0.tgz 0ms (cache hit)
+454 http cache drizzle-orm@https://registry.npmjs.org/drizzle-orm/-/drizzle-orm-0.39.3.tgz 0ms (cache hit)
+455 http cache drizzle-kit@https://registry.npmjs.org/drizzle-kit/-/drizzle-kit-0.30.6.tgz 0ms (cache hit)
+456 http cache dom-helpers@https://registry.npmjs.org/dom-helpers/-/dom-helpers-5.2.1.tgz 0ms (cache hit)
+457 http cache date-fns@https://registry.npmjs.org/date-fns/-/date-fns-3.6.0.tgz 0ms (cache hit)
+458 http cache caniuse-lite@https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001735.tgz 0ms (cache hit)
+459 http cache @esbuild/darwin-arm64@https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.18.20.tgz 0ms (cache hit)
+460 http cache esbuild@https://registry.npmjs.org/esbuild/-/esbuild-0.18.20.tgz 0ms (cache hit)
+461 http cache mkdirp@https://registry.npmjs.org/mkdirp/-/mkdirp-3.0.1.tgz 0ms (cache hit)
+462 http cache semver@https://registry.npmjs.org/semver/-/semver-7.7.2.tgz 0ms (cache hit)
+463 http cache esbuild@https://registry.npmjs.org/esbuild/-/esbuild-0.21.5.tgz 0ms (cache hit)
+464 http cache which@https://registry.npmjs.org/which/-/which-2.0.2.tgz 0ms (cache hit)
+465 http cache jiti@https://registry.npmjs.org/jiti/-/jiti-1.21.7.tgz 0ms (cache hit)
+466 http cache @esbuild/darwin-arm64@https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.21.5.tgz 0ms (cache hit)
+467 http cache @esbuild/darwin-arm64@https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.19.12.tgz 0ms (cache hit)
+468 http cache esbuild@https://registry.npmjs.org/esbuild/-/esbuild-0.19.12.tgz 0ms (cache hit)
+469 silly tarball no local data for @tanstack/react-query@https://registry.npmjs.org/@tanstack/react-query/-/react-query-5.85.3.tgz. Extracting by manifest.
+470 silly tarball no local data for @tanstack/query-core@https://registry.npmjs.org/@tanstack/query-core/-/query-core-5.85.3.tgz. Extracting by manifest.
+471 silly tarball no local data for @esbuild/darwin-arm64@https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.25.9.tgz. Extracting by manifest.
+472 silly tarball no local data for @babel/types@https://registry.npmjs.org/@babel/types/-/types-7.28.2.tgz. Extracting by manifest.
+473 silly tarball no local data for @babel/core@https://registry.npmjs.org/@babel/core/-/core-7.28.3.tgz. Extracting by manifest.
+474 silly tarball no local data for zod@https://registry.npmjs.org/zod/-/zod-3.25.76.tgz. Extracting by manifest.
+475 silly tarball no local data for yaml@https://registry.npmjs.org/yaml/-/yaml-2.8.1.tgz. Extracting by manifest.
+476 silly tarball no local data for @babel/helpers@https://registry.npmjs.org/@babel/helpers/-/helpers-7.28.3.tgz. Extracting by manifest.
+477 silly tarball no local data for victory-vendor@https://registry.npmjs.org/victory-vendor/-/victory-vendor-36.9.2.tgz. Extracting by manifest.
+478 silly tarball no local data for vite@https://registry.npmjs.org/vite/-/vite-5.4.19.tgz. Extracting by manifest.
+479 silly tarball no local data for typescript@https://registry.npmjs.org/typescript/-/typescript-5.6.3.tgz. Extracting by manifest.
+480 silly tarball no local data for tailwindcss@https://registry.npmjs.org/tailwindcss/-/tailwindcss-3.4.17.tgz. Extracting by manifest.
+481 silly tarball no local data for recharts@https://registry.npmjs.org/recharts/-/recharts-2.15.4.tgz. Extracting by manifest.
+482 silly tarball no local data for rollup@https://registry.npmjs.org/rollup/-/rollup-4.46.2.tgz. Extracting by manifest.
+483 silly tarball no local data for resolve@https://registry.npmjs.org/resolve/-/resolve-1.22.10.tgz. Extracting by manifest.
+484 silly tarball no local data for react-dom@https://registry.npmjs.org/react-dom/-/react-dom-18.3.1.tgz. Extracting by manifest.
+485 silly tarball no local data for react-icons@https://registry.npmjs.org/react-icons/-/react-icons-5.5.0.tgz. Extracting by manifest.
+486 silly tarball no local data for lucide-react@https://registry.npmjs.org/lucide-react/-/lucide-react-0.453.0.tgz. Extracting by manifest.
+487 silly tarball no local data for lodash@https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz. Extracting by manifest.
+488 silly tarball no local data for framer-motion@https://registry.npmjs.org/framer-motion/-/framer-motion-11.18.2.tgz. Extracting by manifest.
+489 silly tarball no local data for sucrase@https://registry.npmjs.org/sucrase/-/sucrase-3.35.0.tgz. Extracting by manifest.
+490 silly tarball no local data for embla-carousel@https://registry.npmjs.org/embla-carousel/-/embla-carousel-8.6.0.tgz. Extracting by manifest.
+491 silly tarball no local data for drizzle-orm@https://registry.npmjs.org/drizzle-orm/-/drizzle-orm-0.39.3.tgz. Extracting by manifest.
+492 silly tarball no local data for drizzle-kit@https://registry.npmjs.org/drizzle-kit/-/drizzle-kit-0.30.6.tgz. Extracting by manifest.
+493 silly tarball no local data for date-fns@https://registry.npmjs.org/date-fns/-/date-fns-3.6.0.tgz. Extracting by manifest.
+494 silly tarball no local data for caniuse-lite@https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001735.tgz. Extracting by manifest.
+495 silly tarball no local data for @esbuild/darwin-arm64@https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.18.20.tgz. Extracting by manifest.
+496 silly tarball no local data for @esbuild/darwin-arm64@https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.21.5.tgz. Extracting by manifest.
+497 silly tarball no local data for @esbuild/darwin-arm64@https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.19.12.tgz. Extracting by manifest.
+498 http fetch POST 200 https://registry.npmjs.org/-/npm/v1/security/advisories/bulk 891ms
+499 silly audit report {
+499 silly audit report   esbuild: [
+499 silly audit report     {
+499 silly audit report       id: 1102341,
+499 silly audit report       url: 'https://github.com/advisories/GHSA-67mh-4wv8-2f99',
+499 silly audit report       title: 'esbuild enables any website to send any requests to the development server and read the response',
+499 silly audit report       severity: 'moderate',
+499 silly audit report       vulnerable_versions: '<=0.24.2',
+499 silly audit report       cwe: [Array],
+499 silly audit report       cvss: [Object]
+499 silly audit report     }
+499 silly audit report   ]
+499 silly audit report }
+500 silly packumentCache corgi:https://registry.npmjs.org/esbuild cache-miss
+501 http fetch GET 200 https://registry.npmjs.org/esbuild 1199ms (cache revalidated)
+502 silly packumentCache corgi:https://registry.npmjs.org/esbuild set size:866881 disposed:false
+503 silly packumentCache corgi:https://registry.npmjs.org/@esbuild-kit%2fcore-utils cache-miss
+504 silly packumentCache corgi:https://registry.npmjs.org/drizzle-kit cache-miss
+505 silly packumentCache corgi:https://registry.npmjs.org/vite cache-miss
+506 http fetch GET 200 https://registry.npmjs.org/@esbuild-kit%2fcore-utils 1184ms (cache revalidated)
+507 silly packumentCache corgi:https://registry.npmjs.org/@esbuild-kit%2fcore-utils set size:50014 disposed:false
+508 http fetch GET 200 https://registry.npmjs.org/resolve/-/resolve-1.22.10.tgz 4657ms (cache miss)
+509 http fetch GET 200 https://registry.npmjs.org/embla-carousel/-/embla-carousel-8.6.0.tgz 5718ms (cache miss)
+510 http fetch GET 200 https://registry.npmjs.org/rollup/-/rollup-4.46.2.tgz 6463ms (cache miss)
+511 http fetch GET 200 https://registry.npmjs.org/drizzle-kit 5098ms (cache miss)
+512 silly packumentCache corgi:https://registry.npmjs.org/drizzle-kit set size:undefined disposed:false
+513 http fetch GET 200 https://registry.npmjs.org/vite 5429ms (cache miss)
+514 silly packumentCache corgi:https://registry.npmjs.org/vite set size:undefined disposed:false
+515 silly packumentCache corgi:https://registry.npmjs.org/@esbuild-kit%2fesm-loader cache-miss
+516 http fetch GET 200 https://registry.npmjs.org/vite/-/vite-5.4.19.tgz 8120ms (cache miss)
+517 http fetch GET 200 https://registry.npmjs.org/@babel/core/-/core-7.28.3.tgz 8202ms (cache miss)
+518 http fetch GET 200 https://registry.npmjs.org/@esbuild-kit%2fesm-loader 1146ms (cache miss)
+519 silly packumentCache corgi:https://registry.npmjs.org/@esbuild-kit%2fesm-loader set size:undefined disposed:false
+520 http fetch GET 200 https://registry.npmjs.org/react-dom/-/react-dom-18.3.1.tgz 9389ms (cache miss)
+521 silly packumentCache corgi:https://registry.npmjs.org/@tailwindcss%2fvite cache-miss
+522 silly packumentCache corgi:https://registry.npmjs.org/@vitejs%2fplugin-react cache-miss
+523 http fetch GET 200 https://registry.npmjs.org/yaml/-/yaml-2.8.1.tgz 9842ms (cache miss)
+524 http fetch GET 200 https://registry.npmjs.org/@babel/helpers/-/helpers-7.28.3.tgz 9865ms (cache miss)
+525 http fetch GET 200 https://registry.npmjs.org/sucrase/-/sucrase-3.35.0.tgz 10005ms (cache miss)
+526 http fetch GET 200 https://registry.npmjs.org/victory-vendor/-/victory-vendor-36.9.2.tgz 10211ms (cache miss)
+527 http fetch GET 200 https://registry.npmjs.org/@babel/types/-/types-7.28.2.tgz 10336ms (cache miss)
+528 http fetch GET 200 https://registry.npmjs.org/@tailwindcss%2fvite 868ms (cache miss)
+529 silly packumentCache corgi:https://registry.npmjs.org/@tailwindcss%2fvite set size:undefined disposed:false
+530 http fetch GET 200 https://registry.npmjs.org/@tanstack/react-query/-/react-query-5.85.3.tgz 10887ms (cache miss)
+531 http fetch GET 200 https://registry.npmjs.org/@tanstack/query-core/-/query-core-5.85.3.tgz 10903ms (cache miss)
+532 http fetch GET 200 https://registry.npmjs.org/@vitejs%2fplugin-react 1356ms (cache miss)
+533 silly packumentCache corgi:https://registry.npmjs.org/@vitejs%2fplugin-react set size:undefined disposed:false
+534 http fetch GET 200 https://registry.npmjs.org/drizzle-kit/-/drizzle-kit-0.30.6.tgz 11046ms (cache miss)
+535 http fetch GET 200 https://registry.npmjs.org/tailwindcss/-/tailwindcss-3.4.17.tgz 11933ms (cache miss)
+536 http fetch GET 200 https://registry.npmjs.org/recharts/-/recharts-2.15.4.tgz 12132ms (cache miss)
+537 http fetch GET 200 https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.25.9.tgz 12147ms (cache miss)
+538 http fetch GET 200 https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.18.20.tgz 12142ms (cache miss)
+539 http fetch GET 200 https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.19.12.tgz 12378ms (cache miss)
+540 http fetch GET 200 https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.21.5.tgz 12392ms (cache miss)
+541 http fetch GET 200 https://registry.npmjs.org/framer-motion/-/framer-motion-11.18.2.tgz 12579ms (cache miss)
+542 http fetch GET 200 https://registry.npmjs.org/zod/-/zod-3.25.76.tgz 12968ms (cache miss)
+543 http fetch GET 200 https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001735.tgz 13460ms (cache miss)
+544 http fetch GET 200 https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz 13580ms (cache miss)
+545 http fetch GET 200 https://registry.npmjs.org/typescript/-/typescript-5.6.3.tgz 14424ms (cache miss)
+546 http fetch GET 200 https://registry.npmjs.org/drizzle-orm/-/drizzle-orm-0.39.3.tgz 20866ms (cache miss)
+547 http fetch GET 200 https://registry.npmjs.org/lucide-react/-/lucide-react-0.453.0.tgz 22734ms (cache miss)
+548 http fetch GET 200 https://registry.npmjs.org/react-icons/-/react-icons-5.5.0.tgz 23233ms (cache miss)
+549 http fetch GET 200 https://registry.npmjs.org/date-fns/-/date-fns-3.6.0.tgz 23667ms (cache miss)
+550 info run esbuild@0.25.9 postinstall node_modules/esbuild node install.js
+551 info run esbuild@0.18.20 postinstall node_modules/@esbuild-kit/core-utils/node_modules/esbuild node install.js
+552 info run esbuild@0.19.12 postinstall node_modules/drizzle-kit/node_modules/esbuild node install.js
+553 info run esbuild@0.21.5 postinstall node_modules/vite/node_modules/esbuild node install.js
+554 info run esbuild@0.18.20 postinstall { code: 0, signal: null }
+555 info run esbuild@0.19.12 postinstall { code: 0, signal: null }
+556 info run esbuild@0.21.5 postinstall { code: 0, signal: null }
+557 info run esbuild@0.25.9 postinstall { code: 0, signal: null }
+558 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/esbuild
+559 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-x64
+560 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-s390x
+561 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-ia32
+562 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-arm64
+563 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/sunos-x64
+564 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/openbsd-x64
+565 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/netbsd-x64
+566 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-x64
+567 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-ppc64
+568 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-riscv64
+569 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-arm64
+570 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-mips64el
+571 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-loong64
+572 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-ia32
+573 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-arm64
+574 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-arm
+575 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/freebsd-x64
+576 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/freebsd-arm64
+577 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/darwin-x64
+578 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/darwin-arm64
+579 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-x64
+580 silly CHANGE node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-arm
+581 silly CHANGE node_modules/@babel/parser
+582 silly CHANGE node_modules/which
+583 silly CHANGE node_modules/update-browserslist-db
+584 silly CHANGE node_modules/tsx
+585 silly CHANGE node_modules/tar/node_modules/mkdirp
+586 silly CHANGE node_modules/semver
+587 silly CHANGE node_modules/node-gyp-build
+588 silly CHANGE node_modules/mkdirp
+589 silly CHANGE node_modules/nanoid
+590 silly CHANGE node_modules/mime
+591 silly CHANGE node_modules/loose-envify
+592 silly CHANGE node_modules/json5
+593 silly CHANGE node_modules/jsesc
+594 silly CHANGE node_modules/jiti
+595 silly CHANGE node_modules/glob
+596 silly CHANGE node_modules/gel
+597 silly CHANGE node_modules/gel/node_modules/semver
+598 silly CHANGE node_modules/esbuild
+599 silly CHANGE node_modules/cssesc
+600 silly CHANGE node_modules/cross-spawn/node_modules/which
+601 silly CHANGE node_modules/browserslist
+602 silly CHANGE node_modules/bcryptjs
+603 silly CHANGE node_modules/autoprefixer
+604 silly CHANGE node_modules/@tailwindcss/oxide-linux-x64-gnu
+605 silly CHANGE node_modules/@tanstack/react-query
+606 silly CHANGE node_modules/@tanstack/query-core
+607 silly CHANGE node_modules/@tailwindcss/oxide-win32-arm64-msvc
+608 silly CHANGE node_modules/@tailwindcss/oxide-win32-x64-msvc
+609 silly CHANGE node_modules/@tailwindcss/oxide-wasm32-wasi
+610 silly CHANGE node_modules/@tailwindcss/oxide-linux-x64-musl
+611 silly CHANGE node_modules/@tailwindcss/oxide-linux-arm64-musl
+612 silly CHANGE node_modules/@tailwindcss/oxide-linux-arm64-gnu
+613 silly CHANGE node_modules/@tailwindcss/oxide-linux-arm-gnueabihf
+614 silly CHANGE node_modules/@tailwindcss/oxide-freebsd-x64
+615 silly CHANGE node_modules/@tailwindcss/oxide-darwin-x64
+616 silly CHANGE node_modules/@tailwindcss/oxide-android-arm64
+617 silly CHANGE node_modules/@rollup/rollup-win32-ia32-msvc
+618 silly CHANGE node_modules/@rollup/rollup-win32-arm64-msvc
+619 silly CHANGE node_modules/@rollup/rollup-win32-x64-msvc
+620 silly CHANGE node_modules/@rollup/rollup-linux-x64-gnu
+621 silly CHANGE node_modules/@rollup/rollup-linux-x64-musl
+622 silly CHANGE node_modules/@rollup/rollup-linux-loongarch64-gnu
+623 silly CHANGE node_modules/@rollup/rollup-linux-riscv64-gnu
+624 silly CHANGE node_modules/@rollup/rollup-linux-s390x-gnu
+625 silly CHANGE node_modules/@rollup/rollup-linux-arm64-musl
+626 silly CHANGE node_modules/@rollup/rollup-linux-riscv64-musl
+627 silly CHANGE node_modules/@rollup/rollup-freebsd-x64
+628 silly CHANGE node_modules/@rollup/rollup-linux-ppc64-gnu
+629 silly CHANGE node_modules/@rollup/rollup-linux-arm64-gnu
+630 silly CHANGE node_modules/@rollup/rollup-linux-arm-musleabihf
+631 silly CHANGE node_modules/@rollup/rollup-darwin-x64
+632 silly CHANGE node_modules/@rollup/rollup-freebsd-arm64
+633 silly CHANGE node_modules/@rollup/rollup-linux-arm-gnueabihf
+634 silly CHANGE node_modules/@rollup/rollup-android-arm64
+635 silly CHANGE node_modules/@rollup/rollup-android-arm-eabi
+636 silly CHANGE node_modules/@esbuild/win32-ia32
+637 silly CHANGE node_modules/@esbuild/win32-x64
+638 silly CHANGE node_modules/@esbuild/openbsd-arm64
+639 silly CHANGE node_modules/@esbuild/netbsd-x64
+640 silly CHANGE node_modules/@esbuild/openbsd-x64
+641 silly CHANGE node_modules/@esbuild/win32-arm64
+642 silly CHANGE node_modules/@esbuild/sunos-x64
+643 silly CHANGE node_modules/@esbuild/openharmony-arm64
+644 silly CHANGE node_modules/@esbuild/netbsd-arm64
+645 silly CHANGE node_modules/@esbuild/linux-riscv64
+646 silly CHANGE node_modules/@esbuild/linux-x64
+647 silly CHANGE node_modules/@esbuild/linux-s390x
+648 silly CHANGE node_modules/@esbuild/linux-mips64el
+649 silly CHANGE node_modules/@esbuild/linux-ppc64
+650 silly CHANGE node_modules/@esbuild/linux-loong64
+651 silly CHANGE node_modules/@esbuild/linux-ia32
+652 silly CHANGE node_modules/@esbuild/linux-arm64
+653 silly CHANGE node_modules/@esbuild/linux-arm
+654 silly CHANGE node_modules/@esbuild/freebsd-arm64
+655 silly CHANGE node_modules/@esbuild/freebsd-x64
+656 silly CHANGE node_modules/@esbuild/darwin-x64
+657 silly CHANGE node_modules/@esbuild/darwin-arm64
+658 silly CHANGE node_modules/@esbuild/android-x64
+659 silly CHANGE node_modules/@esbuild/android-arm64
+660 silly CHANGE node_modules/@esbuild/android-arm
+661 silly CHANGE node_modules/@esbuild/aix-ppc64
+662 silly CHANGE node_modules/@babel/types
+663 silly CHANGE node_modules/@babel/runtime
+664 silly CHANGE node_modules/@babel/helpers
+665 silly CHANGE node_modules/@babel/core
+666 silly CHANGE node_modules/zod
+667 silly CHANGE node_modules/yaml
+668 silly CHANGE node_modules/victory-vendor
+669 silly CHANGE node_modules/vite
+670 silly CHANGE node_modules/vite/node_modules/esbuild
+671 silly CHANGE node_modules/vite/node_modules/@esbuild/linux-mips64el
+672 silly CHANGE node_modules/vite/node_modules/@esbuild/sunos-x64
+673 silly CHANGE node_modules/vite/node_modules/@esbuild/win32-x64
+674 silly CHANGE node_modules/vite/node_modules/@esbuild/win32-ia32
+675 silly CHANGE node_modules/vite/node_modules/@esbuild/win32-arm64
+676 silly CHANGE node_modules/vite/node_modules/@esbuild/openbsd-x64
+677 silly CHANGE node_modules/vite/node_modules/@esbuild/linux-riscv64
+678 silly CHANGE node_modules/vite/node_modules/@esbuild/netbsd-x64
+679 silly CHANGE node_modules/vite/node_modules/@esbuild/linux-s390x
+680 silly CHANGE node_modules/vite/node_modules/@esbuild/linux-ppc64
+681 silly CHANGE node_modules/vite/node_modules/@esbuild/darwin-x64
+682 silly CHANGE node_modules/vite/node_modules/@esbuild/linux-x64
+683 silly CHANGE node_modules/vite/node_modules/@esbuild/linux-ia32
+684 silly CHANGE node_modules/vite/node_modules/@esbuild/freebsd-x64
+685 silly CHANGE node_modules/vite/node_modules/@esbuild/linux-loong64
+686 silly CHANGE node_modules/vite/node_modules/@esbuild/linux-arm64
+687 silly CHANGE node_modules/vite/node_modules/@esbuild/freebsd-arm64
+688 silly CHANGE node_modules/vite/node_modules/@esbuild/linux-arm
+689 silly CHANGE node_modules/vite/node_modules/@esbuild/aix-ppc64
+690 silly CHANGE node_modules/vite/node_modules/@esbuild/darwin-arm64
+691 silly CHANGE node_modules/vite/node_modules/@esbuild/android-x64
+692 silly CHANGE node_modules/vite/node_modules/@esbuild/android-arm64
+693 silly CHANGE node_modules/vite/node_modules/@esbuild/android-arm
+694 silly CHANGE node_modules/typescript
+695 silly CHANGE node_modules/tailwindcss
+696 silly CHANGE node_modules/tailwindcss/node_modules/jiti
+697 silly CHANGE node_modules/sucrase
+698 silly CHANGE node_modules/recharts
+699 silly CHANGE node_modules/rollup
+700 silly CHANGE node_modules/resolve
+701 silly CHANGE node_modules/react-icons
+702 silly CHANGE node_modules/react-dom
+703 silly CHANGE node_modules/lucide-react
+704 silly CHANGE node_modules/lodash
+705 silly CHANGE node_modules/lightningcss-linux-arm-gnueabihf
+706 silly CHANGE node_modules/lightningcss-linux-x64-musl
+707 silly CHANGE node_modules/lightningcss-win32-x64-msvc
+708 silly CHANGE node_modules/lightningcss-win32-arm64-msvc
+709 silly CHANGE node_modules/lightningcss-linux-x64-gnu
+710 silly CHANGE node_modules/lightningcss-linux-arm64-musl
+711 silly CHANGE node_modules/lightningcss-freebsd-x64
+712 silly CHANGE node_modules/lightningcss-linux-arm64-gnu
+713 silly CHANGE node_modules/lightningcss-darwin-x64
+714 silly CHANGE node_modules/framer-motion
+715 silly CHANGE node_modules/embla-carousel
+716 silly CHANGE node_modules/drizzle-orm
+717 silly CHANGE node_modules/drizzle-kit
+718 silly CHANGE node_modules/drizzle-kit/node_modules/esbuild
+719 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/sunos-x64
+720 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/win32-arm64
+721 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/win32-x64
+722 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/openbsd-x64
+723 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/win32-ia32
+724 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/linux-mips64el
+725 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/linux-ia32
+726 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/netbsd-x64
+727 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/linux-x64
+728 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/linux-s390x
+729 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/linux-ppc64
+730 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/linux-riscv64
+731 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/linux-loong64
+732 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/linux-arm64
+733 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/linux-arm
+734 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/android-arm64
+735 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/freebsd-x64
+736 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/darwin-x64
+737 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/freebsd-arm64
+738 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/darwin-arm64
+739 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/android-x64
+740 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/android-arm
+741 silly CHANGE node_modules/drizzle-kit/node_modules/@esbuild/aix-ppc64
+742 silly CHANGE node_modules/dom-helpers
+743 silly CHANGE node_modules/date-fns
+744 silly CHANGE node_modules/caniuse-lite
+745 verbose cwd /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb
+746 verbose os Darwin 24.6.0
+747 verbose node v22.18.0
+748 verbose npm  v10.9.3
+749 verbose exit 0
+750 info ok

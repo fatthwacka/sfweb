@@ -32,16 +32,15 @@ const photographyCategories = [
     ],
   },
   {
-    name: "Corporate & Business",
-    slug: "corporate",
-    description:
-      "Elevate your business image with professional corporate photography",
-    image: "/images/hero/corporate-photography-hero.jpg",
+    name: "Products & Brands",
+    slug: "products",
+    description: "Showcase your products with stunning commercial photography",
+    image: "/images/hero/product-photography-hero.jpg",
     features: [
-      "Team headshots",
-      "Office photography",
-      "Corporate events",
-      "Brand documentation",
+      "E-commerce photography",
+      "Catalog shoots",
+      "Lifestyle product shots",
+      "360° product views",
     ],
   },
   {
@@ -58,15 +57,16 @@ const photographyCategories = [
     ],
   },
   {
-    name: "Products & Brands",
-    slug: "products",
-    description: "Showcase your products with stunning commercial photography",
-    image: "/images/hero/product-photography-hero.jpg",
+    name: "Corporate & Business",
+    slug: "corporate",
+    description:
+      "Elevate your business image with professional corporate photography",
+    image: "/images/hero/corporate-photography-hero.jpg",
     features: [
-      "E-commerce photography",
-      "Catalog shoots",
-      "Lifestyle product shots",
-      "360° product views",
+      "Team headshots",
+      "Office photography",
+      "Corporate events",
+      "Brand documentation",
     ],
   },
   {
@@ -112,10 +112,10 @@ export default function Photography() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl lg:text-6xl mb-6">
+          <h1 className="mb-6">
             Professional Photography
           </h1>
-          <p className="script-tagline text-cyan mb-8 max-w-3xl mx-auto">
+          <p className="script-tagline mb-8 max-w-3xl mx-auto">
             Capturing life's beautiful moments
           </p>
         </div>

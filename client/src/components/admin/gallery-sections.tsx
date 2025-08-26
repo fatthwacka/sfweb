@@ -8,6 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { GallerySettingsCard } from '@/components/gallery/gallery-settings-card';
+import { useAutoSaveGallerySettings } from '@/hooks/use-debounced-auto-save';
+import { useAutoSave } from '@/hooks/use-auto-save';
 import { 
   Camera, 
   Settings, 
@@ -20,7 +23,10 @@ import {
   Plus,
   ChevronDown,
   ChevronUp,
-  Calendar
+  Calendar,
+  Check,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 
 interface BasicInfoSectionProps {
@@ -29,8 +35,7 @@ interface BasicInfoSectionProps {
   clients: any[];
   clientReassignDialogOpen: boolean;
   setClientReassignDialogOpen: (open: boolean) => void;
-  onSave: () => void;
-  isSaving: boolean;
+  shootId: string;
   toast: any;
 }
 
@@ -40,11 +45,76 @@ export function BasicInfoSection({
   clients, 
   clientReassignDialogOpen, 
   setClientReassignDialogOpen, 
-  onSave, 
-  isSaving,
+  shootId,
   toast 
 }: BasicInfoSectionProps) {
   const [isExpanded, setIsExpanded] = React.useState(false);
+  
+  const { debouncedSave, saveImmediately, saveStatus, isSaving } = useAutoSave({
+    shootId,
+    successMessage: "Basic shoot information saved successfully!",
+    errorMessage: "Failed to save basic information"
+  });
+
+  // Enhanced setEditableShoot that triggers auto-save
+  const setEditableShootWithAutoSave = React.useCallback((updateFn: (prev: any) => any, immediate = false) => {
+    setEditableShoot((prev) => {
+      const newShoot = updateFn(prev);
+      
+      // Prepare data for API
+      const data = {
+        title: newShoot.title?.trim(),
+        location: newShoot.location?.trim(),
+        shootDate: newShoot.shootDate,
+        description: newShoot.description?.trim(),
+        customTitle: newShoot.customTitle?.trim(),
+        customSlug: newShoot.customSlug?.trim(),
+        clientId: newShoot.clientId,
+        shootType: newShoot.shootType,
+        isPrivate: newShoot.isPrivate,
+        notes: newShoot.notes?.trim(),
+        seoTags: newShoot.seoTags?.trim()
+      };
+      
+      // Trigger auto-save
+      if (immediate) {
+        saveImmediately(data);
+      } else {
+        debouncedSave(data);
+      }
+      
+      return newShoot;
+    });
+  }, [setEditableShoot, debouncedSave, saveImmediately]);
+
+  // Save status indicator component
+  const SaveStatusIndicator = () => {
+    switch (saveStatus.status) {
+      case 'saving':
+        return (
+          <div className="flex items-center gap-2 text-blue-400">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm">Saving...</span>
+          </div>
+        );
+      case 'saved':
+        return (
+          <div className="flex items-center gap-2 text-green-400">
+            <Check className="w-4 h-4" />
+            <span className="text-sm">Saved</span>
+          </div>
+        );
+      case 'error':
+        return (
+          <div className="flex items-center gap-2 text-red-400">
+            <AlertCircle className="w-4 h-4" />
+            <span className="text-sm">Save failed</span>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <Card className="admin-gradient-card">
@@ -57,20 +127,8 @@ export function BasicInfoSection({
             <Camera className="w-5 h-5" />
             Basic Shoot Info
           </CardTitle>
-          <div className="flex items-center gap-2">
-            {isExpanded && (
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSave();
-                }}
-                disabled={isSaving}
-                className="bg-salmon text-white hover:bg-salmon-muted"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                {isSaving ? 'Saving...' : 'Save Basic Info'}
-              </Button>
-            )}
+          <div className="flex items-center gap-3">
+            {isExpanded && <SaveStatusIndicator />}
             {isExpanded ? (
               <ChevronUp className="w-5 h-5 text-salmon" />
             ) : (
@@ -87,7 +145,7 @@ export function BasicInfoSection({
               <Input
                 id="shootTitle"
                 value={editableShoot.title}
-                onChange={(e) => setEditableShoot(prev => ({...prev, title: e.target.value}))}
+                onChange={(e) => setEditableShootWithAutoSave(prev => ({...prev, title: e.target.value}))}
                 placeholder="Sarah & Michael's Wedding"
                 className="bg-background"
               />
@@ -97,7 +155,7 @@ export function BasicInfoSection({
               <Input
                 id="shootLocation"
                 value={editableShoot.location}
-                onChange={(e) => setEditableShoot(prev => ({...prev, location: e.target.value}))}
+                onChange={(e) => setEditableShootWithAutoSave(prev => ({...prev, location: e.target.value}))}
                 placeholder="Cape Town Waterfront"
                 className="bg-background"
               />
@@ -121,7 +179,7 @@ export function BasicInfoSection({
                   id="shootDate"
                   type="date"
                   value={editableShoot.shootDate}
-                  onChange={(e) => setEditableShoot(prev => ({...prev, shootDate: e.target.value}))}
+                  onChange={(e) => setEditableShootWithAutoSave(prev => ({...prev, shootDate: e.target.value}))}
                   className="bg-transparent border-0 cursor-pointer pr-10 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                 />
                 <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-salmon pointer-events-none" />
@@ -131,7 +189,7 @@ export function BasicInfoSection({
             <Label htmlFor="shootType">Shoot Type *</Label>
             <Select 
               value={editableShoot.shootType} 
-              onValueChange={(value) => setEditableShoot(prev => ({...prev, shootType: value}))}
+              onValueChange={(value) => setEditableShootWithAutoSave(prev => ({...prev, shootType: value}))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select shoot type" />
@@ -152,7 +210,7 @@ export function BasicInfoSection({
           <Textarea
             id="shootDescription"
             value={editableShoot.description}
-            onChange={(e) => setEditableShoot(prev => ({...prev, description: e.target.value}))}
+            onChange={(e) => setEditableShootWithAutoSave(prev => ({...prev, description: e.target.value}))}
             placeholder="Brief description of the shoot..."
             rows={3}
             className="bg-background"
@@ -193,7 +251,7 @@ export function BasicInfoSection({
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="newClientId">Select New Client *</Label>
-                    <Select onValueChange={(value) => setEditableShoot(prev => ({...prev, clientId: value}))}>
+                    <Select onValueChange={(value) => setEditableShootWithAutoSave(prev => ({...prev, clientId: value}))}>
                       <SelectTrigger>
                         <SelectValue placeholder="Choose a client" />
                       </SelectTrigger>
@@ -241,12 +299,72 @@ export function BasicInfoSection({
 interface AdvancedSettingsSectionProps {
   editableShoot: any;
   setEditableShoot: (fn: (prev: any) => any) => void;
-  onSave: () => void;
-  isSaving: boolean;
+  shootId: string;
+  toast: any;
 }
 
-export function AdvancedSettingsSection({ editableShoot, setEditableShoot, onSave, isSaving }: AdvancedSettingsSectionProps) {
+export function AdvancedSettingsSection({ editableShoot, setEditableShoot, shootId, toast }: AdvancedSettingsSectionProps) {
   const [isExpanded, setIsExpanded] = React.useState(false);
+  
+  const { debouncedSave, saveImmediately, saveStatus, isSaving } = useAutoSave({
+    shootId,
+    successMessage: "Advanced settings saved successfully!",
+    errorMessage: "Failed to save advanced settings"
+  });
+
+  // Enhanced setEditableShoot that triggers auto-save
+  const setEditableShootWithAutoSave = React.useCallback((updateFn: (prev: any) => any, immediate = false) => {
+    setEditableShoot((prev) => {
+      const newShoot = updateFn(prev);
+      
+      // Prepare data for API
+      const data = {
+        customTitle: newShoot.customTitle?.trim(),
+        customSlug: newShoot.customSlug?.trim(),
+        seoTags: newShoot.seoTags?.trim(),
+        isPrivate: newShoot.isPrivate,
+        notes: newShoot.notes?.trim()
+      };
+      
+      // Trigger auto-save
+      if (immediate) {
+        saveImmediately(data);
+      } else {
+        debouncedSave(data);
+      }
+      
+      return newShoot;
+    });
+  }, [setEditableShoot, debouncedSave, saveImmediately]);
+
+  // Save status indicator component
+  const SaveStatusIndicator = () => {
+    switch (saveStatus.status) {
+      case 'saving':
+        return (
+          <div className="flex items-center gap-2 text-blue-400">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm">Saving...</span>
+          </div>
+        );
+      case 'saved':
+        return (
+          <div className="flex items-center gap-2 text-green-400">
+            <Check className="w-4 h-4" />
+            <span className="text-sm">Saved</span>
+          </div>
+        );
+      case 'error':
+        return (
+          <div className="flex items-center gap-2 text-red-400">
+            <AlertCircle className="w-4 h-4" />
+            <span className="text-sm">Save failed</span>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <Card className="admin-gradient-card">
@@ -259,20 +377,8 @@ export function AdvancedSettingsSection({ editableShoot, setEditableShoot, onSav
             <Settings className="w-5 h-5" />
             Advanced Settings
           </CardTitle>
-          <div className="flex items-center gap-2">
-            {isExpanded && (
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSave();
-                }}
-                disabled={isSaving}
-                className="bg-salmon text-white hover:bg-salmon-muted"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                {isSaving ? 'Saving...' : 'Save Settings'}
-              </Button>
-            )}
+          <div className="flex items-center gap-3">
+            {isExpanded && <SaveStatusIndicator />}
             {isExpanded ? (
               <ChevronUp className="w-5 h-5 text-salmon" />
             ) : (
@@ -289,7 +395,7 @@ export function AdvancedSettingsSection({ editableShoot, setEditableShoot, onSav
               <Input
                 id="customTitle"
                 value={editableShoot.customTitle}
-                onChange={(e) => setEditableShoot(prev => ({...prev, customTitle: e.target.value}))}
+                onChange={(e) => setEditableShootWithAutoSave(prev => ({...prev, customTitle: e.target.value}))}
                 placeholder="Leave empty to use shoot title"
                 className="bg-background"
               />
@@ -304,7 +410,7 @@ export function AdvancedSettingsSection({ editableShoot, setEditableShoot, onSav
                 value={editableShoot.customSlug}
                 onChange={(e) => {
                   const slugValue = e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
-                  setEditableShoot(prev => ({...prev, customSlug: slugValue}));
+                  setEditableShootWithAutoSave(prev => ({...prev, customSlug: slugValue}));
                 }}
                 placeholder="sarah-michael-wedding-2024"
                 className="bg-background"
@@ -320,7 +426,7 @@ export function AdvancedSettingsSection({ editableShoot, setEditableShoot, onSav
           <Input
             id="seoTags"
             value={editableShoot.seoTags}
-            onChange={(e) => setEditableShoot(prev => ({...prev, seoTags: e.target.value}))}
+            onChange={(e) => setEditableShootWithAutoSave(prev => ({...prev, seoTags: e.target.value}))}
             placeholder="wedding photography, cape town, romantic, outdoor"
             className="bg-background"
           />
@@ -333,7 +439,7 @@ export function AdvancedSettingsSection({ editableShoot, setEditableShoot, onSav
           <Switch 
             id="isPrivate" 
             checked={editableShoot.isPrivate}
-            onCheckedChange={(checked) => setEditableShoot(prev => ({...prev, isPrivate: checked}))}
+            onCheckedChange={(checked) => setEditableShootWithAutoSave(prev => ({...prev, isPrivate: checked}))}
           />
           <Label htmlFor="isPrivate" className="text-sm">
             Make gallery private (requires login to view)
@@ -345,7 +451,7 @@ export function AdvancedSettingsSection({ editableShoot, setEditableShoot, onSav
           <Textarea
             id="notes"
             value={editableShoot.notes}
-            onChange={(e) => setEditableShoot(prev => ({...prev, notes: e.target.value}))}
+            onChange={(e) => setEditableShootWithAutoSave(prev => ({...prev, notes: e.target.value}))}
             placeholder="Internal notes for staff reference..."
             rows={3}
             className="bg-background"
@@ -361,11 +467,33 @@ interface AddImagesSectionProps {
   onUpload: (files: File[]) => void;
   isUploading: boolean;
   toast: any;
+  shootId: string;
 }
 
-export function AddImagesSection({ onUpload, isUploading, toast }: AddImagesSectionProps) {
+export function AddImagesSection({ onUpload, isUploading, toast, shootId }: AddImagesSectionProps) {
   const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
   const [isExpanded, setIsExpanded] = React.useState(false);
+
+  // Status indicator for upload state
+  const UploadStatusIndicator = () => {
+    if (isUploading) {
+      return (
+        <div className="flex items-center gap-2 text-blue-400">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          <span className="text-sm">Uploading...</span>
+        </div>
+      );
+    }
+    if (selectedFiles.length > 0) {
+      return (
+        <div className="flex items-center gap-2 text-yellow-400">
+          <AlertCircle className="w-4 h-4" />
+          <span className="text-sm">{selectedFiles.length} ready</span>
+        </div>
+      );
+    }
+    return null;
+  };
 
   const handleFileSelect = (files: File[]) => {
     console.log('handleFileSelect called with:', files.length, 'files');
@@ -394,7 +522,8 @@ export function AddImagesSection({ onUpload, isUploading, toast }: AddImagesSect
             <Upload className="w-5 h-5" />
             Add Images
           </CardTitle>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            {isExpanded && <UploadStatusIndicator />}
             {isExpanded && (
               <div className="relative">
                 <Button
@@ -524,8 +653,7 @@ interface GalleryAppearanceSectionProps {
   selectedCover: string | null;
   setSelectedCover: (id: string | null) => void;
   imageOrder: string[];
-  onSave: () => void;
-  isSaving: boolean;
+  shootId: string;
 }
 
 export function GalleryAppearanceSection({ 
@@ -534,10 +662,44 @@ export function GalleryAppearanceSection({
   selectedCover, 
   setSelectedCover,
   imageOrder,
-  onSave, 
-  isSaving 
+  shootId
 }: GalleryAppearanceSectionProps) {
   const [isExpanded, setIsExpanded] = React.useState(false);
+  
+  // Simple manual save function
+  const handleManualSave = () => {
+    // This will be called by the Save button in GallerySettingsCard
+    console.log('Manual save triggered');
+  };
+
+  // Save status indicator component
+  const SaveStatusIndicator = () => {
+    switch (saveStatus.status) {
+      case 'saving':
+        return (
+          <div className="flex items-center gap-2 text-blue-400">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm">Saving...</span>
+          </div>
+        );
+      case 'saved':
+        return (
+          <div className="flex items-center gap-2 text-green-400">
+            <Check className="w-4 h-4" />
+            <span className="text-sm">Saved</span>
+          </div>
+        );
+      case 'error':
+        return (
+          <div className="flex items-center gap-2 text-red-400">
+            <AlertCircle className="w-4 h-4" />
+            <span className="text-sm">Save failed</span>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <Card className="admin-gradient-card">
@@ -550,20 +712,8 @@ export function GalleryAppearanceSection({
             <Palette className="w-5 h-5" />
             Gallery Appearance
           </CardTitle>
-          <div className="flex items-center gap-2">
-            {isExpanded && (
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSave();
-                }}
-                disabled={isSaving}
-                className="bg-salmon text-white hover:bg-salmon-muted"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                {isSaving ? 'Saving...' : 'Save Appearance'}
-              </Button>
-            )}
+          <div className="flex items-center gap-3">
+            {isExpanded && <SaveStatusIndicator />}
             {isExpanded ? (
               <ChevronUp className="w-5 h-5 text-salmon" />
             ) : (
@@ -574,76 +724,103 @@ export function GalleryAppearanceSection({
       </CardHeader>
       {isExpanded && (
         <CardContent className="space-y-4">
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <Label>Background Color</Label>
-            <Select 
-              value={gallerySettings.backgroundColor} 
-              onValueChange={(value) => setGallerySettings(prev => ({...prev, backgroundColor: value}))}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="#1a1a1a">Dark Charcoal</SelectItem>
-                <SelectItem value="#000000">Pure Black</SelectItem>
-                <SelectItem value="#2d2d2d">Medium Dark</SelectItem>
-                <SelectItem value="#ffffff">Pure White</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Left Panel - Gallery Settings */}
+            <div className="w-full">
+              <div className="space-y-4 w-full gallery-two-column-layout">
+                <GallerySettingsCard
+                  gallerySettings={gallerySettings}
+                  setGallerySettings={setGallerySettings}
+                  onSave={handleManualSave}
+                  standalone={false}
+                />
+              </div>
+            </div>
+            
+            {/* Right Panel - Dropdown Controls */}
+            <div className="w-full space-y-4 gallery-two-column-layout">
+              <div className="gallery-slider-container w-full">
+                <div className="gallery-slider-header">
+                  <Label className="gallery-slider-label">Layout Style</Label>
+                </div>
+                <div className="mt-2">
+                  <Select 
+                    value={gallerySettings.layoutStyle || 'automatic'}
+                    defaultValue="automatic"
+                    onValueChange={(value) => {
+                      setGallerySettings(prev => ({...prev, layoutStyle: value}));
+                    }}
+                  >
+                    <SelectTrigger className="gallery-select-trigger w-full">
+                      <SelectValue placeholder="Select layout..." />
+                    </SelectTrigger>
+                    <SelectContent className="gallery-select-content">
+                      <SelectItem value="automatic">Automatic</SelectItem>
+                      <SelectItem value="square">Square 1:1</SelectItem>
+                      <SelectItem value="portrait">Portrait 2:3</SelectItem>
+                      <SelectItem value="landscape">Landscape 3:2</SelectItem>
+                      <SelectItem value="instagram">Instagram 4:5</SelectItem>
+                      <SelectItem value="upright">Upright 9:16</SelectItem>
+                      <SelectItem value="wide">Wide 16:9</SelectItem>
+                      <SelectItem value="masonry">Masonry</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="gallery-slider-container w-full">
+                <div className="gallery-slider-header">
+                  <Label className="gallery-slider-label">Cover Pic Alignment</Label>
+                </div>
+                <div className="mt-2">
+                  <Select 
+                    value={gallerySettings.coverPicAlignment || 'centre'}
+                    defaultValue="centre"
+                    onValueChange={(value) => {
+                      setGallerySettings(prev => ({...prev, coverPicAlignment: value}));
+                    }}
+                  >
+                    <SelectTrigger className="gallery-select-trigger w-full">
+                      <SelectValue placeholder="Select alignment..." />
+                    </SelectTrigger>
+                    <SelectContent className="gallery-select-content">
+                      <SelectItem value="top">Top</SelectItem>
+                      <SelectItem value="centre">Centre</SelectItem>
+                      <SelectItem value="bottom">Bottom</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="gallery-slider-container w-full">
+                <div className="gallery-slider-header">
+                  <Label className="gallery-slider-label">Navigation Position</Label>
+                </div>
+                <div className="mt-2">
+                  <Select 
+                    value={gallerySettings.navbarPosition || 'top-left'}
+                    defaultValue="top-left"
+                    onValueChange={(value) => {
+                      // Use setTimeout to prevent immediate re-renders that affect main navigation
+                      setTimeout(() => {
+                        setGallerySettings(prev => ({...prev, navbarPosition: value}));
+                      }, 0);
+                    }}
+                  >
+                    <SelectTrigger className="gallery-select-trigger w-full">
+                      <SelectValue placeholder="Select position..." />
+                    </SelectTrigger>
+                    <SelectContent className="gallery-select-content">
+                      <SelectItem value="top-left">Top Left</SelectItem>
+                      <SelectItem value="top-center">Top Center</SelectItem>
+                      <SelectItem value="top-right">Top Right</SelectItem>
+                      <SelectItem value="center">Center</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
           </div>
-          
-          <div>
-            <Label>Layout Style</Label>
-            <Select 
-              value={gallerySettings.layoutStyle} 
-              onValueChange={(value) => setGallerySettings(prev => ({...prev, layoutStyle: value}))}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="masonry">Masonry (Pinterest-style)</SelectItem>
-                <SelectItem value="grid">Square Grid</SelectItem>
-                <SelectItem value="columns">Automatic (Smart Ratio)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <Label>Border Style</Label>
-            <Select 
-              value={gallerySettings.borderStyle} 
-              onValueChange={(value) => setGallerySettings(prev => ({...prev, borderStyle: value}))}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="rounded">Rounded Corners</SelectItem>
-                <SelectItem value="sharp">Sharp Corners</SelectItem>
-                <SelectItem value="circular">Circular (for portraits)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <Label>Image Spacing</Label>
-            <Select 
-              value={gallerySettings.imageSpacing} 
-              onValueChange={(value) => setGallerySettings(prev => ({...prev, imageSpacing: value}))}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="tight">Tight (2px gaps)</SelectItem>
-                <SelectItem value="normal">Normal (8px gaps)</SelectItem>
-                <SelectItem value="loose">Loose (16px gaps)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
         </CardContent>
       )}
     </Card>

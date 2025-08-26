@@ -1,0 +1,204 @@
+0 verbose cli /usr/local/bin/node /usr/local/bin/npm
+1 info using npm@10.9.3
+2 info using node@v22.18.0
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/.npmrc
+5 silly config load:file:/Users/daddapiggy/.npmrc
+6 silly config load:file:/usr/local/etc/npmrc
+7 verbose title npm install
+8 verbose argv "install" "--cache" "./.npm-cache"
+9 verbose logfile logs-max:10 dir:/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/.npm-cache/_logs/2025-08-18T15_38_14_947Z-
+10 verbose logfile /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/.npm-cache/_logs/2025-08-18T15_38_14_947Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:2197815296 maxSize:549453824 maxEntrySize:274726912
+13 silly idealTree buildDeps
+14 silly fetch manifest @hookform/resolvers@^3.10.0
+15 silly packumentCache full:https://registry.npmjs.org/@hookform%2fresolvers cache-miss
+16 http fetch GET 200 https://registry.npmjs.org/@hookform%2fresolvers 683ms (cache miss)
+17 silly packumentCache full:https://registry.npmjs.org/@hookform%2fresolvers set size:undefined disposed:false
+18 silly fetch manifest react-hook-form@^7.55.0
+19 silly packumentCache full:https://registry.npmjs.org/react-hook-form cache-miss
+20 http fetch GET 200 https://registry.npmjs.org/react-hook-form 306ms (cache miss)
+21 silly packumentCache full:https://registry.npmjs.org/react-hook-form set size:undefined disposed:false
+22 silly fetch manifest react@^18.3.1
+23 silly packumentCache full:https://registry.npmjs.org/react cache-miss
+24 http fetch GET 200 https://registry.npmjs.org/react 148ms (cache miss)
+25 silly packumentCache full:https://registry.npmjs.org/react set size:undefined disposed:false
+26 silly fetch manifest @jridgewell/trace-mapping@^0.3.25
+27 silly packumentCache full:https://registry.npmjs.org/@jridgewell%2ftrace-mapping cache-miss
+28 http fetch GET 200 https://registry.npmjs.org/@jridgewell%2ftrace-mapping 636ms (cache miss)
+29 silly packumentCache full:https://registry.npmjs.org/@jridgewell%2ftrace-mapping set size:undefined disposed:false
+30 silly fetch manifest @neondatabase/serverless@^0.10.4
+31 silly packumentCache full:https://registry.npmjs.org/@neondatabase%2fserverless cache-miss
+32 http fetch GET 200 https://registry.npmjs.org/@neondatabase%2fserverless 634ms (cache miss)
+33 silly packumentCache full:https://registry.npmjs.org/@neondatabase%2fserverless set size:undefined disposed:false
+34 silly fetch manifest @radix-ui/react-accordion@^1.2.4
+35 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-accordion cache-miss
+36 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-accordion 1235ms (cache miss)
+37 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-accordion set size:undefined disposed:false
+38 silly fetch manifest @types/react@^18.3.11
+39 silly packumentCache full:https://registry.npmjs.org/@types%2freact cache-miss
+40 http fetch GET 200 https://registry.npmjs.org/@types%2freact 472ms (cache miss)
+41 silly packumentCache full:https://registry.npmjs.org/@types%2freact set size:undefined disposed:false
+42 silly fetch manifest @types/react-dom@^18.3.1
+43 silly packumentCache full:https://registry.npmjs.org/@types%2freact-dom cache-miss
+44 http fetch GET 200 https://registry.npmjs.org/@types%2freact-dom 426ms (cache miss)
+45 silly packumentCache full:https://registry.npmjs.org/@types%2freact-dom set size:undefined disposed:false
+46 silly fetch manifest react-dom@^18.3.1
+47 silly packumentCache full:https://registry.npmjs.org/react-dom cache-miss
+48 http fetch GET 200 https://registry.npmjs.org/react-dom 158ms (cache miss)
+49 silly packumentCache full:https://registry.npmjs.org/react-dom set size:undefined disposed:false
+50 silly fetch manifest @radix-ui/react-alert-dialog@^1.1.7
+51 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-alert-dialog cache-miss
+52 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-alert-dialog 653ms (cache miss)
+53 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-alert-dialog set size:undefined disposed:false
+54 silly fetch manifest @radix-ui/react-aspect-ratio@^1.1.3
+55 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-aspect-ratio cache-miss
+56 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-aspect-ratio 643ms (cache miss)
+57 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-aspect-ratio set size:undefined disposed:false
+58 silly fetch manifest @radix-ui/react-avatar@^1.1.4
+59 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-avatar cache-miss
+60 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-avatar 637ms (cache miss)
+61 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-avatar set size:undefined disposed:false
+62 silly fetch manifest @radix-ui/react-checkbox@^1.1.5
+63 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-checkbox cache-miss
+64 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-checkbox 612ms (cache miss)
+65 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-checkbox set size:undefined disposed:false
+66 silly fetch manifest @radix-ui/react-collapsible@^1.1.4
+67 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-collapsible cache-miss
+68 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-collapsible 638ms (cache miss)
+69 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-collapsible set size:undefined disposed:false
+70 silly fetch manifest @radix-ui/react-context-menu@^2.2.7
+71 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-context-menu cache-miss
+72 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-context-menu 614ms (cache miss)
+73 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-context-menu set size:undefined disposed:false
+74 silly fetch manifest @radix-ui/react-dialog@^1.1.7
+75 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-dialog cache-miss
+76 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-dialog 616ms (cache miss)
+77 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-dialog set size:undefined disposed:false
+78 silly fetch manifest @radix-ui/react-dropdown-menu@^2.1.7
+79 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-dropdown-menu cache-miss
+80 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-dropdown-menu 659ms (cache miss)
+81 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-dropdown-menu set size:undefined disposed:false
+82 silly fetch manifest @radix-ui/react-hover-card@^1.1.7
+83 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-hover-card cache-miss
+84 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-hover-card 607ms (cache miss)
+85 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-hover-card set size:undefined disposed:false
+86 silly fetch manifest @radix-ui/react-label@^2.1.3
+87 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-label cache-miss
+88 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-label 604ms (cache miss)
+89 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-label set size:undefined disposed:false
+90 silly fetch manifest @radix-ui/react-menubar@^1.1.7
+91 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-menubar cache-miss
+92 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-menubar 619ms (cache miss)
+93 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-menubar set size:undefined disposed:false
+94 silly fetch manifest @radix-ui/react-navigation-menu@^1.2.6
+95 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-navigation-menu cache-miss
+96 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-navigation-menu 655ms (cache miss)
+97 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-navigation-menu set size:undefined disposed:false
+98 silly fetch manifest @radix-ui/react-popover@^1.1.7
+99 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-popover cache-miss
+100 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-popover 766ms (cache miss)
+101 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-popover set size:undefined disposed:false
+102 silly fetch manifest @radix-ui/react-progress@^1.1.3
+103 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-progress cache-miss
+104 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-progress 666ms (cache miss)
+105 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-progress set size:undefined disposed:false
+106 silly fetch manifest @radix-ui/react-radio-group@^1.2.4
+107 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-radio-group cache-miss
+108 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-radio-group 640ms (cache miss)
+109 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-radio-group set size:undefined disposed:false
+110 silly fetch manifest @radix-ui/react-scroll-area@^1.2.4
+111 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-scroll-area cache-miss
+112 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-scroll-area 648ms (cache miss)
+113 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-scroll-area set size:undefined disposed:false
+114 silly fetch manifest @radix-ui/react-select@^2.1.7
+115 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-select cache-miss
+116 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-select 612ms (cache miss)
+117 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-select set size:undefined disposed:false
+118 silly fetch manifest @radix-ui/react-separator@^1.1.3
+119 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-separator cache-miss
+120 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-separator 644ms (cache miss)
+121 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-separator set size:undefined disposed:false
+122 silly fetch manifest @radix-ui/react-slider@^1.2.4
+123 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-slider cache-miss
+124 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-slider 647ms (cache miss)
+125 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-slider set size:undefined disposed:false
+126 silly fetch manifest @radix-ui/react-slot@^1.2.0
+127 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-slot cache-miss
+128 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-slot 1161ms (cache miss)
+129 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-slot set size:undefined disposed:false
+130 silly fetch manifest @radix-ui/react-switch@^1.1.4
+131 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-switch cache-miss
+132 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-switch 619ms (cache miss)
+133 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-switch set size:undefined disposed:false
+134 silly fetch manifest @radix-ui/react-tabs@^1.1.4
+135 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-tabs cache-miss
+136 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-tabs 613ms (cache miss)
+137 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-tabs set size:undefined disposed:false
+138 silly fetch manifest @radix-ui/react-toast@^1.2.7
+139 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-toast cache-miss
+140 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-toast 628ms (cache miss)
+141 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-toast set size:undefined disposed:false
+142 silly fetch manifest @radix-ui/react-toggle@^1.1.3
+143 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-toggle cache-miss
+144 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-toggle 641ms (cache miss)
+145 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-toggle set size:undefined disposed:false
+146 silly fetch manifest @radix-ui/react-toggle-group@^1.1.3
+147 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-toggle-group cache-miss
+148 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-toggle-group 949ms (cache miss)
+149 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-toggle-group set size:undefined disposed:false
+150 silly fetch manifest @radix-ui/react-tooltip@^1.2.0
+151 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-tooltip cache-miss
+152 http fetch GET 200 https://registry.npmjs.org/@radix-ui%2freact-tooltip 665ms (cache miss)
+153 silly packumentCache full:https://registry.npmjs.org/@radix-ui%2freact-tooltip set size:undefined disposed:false
+154 silly fetch manifest @supabase/supabase-js@^2.52.0
+155 silly packumentCache full:https://registry.npmjs.org/@supabase%2fsupabase-js cache-miss
+156 http fetch GET 200 https://registry.npmjs.org/@supabase%2fsupabase-js 670ms (cache miss)
+157 silly packumentCache full:https://registry.npmjs.org/@supabase%2fsupabase-js set size:undefined disposed:false
+158 silly fetch manifest @tanstack/react-query@^5.60.5
+159 silly packumentCache full:https://registry.npmjs.org/@tanstack%2freact-query cache-miss
+160 http fetch GET 200 https://registry.npmjs.org/@tanstack%2freact-query 645ms (cache miss)
+161 silly packumentCache full:https://registry.npmjs.org/@tanstack%2freact-query set size:undefined disposed:false
+162 silly fetch manifest @types/bcryptjs@^2.4.6
+163 silly packumentCache full:https://registry.npmjs.org/@types%2fbcryptjs cache-miss
+164 http fetch GET 200 https://registry.npmjs.org/@types%2fbcryptjs 426ms (cache miss)
+165 silly packumentCache full:https://registry.npmjs.org/@types%2fbcryptjs set size:undefined disposed:false
+166 silly fetch manifest @types/multer@^2.0.0
+167 silly packumentCache full:https://registry.npmjs.org/@types%2fmulter cache-miss
+168 http fetch GET 200 https://registry.npmjs.org/@types%2fmulter 429ms (cache miss)
+169 silly packumentCache full:https://registry.npmjs.org/@types%2fmulter set size:undefined disposed:false
+170 silly fetch manifest bcryptjs@^3.0.2
+171 silly packumentCache full:https://registry.npmjs.org/bcryptjs cache-miss
+172 http fetch GET 200 https://registry.npmjs.org/bcryptjs 194ms (cache miss)
+173 silly packumentCache full:https://registry.npmjs.org/bcryptjs set size:undefined disposed:false
+174 silly fetch manifest class-variance-authority@^0.7.1
+175 silly packumentCache full:https://registry.npmjs.org/class-variance-authority cache-miss
+176 http fetch GET 200 https://registry.npmjs.org/class-variance-authority 225ms (cache miss)
+177 silly packumentCache full:https://registry.npmjs.org/class-variance-authority set size:undefined disposed:false
+178 silly fetch manifest clsx@^2.1.1
+179 silly packumentCache full:https://registry.npmjs.org/clsx cache-miss
+180 http fetch GET 200 https://registry.npmjs.org/clsx 228ms (cache miss)
+181 silly packumentCache full:https://registry.npmjs.org/clsx set size:undefined disposed:false
+182 silly fetch manifest cmdk@^1.1.1
+183 silly packumentCache full:https://registry.npmjs.org/cmdk cache-miss
+184 http fetch GET 200 https://registry.npmjs.org/cmdk 198ms (cache miss)
+185 silly packumentCache full:https://registry.npmjs.org/cmdk set size:undefined disposed:false
+186 silly fetch manifest connect-pg-simple@^10.0.0
+187 silly packumentCache full:https://registry.npmjs.org/connect-pg-simple cache-miss
+188 http fetch GET 200 https://registry.npmjs.org/connect-pg-simple 227ms (cache miss)
+189 silly packumentCache full:https://registry.npmjs.org/connect-pg-simple set size:undefined disposed:false
+190 silly fetch manifest date-fns@^3.6.0
+191 silly packumentCache full:https://registry.npmjs.org/date-fns cache-miss
+192 http fetch GET 200 https://registry.npmjs.org/date-fns 374ms (cache miss)
+193 silly packumentCache full:https://registry.npmjs.org/date-fns set size:undefined disposed:false
+194 silly fetch manifest dotenv@^17.2.1
+195 silly packumentCache full:https://registry.npmjs.org/dotenv cache-miss
+196 http fetch GET 200 https://registry.npmjs.org/dotenv 234ms (cache miss)
+197 silly packumentCache full:https://registry.npmjs.org/dotenv set size:undefined disposed:false
+198 silly fetch manifest drizzle-orm@^0.39.1
+199 silly packumentCache full:https://registry.npmjs.org/drizzle-orm cache-miss
+200 http fetch GET 200 https://registry.npmjs.org/drizzle-orm 3032ms (cache miss)
+201 silly packumentCache full:https://registry.npmjs.org/drizzle-orm set size:undefined disposed:false
+202 silly fetch manifest @aws-sdk/client-rds-data@>=3
+203 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fclient-rds-data cache-miss

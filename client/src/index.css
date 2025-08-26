@@ -104,7 +104,11 @@
   
   /* Typography System - NEVER use inline fonts */
   h1 {
-    @apply font-righteous;
+    @apply font-quicksand font-light text-5xl text-white;
+  }
+
+  /* Reusable gradient text effect */
+  .text-gradient {
     background: linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(180, 100%, 50%) 100%);
     background-size: 400% 400%;
     -webkit-background-clip: text;
@@ -141,6 +145,16 @@
   color: white !important;
   font-weight: 100 !important;
   font-family: inherit !important;
+}
+
+/* Override gradient for hero slider h1 */
+.hero-title-white {
+  background: none !important;
+  background-image: none !important;
+  -webkit-background-clip: unset !important;
+  -webkit-text-fill-color: white !important;
+  background-clip: unset !important;
+  color: white !important;
 }
 
 /* Section headers with cyan color */
@@ -282,6 +296,14 @@
   /* Card System Classes */
   .studio-card {
     @apply rounded-2xl p-8 shadow-2xl transition-all duration-500 transform hover:scale-[1.02];
+    background: linear-gradient(135deg, hsl(260, 25%, 12%) 0%, hsl(220, 20%, 10%) 100%);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 107, 107, 0.1);
+  }
+
+  /* Admin panel specific card - no hover expansion */
+  .admin-settings-card {
+    @apply rounded-2xl p-8 shadow-2xl transition-all duration-500;
     background: linear-gradient(135deg, hsl(260, 25%, 12%) 0%, hsl(220, 20%, 10%) 100%);
     border: 1px solid rgba(255, 107, 107, 0.3);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 107, 107, 0.1);
@@ -475,11 +497,7 @@
     }
   }
 
-  @media (min-width: 1536px) {
-    .masonry-grid-seamless {
-      columns: 5;
-    }
-  }
+  /* Remove all !important overrides to allow inline styles to work */
 
   .masonry-grid-seamless > * {
     display: inline-block;
@@ -488,6 +506,13 @@
     padding: 0;
     break-inside: avoid;
     vertical-align: top;
+  }
+
+  .masonry-grid-seamless img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
   }
 
   /* Additional utilities for seamless grids */
@@ -508,6 +533,301 @@
     object-fit: cover;
     margin: 0;
     padding: 0;
+  }
+
+  /* 
+   * UNIFIED GALLERY GRID SYSTEM
+   * ===========================
+   * 
+   * Use these classes for consistent breakpoints across ALL gallery components:
+   * - gallery-live-preview.tsx (admin panel preview)
+   * - gallery-preview.tsx (client gallery component) 
+   * - client-gallery.tsx (public client gallery page)
+   * - enhanced-gallery-editor.tsx (admin gallery editor)
+   * 
+   * Standard Breakpoints:
+   * - Mobile: 2 columns (default)
+   * - MD (768px+): 3 columns
+   * - LG (1024px+): 4 columns  
+   * - 2XL (1536px+): 5 columns
+   * 
+   * To update breakpoints, modify these classes only - all gallery components will inherit the changes.
+   */
+  .gallery-grid-square {
+    @apply grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5;
+  }
+
+  .gallery-grid-masonry {
+    @apply masonry-grid-seamless;
+  }
+
+  .gallery-grid-automatic-landscape {
+    @apply grid-cols-2 md:grid-cols-3;
+  }
+
+  .gallery-grid-automatic-portrait {
+    @apply grid-cols-3 md:grid-cols-4 2xl:grid-cols-5;
+  }
+
+  .gallery-grid-automatic-default {
+    @apply grid-cols-3 md:grid-cols-4;
+  }
+
+  /* Mobile and Tablet Gallery Overrides */
+  .gallery-grid-mobile {
+    @apply grid-cols-2;
+  }
+
+  .gallery-grid-tablet {
+    @apply grid-cols-3;
+  }
+
+  /* 
+   * SIMPLIFIED GALLERY STYLING SYSTEM 
+   * ==============================
+   * Essential gallery classes only to avoid conflicts
+   */
+
+  /* === BASE GALLERY CONTAINERS === */
+  .gallery-container {
+    @apply w-full;
+  }
+
+  .gallery-container-admin {
+    @apply w-full scale-75 origin-top-left transform;
+  }
+
+  .gallery-container-client {
+    @apply w-full;
+  }
+
+  .gallery-container-public {
+    @apply w-full max-w-none;
+  }
+
+  /* === GALLERY SPACING SYSTEM === */
+  .gallery-spacing-tight {
+    gap: 2px;
+  }
+
+  .gallery-spacing-normal {
+    gap: 8px;
+  }
+
+  .gallery-spacing-loose {
+    gap: 16px;
+  }
+
+  /* Masonry spacing (uses margin-bottom instead of gap) */
+  .gallery-spacing-tight .gallery-masonry-item {
+    margin-bottom: 2px;
+  }
+
+  .gallery-spacing-normal .gallery-masonry-item {
+    margin-bottom: 8px;
+  }
+
+  .gallery-spacing-loose .gallery-masonry-item {
+    margin-bottom: 16px;
+  }
+
+  /* === GALLERY PADDING SYSTEM === */
+  .gallery-padding-tight {
+    @apply p-2;
+  }
+
+  .gallery-padding-normal {
+    @apply p-4;
+  }
+
+  .gallery-padding-loose {
+    @apply p-6;
+  }
+
+  /* === GALLERY BACKGROUND COLORS === */
+  .gallery-bg-black {
+    @apply bg-black;
+  }
+
+  .gallery-bg-dark-grey {
+    @apply bg-slate-800;
+  }
+
+  .gallery-bg-grey {
+    @apply bg-slate-600;
+  }
+
+  .gallery-bg-white {
+    @apply bg-white;
+  }
+
+  .gallery-bg-warm-grey {
+    background-color: #2d2d2d;
+  }
+
+  .gallery-bg-cool-grey {
+    background-color: #1e293b;
+  }
+
+  /* === GALLERY IMAGE STYLES === */
+  .gallery-image {
+    @apply relative cursor-pointer overflow-hidden transition-all duration-300;
+  }
+
+  .gallery-image:hover {
+    @apply brightness-90;
+  }
+
+  .gallery-image-overlay {
+    @apply absolute inset-0 bg-black/0 transition-colors duration-300;
+  }
+
+  .gallery-image:hover .gallery-image-overlay {
+    @apply bg-black/20;
+  }
+
+  /* === GALLERY IMAGE BORDER STYLES === */
+  .gallery-image-sharp {
+    @apply rounded-none;
+  }
+
+  .gallery-image-rounded {
+    @apply rounded-lg;
+  }
+
+  .gallery-image-circular {
+    @apply rounded-full aspect-square;
+  }
+
+  /* === GALLERY IMAGE ASPECT RATIOS === */
+  .gallery-image-square {
+    @apply aspect-square;
+  }
+
+  .gallery-image-landscape {
+    @apply aspect-[4/3];
+  }
+
+  .gallery-image-portrait {
+    @apply aspect-[3/4];
+  }
+
+  .gallery-image-auto {
+    @apply h-auto;
+  }
+
+  /* === GALLERY IMAGE CONTENT === */
+  .gallery-image-content {
+    @apply w-full h-full object-cover;
+  }
+
+  .gallery-image-content-masonry {
+    @apply w-full h-auto object-cover;
+  }
+
+  /* === MASONRY SPECIFIC CLASSES === */
+  .gallery-masonry-item {
+    @apply break-inside-avoid;
+  }
+
+  /* === GRID LAYOUT COMPOSITIONS === */
+  .gallery-layout-square {
+    @apply grid;
+  }
+
+  .gallery-layout-masonry {
+    @apply masonry-grid-seamless;
+  }
+
+  .gallery-layout-automatic {
+    @apply grid;
+  }
+
+  /* === MODAL AND INTERACTION CLASSES === */
+  .gallery-modal-backdrop {
+    @apply fixed inset-0 bg-black/90 z-50 flex items-center justify-center;
+  }
+
+  .gallery-modal-content {
+    @apply max-w-full max-h-full p-4;
+  }
+
+  .gallery-modal-image {
+    @apply max-w-full max-h-full object-contain;
+  }
+
+  .gallery-modal-nav {
+    @apply absolute top-1/2 -translate-y-1/2 text-white hover:bg-white/20 z-10;
+  }
+
+  .gallery-modal-nav-left {
+    @apply absolute top-1/2 -translate-y-1/2 text-white hover:bg-white/20 z-10 left-4;
+  }
+
+  .gallery-modal-nav-right {
+    @apply absolute top-1/2 -translate-y-1/2 text-white hover:bg-white/20 z-10 right-4;
+  }
+
+  .gallery-modal-close {
+    @apply absolute top-4 right-4 text-white hover:bg-white/20 z-10;
+  }
+
+  .gallery-modal-counter {
+    @apply absolute bottom-4 left-1/2 -translate-x-1/2 text-white bg-black/50 px-4 py-2 rounded-full;
+  }
+
+  /* === COMPOSITE GALLERY CLASSES === */
+  /* Pre-built combinations for common use cases */
+  
+  .gallery-square-tight {
+    @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5;
+    gap: 2px;
+  }
+
+  .gallery-square-normal {
+    @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5;
+    gap: 8px;
+  }
+
+  .gallery-square-loose {
+    @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5;
+    gap: 16px;
+  }
+
+  .gallery-masonry-tight {
+    @apply masonry-grid-seamless;
+  }
+
+  .gallery-masonry-normal {
+    @apply masonry-grid-seamless;
+  }
+
+  .gallery-masonry-loose {
+    @apply masonry-grid-seamless;
+  }
+
+  .gallery-masonry-tight .gallery-masonry-item {
+    margin-bottom: 2px;
+  }
+
+  .gallery-masonry-normal .gallery-masonry-item {
+    margin-bottom: 8px;
+  }
+
+  .gallery-masonry-loose .gallery-masonry-item {
+    margin-bottom: 16px;
+  }
+
+  /* === HELPER UTILITY FUNCTIONS === */
+  /* JavaScript can use these CSS custom properties to get consistent values */
+  
+  :root {
+    --gallery-spacing-tight: 2px;
+    --gallery-spacing-normal: 8px;
+    --gallery-spacing-loose: 16px;
+    --gallery-padding-tight: 0.5rem;
+    --gallery-padding-normal: 1rem;
+    --gallery-padding-loose: 1.5rem;
   }
 
   /* Gallery Modal Styles */
@@ -772,7 +1092,7 @@
     font-family: 'Corinthia', cursive;
     font-size: 2.5rem; /* doubled from 1.25rem */
     line-height: 1.2;
-    color: #e2e8f0;
+    color: white;
   }
   
   /* Smooth gradient shift animation */
@@ -974,4 +1294,325 @@
 ::-webkit-scrollbar-thumb {
   background: var(--gold);
   border-radius: 4px;
+}
+
+/* === REUSABLE SLIDER CONTROL STYLING === */
+.gallery-slider-container {
+  max-width: calc(50% - 8px);
+  border: 1px solid hsl(280, 50%, 20%);
+  background: linear-gradient(to right, hsl(280, 60%, 15%), hsl(280, 50%, 10%));
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+
+/* Override max-width for two-column gallery layout */
+.gallery-two-column-layout .gallery-slider-container {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+.gallery-slider-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.gallery-slider-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.gallery-slider-input {
+  width: 4rem;
+  height: 1.75rem;
+  font-size: 0.75rem;
+  text-align: center;
+  border: 1px solid hsl(280, 50%, 30%);
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.gallery-slider-track {
+  position: relative;
+  display: flex;
+  width: 100%;
+  touch-action: none;
+  user-select: none;
+  align-items: center;
+}
+
+/* === COLOR PICKER SWATCHES === */
+.color-swatch {
+  flex: 1;
+  height: 2rem;
+  border-radius: 0.25rem;
+  border: 1px solid hsl(280, 50%, 20%);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.color-swatch:hover {
+  transform: scale(1.1);
+}
+
+.color-swatch.selected {
+  border-color: hsl(16, 100%, 73%);
+  box-shadow: 0 0 0 2px hsla(16, 100%, 73%, 0.5);
+}
+
+.color-swatch.unselected {
+  border-color: hsl(280, 50%, 20%);
+}
+
+.color-swatch.unselected:hover {
+  border-color: hsl(280, 50%, 30%);
+}
+
+/* === GALLERY SELECT DROPDOWN STYLING === */
+.gallery-select-trigger {
+  width: 100% !important;
+  padding: 0.75rem !important;
+  border: 1px solid hsl(280, 50%, 20%) !important;
+  background: linear-gradient(to bottom, hsl(280, 60%, 8%), hsl(280, 50%, 5%)) !important;
+  color: hsl(0, 0%, 95%) !important;
+  border-radius: 0.375rem !important;
+  box-shadow: none !important;
+}
+
+.gallery-select-trigger:hover {
+  border-color: hsl(280, 50%, 30%) !important;
+  background: linear-gradient(to bottom, hsl(280, 60%, 10%), hsl(280, 50%, 7%)) !important;
+  box-shadow: none !important;
+}
+
+.gallery-select-trigger:focus {
+  outline: none !important;
+  border-color: hsl(16, 100%, 73%) !important;
+  box-shadow: 0 0 0 2px hsla(16, 100%, 73%, 0.2) !important;
+}
+
+.gallery-select-trigger[data-state="open"] {
+  border-color: hsl(16, 100%, 73%) !important;
+  box-shadow: 0 0 0 2px hsla(16, 100%, 73%, 0.2) !important;
+}
+
+.gallery-select-content {
+  background: linear-gradient(to bottom, hsl(280, 60%, 8%), hsl(280, 50%, 5%));
+  border: 1px solid hsl(280, 50%, 20%);
+  color: hsl(0, 0%, 95%);
+}
+
+.gallery-select-content [data-radix-select-item] {
+  padding: 0.75rem;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.gallery-select-content [data-radix-select-item]:hover {
+  background: linear-gradient(to bottom, hsl(280, 60%, 15%), hsl(280, 50%, 12%));
+  color: hsl(16, 100%, 73%);
+}
+
+.gallery-select-content [data-radix-select-item][data-state="checked"] {
+  background: linear-gradient(to bottom, hsl(16, 100%, 73%), hsl(16, 90%, 65%));
+  color: hsl(0, 0%, 0%);
+}
+
+/* === MASONRY SPACING REFINEMENT === */
+.masonry-item {
+  display: inline-block;
+  width: 100%;
+  vertical-align: top;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Fine-tune masonry spacing to match slider precisely */
+.masonry-item img {
+  vertical-align: top;
+  display: block;
+}
+
+/* Custom color input styling to override browser defaults */
+.custom-color-input {
+  border: 1px solid rgb(156, 163, 175) !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+
+.custom-color-input::-webkit-color-swatch-wrapper {
+  padding: 0 !important;
+  border: none !important;
+}
+
+.custom-color-input::-webkit-color-swatch {
+  border: none !important;
+  border-radius: 0.375rem !important;
+}
+
+.custom-color-input::-moz-color-swatch {
+  border: none !important;
+  border-radius: 0.375rem !important;
+}
+
+/* Service Card More Button - Small and Subtle */
+.service-card-more-btn {
+  @apply flex items-center px-2 py-1 rounded-md transition-all duration-300 hover:bg-slate-700/50;
+  border: 1px solid rgba(156, 163, 175, 0.2);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.service-card-more-btn:hover {
+  border-color: rgba(156, 163, 175, 0.4);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* Enhanced Hero Slider Effects */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.rotate-y-90 {
+  transform: rotateY(-90deg);
+}
+
+.rotate-y-0 {
+  transform: rotateY(0deg);
+}
+
+/* Morphing Gradient Animation */
+@keyframes morphGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.morph-gradient {
+  background-size: 400% 400%;
+  animation: morphGradient 8s ease infinite;
+}
+
+/* Enhanced Text Animations */
+.animate-slide-up-delay-100 {
+  animation: slideUpFade 0.8s ease-out 0.1s both;
+}
+
+.animate-slide-up-delay-200 {
+  animation: slideUpFade 0.8s ease-out 0.2s both;
+}
+
+.animate-slide-up-delay-300 {
+  animation: slideUpFade 0.8s ease-out 0.3s both;
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Particle Canvas Styling */
+.particles-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* Enhanced Float Animation */
+@keyframes enhancedFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-10px) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-10px) rotate(2deg);
+  }
+}
+
+.animate-enhanced-float {
+  animation: enhancedFloat 6s ease-in-out infinite;
+}
+
+/* Backdrop Blur Support */
+@supports (backdrop-filter: blur(10px)) {
+  .backdrop-blur-sm {
+    backdrop-filter: blur(4px);
+  }
+  
+  .backdrop-blur-md {
+    backdrop-filter: blur(12px);
+  }
+}
+
+/* Fallback for browsers without backdrop-filter */
+@supports not (backdrop-filter: blur(10px)) {
+  .backdrop-blur-sm {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .backdrop-blur-md {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+}
+
+/* 3D Cube Effect Faces */
+.cube-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+}
+
+.cube-front { transform: translateZ(0px); }
+.cube-back { transform: rotateY(180deg) translateZ(0px); }
+.cube-right { transform: rotateY(90deg) translateZ(0px); }
+.cube-left { transform: rotateY(-90deg) translateZ(0px); }
+
+/* Enhanced Hover Effects */
+.hero-control:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .animate-slide-up-delay-100,
+  .animate-slide-up-delay-200,
+  .animate-slide-up-delay-300 {
+    animation-duration: 0.6s;
+  }
+  
+  .perspective-1000 {
+    perspective: 800px;
+  }
+  
+  /* Reduce motion for better mobile performance */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-slide-up-delay-100,
+    .animate-slide-up-delay-200,
+    .animate-slide-up-delay-300 {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
 }

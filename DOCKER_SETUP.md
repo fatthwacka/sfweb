@@ -38,6 +38,96 @@ npm run docker:prod
 docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build
 ```
 
+## VPS Production Deployment
+
+The application is deployed on a VPS at **vps.netfox.co.za (168.231.86.89)** alongside other services.
+
+### Production Environment Details
+
+**VPS Configuration:**
+- **IP**: 168.231.86.89
+- **Hostname**: vps.netfox.co.za
+- **OS**: Ubuntu 24.04 LTS
+- **Resources**: 3.8GB RAM, 1 CPU core, 48GB storage
+
+**Application Stack:**
+- **SlyFox Studios**: http://168.231.86.89:3000
+- **N8N Automation**: http://168.231.86.89:5678
+- **Traefik Proxy**: Ports 80/443 (SSL termination)
+- **PostgreSQL**: Port 5432 (SlyFox database)
+
+### Production Deployment Commands
+
+```bash
+# Deploy to VPS (from local development)
+# 1. Sync code to VPS via git or file transfer
+# 2. Connect to VPS
+ssh root@168.231.86.89
+
+# 3. Navigate to application directory
+cd /opt/sfweb
+
+# 4. Deploy/update application
+docker-compose down
+docker-compose up -d --build
+
+# Monitor deployment
+docker logs sfweb-app --tail 50 -f
+```
+
+### Production File Structure on VPS
+
+```
+/opt/sfweb/                    # SlyFox application
+├── docker-compose.yml         # Production Docker setup
+├── Dockerfile                 # Application container
+├── .env                      # Production environment variables
+├── package.json              # Dependencies
+├── client/                   # React frontend
+├── server/                   # Express backend
+├── shared/                   # Shared types
+└── public/                   # Static assets
+
+/root/                        # System services
+├── docker-compose.yml        # Traefik + N8N
+├── .env                      # N8N configuration
+└── traefik-certs.yml         # SSL configuration
+```
+
+### Production Monitoring
+
+```bash
+# Check all running containers
+docker ps
+
+# Monitor resource usage
+docker stats --no-stream
+
+# View application logs
+docker logs sfweb-app --tail 20
+docker logs sfweb-postgres --tail 20
+
+# Check system resources
+free -h
+df -h
+
+# Test application connectivity
+curl -I http://localhost:3000
+curl -I http://168.231.86.89:3000
+```
+
+### Production vs Development Differences
+
+| Aspect | Development | Production |
+|--------|-------------|------------|
+| **Location** | Local (Dropbox sync) | VPS (/opt/sfweb) |
+| **Access** | http://localhost:3000 | http://168.231.86.89:3000 |
+| **Database** | Local PostgreSQL | VPS PostgreSQL |
+| **SSL** | None | Traefik + Let's Encrypt |
+| **Environment** | .env (local) | .env (production) |
+| **Hot Reload** | Enabled | Disabled |
+| **Volume Mounting** | Source code mounted | Code copied to container |
+
 ## Available Docker Commands
 
 ```bash
@@ -98,10 +188,10 @@ The Docker setup is specifically configured for cross-platform development:
 - **Apple Silicon (ARM64)**: Native support via multi-platform builds
 - **Platform specification**: `linux/amd64` ensures consistency across devices
 
-### Dropbox Synchronization
-- All source code changes are synchronized via Dropbox
-- Docker volumes handle `node_modules` and build artifacts
-- Database data persists in Docker volumes (not synchronized)
+### File Synchronization
+- Source code synchronized via Dropbox (see DEV_SERVER_STARTUP.md for complete file structure)
+- Docker volumes handle `node_modules` and build artifacts locally
+- Database data persists in Docker volumes (device-specific)
 
 ## Database Management
 
@@ -132,14 +222,14 @@ docker-compose exec app npm run db:push
 ## Development Workflow
 
 ### Starting Development
-1. Sync project via Dropbox to your device
+1. Ensure Dropbox sync is complete (see DEV_SERVER_STARTUP.md for platform-specific paths)
 2. Run `npm run docker:dev`
 3. Access application at http://localhost:3000
 4. Make code changes (automatically reloaded)
 
 ### Switching Devices
 1. Ensure Dropbox sync is complete
-2. On new device: `npm run docker:dev`
+2. On new device: `npm run docker:dev` (rebuilds containers automatically)
 3. Continue development seamlessly
 
 ### Troubleshooting

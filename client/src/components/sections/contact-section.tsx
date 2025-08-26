@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { MapPin, Mail, Phone, Clock } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useSiteConfig } from "@/hooks/use-site-config";
 
 interface ContactFormData {
   firstName: string;
@@ -18,34 +19,8 @@ interface ContactFormData {
   message: string;
 }
 
-const contactInfo = [
-  {
-    icon: MapPin,
-    title: "Studio Location",
-    primary: "Cape Town, South Africa",
-    secondary: "Serving Cape Town and surrounding areas"
-  },
-  {
-    icon: Mail,
-    title: "Email Us",
-    primary: "info@slyfox.co.za",
-    secondary: "We respond within 24 hours"
-  },
-  {
-    icon: Phone,
-    title: "Call Us",
-    primary: "+27 12 345 6789",
-    secondary: "Mon - Fri: 9AM - 6PM"
-  },
-  {
-    icon: Clock,
-    title: "Business Hours",
-    primary: "Monday - Friday: 9AM - 6PM",
-    secondary: "Saturday: 10AM - 4PM"
-  }
-];
-
 export function ContactSection() {
+  const { config, isLoading } = useSiteConfig();
   const { toast } = useToast();
   const [formData, setFormData] = useState<ContactFormData>({
     firstName: "",
@@ -207,23 +182,53 @@ export function ContactSection() {
               <h3 className="text-2xl font-saira font-bold text-gold mb-6">Get in Touch</h3>
 
               <div className="space-y-6">
-                {contactInfo.map((info, index) => {
-                  const Icon = info.icon;
-                  return (
-                    <div key={index} className="flex items-start">
-                      <div className="contact-info-icon-salmon mr-4 mt-1">
-                        <Icon className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <h4 className="font-barlow font-semibold text-lg mb-2">{info.title}</h4>
-                        <p className="text-foreground">{info.primary}</p>
-                        {info.secondary && (
-                          <p className="text-muted-foreground text-sm">{info.secondary}</p>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+                {/* Studio Location */}
+                <div className="flex items-start">
+                  <div className="contact-info-icon-salmon mr-4 mt-1">
+                    <MapPin className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-barlow font-semibold text-lg mb-2">Studio Location</h4>
+                    <p className="text-foreground">{config?.contact?.business?.address?.displayText || "Cape Town, South Africa"}</p>
+                    <p className="text-muted-foreground text-sm">Serving Cape Town and surrounding areas</p>
+                  </div>
+                </div>
+
+                {/* Email Us */}
+                <div className="flex items-start">
+                  <div className="contact-info-icon-salmon mr-4 mt-1">
+                    <Mail className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-barlow font-semibold text-lg mb-2">Email Us</h4>
+                    <p className="text-foreground">{config?.contact?.business?.email || "info@slyfox.co.za"}</p>
+                    <p className="text-muted-foreground text-sm">We respond within {config?.contact?.responseTimes?.email?.time || "24 hours"}</p>
+                  </div>
+                </div>
+
+                {/* Call Us */}
+                <div className="flex items-start">
+                  <div className="contact-info-icon-salmon mr-4 mt-1">
+                    <Phone className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-barlow font-semibold text-lg mb-2">Call Us</h4>
+                    <p className="text-foreground">{config?.contact?.business?.phone || "+27 12 345 6789"}</p>
+                    <p className="text-muted-foreground text-sm">{config?.contact?.hours?.weekdaysDisplay || "Mon - Fri"}: {config?.contact?.hours?.weekdaysTime || "9AM - 6PM"}</p>
+                  </div>
+                </div>
+
+                {/* Business Hours */}
+                <div className="flex items-start">
+                  <div className="contact-info-icon-salmon mr-4 mt-1">
+                    <Clock className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-barlow font-semibold text-lg mb-2">Business Hours</h4>
+                    <p className="text-foreground">{config?.contact?.hours?.weekdaysDisplay || "Monday - Friday"}: {config?.contact?.hours?.weekdaysTime || "9AM - 6PM"}</p>
+                    <p className="text-muted-foreground text-sm">{config?.contact?.hours?.saturdayDisplay || "Saturday"}: {config?.contact?.hours?.saturdayTime || "10AM - 4PM"}</p>
+                  </div>
+                </div>
               </div>
 
               <div className="mt-8 pt-8 border-t border-border">

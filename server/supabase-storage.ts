@@ -218,6 +218,53 @@ export class SupabaseStorage implements IStorage {
     await db.update(images).set({ sequence }).where(eq(images.id, imageId));
   }
 
+  // PERFORMANCE: Batch update multiple image sequences in a single SQL statement (ultra-optimized)
+  async batchUpdateImageSequences(imageSequences: Record<string, number>): Promise<void> {
+    const entries = Object.entries(imageSequences);
+    if (entries.length === 0) return;
+    
+    console.log(`🚀 Starting SINGLE SQL batch update for ${entries.length} images`);
+    const startTime = Date.now();
+
+    try {
+      // ULTRA OPTIMIZATION: Single SQL UPDATE with CASE statement for all images at once
+      // This is the fastest possible approach for bulk updates
+      const imageIds = entries.map(([id]) => id);
+      const caseStatement = entries.map(([id, sequence]) => 
+        `WHEN '${id}' THEN ${sequence}`
+      ).join(' ');
+      
+      // Build the raw SQL query
+      const updateQuery = sql`
+        UPDATE ${images} 
+        SET sequence = CASE id ${sql.raw(caseStatement)} END
+        WHERE id = ANY(${imageIds})
+      `;
+      
+      await db.execute(updateQuery);
+      
+      const duration = Date.now() - startTime;
+      console.log(`✅ SINGLE SQL batch update completed in ${duration}ms for ${entries.length} images`);
+    } catch (error) {
+      console.error('❌ Single SQL batch update failed, falling back to chunked approach:', error);
+      
+      // FALLBACK: Use the previous chunked approach if single SQL fails
+      const chunkSize = 20;
+      for (let i = 0; i < entries.length; i += chunkSize) {
+        const chunk = entries.slice(i, i + chunkSize);
+        
+        await db.transaction(async (tx) => {
+          for (const [imageId, sequence] of chunk) {
+            await tx.update(images).set({ sequence }).where(eq(images.id, imageId));
+          }
+        });
+      }
+      
+      const duration = Date.now() - startTime;
+      console.log(`✅ Fallback batch update completed in ${duration}ms for ${entries.length} images`);
+    }
+  }
+
   async deleteImage(id: string): Promise<boolean> {
     try {
       console.log(`🔍 deleteImage: Looking for image with ID: ${id}`);

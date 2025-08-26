@@ -16,7 +16,9 @@ import { SHOOT_TYPES } from "@shared/schema";
 import { EnhancedGalleryEditor } from "./enhanced-gallery-editor";
 import { StaffManagement } from "./staff-management";
 import { SimpleAssetsPanel } from "./simple-assets-panel";
-import { GalleryLivePreview } from "../shared/gallery-live-preview";
+import { ContactSettings } from "./page-settings/contact-settings";
+import { HomepageSettings } from "./page-settings/homepage-settings";
+import { PortfolioSettings } from "./page-settings/portfolio-settings";
 import {
   BarChart3,
   Users,
@@ -95,7 +97,8 @@ interface AdminContentProps {
 export function AdminContent({ userRole }: AdminContentProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'shoots' | 'images' | 'galleries' | 'staff' | 'users'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'shoots' | 'images' | 'galleries' | 'site-management' | 'site-assets' | 'staff' | 'users'>('overview');
+  const [activePageSettings, setActivePageSettings] = useState<'contact' | 'homepage' | 'portfolio' | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [newClientOpen, setNewClientOpen] = useState(false);
   const [newShootOpen, setNewShootOpen] = useState(false);
@@ -726,7 +729,8 @@ export function AdminContent({ userRole }: AdminContentProps) {
           { id: 'images', label: 'Images', icon: FileImage },
           { id: 'galleries', label: 'Gallery Management', icon: Palette },
           ...(userRole === 'super_admin' ? [
-            { id: 'site-assets', label: 'Site Assets', icon: Home },
+            { id: 'site-management', label: 'Site Management', icon: Home },
+            { id: 'site-assets', label: 'Site Assets', icon: Palette },
             { id: 'staff', label: 'Staff Management', icon: Shield },
             { id: 'users', label: 'User Management', icon: User }
           ] : [])
@@ -1992,6 +1996,132 @@ export function AdminContent({ userRole }: AdminContentProps) {
                     </p>
                   </CardContent>
                 </Card>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'site-management' && userRole === 'super_admin' && (
+            <div className="space-y-8">
+              <div className="bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-lg p-6 border border-purple-500/30">
+                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                  🏠 Site Management
+                </h2>
+                <p className="text-gray-300 mb-6">
+                  Manage your website content, images, and styling organized by page and section.
+                  Each page shows sections from top to bottom with integrated text, image, and styling controls.
+                </p>
+                
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div 
+                    className="bg-slate-800/50 rounded-lg p-4 border border-slate-600 cursor-pointer"
+                    onClick={() => setActivePageSettings('homepage')}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-2xl">🏠</span>
+                      <h3 className="text-lg font-semibold text-white">Homepage</h3>
+                    </div>
+                    <p className="text-sm text-gray-400">Hero, Services, Portfolio, Contact sections</p>
+                  </div>
+                  
+                  <div 
+                    className="bg-slate-800/50 rounded-lg p-4 border border-slate-600 hover:border-purple-500/50 transition-colors cursor-pointer"
+                    onClick={() => setActivePageSettings('portfolio')}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-2xl">🎨</span>
+                      <h3 className="text-lg font-semibold text-white">Portfolio</h3>
+                    </div>
+                    <p className="text-sm text-gray-400">Featured work display and styling settings</p>
+                  </div>
+                  
+                  <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-600 opacity-50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-2xl">📸</span>
+                      <h3 className="text-lg font-semibold text-white">Photography</h3>
+                    </div>
+                    <p className="text-sm text-gray-400">Coming soon...</p>
+                  </div>
+                  
+                  <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-600 opacity-50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-2xl">🎬</span>
+                      <h3 className="text-lg font-semibold text-white">Videography</h3>
+                    </div>
+                    <p className="text-sm text-gray-400">Coming soon...</p>
+                  </div>
+                  
+                  <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-600 opacity-50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-2xl">👥</span>
+                      <h3 className="text-lg font-semibold text-white">About</h3>
+                    </div>
+                    <p className="text-sm text-gray-400">Coming soon...</p>
+                  </div>
+                  
+                  <div 
+                    className="bg-slate-800/50 rounded-lg p-4 border border-slate-600 hover:border-cyan-500/50 transition-colors cursor-pointer"
+                    onClick={() => setActivePageSettings('contact')}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-2xl">📞</span>
+                      <h3 className="text-lg font-semibold text-white">Contact</h3>
+                    </div>
+                    <p className="text-sm text-gray-400">Business info, hours, response times</p>
+                  </div>
+                  
+                  <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-600 opacity-50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-2xl">🔍</span>
+                      <h3 className="text-lg font-semibold text-white">Global SEO</h3>
+                    </div>
+                    <p className="text-sm text-gray-400">Coming soon...</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Conditional Page Settings */}
+              {activePageSettings === 'contact' && (
+                <div className="mt-8">
+                  <div className="mb-4">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setActivePageSettings(null)}
+                      className="text-gray-400 hover:text-white border-gray-600 hover:border-gray-400"
+                    >
+                      ← Back to Site Management
+                    </Button>
+                  </div>
+                  <ContactSettings />
+                </div>
+              )}
+
+              {activePageSettings === 'homepage' && (
+                <div className="mt-8">
+                  <div className="mb-4">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setActivePageSettings(null)}
+                      className="text-gray-400 hover:text-white border-gray-600 hover:border-gray-400"
+                    >
+                      ← Back to Site Management
+                    </Button>
+                  </div>
+                  <HomepageSettings />
+                </div>
+              )}
+
+              {activePageSettings === 'portfolio' && (
+                <div className="mt-8">
+                  <PortfolioSettings onBack={() => setActivePageSettings(null)} />
+                </div>
+              )}
+
+              {!activePageSettings && (
+                <div className="p-8 text-center text-gray-400 border-2 border-dashed border-gray-600 rounded-lg">
+                  <h3 className="text-lg font-semibold mb-2">Select a Page to Configure</h3>
+                  <p className="text-sm">Choose a page from above to customize its content and settings.</p>
+                  <p className="text-xs mt-2">Each page editor provides comprehensive control over text, images, and layout.</p>
+                </div>
               )}
             </div>
           )}

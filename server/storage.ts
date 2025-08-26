@@ -48,6 +48,7 @@ export interface IStorage {
   updateShoot(id: string, updates: Partial<InsertShoot>): Promise<Shoot | undefined>;
   updateShootCustomization(id: string, data: UpdateShootCustomization): Promise<Shoot | undefined>;
   updateImageSequence(imageId: string, sequence: number): Promise<void>;
+  batchUpdateImageSequences(imageSequences: Record<string, number>): Promise<void>;
   incrementShootViewCount(id: string): Promise<void>;
   deleteShoot(id: string): Promise<boolean>;
   
@@ -941,6 +942,20 @@ export class MemStorage implements IStorage {
     }
     
     return updatedImages;
+  }
+
+  async updateImageSequence(imageId: string, sequence: number): Promise<void> {
+    const image = this.images.get(imageId);
+    if (image) {
+      const updatedImage = { ...image, sequence };
+      this.images.set(imageId, updatedImage);
+    }
+  }
+
+  async batchUpdateImageSequences(imageSequences: Record<string, number>): Promise<void> {
+    for (const [imageId, sequence] of Object.entries(imageSequences)) {
+      await this.updateImageSequence(imageId, sequence);
+    }
   }
 
   async updateImageClassification(imageId: string, classification: ImageClassification): Promise<Image | undefined> {

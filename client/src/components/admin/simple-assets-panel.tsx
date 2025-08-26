@@ -17,8 +17,13 @@ interface LocalAsset {
 }
 
 const ASSET_LABELS: Record<string, string> = {
-  'hero-main': 'Main Home Page Hero',
-  'hero-services': 'Photography Services Landing',
+  // Homepage assets
+  'hero-main': 'Homepage Hero Background',
+  'services-photography': 'Services: Photography Card',
+  'services-videography': 'Services: Videography Card',
+  
+  // Photography page assets
+  'hero-photography': 'Photography Page Hero',
   'hero-weddings': 'Weddings Portfolio Hero',
   'hero-portraits': 'Portraits Portfolio Hero',
   'hero-corporate': 'Corporate Photography Hero',
@@ -26,9 +31,26 @@ const ASSET_LABELS: Record<string, string> = {
   'hero-graduation': 'Graduation Photography Hero',
   'hero-products': 'Product Photography Hero',
   'hero-matric': 'Matric Dance Photography Hero',
-  'bg-studio': 'Main Site Background',
+  
+  // About page assets
+  'hero-about': 'About Page Hero',
+  'team-dax': 'Team Photo: Dax Tucker',
+  'team-eben': 'Team Photo: Eben',
+  'team-kyle': 'Team Photo: Kyle',
+  
+  // Contact page assets
+  'hero-contact': 'Contact Page Hero',
+  
+  // Background assets
+  'bg-studio': 'Studio Background Texture',
   'bg-wedding': 'Wedding Portfolio Background',
-  'bg-portrait': 'Portrait Studio Background'
+  'bg-portrait': 'Portrait Studio Background',
+  'bg-videography': 'Videography Studio Background',
+  
+  // Logo and brand assets
+  'logo-main': 'Main Logo (White)',
+  'logo-dark': 'Logo (Dark Version)',
+  'logo-icon': 'Logo Icon/Favicon'
 };
 
 export function SimpleAssetsPanel() {
@@ -37,6 +59,7 @@ export function SimpleAssetsPanel() {
   const [altTextValue, setAltTextValue] = useState('');
   const [uploadingAsset, setUploadingAsset] = useState<string | null>(null);
   const [imageTimestamps, setImageTimestamps] = useState<Record<string, number>>({});
+  
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -203,6 +226,8 @@ export function SimpleAssetsPanel() {
     setEditingAlt(null);
     setAltTextValue('');
   };
+
+
 
   if (isLoading) {
     return (

@@ -43,9 +43,9 @@ export function GalleryPreview({ images, shoot, className = "" }: GalleryPreview
 
   const getGridClasses = () => {
     if (gallerySettings.layoutStyle === 'grid') {
-      return 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5';
+      return 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
     }
-    return 'columns-2 md:columns-3 lg:columns-4 2xl:columns-5'; // Use CSS columns for masonry
+    return 'columns-2 md:columns-3 lg:columns-4 xl:columns-5'; // Use CSS columns for masonry
   };
 
   const getGridGap = () => {

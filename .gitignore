@@ -4,3 +4,13 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# Docker port overrides (device-specific)
+docker-compose.override.yml
+
+# Environment files
+.env.local
+.env.*.local
+
+# Site configuration overrides (environment-specific)
+server/data/site-config-overrides.json

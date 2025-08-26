@@ -1,6 +1,6 @@
 import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
-import { Hero } from "@/components/sections/hero";
+import { EnhancedHeroSlider } from "@/components/sections/enhanced-hero-slider";
 import { ServicesOverview } from "@/components/sections/services-overview";
 import { PortfolioShowcase } from "@/components/sections/portfolio-showcase";
 import { ClientGalleryAccess } from "@/components/sections/client-gallery-access";
@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground background-gradient-blobs">
       <Navigation />
-      <Hero />
+      <EnhancedHeroSlider />
       <ServicesOverview />
       <PortfolioShowcase />
       <ClientGalleryAccess />

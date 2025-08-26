@@ -1,14 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
+import { useSiteConfig } from "@/hooks/use-site-config";
 
 export function Hero() {
+  const { config, isLoading } = useSiteConfig();
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat" 
         style={{
-          backgroundImage: `url('/images/hero/homepage-main-hero.jpg')`
+          backgroundImage: `url('${config?.home?.hero?.backgroundImage || '/images/hero/homepage-main-hero.jpg'}')`
         }}
       >
         <div className="hero-gradient absolute inset-0"></div>
@@ -18,7 +20,7 @@ export function Hero() {
       <div className="relative z-10 text-center max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="animate-slide-up">
           <Button className="btn-salmon px-12">
-            Book Your Session
+            {config?.home?.hero?.ctaButtonText || "Book Your Session"}
           </Button>
         </div>
 

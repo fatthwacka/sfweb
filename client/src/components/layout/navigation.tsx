@@ -1,31 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { Link, useLocation } from "wouter";
 import { AuthButton } from "@/components/ui/auth-button";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 // Logo now served from organized public directory
 const logoPath = "/images/logos/slyfox-logo-black.png";
 
-const photographyCategories = [
-  { name: "Weddings", slug: "weddings" },
-  { name: "Portraits", slug: "portraits" },
-  { name: "Corporate", slug: "corporate" },
-  { name: "Events", slug: "events" },
-  { name: "Products", slug: "products" },
-  { name: "Graduation", slug: "graduation" }
-];
-
-const videographyCategories = [
-  { name: "Wedding Films", slug: "weddings" },
-  { name: "Corporate Videos", slug: "corporate" },
-  { name: "Events", slug: "events" },
-  { name: "Product Videos", slug: "products" },
-  { name: "Social Media", slug: "social" },
-  { name: "Animation", slug: "animation" }
-];
-
-export function Navigation() {
+const NavigationComponent = memo(function Navigation() {
   const [location] = useLocation();
 
   const [isScrolled, setIsScrolled] = useState(false);
@@ -67,62 +49,46 @@ export function Navigation() {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
-            {/* Photography Dropdown */}
-            <div className="relative group">
-              <Link href="/photography" className="text-cyan-muted hover:text-cyan transition-colors duration-300 flex items-center">
-                Photography
-                <ChevronDown className="w-4 h-4 ml-1" />
-              </Link>
-              <div className="absolute top-full left-0 w-64 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 mt-2 overflow-hidden" 
-                   style={{background: 'linear-gradient(135deg, rgba(64, 64, 64, 0.9) 0%, rgba(96, 96, 96, 0.9) 50%, rgba(78, 205, 196, 0.2) 100%)', 
-                          border: '1px solid rgba(78, 205, 196, 0.4)'}}>
-                <div className="p-2">
-                  {photographyCategories.map(category => (
-                    <Link
-                      key={category.slug}
-                      href={`/photography/${category.slug}`}
-                      className="block px-4 py-2 rounded transition-all duration-300 text-cyan-muted hover:text-salmon hover:bg-gradient-to-r hover:from-salmon/20 hover:to-cyan/20"
-                    >
-                      {category.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Videography Dropdown */}
-            <div className="relative group">
-              <Link href="/videography" className="text-cyan-muted hover:text-cyan transition-colors duration-300 flex items-center">
-                Videography
-                <ChevronDown className="w-4 h-4 ml-1" />
-              </Link>
-              <div className="absolute top-full left-0 w-64 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 mt-2 overflow-hidden"
-                   style={{background: 'linear-gradient(135deg, rgba(64, 64, 64, 0.9) 0%, rgba(96, 96, 96, 0.9) 50%, rgba(255, 107, 107, 0.2) 100%)', 
-                          border: '1px solid rgba(255, 107, 107, 0.4)'}}>
-                <div className="p-2">
-                  {videographyCategories.map(category => (
-                    <Link
-                      key={category.slug}
-                      href={`/videography/${category.slug}`}
-                      className="block px-4 py-2 rounded transition-all duration-300 text-cyan-muted hover:text-salmon hover:bg-gradient-to-r hover:from-cyan/20 hover:to-salmon/20"
-                    >
-                      {category.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <Link href="/about" className="text-cyan-muted hover:text-cyan transition-colors duration-300">
+            <Link href="/photography" className={cn(
+              "transition-colors duration-300 font-quicksand font-light",
+              location.startsWith('/photography') 
+                ? "text-orange-200" 
+                : "text-blue-100 hover:text-cyan-400"
+            )}>
+              Photography
+            </Link>
+            <Link href="/videography" className={cn(
+              "transition-colors duration-300 font-quicksand font-light",
+              location.startsWith('/videography') 
+                ? "text-orange-200" 
+                : "text-blue-100 hover:text-cyan-400"
+            )}>
+              Videography
+            </Link>
+            <Link href="/about" className={cn(
+              "transition-colors duration-300 font-quicksand font-light",
+              location === '/about' 
+                ? "text-orange-200" 
+                : "text-blue-100 hover:text-cyan-400"
+            )}>
               About
             </Link>
-            <Link href="/pricing" className="text-cyan-muted hover:text-cyan transition-colors duration-300">
+            <Link href="/pricing" className={cn(
+              "transition-colors duration-300 font-quicksand font-light",
+              location === '/pricing' 
+                ? "text-orange-200" 
+                : "text-blue-100 hover:text-cyan-400"
+            )}>
               Pricing
             </Link>
-            <Link href="/contact" className="text-cyan-muted hover:text-cyan transition-colors duration-300">
+            <Link href="/contact" className={cn(
+              "transition-colors duration-300 font-quicksand font-light",
+              location === '/contact' 
+                ? "text-orange-200" 
+                : "text-blue-100 hover:text-cyan-400"
+            )}>
               Contact
             </Link>
-
           </div>
 
           {/* Right side controls */}
@@ -152,42 +118,42 @@ export function Navigation() {
             <div className="space-y-4">
               <Link
                 href="/photography"
-                className="block py-2 text-lg font-barlow font-medium hover:text-gold transition-colors"
+                className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Photography
               </Link>
               <Link
                 href="/videography"
-                className="block py-2 text-lg font-barlow font-medium hover:text-gold transition-colors"
+                className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Videography
               </Link>
               <Link
                 href="/about"
-                className="block py-2 text-lg font-barlow font-medium hover:text-gold transition-colors"
+                className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 About
               </Link>
               <Link
                 href="/pricing"
-                className="block py-2 text-lg font-barlow font-medium hover:text-gold transition-colors"
+                className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Pricing
               </Link>
               <Link
                 href="/contact"
-                className="block py-2 text-lg font-barlow font-medium hover:text-gold transition-colors"
+                className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Contact
               </Link>
               <Link
                 href="/my-gallery"
-                className="block py-2 text-lg font-barlow font-medium hover:text-gold transition-colors"
+                className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 My Gallery
@@ -198,4 +164,6 @@ export function Navigation() {
       </div>
     </nav>
   );
-}
+});
+
+export { NavigationComponent as Navigation };

@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { ImageUrl } from "@/lib/image-utils";
+import { useFrontPageSettings } from "@/hooks/use-front-page-settings";
 import type { Image } from "@shared/schema";
 
 // Helper function to format classification for display
@@ -19,11 +20,63 @@ const createFilterValue = (classification: string) => {
   return classification.toLowerCase().replace(/\s+/g, '-');
 };
 
+// Helper function to shuffle an array
+const shuffleArray = <T,>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
+// Helper function to get balanced random selection from all categories
+const getBalancedRandomSelection = (images: Image[], count: number = 9): Image[] => {
+  if (images.length <= count) return images;
+  
+  // Group images by classification
+  const groups = images.reduce((acc, image) => {
+    if (!acc[image.classification]) {
+      acc[image.classification] = [];
+    }
+    acc[image.classification].push(image);
+    return acc;
+  }, {} as Record<string, Image[]>);
+  
+  // Get classification types and shuffle them
+  const classifications = shuffleArray(Object.keys(groups));
+  const result: Image[] = [];
+  
+  // Take images round-robin from each classification
+  let currentIndex = 0;
+  while (result.length < count && result.length < images.length) {
+    const classification = classifications[currentIndex % classifications.length];
+    const groupImages = groups[classification];
+    
+    if (groupImages && groupImages.length > 0) {
+      // Remove and add a random image from this group
+      const randomIndex = Math.floor(Math.random() * groupImages.length);
+      const selectedImage = groupImages.splice(randomIndex, 1)[0];
+      result.push(selectedImage);
+    }
+    
+    currentIndex++;
+    
+    // If we've gone through all classifications, break to avoid infinite loop
+    if (currentIndex >= classifications.length * count) break;
+  }
+  
+  return result;
+};
+
 export function PortfolioShowcase() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [filterOptions, setFilterOptions] = useState([{ label: "All Work", value: "all" }]);
   const [modalOpen, setModalOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Get front page settings from admin panel
+  const frontPageSettings = useFrontPageSettings();
 
   // Fetch featured images from Supabase
   const { data: featuredImages, isLoading: imagesLoading } = useQuery<Image[]>({
@@ -51,11 +104,23 @@ export function PortfolioShowcase() {
     }
   }, [classifications]);
 
-  // Filter featured images based on active filter
-  const filteredItems = !featuredImages ? [] : 
-    activeFilter === "all" 
-      ? featuredImages 
-      : featuredImages.filter(image => image.classification === activeFilter);
+  // Filter and limit featured images based on active filter and settings
+  const filteredItems = useMemo(() => {
+    if (!featuredImages) return [];
+    
+    const MAX_DISPLAY_IMAGES = frontPageSettings?.imageCount || 9;
+    
+    if (activeFilter === "all") {
+      // For "all" filter, show balanced random selection from all categories
+      return getBalancedRandomSelection(featuredImages, MAX_DISPLAY_IMAGES);
+    } else {
+      // For specific category filters, show up to configured number of images from that category
+      const categoryImages = featuredImages.filter(image => image.classification === activeFilter);
+      return categoryImages.length > MAX_DISPLAY_IMAGES 
+        ? shuffleArray(categoryImages).slice(0, MAX_DISPLAY_IMAGES)
+        : categoryImages;
+    }
+  }, [featuredImages, activeFilter, frontPageSettings?.imageCount]);
 
   // Modal navigation functions
   const openModal = (index: number) => {
@@ -73,14 +138,69 @@ export function PortfolioShowcase() {
 
   const currentImage = filteredItems[currentImageIndex];
 
+  // Get aspect ratio class based on layout style
+  const getAspectRatioClass = () => {
+    switch (frontPageSettings?.layoutStyle) {
+      case 'portrait':
+        return 'aspect-[2/3]';
+      case 'instagram':
+        return 'aspect-[4/5]';
+      case 'square':
+      default:
+        return 'aspect-square';
+    }
+  };
+
+  // Get grid styles based on settings
+  const gridStyles = {
+    gap: `${frontPageSettings?.imagePadding || 2}px`,
+  };
+
+  const imageStyles = {
+    borderRadius: `${frontPageSettings?.borderRadius || 8}px`,
+  };
+
+  const getBorderStyles = () => {
+    if (!frontPageSettings?.borderThickness) {
+      return {};
+    }
+    
+    return {
+      background: `linear-gradient(135deg, ${frontPageSettings.borderColor || '#ffffff'} 0%, ${frontPageSettings.borderColorEnd || '#cccccc'} 100%)`,
+      padding: `${frontPageSettings.borderThickness}px`,
+      borderRadius: `${frontPageSettings.borderRadius || 8}px`,
+    };
+  };
+
+  // Get section background gradient
+  const getSectionBackgroundStyle = () => {
+    const start = frontPageSettings?.backgroundGradientStart || '#1e293b';
+    const middle = frontPageSettings?.backgroundGradientMiddle || '#334155';
+    const end = frontPageSettings?.backgroundGradientEnd || '#0f172a';
+    
+    return {
+      background: `linear-gradient(135deg, ${start} 0%, ${middle} 50%, ${end} 100%)`,
+    };
+  };
+
+  // Get text color style
+  const getTextColorStyle = () => {
+    return {
+      color: frontPageSettings?.textColor || '#e2e8f0',
+    };
+  };
+
   return (
-    <section className="py-20 bg-gradient-to-br from-slate-900/60 via-background to-grey-800/40">
-      <div className="w-full px-2 sm:px-3 lg:px-4">
+    <section 
+      className="py-20" 
+      style={getSectionBackgroundStyle()}
+    >
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="cyan text-4xl lg:text-5xl mb-6">
-            Featured <span>Work</span>
+            Recent <span>Work</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+          <p className="text-xl max-w-3xl mx-auto mb-8" style={getTextColorStyle()}>
             A glimpse into our creative journey - showcasing moments that matter, stories that inspire, and memories that last forever.
           </p>
 
@@ -103,57 +223,96 @@ export function PortfolioShowcase() {
           </div>
         </div>
 
-        {/* Portfolio Grid - Square Aspect Ratio with Thin Gaps */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-1 sm:gap-2">
-          {imagesLoading ? (
-            // Loading skeleton - square aspect ratio
-            Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="bg-gray-800/50 aspect-square rounded-lg"></div>
-              </div>
-            ))
-          ) : filteredItems.length > 0 ? (
-            filteredItems.map((image, index) => (
-              <div key={image.id} className="group cursor-pointer" onClick={() => openModal(index)}>
-                <div className="relative overflow-hidden rounded-lg image-hover-effect aspect-square">
-                  <img 
-                    src={ImageUrl.forViewing(image.storagePath)} 
-                    alt={image.filename} 
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-
-                  <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <div className="text-center p-2">
-                      <h4 className="text-sm sm:text-lg font-quicksand font-bold text-salmon mb-1 sm:mb-2">
-                        {formatClassificationLabel(image.classification)}
-                      </h4>
-                      <p className="text-gray-200 text-xs sm:text-sm">
-                        {image.filename.replace(/\.[^/.]+$/, "")}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-12">
-              <p className="text-gray-400 text-lg">
-                {activeFilter === "all" 
-                  ? "No featured images available" 
-                  : `No featured images in ${formatClassificationLabel(activeFilter)} category`}
-              </p>
-            </div>
-          )}
-        </div>
-
-        <div className="text-center mt-12">
-          <Button 
-            variant="outline"
-            className="border-2 border-cyan text-cyan px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-cyan hover:text-black transition-all duration-300 transform hover:scale-105"
+        {/* Fixed-width responsive container for the grid */}
+        <div className="max-w-6xl mx-auto">
+          {/* Portfolio Grid - Dynamic layout based on admin settings */}
+          <div 
+            className="grid grid-cols-2 md:grid-cols-3" 
+            style={gridStyles}
           >
-            View Full Portfolio
-          </Button>
+            {imagesLoading ? (
+              // Loading skeleton - dynamic count based on settings
+              Array.from({ length: frontPageSettings?.imageCount || 9 }).map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  {frontPageSettings?.borderThickness ? (
+                    <div style={getBorderStyles()}>
+                      <div 
+                        className={`bg-gray-800/50 ${getAspectRatioClass()}`}
+                        style={imageStyles}
+                      ></div>
+                    </div>
+                  ) : (
+                    <div 
+                      className={`bg-gray-800/50 ${getAspectRatioClass()}`}
+                      style={imageStyles}
+                    ></div>
+                  )}
+                </div>
+              ))
+            ) : filteredItems.length > 0 ? (
+              filteredItems.map((image, index) => (
+                <div key={image.id} className="group cursor-pointer" onClick={() => openModal(index)}>
+                  {frontPageSettings?.borderThickness ? (
+                    <div style={getBorderStyles()}>
+                      <div 
+                        className={`relative overflow-hidden image-hover-effect ${getAspectRatioClass()} shadow-lg hover:shadow-2xl transition-all duration-300`}
+                        style={imageStyles}
+                      >
+                        <img 
+                          src={ImageUrl.forViewing(image.storagePath)} 
+                          alt={image.filename} 
+                          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                        />
+
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                          <div className="text-left p-4 w-full">
+                            <h4 className="text-lg lg:text-xl font-quicksand font-bold text-salmon mb-1">
+                              {formatClassificationLabel(image.classification)}
+                            </h4>
+                            <p className="text-gray-200 text-sm lg:text-base">
+                              {image.filename.replace(/\.[^/.]+$/, "")}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div 
+                      className={`relative overflow-hidden image-hover-effect ${getAspectRatioClass()} shadow-lg hover:shadow-2xl transition-all duration-300`}
+                      style={imageStyles}
+                    >
+                      <img 
+                        src={ImageUrl.forViewing(image.storagePath)} 
+                        alt={image.filename} 
+                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                        <div className="text-left p-4 w-full">
+                          <h4 className="text-lg lg:text-xl font-quicksand font-bold text-salmon mb-1">
+                            {formatClassificationLabel(image.classification)}
+                          </h4>
+                          <p className="text-gray-200 text-sm lg:text-base">
+                            {image.filename.replace(/\.[^/.]+$/, "")}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-16">
+                <p className="text-gray-400 text-xl">
+                  {activeFilter === "all" 
+                    ? "No featured images available" 
+                    : `No featured images in ${formatClassificationLabel(activeFilter)} category`}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

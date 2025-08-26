@@ -16,7 +16,14 @@
     "docker:clean": "docker-compose down -v --remove-orphans && docker system prune -f",
     "docker:logs": "docker-compose logs -f app",
     "docker:db": "docker-compose up postgres adminer -d",
-    "docker:shell": "docker-compose exec app sh"
+    "docker:shell": "docker-compose exec app sh",
+    "vps:connect": "ssh root@168.231.86.89",
+    "vps:deploy": "echo 'Connect to VPS first: npm run vps:connect' && echo 'Then run: cd /opt/sfweb && docker-compose down && docker-compose up -d --build'",
+    "vps:status": "echo 'Connect to VPS first: npm run vps:connect' && echo 'Then run: docker ps && docker stats --no-stream'",
+    "vps:logs": "echo 'Connect to VPS first: npm run vps:connect' && echo 'Then run: docker logs sfweb-app --tail 50 -f'",
+    "vps:test": "curl -I http://168.231.86.89:3000",
+    "deploy:commit": "git add . && git commit -m 'Deployment update' && git push origin main",
+    "deploy:vps": "echo 'First run: npm run deploy:commit' && echo 'Then: npm run vps:connect' && echo 'Finally: cd /opt/sfweb && git pull origin main && docker-compose down && docker-compose up -d --build'"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

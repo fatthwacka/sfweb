@@ -26,11 +26,15 @@ async function loadPersistedAltText(): Promise<Record<string, string>> {
   }
 }
 
-// Direct filename mapping - exactly as used in the pages
+// Direct filename mapping - organized by page and section
 export const ASSET_FILES = {
-  // Hero images (9 total) - all in /images/hero/ folder
+  // Homepage assets
   'hero-main': 'hero/homepage-main-hero.jpg',
-  'hero-services': 'hero/photography-hero.jpg', 
+  'services-photography': 'services/photography-service-showcase.jpg',
+  'services-videography': 'services/videography-service-showcase.jpg',
+  
+  // Photography page assets  
+  'hero-photography': 'hero/photography-hero.jpg',
   'hero-weddings': 'hero/wedding-photography-hero.jpg',
   'hero-portraits': 'hero/portrait-photography-hero.jpg',
   'hero-corporate': 'hero/corporate-photography-hero.jpg',
@@ -39,10 +43,25 @@ export const ASSET_FILES = {
   'hero-products': 'hero/product-photography-hero.jpg',
   'hero-matric': 'hero/matric-dance-photography-hero.jpg',
   
-  // Background images (3 total) - need to identify actual usage
+  // About page assets
+  'hero-about': 'hero/about-hero.jpg',
+  'team-dax': 'team/dax-tucker.jpg',
+  'team-eben': 'team/eben.jpg', 
+  'team-kyle': 'team/kyle.jpg',
+  
+  // Contact page assets
+  'hero-contact': 'hero/contact-hero.jpg',
+  
+  // Background textures and overlays
   'bg-studio': 'backgrounds/photography-studio-cape-town-texture.jpg',
   'bg-wedding': 'backgrounds/wedding-photography-background-elegant.jpg', 
-  'bg-portrait': 'backgrounds/portrait-photography-studio-backdrop.jpg'
+  'bg-portrait': 'backgrounds/portrait-photography-studio-backdrop.jpg',
+  'bg-videography': 'backgrounds/videography-studio-backdrop.jpg',
+  
+  // Logo and brand assets
+  'logo-main': 'logos/slyfox-logo-white.svg',
+  'logo-dark': 'logos/slyfox-logo-dark.svg',
+  'logo-icon': 'logos/slyfox-icon.svg'
 } as const;
 
 // Default alt text for all pages

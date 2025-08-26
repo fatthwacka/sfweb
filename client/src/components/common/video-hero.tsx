@@ -52,7 +52,7 @@ export function VideoHero({
       {/* Content */}
       <div className="relative z-10 h-full flex items-center justify-center">
         <div className="text-center px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-quicksand font-bold text-white mb-6 leading-tight">
+          <h1 className="font-quicksand font-bold text-white mb-6 leading-tight">
             {title}
           </h1>
           
