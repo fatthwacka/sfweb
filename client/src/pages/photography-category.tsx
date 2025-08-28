@@ -390,7 +390,7 @@ export default function PhotographyCategory() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-4xl mb-6 h2-salmon">
-                Why Choose Our {data.name}
+                Professional {data.name}
               </h2>
               <p className="text-lg text-muted-foreground mb-8">
                 {data.longDescription}

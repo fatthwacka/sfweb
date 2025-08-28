@@ -9,6 +9,8 @@ import { MapPin, Mail, Phone, Clock } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useSiteConfig } from "@/hooks/use-site-config";
+import { GradientBackground } from "@/components/common/gradient-background";
+import { useRecaptcha } from "@/hooks/use-recaptcha";
 
 interface ContactFormData {
   firstName: string;
@@ -17,11 +19,13 @@ interface ContactFormData {
   phone: string;
   service: string;
   message: string;
+  recaptchaToken?: string;
 }
 
 export function ContactSection() {
-  const { config, isLoading } = useSiteConfig();
+  const { config } = useSiteConfig();
   const { toast } = useToast();
+  const { executeRecaptcha, isRecaptchaLoaded } = useRecaptcha();
   const [formData, setFormData] = useState<ContactFormData>({
     firstName: "",
     lastName: "",
@@ -56,9 +60,56 @@ export function ContactSection() {
     }
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    contactMutation.mutate(formData);
+    
+    // Basic phone number validation if provided
+    if (formData.phone && formData.phone.trim() !== "") {
+      const cleanPhone = formData.phone.replace(/[\s\-\(\)]/g, '');
+      const southAfricanRegex = /^0\d{8}$/; // 9 digits starting with 0
+      const internationalRegex = /^\+\d{11,14}$/; // 12-15 digits starting with +
+      
+      if (!southAfricanRegex.test(cleanPhone) && !internationalRegex.test(cleanPhone)) {
+        toast({
+          title: "Invalid Phone Number",
+          description: "Please enter a valid phone number: 9 digits starting with 0 (e.g., 083 123 4567) or international format with + (e.g., +27831234567).",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+    
+    // Execute reCAPTCHA
+    let recaptchaToken: string | null = null;
+    if (isRecaptchaLoaded()) {
+      try {
+        recaptchaToken = await executeRecaptcha('contact_form');
+        if (!recaptchaToken) {
+          toast({
+            title: "Security Check Failed",
+            description: "Please try again. If the problem persists, refresh the page.",
+            variant: "destructive"
+          });
+          return;
+        }
+      } catch (error) {
+        console.error('reCAPTCHA error:', error);
+        toast({
+          title: "Security Check Failed",
+          description: "Please try again. If the problem persists, refresh the page.",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+    
+    // Submit form with reCAPTCHA token
+    const submitData = {
+      ...formData,
+      recaptchaToken: recaptchaToken || undefined
+    };
+    
+    contactMutation.mutate(submitData);
   };
 
   const handleInputChange = (field: keyof ContactFormData, value: string) => {
@@ -66,7 +117,7 @@ export function ContactSection() {
   };
 
   return (
-    <section className="py-20 bg-gradient-to-br from-slate-900/40 via-background to-gray-900/30">
+    <GradientBackground section="contact" className="py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16">
           {/* Contact Form */}
@@ -129,7 +180,7 @@ export function ContactSection() {
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleInputChange("phone", e.target.value)}
-                  placeholder="+27 12 345 6789"
+                  placeholder="083 123 4567"
                 />
               </div>
 
@@ -142,12 +193,11 @@ export function ContactSection() {
                     <SelectValue placeholder="Select a service" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="wedding">Wedding Photography</SelectItem>
-                    <SelectItem value="portrait">Portrait Session</SelectItem>
-                    <SelectItem value="corporate">Corporate Photography</SelectItem>
-                    <SelectItem value="event">Event Photography</SelectItem>
+                    <SelectItem value="photography">Photography</SelectItem>
                     <SelectItem value="videography">Videography</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value="website">Website</SelectItem>
+                    <SelectItem value="app-development">App Development</SelectItem>
+                    <SelectItem value="mixed-other">Mixed/Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -178,7 +228,13 @@ export function ContactSection() {
 
           {/* Contact Information */}
           <div>
-            <div className="bg-charcoal/80 rounded-2xl p-8 border border-border">
+            <div 
+              className="rounded-2xl p-8 border border-border shadow-lg backdrop-blur-sm"
+              style={{
+                background: 'linear-gradient(135deg, hsl(260, 25%, 18%) 0%, hsl(260, 20%, 16%) 50%, hsl(220, 20%, 14%) 100%)',
+                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(78, 205, 196, 0.1)'
+              }}
+            >
               <h3 className="text-2xl font-saira font-bold text-gold mb-6">Get in Touch</h3>
 
               <div className="space-y-6">
@@ -190,7 +246,7 @@ export function ContactSection() {
                   <div>
                     <h4 className="font-barlow font-semibold text-lg mb-2">Studio Location</h4>
                     <p className="text-foreground">{config?.contact?.business?.address?.displayText || "Cape Town, South Africa"}</p>
-                    <p className="text-muted-foreground text-sm">Serving Cape Town and surrounding areas</p>
+                    <p className="text-muted-foreground text-sm">Serving Durban & KZN</p>
                   </div>
                 </div>
 
@@ -214,7 +270,8 @@ export function ContactSection() {
                   <div>
                     <h4 className="font-barlow font-semibold text-lg mb-2">Call Us</h4>
                     <p className="text-foreground">{config?.contact?.business?.phone || "+27 12 345 6789"}</p>
-                    <p className="text-muted-foreground text-sm">{config?.contact?.hours?.weekdaysDisplay || "Mon - Fri"}: {config?.contact?.hours?.weekdaysTime || "9AM - 6PM"}</p>
+                    <p className="text-foreground">{config?.contact?.hours?.weekdaysDisplay || "Monday - Friday"}: {config?.contact?.hours?.weekdaysTime || "9:00 AM - 6:00 PM"}</p>
+                    <p className="text-muted-foreground text-sm">{config?.contact?.hours?.saturdayDisplay || "Saturday"}: {config?.contact?.hours?.saturdayTime || "10:00 AM - 4:00 PM"}</p>
                   </div>
                 </div>
 
@@ -233,20 +290,35 @@ export function ContactSection() {
 
               <div className="mt-8 pt-8 border-t border-border">
                 <h4 className="font-barlow font-semibold text-lg mb-4">Follow Us</h4>
-                <div className="flex space-x-4">
-                  <a href="#" className="bg-muted p-3 rounded-full hover:bg-gold hover:text-black transition-all duration-300">
+                <div className="flex flex-wrap gap-4">
+                  {/* X (formerly Twitter) */}
+                  <a href="https://x.com/AiVulpin" target="_blank" rel="noopener noreferrer" className="bg-muted p-3 rounded-full hover:bg-gold hover:text-black transition-all duration-300">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                      <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/>
                     </svg>
                   </a>
-                  <a href="#" className="bg-muted p-3 rounded-full hover:bg-gold hover:text-black transition-all duration-300">
+                  {/* Instagram */}
+                  <a href="https://www.instagram.com/slyfoxstudiogroup/" target="_blank" rel="noopener noreferrer" className="bg-muted p-3 rounded-full hover:bg-gold hover:text-black transition-all duration-300">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.40z"/>
                     </svg>
                   </a>
-                  <a href="#" className="bg-muted p-3 rounded-full hover:bg-gold hover:text-black transition-all duration-300">
+                  {/* Facebook */}
+                  <a href="https://www.facebook.com/slyfoxstudiogroup" target="_blank" rel="noopener noreferrer" className="bg-muted p-3 rounded-full hover:bg-gold hover:text-black transition-all duration-300">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                  </a>
+                  {/* TikTok */}
+                  <a href="https://www.tiktok.com/@slyfoxstudiogroup" target="_blank" rel="noopener noreferrer" className="bg-muted p-3 rounded-full hover:bg-gold hover:text-black transition-all duration-300">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
+                    </svg>
+                  </a>
+                  {/* YouTube */}
+                  <a href="https://www.youtube.com/@slyfoxcreativestudio3214" target="_blank" rel="noopener noreferrer" className="bg-muted p-3 rounded-full hover:bg-gold hover:text-black transition-all duration-300">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
                     </svg>
                   </a>
                 </div>
@@ -255,6 +327,6 @@ export function ContactSection() {
           </div>
         </div>
       </div>
-    </section>
+    </GradientBackground>
   );
 }

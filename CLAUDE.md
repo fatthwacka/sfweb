@@ -323,6 +323,13 @@ Required environment variables:
 - `VITE_SUPABASE_URL` - Supabase project URL
 - `VITE_SUPABASE_ANON_KEY` - Supabase anonymous key
 - `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key for admin operations
+- `VITE_RECAPTCHA_SITE_KEY` - Google reCAPTCHA v3 site key for form protection
+- `RECAPTCHA_SECRET_KEY` - Google reCAPTCHA v3 secret key for server-side verification
+- `SMTP_EMAIL` - Gmail SMTP sender email address
+- `SMTP_PASSWORD` - Gmail app password for email authentication
+
+**⚠️ Docker Environment Variable Configuration:**
+All environment variables must be explicitly listed in `docker-compose.yml` under the `app` service's `environment` section. Environment variables from `.env` are not automatically available in Docker containers unless explicitly mapped.
 
 ## Production Deployment
 
@@ -401,6 +408,9 @@ docker-compose exec postgres psql -U postgres -d slyfox_studios
 - **Admin dashboard for comprehensive content management**
 - **Real-time image processing and storage via Supabase**
 - **Enhanced Scroll Behavior**: Automatic scroll-to-top with browser restoration disabled
+- **Professional Contact Form**: Google reCAPTCHA v3 protection with email delivery to dax@slyfox.co.za
+- **Phone Number Validation**: South African format (083 123 4567) and international support (+27831234567)
+- **Photography Category Pages**: Unified template with "Professional [Category] Photography" branding
 
 ## Gallery System Architecture
 
@@ -476,31 +486,24 @@ docker-compose exec postgres psql -U postgres -d slyfox_studios
 The site management system provides a centralized approach to managing dynamic website content through an admin interface with real-time persistence and immediate updates across all pages.
 
 **Core Components:**
-- **Data Storage**: In-memory `configOverrides` with future PostgreSQL migration
-- **API Layer**: RESTful endpoints (`/api/site-config`, `/api/site-config/bulk`) 
-- **Admin Interface**: Role-based management panels with visual editing
+- **GradientPicker Component System**: Reusable Section Colors controls with unified styling
+- **Site Configuration API**: RESTful endpoints (`/api/site-config`, `/api/site-config/bulk`) with atomic persistence
+- **Admin Interface**: Role-based management panels with visual editing and real-time preview
+- **CSS Variable Integration**: Section-specific text color mappings with automatic resolution
 - **File Upload System**: Direct image upload with automatic path integration
-- **Real-time Sync**: Changes reflect immediately across all consuming pages
 
-**Architecture Documentation:**
-- **📋 Complete Implementation Guide**: [`SITE_MANAGEMENT_ARCHITECTURE.md`](./SITE_MANAGEMENT_ARCHITECTURE.md)
-  - Data flow patterns and persistence mechanisms
-  - Configuration structure and API integration
-  - Frontend/backend abstraction layers
-  - Error handling and recovery strategies
-  - Performance optimization and security considerations
-
-- **🚨 CRITICAL API Reference**: [`SITE_CONFIG_API_METHODS.md`](./SITE_CONFIG_API_METHODS.md)
-  - **REQUIRED: PATCH method for all site config updates**
-  - Correct API usage examples and common mistakes
-  - Server endpoint specifications and testing commands
-  - Migration guide from POST to PATCH method
+**Complete Documentation:**
+- **📋 Primary Implementation Guide**: [`SITE_MANAGEMENT_GUIDE.md`](./SITE_MANAGEMENT_GUIDE.md)
+  - **GradientPicker Component System**: Complete reusable Section Colors methodology
+  - **Site Configuration Architecture**: Data flow, persistence, and API integration
+  - **CSS Integration System**: Section-specific variable mappings and text color controls
+  - **Component Implementation Patterns**: Homepage settings, portfolio settings, and admin interfaces
+  - **API Usage Requirements**: PATCH method enforcement and error handling
+  - **Performance Optimizations**: Debounced saves, optimistic updates, and React Query integration
 
 - **🤖 Site Management Specialist Agent**: [`site-management-specialist.md`](./site-management-specialist.md)
-  - Expert agent for site configuration governance
-  - Component development patterns and best practices
-  - Common issue resolution and debugging guide
-  - Extension guidelines and migration strategies
+  - Expert agent for site configuration governance and component development
+  - References complete implementation guide for technical details
 
 **Key Implementation Details:**
 ```typescript
@@ -528,3 +531,74 @@ saveMutation.mutate(config) → configOverrides → deepMerge(defaults, override
 - **Real-time Validation**: Unsaved changes tracking with visual indicators
 - **Company Information**: Business details, contact info, address management
 - **File Upload Integration**: POST `/api/upload` with automatic path updates
+
+## Contact Form & Email System
+
+### Architecture
+The contact form system provides secure form submission with spam protection and automated email delivery to the studio owner.
+
+**Core Components:**
+- **Frontend Form** (`client/src/components/sections/contact-section.tsx`): React form with validation and reCAPTCHA integration
+- **Backend API** (`server/routes.ts`): `/api/contact` endpoint with reCAPTCHA verification and email sending
+- **Email Service** (`server/email-service.ts`): Nodemailer-based email delivery with Gmail SMTP
+- **reCAPTCHA Service** (`server/recaptcha-service.ts`): Google reCAPTCHA v3 bot protection
+
+### Phone Number Validation
+**Supported Formats:**
+- **South African Local**: 9 digits starting with 0 (e.g., `0831234567`, displayed as `083 123 4567`)
+- **International**: 12-15 digits starting with + (e.g., `+27831234567`, `+1234567890123`)
+- **Regex Patterns**:
+  ```javascript
+  const southAfricanRegex = /^0\d{8}$/; // 9 digits starting with 0
+  const internationalRegex = /^\+\d{11,14}$/; // 12-15 digits starting with +
+  ```
+- **Optional Field**: Phone number validation only runs if field contains content
+
+### reCAPTCHA v3 Integration
+**Implementation Details:**
+- **Client-side**: `useRecaptcha` hook loads Google reCAPTCHA v3 script and executes on form submission
+- **Script Loading**: reCAPTCHA script loaded in `client/index.html` with site key: `6Le3Y7YrAAAAAJn-74S3y_kLoDIax3vY6MyisDPs`
+- **Server-side**: Verification via Google's verification API with secret key
+- **Action**: `contact_form` action used for scoring and analysis
+- **Score Threshold**: Scores above 0.5 are considered human (configurable)
+
+### Email Delivery System
+**SMTP Configuration:**
+- **Service**: Gmail SMTP (`smtp.gmail.com:587`)
+- **Authentication**: App-specific password (not regular Gmail password)
+- **Sender**: `dax.tucker@gmail.com`
+- **Recipient**: `dax@slyfox.co.za`
+- **Dependencies**: Requires `nodemailer` package (already in package.json)
+
+**Email Template Features:**
+- **HTML Format**: Professional styled email with contact details and message
+- **Plain Text Fallback**: Ensures compatibility across all email clients
+- **Contact Information**: Name, email, phone (if provided), service type, message
+- **Timestamp**: Automatic timestamp of form submission
+- **Direct Action Links**: Clickable email and phone links for immediate response
+
+### Error Handling & Debugging
+**Common Issues:**
+1. **Environment Variables**: All variables must be listed in `docker-compose.yml`
+2. **Nodemailer Import**: Use `nodemailer.createTransport` (not `createTransporter`)
+3. **reCAPTCHA Site Key**: Must match in both `.env` and `client/index.html`
+4. **Gmail Security**: Requires app password, not regular password
+
+**Debugging Commands:**
+```bash
+# Check email service logs
+docker-compose logs app | grep -i email
+
+# Test contact form directly
+curl -X POST http://localhost:3000/api/contact \
+  -H "Content-Type: application/json" \
+  -d '{"firstName":"Test","lastName":"User","email":"test@example.com","message":"Test message"}'
+```
+
+### Photography Category Pages
+**Template Architecture:**
+- **Single Template**: `client/src/pages/photography-category.tsx` serves all photography categories
+- **Dynamic Categories**: wedding, portrait, corporate, event, product, graduation, matric-dance
+- **URL Structure**: `/photography/:category` (e.g., `/photography/weddings`)
+- **Title Format**: "Professional [Category Name] Photography" (e.g., "Professional Wedding Photography")
+- **Content Sections**: Hero, About/Features, Packages, Gallery, SEO content
