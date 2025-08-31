@@ -107,38 +107,147 @@ docker exec -it sfweb-app sh    # Container shell access
 ./deploy-production.sh
 ```
 
+## 🚀 Production Deployment Process (FOLLOW EXACTLY)
+
+### Pre-Deployment Checklist (MANDATORY)
+
+**✅ Step 1: Verify SSH Access**
+```bash
+ssh slyfox-vps "echo 'Connection verified'"
+# Must return: Connection verified
+```
+
+**✅ Step 2: Check Local Environment**
+```bash
+# Ensure development server is running locally first
+npm run docker:dev
+curl http://localhost:3000 | head -50
+# Must return HTML content (not errors)
+```
+
+**✅ Step 3: Commit All Changes**
+```bash
+git status
+git add -A
+git commit -m "Your deployment message"
+```
+
+### Automated Deployment (PREFERRED METHOD)
+
+**⚠️ IMPORTANT: The script performs a COMPLETE REBUILD to prevent module errors**
+
+```bash
+./deploy-production.sh
+```
+
 **What the script does:**
-1. ✅ Verifies SSH connection to VPS
-2. 🛑 Stops existing production containers gracefully
+1. ✅ Verifies SSH connection to VPS (prevents auth failures)
+2. 🛑 Stops existing production containers gracefully  
 3. 📦 Backs up current configuration with timestamp
 4. 🔄 Syncs complete codebase to VPS (excludes build artifacts)
-5. 🏗️ Builds containers with configuration persistence fixes
-6. ⚙️ Starts production services
+5. 🏗️ **REBUILDS containers from scratch** (prevents ERR_MODULE_NOT_FOUND)
+6. ⚙️ Starts production services with fresh dependencies
 7. 🔬 Verifies configuration persistence is working
 8. 🌐 Tests all API endpoints
 9. 📊 Reports production status
 
-### Production Access
+**Expected Output Signs of Success:**
+- "VPS Connection OK" 
+- "✅ Production services stopped"
+- "✅ Configuration backup completed" 
+- "Transfer starting: XXX files" (rsync progress)
+- Container build logs with npm install
+- "Container sfweb-app Started"
+- "Container sfweb-postgres Started"
+
+### Post-Deployment Verification (MANDATORY)
+
+**✅ Step 1: Test Application Response**
+```bash
+curl -s -o /dev/null -w '%{http_code}' http://168.231.86.89:3000
+# Expected: 200 (not 500)
+```
+
+**✅ Step 2: Verify Containers**
+```bash
+ssh slyfox-vps "cd /opt/sfweb && docker compose ps"
+# Expected: Both sfweb-app and sfweb-postgres showing "Up"
+```
+
+**✅ Step 3: Check Application Logs**
+```bash
+ssh slyfox-vps "cd /opt/sfweb && docker compose logs app --tail 5"
+# Expected: "express serving on port 5000"
+# Not expected: ERR_MODULE_NOT_FOUND errors
+```
+
+**✅ Step 4: Test Key API Endpoints**
+```bash
+curl -s http://168.231.86.89:3000/api/site-config | jq '.contact.business.name'
+# Expected: Returns business name (not error message)
+```
+
+**✅ Step 5: Visual Verification**
+Visit in browser:
+- **Main Site**: http://168.231.86.89:3000 (should load completely)
+- **Admin Panel**: http://168.231.86.89:3000/admin (should show admin interface)
+- **Site Management**: Admin Panel → Site Management tab (should show controls)
+
+**🚨 If ANY verification step fails, see Troubleshooting section below**
+
+### Production Access Points
 
 - **Main Site**: http://168.231.86.89:3000
 - **Admin Panel**: http://168.231.86.89:3000/admin
 - **Site Management**: Admin Panel → Site Management tab
 - **N8N Automation**: http://168.231.86.89:5678
 
-### SSH Access Configuration
+### SSH Access Setup (CRITICAL - DO THIS FIRST)
 
-The deployment script uses SSH key authentication:
+**⚠️ MANDATORY: Complete SSH setup before attempting deployment**
 
+#### Step 1: Create SSH Directory
 ```bash
-# SSH configuration in ~/.ssh/config
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+```
+
+#### Step 2: Create SSH Configuration
+```bash
+cat > ~/.ssh/config << 'EOF'
 Host slyfox-vps
     HostName 168.231.86.89
     User root
-    IdentityFile ~/.ssh/slyfox_vps_key
+    IdentityFile ~/.ssh/vps_key
     StrictHostKeyChecking no
+EOF
+
+chmod 600 ~/.ssh/config
 ```
 
-**SSH key is pre-configured in Hostinger control panel as `claude-deploy`**
+#### Step 3: Verify SSH Key Exists
+```bash
+# Check if you have the VPS key (from previous setup)
+ls -la ~/.ssh/vps_key
+
+# If key doesn't exist, you need to use the existing key that matches
+# the claude-deploy key configured in Hostinger control panel
+```
+
+#### Step 4: Test SSH Connection (MANDATORY VERIFICATION)
+```bash
+ssh slyfox-vps "echo 'SSH Connection successful'"
+# Expected output: SSH Connection successful
+
+# If connection fails, check:
+# 1. ~/.ssh/vps_key exists and has correct permissions (chmod 600)
+# 2. Public key matches the one in Hostinger control panel (claude-deploy)
+# 3. VPS IP address is correct (168.231.86.89)
+```
+
+**🚨 DO NOT PROCEED WITH DEPLOYMENT UNTIL SSH CONNECTION WORKS**
+
+**Note**: The SSH key is pre-configured in Hostinger control panel as `claude-deploy`. The local private key must match this public key.
 
 ## 🔧 Configuration Persistence Architecture
 
@@ -171,7 +280,38 @@ Docker Volume: config_data
 └── Atomic writes prevent corruption
 ```
 
-## 🚨 Troubleshooting
+## 🚨 If Deployment Fails (FIRST AID)
+
+**Most Common Issue**: ERR_MODULE_NOT_FOUND (Node modules corruption)
+
+**Symptoms**: 
+- Application returns HTTP 500 instead of 200
+- Logs show: `Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/node_modules/vite/dist/node/...`
+
+**Immediate Fix (DOCUMENTED - TESTED 2025-08-31)**:
+```bash
+# Step 1: Nuclear option - clean everything
+ssh slyfox-vps "cd /opt/sfweb && docker compose down -v"
+ssh slyfox-vps "docker system prune -a -f"
+
+# Step 2: Rebuild from scratch 
+ssh slyfox-vps "cd /opt/sfweb && docker compose up -d --build"
+
+# Step 3: Verify fix
+curl -s -o /dev/null -w '%{http_code}' http://168.231.86.89:3000
+# Expected: 200
+```
+
+**Why This Works**: 
+- Completely removes corrupted Docker cache
+- Rebuilds all dependencies from scratch  
+- Prevents incremental build conflicts
+
+**Recovery Time**: ~3-5 minutes
+
+---
+
+## 🚨 Detailed Troubleshooting
 
 ### Development Issues
 

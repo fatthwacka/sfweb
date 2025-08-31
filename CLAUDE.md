@@ -160,6 +160,8 @@ All dynamic colors MUST follow this exact pattern (NO EXCEPTIONS):
 
 This project uses Docker for development. Do NOT use `npm run dev` directly - it will fail.
 
+**🚨 PRODUCTION DEPLOYMENT TROUBLESHOOTING:** If deployment results in HTTP 500 with ERR_MODULE_NOT_FOUND errors, use the documented "nuclear option" fix in [`VPS_DEPLOYMENT.md`](./VPS_DEPLOYMENT.md) - this is a known issue with documented solution (tested 2025-08-31).
+
 ## Development Commands
 
 **Primary Development (REQUIRED):**

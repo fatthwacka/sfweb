@@ -328,7 +328,47 @@ services:
 
 ### Common Production Issues
 
-#### 1. Configuration Not Persisting
+#### 1. ERR_MODULE_NOT_FOUND (Vite Dependencies) - CRITICAL FIX
+
+**Symptom**: Application returns HTTP 500 with Vite module resolution errors:
+```
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/node_modules/vite/dist/node/chunks/dep-D-7KCb9p.js'
+```
+
+**Root Cause**: Node modules corruption during deployment or Docker cache conflicts
+
+**Solution** (DOCUMENTED FIX - TESTED 2025-08-31):
+```bash
+# Step 1: Nuclear option - clean everything (from DEV_SERVER_STARTUP.md)
+ssh slyfox-vps "cd /opt/sfweb && docker compose down -v"
+ssh slyfox-vps "docker system prune -a -f"
+
+# Step 2: Rebuild from scratch 
+ssh slyfox-vps "cd /opt/sfweb && docker compose up -d --build"
+
+# Step 3: Verify fix
+ssh slyfox-vps "curl -s -o /dev/null -w '%{http_code}' http://localhost:3000"
+# Expected: 200
+
+ssh slyfox-vps "cd /opt/sfweb && docker compose logs app --tail 5"
+# Expected: "express serving on port 5000"
+```
+
+**Prevention**: This issue occurs when:
+- Dependencies change significantly between deployments
+- Docker build cache becomes corrupted  
+- Node modules aren't properly rebuilt in container
+- Incremental builds fail to resolve new dependencies
+
+**Recovery Time**: ~3-5 minutes (includes full container rebuild)
+
+**Success Indicators**:
+- ✅ `curl http://localhost:3000` returns HTTP 200
+- ✅ Application logs show "express serving on port 5000"  
+- ✅ API endpoints respond correctly (`/api/site-config`)
+- ✅ No ERR_MODULE_NOT_FOUND errors in logs
+
+#### 2. Configuration Not Persisting
 ```bash
 # Check if config volume exists
 ssh slyfox-vps "docker volume ls | grep config"
