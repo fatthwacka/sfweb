@@ -337,22 +337,32 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/node_modules/vite/dist/no
 
 **Root Cause**: Node modules corruption during deployment or Docker cache conflicts
 
-**Solution** (DOCUMENTED FIX - TESTED 2025-08-31):
+**Solution** (DOCUMENTED FIX - UPDATED 2025-08-31):
 ```bash
-# Step 1: Nuclear option - clean everything (from DEV_SERVER_STARTUP.md)
+# Step 1: BACKUP SITE CONFIGURATION (CRITICAL - prevents admin settings loss)
+curl -s http://168.231.86.89:3000/api/site-config > /tmp/production-config-backup.json
+
+# Step 2: Nuclear option - clean everything (from DEV_SERVER_STARTUP.md)
 ssh slyfox-vps "cd /opt/sfweb && docker compose down -v"
 ssh slyfox-vps "docker system prune -a -f"
 
-# Step 2: Rebuild from scratch 
+# Step 3: Rebuild from scratch 
 ssh slyfox-vps "cd /opt/sfweb && docker compose up -d --build"
 
-# Step 3: Verify fix
+# Step 4: RESTORE SITE CONFIGURATION (CRITICAL - restores admin settings)
+curl -X PATCH http://168.231.86.89:3000/api/site-config/bulk \
+  -H "Content-Type: application/json" \
+  -d @/tmp/production-config-backup.json
+
+# Step 5: Verify fix
 ssh slyfox-vps "curl -s -o /dev/null -w '%{http_code}' http://localhost:3000"
 # Expected: 200
 
 ssh slyfox-vps "cd /opt/sfweb && docker compose logs app --tail 5"
 # Expected: "express serving on port 5000"
 ```
+
+**🚨 CRITICAL NOTE**: The `-v` flag removes Docker volumes, which wipes ALL admin dashboard settings (colors, content, etc.). Steps 1 and 4 are MANDATORY to preserve site configuration.
 
 **Prevention**: This issue occurs when:
 - Dependencies change significantly between deployments
