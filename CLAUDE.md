@@ -18,7 +18,79 @@ Available in root directory:
 
 **Usage Pattern**: Use the Task tool with the appropriate `subagent_type` parameter. These agents should be used PROACTIVELY - don't wait for the user to request them. If working on gallery features → use gallery-specialist, styling issues → use css-specialist, etc.
 
+## 📁 CRITICAL CONFIGURATION FILES
+
+**⚠️ PHOTOGRAPHY CATEGORY SYSTEM ARCHITECTURE (100% VERIFIED)**
+
+**PRIMARY FILES:**
+
+1. **`/shared/types/category-config.ts`** - DEFAULT FALLBACK CONTENT
+   - Contains `defaultCategoryPageConfig` used by admin dashboard when no saved data exists
+   - **CRITICAL**: This is where "Cape Town" appears in fallbacks - MUST be updated to "Durban"
+   - Used by admin component when `config.categoryPages.photography.[category]` is empty
+
+2. **`/server/data/site-config-overrides.json`** - PERSISTENT SAVED DATA  
+   - Stores actual saved content from admin dashboard
+   - Structure: `categoryPages.photography.[category]` (e.g., `categoryPages.photography.corporate`)
+   - API: `/api/site-config/bulk` (PATCH method ONLY)
+
+3. **`/client/src/components/admin/page-settings/category-page-settings.tsx`** - ADMIN DASHBOARD
+   - Manages photography category settings (wedding, corporate, portraits, etc.)
+   - Saves via PATCH `/api/site-config/bulk`
+   - Falls back to `defaultCategoryPageConfig` when no saved data
+
+4. **`/client/src/pages/photography-category.tsx`** - TARGET PAGES
+   - Displays live photography category pages (`/photography/corporate`, etc.)
+   - Gets data from same API endpoint
+   - Different fallback: hardcoded generic object (not the TypeScript defaults)
+
+**🔄 DATA FLOW**: Admin saves → JSON file → API serves → Target page displays
+**🚨 PATCH METHOD REQUIRED**: Never use POST - always PATCH for configuration updates
+
 ## 🚨 CRITICAL DEVELOPMENT RULES
+
+**⚠️ MANDATORY: ALWAYS READ AND FOLLOW EXISTING ARCHITECTURE FIRST**
+
+Before implementing ANY new feature or page:
+
+1. **READ DOCUMENTATION FIRST**: Always consult [`SITE_MANAGEMENT_GUIDE.md`](./SITE_MANAGEMENT_GUIDE.md) for established patterns
+2. **ANALYZE WORKING COMPONENTS**: Study working implementations like `services-overview.tsx`, `testimonials.tsx`, homepage sections
+3. **USE ESTABLISHED PATTERNS**: Copy the exact architecture of working components:
+   - `GradientBackground` component with proper section mapping
+   - CSS classes like `text-salmon`, `text-cyan` (NOT inline styles)
+   - `useSiteConfig()` hook (NOT custom hooks)
+   - Site-wide CSS variables and color system
+4. **NO INLINE STYLES**: Never use `style={}` props without explicit instruction - use CSS classes
+5. **NO CUSTOM HOOKS**: Use established hooks (`useSiteConfig`, not custom variants like `useCategoryConfig`)
+6. **NO ARCHITECTURE VARIATIONS**: Follow the documented `GradientBackground` + CSS classes pattern
+7. **TEST COLOR IMPLEMENTATION**: Verify that dashboard color changes reflect on actual pages
+
+**🛑 MANDATORY VALIDATION CHECKPOINTS**
+
+BEFORE writing ANY code, validate against these CORE RULES:
+
+1. **❌ ZERO INLINE CSS**: Never use `style={{}}` props - use CSS classes only
+2. **❌ ZERO HARDCODING**: Never hardcode colors, URLs, text, or values - use config/constants
+3. **❌ ZERO MOCK DATA**: Never create placeholder/example data - use real config sources
+4. **❌ ZERO CUSTOM HOOKS**: Never create `useCategoryConfig` - extend existing hooks only
+5. **❌ ZERO ARCHITECTURAL VARIATIONS**: Never deviate from GradientBackground pattern
+
+**🔍 MANDATORY PRE-IMPLEMENTATION CHECKLIST:**
+- [ ] Am I using ANY `style={{}}` props? → STOP and use CSS classes
+- [ ] Am I hardcoding ANY values? → STOP and use config sources  
+- [ ] Am I creating mock/placeholder data? → STOP and use real data
+- [ ] Am I creating custom solutions? → STOP and extend existing patterns
+- [ ] Does my implementation match working homepage sections EXACTLY? → If no, STOP
+
+**⚠️ CRITICAL: COLOR IMPLEMENTATION STANDARDS**
+
+When implementing colors in any component:
+
+1. **USE GRADIENTBACKGROUND COMPONENT**: Always wrap sections in `<GradientBackground section="sectionName">`
+2. **USE CSS CLASSES**: Use `text-salmon`, `text-cyan`, `btn-salmon`, `btn-cyan` etc. (defined in index.css)
+3. **SECTION MAPPING**: Map sections to established names: `services`, `portfolio`, `testimonials`, `contact`, `privateGallery`
+4. **NO CSS VARIABLES IN COMPONENTS**: Don't use `var(--color-*)` directly - use CSS classes that resolve them
+5. **FOLLOW WORKING PATTERNS**: Copy exact color implementation from working homepage sections
 
 **⚠️ MANDATORY: NO ALBUM-SPECIFIC OR ID-SPECIFIC CODE MODIFICATIONS**
 
@@ -47,6 +119,42 @@ if (gallerySettings?.layoutStyle === 'masonry') { /* universal logic based on se
 ```
 
 This rule prevents maintenance nightmares, ensures consistent user experience, and maintains system scalability.
+
+**⚠️ MANDATORY: COLOR IMPLEMENTATION STANDARD**
+
+All dynamic colors MUST follow this exact pattern (NO EXCEPTIONS):
+
+1. **Use `GradientBackground` Component**:
+   ```tsx
+   <GradientBackground section="services" className="py-20">
+     <h2 className="text-salmon">Title</h2>
+     <p className="text-muted-foreground">Content</p>
+   </GradientBackground>
+   ```
+
+2. **Use CSS Classes for Colors**:
+   - Headers: `text-salmon`, `text-cyan` 
+   - Body text: `text-muted-foreground`
+   - NEVER use `style={{ color: '...' }}` inline styles
+
+3. **Use `useSiteConfig()` Hook**:
+   ```tsx
+   const { config } = useSiteConfig();
+   const sectionData = config?.home?.services || fallback;
+   ```
+
+4. **Available GradientBackground Sections**:
+   - `services` - Service overview sections
+   - `portfolio` - Package/pricing sections  
+   - `testimonials` - Gallery/recent work sections
+   - `contact` - Contact/CTA sections
+
+**Why This Pattern Works**:
+- ✅ Colors are controlled by dashboard settings
+- ✅ CSS variables are set automatically
+- ✅ Works in both development and production
+- ✅ Consistent across all sections
+- ✅ No inline style maintenance
 
 **⚠️ MANDATORY: ALWAYS consult [`DEV_SERVER_STARTUP.md`](./DEV_SERVER_STARTUP.md) BEFORE attempting to start the development server or troubleshoot startup issues.**
 
@@ -88,6 +196,41 @@ Before any development work:
 - No special steps required - the multi-platform build handles compatibility
 - Expect slightly longer initial build times compared to Intel Macs
 - Total local storage requirement: ~1.1GB (see DEV_SERVER_STARTUP.md for breakdown)
+
+## 🤖 BEST PRACTICES FOR CLAUDE CODE INTERACTIONS
+
+### For Users: How to Get Better Results
+
+**📋 Before Starting Any Task:**
+1. **Be Specific About Scope**: "Update the contact form validation" vs. "Fix the website"
+2. **Reference Existing Patterns**: "Use the same color system as the homepage services section"  
+3. **Mention Documentation**: "Follow the established patterns in SITE_MANAGEMENT_GUIDE.md"
+4. **Specify No Variations**: "Don't create new architecture, use the existing pattern"
+
+**✅ Effective Request Examples:**
+- ✅ "Add a testimonials section to the about page using the GradientBackground pattern from the homepage"
+- ✅ "Fix the pricing cards to match the exact styling of the services section"  
+- ✅ "Follow the ImageBrowser component pattern from category settings"
+
+**❌ Requests That Lead to Problems:**
+- ❌ "Make the colors work" (too vague)
+- ❌ "Add some styling" (no reference pattern)
+- ❌ "Fix this quickly" (encourages shortcuts)
+
+**🔍 When Issues Arise:**
+1. **Stop and Audit**: Ask Claude to check existing working examples first
+2. **Reference Documentation**: Point to specific guides that should be followed
+3. **Demand Consistency**: "Use the exact same pattern as [working example]"
+4. **Reject Variations**: "Don't create a new approach, use the established one"
+
+### For Claude: Systematic Implementation
+
+**📋 MANDATORY Process for Any New Feature:**
+1. **Read Documentation First**: Check SITE_MANAGEMENT_GUIDE.md and CLAUDE.md
+2. **Find Working Example**: Locate similar functioning component/page
+3. **Copy Architecture Exactly**: Use same hooks, components, and patterns
+4. **No Custom Solutions**: Never create new patterns when existing ones work
+5. **Verify Against Rules**: Ensure no inline styles, custom hooks, or architectural variations
 
 ## Architecture Overview
 
@@ -364,10 +507,17 @@ VPS Locations:
 └── traefik-certs.yml    # SSL certificate configuration
 ```
 
-### Production Commands
+### Production Deployment
+
+**⚠️ MANDATORY: ALWAYS use automated deployment script for production deployments.**
+
 ```bash
-# Deploy/update SlyFox application
+# Automated production deployment (REQUIRED method)
+./deploy-production.sh
+
+# Manual deployment commands (advanced use only)
 cd /opt/sfweb
+docker-compose down
 docker-compose up -d --build
 
 # Monitor application
@@ -378,6 +528,13 @@ docker stats --no-stream
 docker-compose exec postgres psql -U postgres -d slyfox_studios
 ```
 
+**📋 For complete production deployment instructions, see:** [`VPS_DEPLOYMENT.md`](./VPS_DEPLOYMENT.md)
+- **Automated deployment script**: `./deploy-production.sh` with full verification
+- **SSH key authentication**: Pre-configured for seamless deployment
+- **Configuration persistence**: Docker volumes ensure settings survive deployments
+- **Production monitoring**: Container status, resource usage, and log analysis
+- **Troubleshooting**: Common deployment issues and recovery procedures
+
 ### Domain Configuration
 - **Target Domain**: slyfox.co.za (A record pending)
 - **Current Access**: http://168.231.86.89:3000
@@ -386,8 +543,10 @@ docker-compose exec postgres psql -U postgres -d slyfox_studios
 ### Version Control & Deployment
 - **Repository**: https://github.com/fatthwacka/sfweb.git
 - **Local Development**: Dockerized setup syncs via Dropbox across Intel/ARM devices  
-- **Production Deployment**: Direct Docker deployment on VPS
-- **Code Synchronization**: Git-based deployment to VPS from development environment
+- **Production Deployment**: Automated deployment script with SSH key authentication
+- **Code Synchronization**: rsync-based file transfer with exclusions for build artifacts
+- **Configuration Persistence**: Docker volumes ensure site management settings survive deployments
+- **Deployment Pipeline**: Backup → Sync → Build → Verify → Status Report
 
 ### Key Features
 - **Advanced Gallery Management**: 8 layout modes with intelligent automatic aspect ratio detection
@@ -397,10 +556,10 @@ docker-compose exec postgres psql -U postgres -d slyfox_studios
 - **Unified Gallery Architecture**: Modular components supporting both admin and client rendering modes
 - **Consistent Responsive Design**: Identical breakpoints across all layout modes (2-3-4-5 columns)
 - **Precise Masonry Layout**: Accurate gap control matching slider settings exactly
-- **Comprehensive Site Management**: Centralized admin interface for all website content
-- **Dynamic Content Configuration**: Hero slides, company info, and page settings management
+- **Comprehensive Site Management**: Centralized admin interface for all website content with persistent configuration
+- **Dynamic Content Configuration**: Hero slides, company info, and page settings management with atomic file persistence
 - **Visual Content Editing**: Drag-and-drop image uploads with thumbnail management
-- **Real-time Configuration**: Changes reflect immediately across all pages
+- **Real-time Configuration**: Changes reflect immediately across all pages and survive deployments
 - **Image upload, organization, and sequence management**
 - **SEO-optimized gallery URLs with slug-based routing**
 - **Analytics tracking for user interactions**
@@ -531,6 +690,8 @@ saveMutation.mutate(config) → configOverrides → deepMerge(defaults, override
 - **Real-time Validation**: Unsaved changes tracking with visual indicators
 - **Company Information**: Business details, contact info, address management
 - **File Upload Integration**: POST `/api/upload` with automatic path updates
+- **Configuration Persistence**: Atomic file writes with Docker volume persistence across deployments
+- **Production Deployment**: Settings automatically backed up and restored during deployments
 
 ## Contact Form & Email System
 
@@ -602,3 +763,74 @@ curl -X POST http://localhost:3000/api/contact \
 - **URL Structure**: `/photography/:category` (e.g., `/photography/weddings`)
 - **Title Format**: "Professional [Category Name] Photography" (e.g., "Professional Wedding Photography")
 - **Content Sections**: Hero, About/Features, Packages, Gallery, SEO content
+
+---
+
+## 🎯 CLAUDE CODE BEST PRACTICES
+
+### For Users: How to Get Better Results
+
+1. **BE SPECIFIC ABOUT REQUIREMENTS**
+   - Instead of "fix the colors" → "the dashboard color changes for Services section aren't reflecting on the homepage"
+   - Include specific component names, file paths, or page URLs when possible
+   - Mention if the issue affects all pages or specific ones
+
+2. **REFERENCE WORKING EXAMPLES**
+   - Point to working implementations: "make it work like the Services section on homepage"
+   - Mention if other similar features work correctly: "testimonials colors work but services don't"
+
+3. **PROVIDE CONTEXT ABOUT PREVIOUS ATTEMPTS**
+   - "We've tried this before and it broke" helps avoid repeating failed approaches
+   - "This used to work but stopped after X" helps identify regressions
+
+4. **VALIDATE ARCHITECTURAL CONSISTENCY**
+   - Ask Claude to verify the implementation follows established patterns
+   - Request that changes be tested against working examples
+   - Ask for documentation updates when patterns change
+
+### For Claude Code: Development Standards
+
+**🔒 MANDATORY PROTOCOL: RULE VALIDATION BEFORE ANY CODE**
+
+1. **STOP AND VALIDATE FIRST**
+   - Run through MANDATORY VALIDATION CHECKPOINTS before writing a single line
+   - If ANY checkpoint fails → Ask user for guidance instead of proceeding
+   - Never justify rule violations with "technical constraints" - get approval first
+
+2. **ESCALATION PROTOCOL FOR CONSTRAINTS**
+   - If established pattern doesn't fit → STOP and ask: "I need to extend the GradientBackground pattern for dynamic category data. Should I create a gradientOverride prop, or would you prefer a different approach?"
+   - If data structure doesn't match → STOP and ask: "The category data structure differs from homepage. Should I transform the data to match, or extend the component?"
+   - If CSS classes don't exist → STOP and ask: "I need new CSS classes for this implementation. Should I add them to index.css following the existing pattern?"
+
+3. **ZERO TOLERANCE IMPLEMENTATION**
+   - ❌ NEVER write `style={{}}` - use CSS classes or ask for new ones
+   - ❌ NEVER hardcode values - use config or ask where to get them
+   - ❌ NEVER create mock data - use real data or ask for data structure
+   - ❌ NEVER create architectural variations - extend existing patterns or ask for guidance
+
+4. **ARCHITECTURAL ANALYSIS SEQUENCE**
+   - Read existing working components first (`services-overview.tsx`, `testimonials.tsx`)
+   - Understand the established patterns before implementing variations
+   - Identify and follow the exact data flow and component structure
+   - If pattern doesn't apply → ESCALATE, don't deviate
+
+5. **DOCUMENTATION AND CONSISTENCY**
+   - Update `CLAUDE.md` and `SITE_MANAGEMENT_GUIDE.md` when patterns evolve (with user approval)
+   - Add clear rules to prevent future inconsistencies
+   - Include "working vs broken" examples in documentation
+   - Follow documented patterns even across different conversation sessions
+
+### Common Anti-Patterns to Avoid
+
+❌ **Creating architectural variations** - stick to established patterns
+❌ **Using inline styles** - use CSS classes defined in index.css
+❌ **Custom hooks for standard functionality** - use `useSiteConfig()` consistently  
+❌ **Forgetting section mapping** - ensure `GradientBackground` sections align with CSS
+❌ **Not testing color changes** - verify dashboard updates reflect on pages
+❌ **Inconsistent data sources** - use unified config system, not multiple sources
+
+✅ **Follow working implementations exactly**
+✅ **Use established CSS classes and components**  
+✅ **Maintain architectural consistency**
+✅ **Test implementations thoroughly**
+✅ **Update documentation when patterns change**

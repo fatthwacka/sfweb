@@ -85,7 +85,7 @@ export function PricingSection() {
         </div>
 
         <div className="text-center mt-12">
-          <p className="text-muted-foreground mb-6">All packages include travel within Cape Town metro area. Custom packages available.</p>
+          <p className="text-muted-foreground mb-6">All packages include travel within Durban metro area. Custom packages available.</p>
           <Button className="btn-outline-cyan">
             Download Price Guide (PDF)
           </Button>

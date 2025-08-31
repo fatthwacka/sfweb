@@ -1,0 +1,423 @@
+{
+  "home": {
+    "hero": {
+      "slides": [
+        {
+          "id": "slide-1756060030414",
+          "title": "Fashion",
+          "subtitle": "Strong Bold Images",
+          "image": "/uploads/fashion-photography-hero_1756060034755.jpg",
+          "cta": "Learn More",
+          "gradient": [
+            "rgba(0,0,0,0.7)",
+            "rgba(0,0,0,0.3)"
+          ]
+        },
+        {
+          "id": "slide-1756052475554",
+          "title": "Portraits",
+          "subtitle": "Stunning Glossy Magazine Pics",
+          "image": "/uploads/homepage-main-hero_1756059978969.jpg",
+          "cta": "Learn More",
+          "gradient": [
+            "rgba(0,0,0,0.7)",
+            "rgba(0,0,0,0.3)"
+          ]
+        },
+        {
+          "id": "test-slide",
+          "title": "Prestige",
+          "subtitle": "Celebrity & Event Photography",
+          "cta": "Book now",
+          "image": "/uploads/Event-photography-hero_1756059986933.jpg",
+          "gradient": [
+            "rgba(255,0,0,0.5)",
+            "rgba(0,255,0,0.5)"
+          ]
+        },
+        {
+          "id": "slide-1756060051119",
+          "title": "Headshots",
+          "subtitle": "Profile & Corporate Pics",
+          "image": "/uploads/Celebrity-photography-hero_1756063622855.jpg",
+          "cta": "Learn More",
+          "gradient": [
+            "rgba(0,0,0,0.7)",
+            "rgba(0,0,0,0.3)"
+          ]
+        },
+        {
+          "id": "slide-1756156317246",
+          "title": "Products",
+          "subtitle": "Make your Brand Radiate",
+          "image": "/uploads/product-photography-med_1756156455626.jpg",
+          "cta": "Learn More",
+          "gradient": [
+            "rgba(0,0,0,0.7)",
+            "rgba(0,0,0,0.3)"
+          ]
+        }
+      ],
+      "autoAdvance": false,
+      "interval": 6000,
+      "effects": [
+        "liquid_dissolve"
+      ]
+    },
+    "servicesOverview": {
+      "headline": "Commercial Services",
+      "description": "From intimate portraits to grand celebrations, from ecommerce websites to mobile apps, we execute every project with artistic vision and technical excellence.",
+      "photography": {
+        "title": "Photography",
+        "description": "Capture life's precious moments with our professional photography services. From weddings to corporate events, we create stunning visual narratives.",
+        "image": "/images/services/photography-service-showcase.jpg",
+        "services": [
+          "Weddings",
+          "Portraits",
+          "Corporate",
+          "Events",
+          "Products",
+          "Graduation"
+        ],
+        "ctaText": "Explore Photography"
+      },
+      "videography": {
+        "title": "Videography",
+        "description": "Bring your stories to life with cinematic videography. From wedding films to corporate content, we create compelling visual experiences.",
+        "image": "/images/services/photography-service-showcase.jpg",
+        "services": [
+          "Wedding Films",
+          "Corporate Videos",
+          "Events",
+          "Product Videos",
+          "Social Media",
+          "Animation"
+        ],
+        "ctaText": "Explore Videography"
+      },
+      "services": [
+        {
+          "id": "photography-service",
+          "title": "Photography",
+          "description": "Capture the perfect images with professional photography.",
+          "image": "/uploads/wedding-videography-hero_1756052522344.jpg",
+          "ctaText": "Explore Photography",
+          "services": [
+            "Weddings",
+            "Portraits",
+            "Corporate",
+            "Events",
+            "Products",
+            "Graduation"
+          ],
+          "color": "salmon"
+        },
+        {
+          "id": "videography-service",
+          "title": "Videography",
+          "description": "Bring your stories to life with cinematic visual experiences.",
+          "image": "/uploads/animation-videography-hero_1756054970653.jpg",
+          "ctaText": "Explore Videography",
+          "services": [
+            "Wedding Films",
+            "Corporate Videos",
+            "Events",
+            "Product Videos",
+            "Social Media",
+            "Animation"
+          ],
+          "color": "cyan"
+        },
+        {
+          "id": "service-1756054883450",
+          "title": "Social Media",
+          "description": "Enhance your social channel with content production.",
+          "image": "/uploads/Lavender-3-bars-stacked-with-lather_1756326067465.jpg",
+          "ctaText": "Explore Service",
+          "services": [
+            "Service Type 1",
+            "Service Type 2",
+            "Service Type 3"
+          ],
+          "color": "salmon"
+        },
+        {
+          "id": "service-1756055294048",
+          "title": "Web & Apps",
+          "description": "Deploy the features and functions of your vision with speed and agility.",
+          "image": "/uploads/product2-videography-hero_1756055342578.jpg",
+          "ctaText": "Explore Service",
+          "services": [
+            "Service Type 1",
+            "Service Type 2",
+            "Service Type 3"
+          ],
+          "color": "salmon"
+        }
+      ]
+    },
+    "privateGallery": {
+      "headline": "Your Private Gallery",
+      "description": "Showcase your images with style. Each shoot with Slyfox includes a professional online portfolio with all your shoot images. Access your photos anytime, anywhere. Share with family and friends, download high-resolution images, and relive your special moments through our secure client portal.",
+      "features": [
+        {
+          "id": "secure-access",
+          "title": "Secure Access",
+          "description": "Private password-protected galleries accessible only to you and those you share access with."
+        },
+        {
+          "id": "easy-downloads",
+          "title": "Easy Downloads",
+          "description": "Download individual photos or entire albums in various resolutions for different uses."
+        },
+        {
+          "id": "share-anywhere",
+          "title": "Share Anywhere",
+          "description": "Share your gallery link via social media, email, or embed custom invitations."
+        }
+      ],
+      "buttons": {
+        "primary": {
+          "text": "Access My Gallery",
+          "action": "/client-gallery"
+        },
+        "secondary": {
+          "text": "Gallery Demo",
+          "action": "/gallery/demo"
+        }
+      },
+      "image": "/uploads/Professional-Portrait-Photography-by-Slyfox-Executive-Headshot-_1756301693089.jpg"
+    },
+    "testimonials": {
+      "headline": "Production Experts",
+      "description": "You're in safe hands, with a team that has an eye for detail, and a passion for beauty.",
+      "items": [
+        {
+          "id": 1,
+          "name": "Sarah Troydon",
+          "role": "Wedding",
+          "company": "",
+          "quote": "Thank you so much guys, absolutely love the pics, and the team was a joy to work with",
+          "image": "/images/testimonials/client-sarah-jones.jpg",
+          "rating": 5,
+          "content": ""
+        },
+        {
+          "id": 2,
+          "name": "Michael Thompson",
+          "role": "Owner",
+          "company": "",
+          "quote": "Very cool headshots. really elevated our brand image. the guys were really creative and talented. ",
+          "image": "/images/testimonials/client-mike-johnson.jpg",
+          "rating": 5,
+          "content": ""
+        },
+        {
+          "id": 3,
+          "name": "Emma Rodriguez",
+          "role": "Brand manager",
+          "company": "Natural Elixir",
+          "quote": "thanks fo much , really loved the product shots and prodict videos so much, will be back soon",
+          "image": "/images/testimonials/client-emma-davis.jpg",
+          "rating": 5,
+          "content": ""
+        }
+      ]
+    }
+  },
+  "contact": {
+    "business": {
+      "name": "SlyFox Studio Group",
+      "tagline": "Professional Photography & Videography, Website design, App development",
+      "phone": "+27 76 916 3113",
+      "email": "info@slyfox.co.za",
+      "whatsapp": "+27 12 345 6789",
+      "bookingEmail": "bookings@slyfox.co.za",
+      "address": {
+        "street": "Durban, South Africa",
+        "city": "Durban",
+        "province": "KwaZulu-Natal",
+        "postal": "8001",
+        "country": "South Africa",
+        "displayText": "Durban, South Africa"
+      }
+    },
+    "methods": [
+      {
+        "type": "phone",
+        "title": "Call Us",
+        "icon": "Phone",
+        "details": [
+          "+27 12 345 6789",
+          "Available Mon-Fri 9AM-6PM"
+        ],
+        "action": "tel:+27123456789",
+        "priority": 1
+      },
+      {
+        "type": "email",
+        "title": "Email Us",
+        "icon": "Mail",
+        "details": [
+          "info@slyfox.co.za",
+          "We respond within 24 hours"
+        ],
+        "action": "mailto:info@slyfox.co.za",
+        "priority": 2
+      },
+      {
+        "type": "whatsapp",
+        "title": "WhatsApp",
+        "icon": "MessageCircle",
+        "details": [
+          "+27 12 345 6789",
+          "Quick responses during business hours"
+        ],
+        "action": "https://wa.me/27123456789",
+        "priority": 3
+      },
+      {
+        "type": "location",
+        "title": "Visit Us",
+        "icon": "MapPin",
+        "details": [
+          "Durban, South Africa",
+          "By appointment only"
+        ],
+        "action": null,
+        "priority": 4
+      }
+    ],
+    "hours": {
+      "monday": "9:00 AM - 6:00 PM",
+      "tuesday": "9:00 AM - 6:00 PM",
+      "wednesday": "9:00 AM - 6:00 PM",
+      "thursday": "9:00 AM - 6:00 PM",
+      "friday": "9:00 AM - 6:00 PM",
+      "saturday": "10:00 AM - 4:00 PM",
+      "sunday": "By appointment",
+      "weekdaysDisplay": "Monday - Friday",
+      "weekdaysTime": "9:00 AM - 6:00 PM",
+      "saturdayDisplay": "Saturday",
+      "saturdayTime": "10:00 AM - 4:00 PM",
+      "sundayDisplay": "Sunday",
+      "sundayTime": "By appointment",
+      "note": "Evening and weekend shoots available by arrangement."
+    },
+    "responseTimes": {
+      "email": {
+        "title": "Email Inquiries",
+        "time": "Within 24 hours",
+        "description": "Detailed responses to all project inquiries"
+      },
+      "whatsapp": {
+        "title": "WhatsApp Messages",
+        "time": "Within 2 hours",
+        "description": "Quick questions and availability checks"
+      },
+      "phone": {
+        "title": "Phone Calls",
+        "time": "Immediate",
+        "description": "Direct line during business hours"
+      }
+    },
+    "serviceAreas": {
+      "primary": {
+        "title": "Primary Area:",
+        "area": "Durban Metro (no travel fees)",
+        "description": "Durban Metro"
+      },
+      "extended": {
+        "title": "Extended Area:",
+        "area": "KwaZulu-Natal Province",
+        "description": "KwaZulu-Natal Province"
+      },
+      "destination": {
+        "title": "Destination:",
+        "area": "Anywhere in South Africa & beyond",
+        "description": "Anywhere in South Africa & beyond"
+      },
+      "note": "Travel costs calculated based on distance and duration. Accommodation provided for multi-day shoots."
+    },
+    "emergency": {
+      "title": "Need Urgent Assistance?",
+      "subtitle": "For time-sensitive inquiries or last-minute bookings, contact us directly for the fastest response.",
+      "phone": "+27123456789",
+      "whatsapp": "https://wa.me/27123456789"
+    }
+  },
+  "portfolio": {
+    "featured": {
+      "imagePadding": 34,
+      "borderRadius": 28,
+      "imageCount": 6,
+      "layoutStyle": "square",
+      "borderColor": "#493732",
+      "borderColorEnd": "#394c44",
+      "borderThickness": 1,
+      "backgroundGradientStart": "#cddaee",
+      "backgroundGradientEnd": "#6e6a81",
+      "backgroundGradientMiddle": "#081b30",
+      "textColor": "#ffffff",
+      "textColorEnd": "#537093",
+      "textColorPrimary": "#ffffff",
+      "textColorSecondary": "#e2e8f0",
+      "textColorTertiary": "#94a3b8"
+    }
+  },
+  "gradients": {
+    "testimonials": {
+      "startColor": "#3b3a3a",
+      "middleColor": "#334155",
+      "endColor": "#5b5b62",
+      "direction": "135deg",
+      "opacity": 0.1,
+      "textColors": {
+        "primary": "#f7eded",
+        "secondary": "#e2e7ee",
+        "tertiary": "#97a8be"
+      }
+    },
+    "services": {
+      "startColor": "#1f2c41",
+      "middleColor": "#595959",
+      "endColor": "#25463b",
+      "direction": "135deg",
+      "textColors": {
+        "primary": "#f6eeee"
+      }
+    },
+    "portfolio": {
+      "startColor": "#cddaee",
+      "middleColor": "#081b30",
+      "endColor": "#6e6a81",
+      "direction": "135deg"
+    },
+    "privateGallery": {
+      "startColor": "#808080",
+      "middleColor": "#334155",
+      "endColor": "#a6aba7",
+      "direction": "135deg",
+      "textColors": {
+        "primary": "#fcfcfc",
+        "secondary": "#ecf1f8",
+        "tertiary": "#94a3b8"
+      }
+    },
+    "contact": {
+      "startColor": "#747b8b",
+      "middleColor": "#1e293b",
+      "endColor": "#334155",
+      "direction": "45deg",
+      "textColors": {
+        "secondary": "#e5eaf0"
+      }
+    },
+    "hero": {
+      "startColor": "#1e293b",
+      "middleColor": "#334155",
+      "endColor": "#0f172a",
+      "direction": "135deg"
+    }
+  }
+}

@@ -14,7 +14,7 @@ export function HeroSection() {
             </span>
           </>
         }
-        subtitle="Professional photography and videography services in Cape Town. Creating timeless memories through our lens, one frame at a time."
+        subtitle="Professional photography and videography services in Durban. Creating timeless memories through our lens, one frame at a time."
         primaryAction={{
           text: "View Our Work",
           onClick: () => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' }),

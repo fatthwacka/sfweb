@@ -20,6 +20,10 @@ interface FrontPageSettings {
   backgroundGradientEnd?: string;
   backgroundGradientMiddle?: string;
   textColor?: string;
+  // New text color controls
+  textColorPrimary?: string;
+  textColorSecondary?: string;
+  textColorTertiary?: string;
 }
 
 interface FrontPageSettingsProps {
@@ -49,7 +53,11 @@ export const FrontPageSettingsCard: React.FC<FrontPageSettingsProps> = ({
     backgroundGradientStart: '#1e293b', // Section background gradient start
     backgroundGradientEnd: '#0f172a', // Section background gradient end
     backgroundGradientMiddle: '#334155', // Section background gradient middle
-    textColor: '#e2e8f0' // Paragraph text color
+    textColor: '#e2e8f0', // Legacy paragraph text color
+    // New text color controls
+    textColorPrimary: '#ffffff', // Main title text
+    textColorSecondary: '#e2e8f0', // Subtitle & paragraph text
+    textColorTertiary: '#94a3b8' // All other text
   };
 
   // Hybrid state: Local state for immediate updates, server state as source of truth
@@ -65,6 +73,15 @@ export const FrontPageSettingsCard: React.FC<FrontPageSettingsProps> = ({
   // Sync local state ONLY on initial load - no auto-sync after that
   useEffect(() => {
     setLocalSettings(serverSettings);
+    
+    // On initial load, sync existing portfolio gradient to new system
+    if (serverSettings.backgroundGradientStart || serverSettings.backgroundGradientMiddle || serverSettings.backgroundGradientEnd) {
+      syncCompleteGradientToNewSystem({
+        startColor: serverSettings.backgroundGradientStart || '#1e293b',
+        middleColor: serverSettings.backgroundGradientMiddle || '#334155', 
+        endColor: serverSettings.backgroundGradientEnd || '#0f172a'
+      });
+    }
   }, []); // Only run once on mount
 
   // Local state for input fields (for immediate responsiveness)
@@ -212,22 +229,82 @@ export const FrontPageSettingsCard: React.FC<FrontPageSettingsProps> = ({
     }
   };
 
-  // Background gradient controls
+  // Background gradient controls - sync with both old and new gradient systems
   const updateGradientStart = (color: string) => {
     updateSettings({ backgroundGradientStart: color });
+    // Also sync with new gradient system
+    syncToGradientSystem('startColor', color);
   };
 
   const updateGradientMiddle = (color: string) => {
     updateSettings({ backgroundGradientMiddle: color });
+    // Also sync with new gradient system
+    syncToGradientSystem('middleColor', color);
   };
 
   const updateGradientEnd = (color: string) => {
     updateSettings({ backgroundGradientEnd: color });
+    // Also sync with new gradient system
+    syncToGradientSystem('endColor', color);
   };
 
-  // Text color control
+  // Sync portfolio gradient changes to new gradient system
+  const syncToGradientSystem = (colorKey: string, color: string) => {
+    // Update the new gradient system structure
+    fetch('/api/site-config/bulk', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        gradients: {
+          portfolio: {
+            [colorKey]: color,
+            direction: '135deg' // Default direction for portfolio
+          }
+        }
+      }),
+    }).catch(error => {
+      console.error('Failed to sync portfolio gradient to new system:', error);
+    });
+  };
+
+  // Sync complete gradient set to new system (for initial load)
+  const syncCompleteGradientToNewSystem = (gradient: {startColor: string, middleColor: string, endColor: string}) => {
+    fetch('/api/site-config/bulk', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        gradients: {
+          portfolio: {
+            startColor: gradient.startColor,
+            middleColor: gradient.middleColor,
+            endColor: gradient.endColor,
+            direction: '135deg' // Default direction for portfolio
+          }
+        }
+      }),
+    }).catch(error => {
+      console.error('Failed to sync complete portfolio gradient to new system:', error);
+    });
+  };
+
+  // Text color control (legacy)
   const updateTextColor = (color: string) => {
     updateSettings({ textColor: color });
+  };
+
+  // New text color controls
+  const updateTextColorPrimary = (color: string) => {
+    updateSettings({ textColorPrimary: color });
+  };
+  const updateTextColorSecondary = (color: string) => {
+    updateSettings({ textColorSecondary: color });
+  };
+  const updateTextColorTertiary = (color: string) => {
+    updateSettings({ textColorTertiary: color });
   };
 
   return (
@@ -507,6 +584,119 @@ export const FrontPageSettingsCard: React.FC<FrontPageSettingsProps> = ({
                 />
                 <div className="flex-1"></div>
                 <div className="flex-1"></div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Third Row - Text Color Controls */}
+          <div className="flex gap-4 mt-6">
+
+            {/* Main Title Text */}
+            <div className="gallery-slider-container flex-1">
+              <div className="gallery-slider-header">
+                <Label className="gallery-slider-label">Main Title Text</Label>
+              </div>
+              <div className="flex gap-1">
+                <div
+                  className={`flex-1 h-8 rounded cursor-pointer transition-all hover:scale-105 border-2 ${
+                    (localSettings.textColorPrimary === 'var(--color-salmon)' || localSettings.textColorPrimary === 'hsl(16, 100%, 73%)') ? 'border-white' : 'border-slate-500'
+                  }`}
+                  style={{ backgroundColor: 'hsl(16, 100%, 73%)' }}
+                  onClick={() => updateTextColorPrimary('var(--color-salmon)')}
+                  title="Theme Primary Color (Salmon)"
+                />
+                <div
+                  className={`flex-1 h-8 rounded cursor-pointer transition-all hover:scale-105 border-2 ${
+                    (localSettings.textColorPrimary === 'var(--color-cyan)' || localSettings.textColorPrimary === 'hsl(180, 100%, 50%)') ? 'border-white' : 'border-slate-500'
+                  }`}
+                  style={{ backgroundColor: 'hsl(180, 100%, 50%)' }}
+                  onClick={() => updateTextColorPrimary('var(--color-cyan)')}
+                  title="Theme Secondary Color (Cyan)"
+                />
+                <input
+                  type="color"
+                  value={localSettings.textColorPrimary?.startsWith('var(') ? '#ffffff' : (localSettings.textColorPrimary || '#ffffff')}
+                  onChange={(e) => updateTextColorPrimary(e.target.value)}
+                  className="flex-1 h-8 rounded cursor-pointer custom-color-input border-2 border-slate-500 hover:border-slate-400 transition-colors"
+                  title="Custom Color Picker"
+                />
+              </div>
+            </div>
+
+            {/* Subtitle & Paragraph Text */}
+            <div className="gallery-slider-container flex-1">
+              <div className="gallery-slider-header">
+                <Label className="gallery-slider-label">Subtitle & Paragraph Text</Label>
+              </div>
+              <div className="flex gap-1">
+                <div
+                  className={`flex-1 h-8 rounded cursor-pointer transition-all hover:scale-105 border-2 ${
+                    (localSettings.textColorSecondary === 'var(--color-salmon)' || localSettings.textColorSecondary === 'hsl(16, 100%, 73%)') ? 'border-white' : 'border-slate-500'
+                  }`}
+                  style={{ backgroundColor: 'hsl(16, 100%, 73%)' }}
+                  onClick={() => updateTextColorSecondary('var(--color-salmon)')}
+                  title="Theme Primary Color (Salmon)"
+                />
+                <div
+                  className={`flex-1 h-8 rounded cursor-pointer transition-all hover:scale-105 border-2 ${
+                    (localSettings.textColorSecondary === 'var(--color-cyan)' || localSettings.textColorSecondary === 'hsl(180, 100%, 50%)') ? 'border-white' : 'border-slate-500'
+                  }`}
+                  style={{ backgroundColor: 'hsl(180, 100%, 50%)' }}
+                  onClick={() => updateTextColorSecondary('var(--color-cyan)')}
+                  title="Theme Secondary Color (Cyan)"
+                />
+                <input
+                  type="color"
+                  value={localSettings.textColorSecondary?.startsWith('var(') ? '#e2e8f0' : (localSettings.textColorSecondary || '#e2e8f0')}
+                  onChange={(e) => updateTextColorSecondary(e.target.value)}
+                  className="flex-1 h-8 rounded cursor-pointer custom-color-input border-2 border-slate-500 hover:border-slate-400 transition-colors"
+                  title="Custom Color Picker"
+                />
+              </div>
+            </div>
+
+            {/* All Other Text */}
+            <div className="gallery-slider-container flex-1">
+              <div className="gallery-slider-header">
+                <Label className="gallery-slider-label">All Other Text</Label>
+              </div>
+              <div className="flex gap-1">
+                <div
+                  className={`flex-1 h-8 rounded cursor-pointer transition-all hover:scale-105 border-2 ${
+                    (localSettings.textColorTertiary === 'var(--color-salmon)' || localSettings.textColorTertiary === 'hsl(16, 100%, 73%)') ? 'border-white' : 'border-slate-500'
+                  }`}
+                  style={{ backgroundColor: 'hsl(16, 100%, 73%)' }}
+                  onClick={() => updateTextColorTertiary('var(--color-salmon)')}
+                  title="Theme Primary Color (Salmon)"
+                />
+                <div
+                  className={`flex-1 h-8 rounded cursor-pointer transition-all hover:scale-105 border-2 ${
+                    (localSettings.textColorTertiary === 'var(--color-cyan)' || localSettings.textColorTertiary === 'hsl(180, 100%, 50%)') ? 'border-white' : 'border-slate-500'
+                  }`}
+                  style={{ backgroundColor: 'hsl(180, 100%, 50%)' }}
+                  onClick={() => updateTextColorTertiary('var(--color-cyan)')}
+                  title="Theme Secondary Color (Cyan)"
+                />
+                <input
+                  type="color"
+                  value={localSettings.textColorTertiary?.startsWith('var(') ? '#94a3b8' : (localSettings.textColorTertiary || '#94a3b8')}
+                  onChange={(e) => updateTextColorTertiary(e.target.value)}
+                  className="flex-1 h-8 rounded cursor-pointer custom-color-input border-2 border-slate-500 hover:border-slate-400 transition-colors"
+                  title="Custom Color Picker"
+                />
+              </div>
+            </div>
+
+            {/* Empty slot for alignment */}
+            <div className="gallery-slider-container flex-1 opacity-50">
+              <div className="gallery-slider-header">
+                <Label className="gallery-slider-label text-gray-500">Reserved</Label>
+              </div>
+              <div className="flex gap-1">
+                <div className="flex-1 h-8 bg-gray-700 rounded border border-gray-600"></div>
+                <div className="flex-1 h-8 bg-gray-700 rounded border border-gray-600"></div>
+                <div className="flex-1 h-8 bg-gray-700 rounded border border-gray-600"></div>
               </div>
             </div>
 

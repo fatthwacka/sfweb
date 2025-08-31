@@ -12,14 +12,8 @@ export function useScrollToTop() {
   }, []);
   
   useEffect(() => {
-    // Immediate scroll to top
+    // Only scroll to top on actual page navigation, not on same-page scrolling
+    // Immediate scroll to top only
     window.scrollTo(0, 0);
-    
-    // Also scroll to top after a short delay to handle any late-loading content
-    const timeoutId = setTimeout(() => {
-      window.scrollTo(0, 0);
-    }, 100);
-    
-    return () => clearTimeout(timeoutId);
   }, [location]);
 }

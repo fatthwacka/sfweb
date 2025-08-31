@@ -34,8 +34,8 @@ export function HeroSectionEditor({ onChange, onSave }: HeroSectionEditorProps) 
     gradientColors: ['rgba(0,0,0,0.4)', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.4)'],
     
     // SEO
-    imageAlt: 'Professional photography services in Cape Town by SlyFox Studios',
-    seoDescription: 'Book your photography session with Cape Town\'s premier studio',
+    imageAlt: 'Professional photography services in Durban by SlyFox Studios',
+    seoDescription: 'Book your photography session with Durban\'s premier studio',
     structuredData: {
       '@type': 'Service',
       'name': 'Professional Photography Services',

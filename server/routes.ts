@@ -11,6 +11,8 @@ import { initializeAdmin } from './init-admin.js';
 import { createClient } from '@supabase/supabase-js';
 import simpleAssetsRouter from './routes/simple-assets';
 import siteConfigRouter from './site-config-api';
+import { sendContactEmail, validateEmailConfig } from './email-service';
+import { verifyRecaptcha } from './recaptcha-service';
 import { 
   insertUserSchema, insertClientSchema, insertShootSchema, 
   insertImageSchema, insertBookingSchema, insertAnalyticsSchema,
@@ -227,10 +229,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: z.string().email(),
         phone: z.string().optional(),
         service: z.string().optional(),
-        message: z.string().min(1)
+        message: z.string().min(1),
+        recaptchaToken: z.string().optional()
       });
 
       const data = contactSchema.parse(req.body);
+      
+      // Verify reCAPTCHA if token is provided
+      if (data.recaptchaToken) {
+        const recaptchaResult = await verifyRecaptcha(data.recaptchaToken);
+        if (!recaptchaResult.success) {
+          console.warn('🤖 Potential bot detected:', recaptchaResult.error);
+          return res.status(400).json({ 
+            message: "Security verification failed. Please try again.",
+            details: recaptchaResult.error
+          });
+        }
+        console.log(`✅ Human verified with score: ${recaptchaResult.score}`);
+      }
       
       // Create booking inquiry
       const booking = await storage.createBooking({
@@ -249,8 +265,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
       });
 
-      // TODO: Send email to info@slyfox.co.za using Nodemailer
-      console.log("Contact form submission:", data);
+      // Send email notification to dax@slyfox.co.za
+      console.log("📧 Contact form submission received:", data);
+      
+      try {
+        await sendContactEmail(data);
+        console.log("✅ Email sent successfully to dax@slyfox.co.za");
+      } catch (emailError) {
+        console.error("❌ Email sending failed:", emailError);
+        // Continue with success response even if email fails
+        // Contact is still saved to database
+      }
       
       res.json({ success: true, bookingId: booking.id });
     } catch (error) {
@@ -1334,6 +1359,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('File upload error:', error);
       res.status(500).json({ message: 'Failed to upload file' });
+    }
+  });
+
+  // Browse all site images endpoint
+  app.get("/api/browse-images", async (req, res) => {
+    try {
+      const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif', '.svg'];
+      const imageFolders: { [key: string]: string[] } = {};
+      
+      // Define image folders to scan
+      const foldersToScan = [
+        'uploads',
+        'images/hero', 
+        'images/gallery',
+        'images/backgrounds',
+        'images/portfolio',
+        'images/services',
+        'images/testimonials',
+        'images/logos',
+        'assets/hero'
+      ];
+      
+      foldersToScan.forEach(folder => {
+        const fullPath = path.join(process.cwd(), 'public', folder);
+        
+        if (fs.existsSync(fullPath)) {
+          try {
+            const files = fs.readdirSync(fullPath, { withFileTypes: true })
+              .filter(dirent => dirent.isFile())
+              .map(dirent => dirent.name)
+              .filter(file => imageExtensions.some(ext => file.toLowerCase().endsWith(ext)))
+              .map(file => `/${folder}/${file}`)
+              .sort(); // Sort alphabetically
+            
+            if (files.length > 0) {
+              const folderName = folder.includes('/') 
+                ? folder.split('/').join(' ').replace('images ', '') 
+                : folder;
+              imageFolders[folderName] = files;
+            }
+          } catch (error) {
+            console.warn(`Warning: Could not read folder ${folder}:`, error);
+          }
+        }
+      });
+      
+      console.log(`📸 Image browser found ${Object.keys(imageFolders).length} folders with images`);
+      res.json(imageFolders);
+      
+    } catch (error) {
+      console.error('Error browsing images:', error);
+      res.status(500).json({ 
+        message: 'Failed to browse images',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 

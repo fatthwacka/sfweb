@@ -131,7 +131,7 @@ export const localSiteAssets = pgTable("local_site_assets", {
   id: uuid("id").defaultRandom().primaryKey(),
   assetKey: varchar("asset_key", { length: 100 }).notNull().unique(), // 'hero-main', 'bg-contact', etc
   assetType: varchar("asset_type", { length: 50 }).notNull(), // 'hero', 'background', 'video'
-  filePath: varchar("file_path", { length: 500 }).notNull(), // '/assets/hero/cape-town-photography-studio-hero'
+  filePath: varchar("file_path", { length: 500 }).notNull(), // '/assets/hero/durban-photography-studio-hero'
   altText: varchar("alt_text", { length: 255 }),
   seoKeywords: varchar("seo_keywords", { length: 500 }),
   isActive: boolean("is_active").default(true).notNull(),

@@ -192,7 +192,7 @@ export class MemStorage implements IStorage {
       name: "Demo Client",
       email: "demo@slyfox.co.za",
       phone: "+27 82 555 0123",
-      address: "123 Demo Street, Cape Town, 8001",
+      address: "123 Demo Street, Durban, 8001",
       slug: "demo-client",
       userId: clientUser.id,
       createdAt: new Date()
@@ -218,7 +218,7 @@ export class MemStorage implements IStorage {
       name: "Sarah Johnson",
       email: "sarah@example.com",
       phone: "+27 83 123 4567",
-      address: "123 Main Street, Cape Town, 8001",
+      address: "123 Main Street, Durban, 8001",
       slug: "sarah-johnson",
       userId: clientUser.id,
       createdAt: new Date()
@@ -245,7 +245,7 @@ export class MemStorage implements IStorage {
       description: "A sample gallery showcasing SlyFox Studios' photography work",
       shootType: "photography",
       shootDate: new Date("2024-01-20"),
-      location: "V&A Waterfront, Cape Town",
+      location: "V&A Waterfront, Durban",
       notes: "Demo shoot for client gallery testing",
       customSlug: "demo-portfolio-2024",
       customTitle: "SlyFox Demo Gallery",
@@ -256,7 +256,7 @@ export class MemStorage implements IStorage {
       imagePadding: 8,
       albumCoverId: null,
       viewCount: 0,
-      seoTags: "demo portfolio photography cape town slyfox studios",
+      seoTags: "demo portfolio photography durban slyfox studios",
       createdAt: new Date()
     };
     this.shoots.set(demoShoot.id, demoShoot);
@@ -266,10 +266,10 @@ export class MemStorage implements IStorage {
       id: this.currentShootId++,
       clientId: testClient1.id,
       title: "Sarah's Portrait Session",
-      description: "A beautiful outdoor portrait session in Kirstenbosch Gardens",
+      description: "A beautiful outdoor portrait session in Durban Botanic Gardens Gardens",
       shootType: "photography",
       shootDate: new Date("2024-01-15"),
-      location: "Kirstenbosch Botanical Gardens, Cape Town",
+      location: "Durban Botanic Gardens Botanical Gardens, Durban",
       notes: "Golden hour session with natural lighting",
       customSlug: "sarah-portraits-2024",
       customTitle: "Golden Hour Portraits",
@@ -280,7 +280,7 @@ export class MemStorage implements IStorage {
       imagePadding: 8,
       albumCoverId: null,
       viewCount: 0,
-      seoTags: "portrait photography cape town kirstenbosch natural light",
+      seoTags: "portrait photography durban durban botanic gardens natural light",
       createdAt: new Date()
     };
     this.shoots.set(portraitShoot.id, portraitShoot);
@@ -315,7 +315,7 @@ export class MemStorage implements IStorage {
       description: "Annual family portrait session at the beach",
       shootType: "photography",
       shootDate: new Date("2024-03-10"),
-      location: "Camps Bay Beach, Cape Town", 
+      location: "uShaka Beach Beach, Durban", 
       notes: "Beach session during sunset",
       customSlug: "johnson-family-2024",
       customTitle: "Family Moments by the Sea",
@@ -326,7 +326,7 @@ export class MemStorage implements IStorage {
       imagePadding: 12,
       albumCoverId: null,
       viewCount: 0,
-      seoTags: "family photography camps bay beach sunset cape town",
+      seoTags: "family photography ushaka beach beach sunset durban",
       createdAt: new Date()
     };
     this.shoots.set(familyShoot.id, familyShoot);
@@ -466,92 +466,92 @@ export class MemStorage implements IStorage {
     // Initialize local site assets for all 12 asset keys with SEO-optimized names
     const siteAssets = [
       {
-        assetKey: 'hero/cape-town-wedding-photography-slyfox-studios',
+        assetKey: 'hero/durban-wedding-photography-slyfox-studios',
         assetType: 'hero',
-        filePath: '/assets/hero/cape-town-wedding-photography-slyfox-studios-ni.jpg',
-        altText: 'Professional Cape Town wedding photography by SlyFox Studios',
-        seoKeywords: 'cape-town-wedding-photography-slyfox-studios',
+        filePath: '/assets/hero/durban-wedding-photography-slyfox-studios-ni.jpg',
+        altText: 'Professional Durban wedding photography by SlyFox Studios',
+        seoKeywords: 'durban-wedding-photography-slyfox-studios',
         isActive: true,
         updatedBy: 'system'
       },
       {
-        assetKey: 'hero/professional-photography-services-cape-town',
+        assetKey: 'hero/professional-photography-services-durban',
         assetType: 'hero',
-        filePath: '/assets/hero/professional-photography-services-cape-town-ni.jpg',
-        altText: 'Professional photography services in Cape Town',
-        seoKeywords: 'professional-photography-services-cape-town',
+        filePath: '/assets/hero/professional-photography-services-durban-ni.jpg',
+        altText: 'Professional photography services in Durban',
+        seoKeywords: 'professional-photography-services-durban',
         isActive: true,
         updatedBy: 'system'
       },
       {
-        assetKey: 'hero/cape-town-wedding-photographer-portfolio',
+        assetKey: 'hero/durban-wedding-photographer-portfolio',
         assetType: 'hero',
-        filePath: '/assets/hero/cape-town-wedding-photographer-portfolio-ni.jpg',
-        altText: 'Cape Town wedding photographer portfolio showcase',
-        seoKeywords: 'cape-town-wedding-photographer-portfolio',
+        filePath: '/assets/hero/durban-wedding-photographer-portfolio-ni.jpg',
+        altText: 'Durban wedding photographer portfolio showcase',
+        seoKeywords: 'durban-wedding-photographer-portfolio',
         isActive: true,
         updatedBy: 'system'
       },
       {
-        assetKey: 'hero/portrait-photographer-cape-town-studio',
+        assetKey: 'hero/portrait-photographer-durban-studio',
         assetType: 'hero',
-        filePath: '/assets/hero/portrait-photographer-cape-town-studio-ni.jpg',
-        altText: 'Professional portrait photographer in Cape Town studio',
-        seoKeywords: 'portrait-photographer-cape-town-studio',
+        filePath: '/assets/hero/portrait-photographer-durban-studio-ni.jpg',
+        altText: 'Professional portrait photographer in Durban studio',
+        seoKeywords: 'portrait-photographer-durban-studio',
         isActive: true,
         updatedBy: 'system'
       },
       {
-        assetKey: 'hero/corporate-photography-cape-town-business',
+        assetKey: 'hero/corporate-photography-durban-business',
         assetType: 'hero',
-        filePath: '/assets/hero/corporate-photography-cape-town-business-ni.jpg',
-        altText: 'Corporate photography services for Cape Town businesses',
-        seoKeywords: 'corporate-photography-cape-town-business',
+        filePath: '/assets/hero/corporate-photography-durban-business-ni.jpg',
+        altText: 'Corporate photography services for Durban businesses',
+        seoKeywords: 'corporate-photography-durban-business',
         isActive: true,
         updatedBy: 'system'
       },
       {
-        assetKey: 'hero/event-photographer-cape-town-professional',
+        assetKey: 'hero/event-photographer-durban-professional',
         assetType: 'hero',
-        filePath: '/assets/hero/event-photographer-cape-town-professional-ni.jpg',
-        altText: 'Professional event photographer in Cape Town',
-        seoKeywords: 'event-photographer-cape-town-professional',
+        filePath: '/assets/hero/event-photographer-durban-professional-ni.jpg',
+        altText: 'Professional event photographer in Durban',
+        seoKeywords: 'event-photographer-durban-professional',
         isActive: true,
         updatedBy: 'system'
       },
       {
-        assetKey: 'hero/graduation-photography-cape-town-ceremony',
+        assetKey: 'hero/graduation-photography-durban-ceremony',
         assetType: 'hero',
-        filePath: '/assets/hero/graduation-photography-cape-town-ceremony-ni.jpg',
-        altText: 'Graduation ceremony photography in Cape Town',
-        seoKeywords: 'graduation-photography-cape-town-ceremony',
+        filePath: '/assets/hero/graduation-photography-durban-ceremony-ni.jpg',
+        altText: 'Graduation ceremony photography in Durban',
+        seoKeywords: 'graduation-photography-durban-ceremony',
         isActive: true,
         updatedBy: 'system'
       },
       {
-        assetKey: 'hero/product-photography-cape-town-commercial',
+        assetKey: 'hero/product-photography-durban-commercial',
         assetType: 'hero',
-        filePath: '/assets/hero/product-photography-cape-town-commercial-ni.jpg',
-        altText: 'Commercial product photography services in Cape Town',
-        seoKeywords: 'product-photography-cape-town-commercial',
+        filePath: '/assets/hero/product-photography-durban-commercial-ni.jpg',
+        altText: 'Commercial product photography services in Durban',
+        seoKeywords: 'product-photography-durban-commercial',
         isActive: true,
         updatedBy: 'system'
       },
       {
-        assetKey: 'hero/matric-dance-photographer-cape-town',
+        assetKey: 'hero/matric-dance-photographer-durban',
         assetType: 'hero',
-        filePath: '/assets/hero/matric-dance-photographer-cape-town-ni.jpg',
-        altText: 'Matric dance photographer in Cape Town',
-        seoKeywords: 'matric-dance-photographer-cape-town',
+        filePath: '/assets/hero/matric-dance-photographer-durban-ni.jpg',
+        altText: 'Matric dance photographer in Durban',
+        seoKeywords: 'matric-dance-photographer-durban',
         isActive: true,
         updatedBy: 'system'
       },
       {
-        assetKey: 'backgrounds/photography-studio-cape-town-texture',
+        assetKey: 'backgrounds/photography-studio-durban-texture',
         assetType: 'background',
-        filePath: '/assets/backgrounds/photography-studio-cape-town-texture-ni.jpg',
-        altText: 'Cape Town photography studio background texture',
-        seoKeywords: 'photography-studio-cape-town-texture',
+        filePath: '/assets/backgrounds/photography-studio-durban-texture-ni.jpg',
+        altText: 'Durban photography studio background texture',
+        seoKeywords: 'photography-studio-durban-texture',
         isActive: true,
         updatedBy: 'system'
       },

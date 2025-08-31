@@ -1,6 +1,5 @@
 import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
-import { PricingSection } from "@/components/sections/pricing-section";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Check, Download, Camera, Video } from "lucide-react";
@@ -36,7 +35,7 @@ const faqs = [
     answer: "Standard delivery is 2-3 weeks for photography and 3-4 weeks for videography. Rush delivery is available for an additional fee."
   },
   {
-    question: "Do you travel outside Cape Town?",
+    question: "Do you travel outside Durban?",
     answer: "Yes! We love destination shoots. Travel costs are calculated based on distance and accommodation requirements."
   },
   {
@@ -57,35 +56,15 @@ export default function Pricing() {
   return (
     <div className="min-h-screen bg-background text-foreground background-gradient-blobs">
       {/* SEO Meta Tags */}
-      <title>Photography & Videography Pricing Cape Town | SlyFox Studios</title>
-      <meta name="description" content="Transparent pricing for professional photography and videography services in Cape Town. Wedding, corporate, portrait, and event packages available. Download our detailed price guide." />
-      <meta name="keywords" content="Cape Town photography prices, wedding photography cost, corporate photography rates, videography pricing, photography packages South Africa" />
+      <title>Photography & Videography Pricing Durban | SlyFox Studios</title>
+      <meta name="description" content="Transparent pricing for professional photography and videography services in Durban. Wedding, corporate, portrait, and event packages available. Download our detailed price guide." />
+      <meta name="keywords" content="Durban photography prices, wedding photography cost, corporate photography rates, videography pricing, photography packages South Africa" />
       
       <Navigation />
       
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 bg-gradient-to-br from-violet-900/40 via-background to-purple-900/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h1 className="mb-6">
-              Transparent Pricing
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-              Professional photography and videography services with clear, honest pricing. No hidden fees, no surprises—just exceptional value for your investment.
-            </p>
-            <Button className="btn-salmon">
-              <Download className="w-5 h-5 mr-2 icon-salmon" />
-              Download Full Price Guide
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Photography Pricing */}
-      <PricingSection />
 
       {/* Videography Pricing */}
-      <section className="py-20 bg-gradient-to-br from-blue-900/40 via-background to-indigo-900/30">
+      <section className="pt-32 pb-20 bg-gradient-to-br from-blue-900/40 via-background to-indigo-900/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6 h2-cyan">

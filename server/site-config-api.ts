@@ -59,6 +59,28 @@ async function loadConfigOverrides(): Promise<any> {
   }
 })();
 
+// Get photography configuration specifically
+router.get('/api/site-config/photography', async (req, res) => {
+  try {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    
+    // Return the photography section from config overrides if it exists
+    if (configOverrides.photography) {
+      return res.json(configOverrides.photography);
+    }
+    
+    // If no custom photography config, return 404 so frontend falls back to defaults
+    return res.status(404).json({ 
+      error: 'No custom photography configuration found' 
+    });
+  } catch (error) {
+    console.error('❌ Error fetching photography config:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Get current site configuration
 router.get('/api/site-config', async (req, res) => {
   try {
@@ -80,12 +102,12 @@ router.get('/api/site-config', async (req, res) => {
           whatsapp: "+27 12 345 6789",
           bookingEmail: "bookings@slyfox.co.za",
           address: {
-            street: "Cape Town, South Africa",
-            city: "Cape Town",
-            province: "Western Cape",
+            street: "Durban, South Africa",
+            city: "Durban",
+            province: "KwaZulu-Natal",
             postal: "8001",
             country: "South Africa",
-            displayText: "Cape Town, South Africa"
+            displayText: "Durban, South Africa"
           }
         },
         methods: [
@@ -117,7 +139,7 @@ router.get('/api/site-config', async (req, res) => {
             type: "location",
             title: "Visit Us",
             icon: "MapPin", 
-            details: ["Cape Town, South Africa", "By appointment only"],
+            details: ["Durban, South Africa", "By appointment only"],
             action: null,
             priority: 4
           }
@@ -158,13 +180,13 @@ router.get('/api/site-config', async (req, res) => {
         serviceAreas: {
           primary: {
             title: "Primary Area:",
-            area: "Cape Town Metro (no travel fees)",
-            description: "Cape Town Metro"
+            area: "Durban Metro (no travel fees)",
+            description: "Durban Metro"
           },
           extended: {
             title: "Extended Area:",
-            area: "Western Cape Province", 
-            description: "Western Cape Province"
+            area: "KwaZulu-Natal Province", 
+            description: "KwaZulu-Natal Province"
           },
           destination: {
             title: "Destination:",
@@ -275,6 +297,922 @@ router.get('/api/site-config', async (req, res) => {
           backgroundGradientEnd: "#0f172a",
           textColor: "#e2e8f0"
         }
+      },
+      categoryPages: {
+        photography: {
+          weddings: {
+            hero: {
+              image: "/images/hero/wedding-photography-hero.jpg",
+              title: "Wedding Photography",
+              subtitle: "Love stories captured timelessly",
+              ctaText: "Book Session"
+            },
+            serviceOverview: {
+              title: "Professional Wedding Photography",
+              description: "Your wedding day is one of the most important days of your life, and we're here to ensure every precious moment is captured with artistic vision and emotional depth.",
+              features: [
+                "Engagement session included",
+                "Full ceremony coverage", 
+                "Reception photography",
+                "Bridal party portraits",
+                "Family group photos",
+                "Detail shots of decor",
+                "Online gallery delivery",
+                "High-resolution downloads"
+              ],
+              gradients: {
+                startColor: "hsl(305, 100%, 15%)",
+                middleColor: "hsl(280, 70%, 12%)",
+                endColor: "hsl(260, 60%, 10%)",
+                direction: "to right",
+                opacity: 0.9,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            packages: {
+              title: "Wedding Photography Packages",
+              description: "Choose the perfect package for your needs. All packages include professional editing and digital delivery.",
+              tiers: [
+                {
+                  id: "essential",
+                  name: "Essential",
+                  price: "R8,500",
+                  duration: "6 hours",
+                  features: [
+                    "Pre-wedding consultation",
+                    "6 hours coverage",
+                    "200+ edited photos",
+                    "Online gallery",
+                    "USB drive"
+                  ],
+                  isPopular: false
+                },
+                {
+                  id: "premium",
+                  name: "Premium", 
+                  price: "R12,500",
+                  duration: "8 hours",
+                  features: [
+                    "Engagement session",
+                    "8 hours coverage",
+                    "400+ edited photos",
+                    "Premium gallery",
+                    "USB drive",
+                    "Print release"
+                  ],
+                  isPopular: true
+                },
+                {
+                  id: "elite",
+                  name: "Elite",
+                  price: "R18,500",
+                  duration: "Full day",
+                  features: [
+                    "Engagement session",
+                    "Full day coverage",
+                    "600+ edited photos",
+                    "Luxury gallery",
+                    "2 photographers",
+                    "Photo album",
+                    "Print release"
+                  ],
+                  isPopular: false
+                }
+              ],
+              gradients: {
+                startColor: "hsl(200, 100%, 15%)",
+                middleColor: "hsl(190, 70%, 12%)",
+                endColor: "hsl(180, 60%, 10%)",
+                direction: "to right",
+                opacity: 0.8,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            recentWork: {
+              title: "Recent Work",
+              description: "Browse our latest wedding photography projects",
+              images: [
+                "/images/gallery/wedding-gallery-1.jpg",
+                "/images/gallery/wedding-gallery-2.jpg",
+                "/images/gallery/wedding-gallery-3.jpg"
+              ],
+              gradients: {
+                startColor: "hsl(340, 100%, 15%)",
+                middleColor: "hsl(320, 70%, 12%)",
+                endColor: "hsl(300, 60%, 10%)",
+                direction: "to right",
+                opacity: 0.7,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            seoContent: {
+              title: "Professional Wedding Photography in Durban",
+              content: {
+                section1: {
+                  title: "Durban Wedding Photography Specialists",
+                  text: "Our Durban wedding photography team specializes in capturing the most precious moments of your special day. With years of experience in wedding photography, we understand the importance of preserving every emotion, every glance, and every celebration that makes your wedding unique."
+                },
+                section2: {
+                  title: "Wedding Photography Packages and Pricing",
+                  text: "We offer comprehensive wedding photography packages designed to fit different budgets and requirements. Our wedding photography services include engagement sessions, full wedding day coverage, professional editing, and beautiful wedding albums."
+                },
+                conclusion: "Book your Durban wedding photographer today and ensure your special day is captured with the artistry and professionalism it deserves. Our wedding photography team is committed to creating timeless images that you'll treasure for a lifetime."
+              },
+              gradients: {
+                startColor: "hsl(220, 13%, 18%)",
+                middleColor: "hsl(220, 13%, 15%)",
+                endColor: "hsl(220, 13%, 12%)",
+                direction: "to right",
+                opacity: 1,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            seo: {
+              title: "Wedding Photography Durban | SlyFox Studios",
+              description: "Capture your special day with timeless elegance and emotion. Professional wedding photography services in Durban.",
+              keywords: "Durban wedding photographer, wedding photography Durban, South African wedding photographer, bridal photography, wedding ceremony photography"
+            }
+          },
+          portraits: {
+            hero: {
+              image: "/images/hero/portrait-photography-hero.jpg",
+              title: "Portrait Photography",
+              subtitle: "Professional headshots and personal portraits",
+              ctaText: "Book Session"
+            },
+            serviceOverview: {
+              title: "Professional Portrait Photography",
+              description: "Whether you need professional headshots for your career or personal portraits that capture your essence, our portrait sessions are designed to make you look and feel your best.",
+              features: [
+                "Professional lighting setup",
+                "Multiple outfit changes",
+                "Variety of backgrounds",
+                "Posing guidance",
+                "Immediate preview",
+                "Professional retouching",
+                "Multiple format delivery",
+                "Print-ready files"
+              ],
+              gradients: {
+                startColor: "hsl(260, 100%, 15%)",
+                middleColor: "hsl(240, 70%, 12%)",
+                endColor: "hsl(220, 60%, 10%)",
+                direction: "to right",
+                opacity: 0.9,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            packages: {
+              title: "Portrait Photography Packages",
+              description: "Professional portrait packages designed to meet your specific needs and budget.",
+              tiers: [
+                {
+                  id: "basic",
+                  name: "Basic",
+                  price: "R1,500",
+                  duration: "1 hour",
+                  features: [
+                    "1 hour session",
+                    "1 outfit",
+                    "10 edited photos",
+                    "Online gallery",
+                    "Print release"
+                  ],
+                  isPopular: false
+                },
+                {
+                  id: "professional",
+                  name: "Professional",
+                  price: "R2,500",
+                  duration: "2 hours",
+                  features: [
+                    "2 hour session",
+                    "3 outfits",
+                    "25 edited photos",
+                    "Multiple backgrounds",
+                    "LinkedIn optimization"
+                  ],
+                  isPopular: true
+                },
+                {
+                  id: "premium",
+                  name: "Premium",
+                  price: "R3,500",
+                  duration: "3 hours",
+                  features: [
+                    "3 hour session",
+                    "Unlimited outfits",
+                    "50 edited photos",
+                    "Studio & location",
+                    "Professional makeup consultation"
+                  ],
+                  isPopular: false
+                }
+              ],
+              gradients: {
+                startColor: "hsl(180, 100%, 15%)",
+                middleColor: "hsl(160, 70%, 12%)",
+                endColor: "hsl(140, 60%, 10%)",
+                direction: "to right",
+                opacity: 0.8,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            recentWork: {
+              title: "Recent Work",
+              description: "Browse our latest portrait photography projects",
+              images: [
+                "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+                "https://images.unsplash.com/photo-1494790108755-2616b612b8c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+              ],
+              gradients: {
+                startColor: "hsl(320, 100%, 15%)",
+                middleColor: "hsl(300, 70%, 12%)",
+                endColor: "hsl(280, 60%, 10%)",
+                direction: "to right",
+                opacity: 0.7,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            seoContent: {
+              title: "Professional Portrait Photography in Durban",
+              content: {
+                section1: {
+                  title: "Durban Portrait Photography Specialists",
+                  text: "Our Durban portrait photography team specializes in creating professional headshots and personal portraits that capture your unique personality and professional brand."
+                },
+                section2: {
+                  title: "Portrait Photography Services and Packages",
+                  text: "We offer comprehensive portrait photography services including corporate headshots, LinkedIn profiles, personal branding photography, and family portraits. Each session is tailored to your specific needs."
+                },
+                conclusion: "Book your Durban portrait photographer today and ensure your professional image reflects your best self. Our portrait photography team is committed to creating stunning images that enhance your personal and professional brand."
+              },
+              gradients: {
+                startColor: "hsl(220, 13%, 18%)",
+                middleColor: "hsl(220, 13%, 15%)",
+                endColor: "hsl(220, 13%, 12%)",
+                direction: "to right",
+                opacity: 1,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            seo: {
+              title: "Professional Portrait Photography Durban | SlyFox Studios",
+              description: "Professional headshots and personal portraits that tell your story with confidence and style.",
+              keywords: "Durban portrait photographer, professional headshots Durban, executive portraits, personal branding photography, corporate headshots South Africa"
+            }
+          },
+          corporate: {
+            hero: {
+              image: "/images/hero/corporate-photography-hero.jpg",
+              title: "Corporate Photography",
+              subtitle: "Elevate your business image with professional corporate photography",
+              ctaText: "Book Session"
+            },
+            serviceOverview: {
+              title: "Professional Corporate Photography Services",
+              description: "Professional corporate photography is essential for building trust and credibility in today's business world. We provide comprehensive corporate photography services including executive portraits, team photos, office environments, and corporate event coverage.",
+              features: [
+                "Executive portraits",
+                "Team photography",
+                "Office environment shots",
+                "Corporate event coverage",
+                "Brand consistency",
+                "Quick turnaround",
+                "Professional editing",
+                "Multiple format delivery"
+              ],
+              gradients: {
+                startColor: "hsl(210, 100%, 15%)",
+                middleColor: "hsl(200, 70%, 12%)",
+                endColor: "hsl(190, 60%, 10%)",
+                direction: "to right",
+                opacity: 0.9,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            packages: {
+              title: "Corporate Photography Packages",
+              description: "Professional corporate photography packages designed for businesses of all sizes.",
+              tiers: [
+                {
+                  id: "executive",
+                  name: "Executive",
+                  price: "R3,500",
+                  duration: "Half day",
+                  features: [
+                    "5 executive portraits",
+                    "Professional lighting",
+                    "Multiple poses",
+                    "Same-day editing",
+                    "LinkedIn ready"
+                  ],
+                  isPopular: false
+                },
+                {
+                  id: "team",
+                  name: "Team",
+                  price: "R5,500",
+                  duration: "Full day",
+                  features: [
+                    "Up to 20 team members",
+                    "Individual portraits",
+                    "Group photos",
+                    "Office environment",
+                    "Brand guidelines"
+                  ],
+                  isPopular: true
+                },
+                {
+                  id: "complete",
+                  name: "Complete",
+                  price: "R8,500",
+                  duration: "2 days",
+                  features: [
+                    "Unlimited team members",
+                    "Office photography",
+                    "Event coverage",
+                    "Environmental portraits",
+                    "Full brand package"
+                  ],
+                  isPopular: false
+                }
+              ],
+              gradients: {
+                startColor: "hsl(240, 100%, 15%)",
+                middleColor: "hsl(220, 70%, 12%)",
+                endColor: "hsl(200, 60%, 10%)",
+                direction: "to right",
+                opacity: 0.8,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            recentWork: {
+              title: "Recent Work",
+              description: "Browse our latest corporate photography projects",
+              images: [
+                "https://images.unsplash.com/photo-1556761175-4b46a572b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+                "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+                "https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+              ],
+              gradients: {
+                startColor: "hsl(280, 100%, 15%)",
+                middleColor: "hsl(260, 70%, 12%)",
+                endColor: "hsl(240, 60%, 10%)",
+                direction: "to right",
+                opacity: 0.7,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            seoContent: {
+              title: "Professional Corporate Photography in Durban",
+              content: {
+                section1: {
+                  title: "Durban Corporate Photography Specialists",
+                  text: "Our Durban corporate photography team specializes in creating professional business imagery that enhances your company's brand and credibility."
+                },
+                section2: {
+                  title: "Corporate Photography Services and Packages",
+                  text: "We offer comprehensive corporate photography services including executive portraits, team photography, office environments, and corporate event coverage. Each package is designed to meet your business needs."
+                },
+                conclusion: "Book your Durban corporate photographer today and ensure your business image reflects professionalism and quality. Our corporate photography team is committed to enhancing your brand through powerful visual content."
+              },
+              gradients: {
+                startColor: "hsl(220, 13%, 18%)",
+                middleColor: "hsl(220, 13%, 15%)",
+                endColor: "hsl(220, 13%, 12%)",
+                direction: "to right",
+                opacity: 1,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            seo: {
+              title: "Corporate Photography Services Durban | SlyFox Studios",
+              description: "Elevate your business image with professional corporate photography that builds trust and credibility.",
+              keywords: "Durban corporate photographer, business photography, executive portraits Durban, corporate headshots, office photography South Africa"
+            }
+          },
+          events: {
+            hero: {
+              image: "/images/hero/Event-photography-hero.jpg",
+              title: "Event Photography",
+              subtitle: "Document memorable moments at conferences, parties, and gatherings",
+              ctaText: "Book Session"
+            },
+            serviceOverview: {
+              title: "Professional Event Photography",
+              description: "From intimate gatherings to large-scale conferences, we capture the energy and emotion of your events. Our unobtrusive approach ensures we document authentic moments while maintaining the natural flow of your event.",
+              features: [
+                "Conference documentation",
+                "Party coverage",
+                "Award ceremonies",
+                "Networking events",
+                "Keynote speakers",
+                "Candid interactions",
+                "Venue photography",
+                "Same-day highlights"
+              ],
+              gradients: {
+                startColor: "hsl(160, 100%, 15%)",
+                middleColor: "hsl(140, 70%, 12%)",
+                endColor: "hsl(120, 60%, 10%)",
+                direction: "to right",
+                opacity: 0.9,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            packages: {
+              title: "Event Photography Packages",
+              description: "Professional event photography packages for all types of gatherings and celebrations.",
+              tiers: [
+                {
+                  id: "basic",
+                  name: "Basic",
+                  price: "R2,500",
+                  duration: "4 hours",
+                  features: [
+                    "4 hours coverage",
+                    "100+ photos",
+                    "Online gallery",
+                    "Social media ready",
+                    "Quick turnaround"
+                  ],
+                  isPopular: false
+                },
+                {
+                  id: "full",
+                  name: "Full",
+                  price: "R4,500",
+                  duration: "8 hours",
+                  features: [
+                    "8 hours coverage",
+                    "300+ photos",
+                    "Multiple photographers",
+                    "Live social sharing",
+                    "Highlight reel"
+                  ],
+                  isPopular: true
+                },
+                {
+                  id: "premium",
+                  name: "Premium",
+                  price: "R6,500",
+                  duration: "Full day",
+                  features: [
+                    "Full day coverage",
+                    "500+ photos",
+                    "Multi-angle coverage",
+                    "Real-time uploads",
+                    "Professional editing"
+                  ],
+                  isPopular: false
+                }
+              ],
+              gradients: {
+                startColor: "hsl(120, 100%, 15%)",
+                middleColor: "hsl(100, 70%, 12%)",
+                endColor: "hsl(80, 60%, 10%)",
+                direction: "to right",
+                opacity: 0.8,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            recentWork: {
+              title: "Recent Work",
+              description: "Browse our latest event photography projects",
+              images: [
+                "https://images.unsplash.com/photo-1511578314322-379afb476865?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+                "https://images.unsplash.com/photo-1505236858219-8359eb29e329?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+                "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+              ],
+              gradients: {
+                startColor: "hsl(60, 100%, 15%)",
+                middleColor: "hsl(40, 70%, 12%)",
+                endColor: "hsl(20, 60%, 10%)",
+                direction: "to right",
+                opacity: 0.7,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            seoContent: {
+              title: "Professional Event Photography in Durban",
+              content: {
+                section1: {
+                  title: "Durban Event Photography Specialists",
+                  text: "Our Durban event photography team specializes in capturing the energy and excitement of corporate events, conferences, parties, and special gatherings."
+                },
+                section2: {
+                  title: "Event Photography Services and Coverage",
+                  text: "We offer comprehensive event photography services including conference documentation, corporate events, award ceremonies, and private celebrations. Our unobtrusive approach captures authentic moments."
+                },
+                conclusion: "Book your Durban event photographer today and ensure your special event is documented professionally. Our event photography team is committed to capturing every important moment and memory."
+              },
+              gradients: {
+                startColor: "hsl(220, 13%, 18%)",
+                middleColor: "hsl(220, 13%, 15%)",
+                endColor: "hsl(220, 13%, 12%)",
+                direction: "to right",
+                opacity: 1,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            seo: {
+              title: "Event Photography Durban | SlyFox Studios",
+              description: "Document memorable moments at conferences, parties, and gatherings with professional event photography.",
+              keywords: "Durban event photographer, conference photography, corporate event photography, party photography Durban, event documentation South Africa"
+            }
+          },
+          products: {
+            hero: {
+              image: "/images/hero/product-photography-hero.jpg",
+              title: "Product Photography",
+              subtitle: "Showcase your products with stunning commercial photography",
+              ctaText: "Book Session"
+            },
+            serviceOverview: {
+              title: "Professional Product Photography",
+              description: "High-quality product photography is crucial for e-commerce success and brand credibility. We create compelling product images that highlight your products' best features and drive customer engagement across all platforms.",
+              features: [
+                "E-commerce optimization",
+                "White background shots",
+                "Lifestyle photography",
+                "360° product views",
+                "Detail macro shots",
+                "Color accuracy",
+                "Multiple angles",
+                "Batch processing"
+              ],
+              gradients: {
+                startColor: "hsl(30, 100%, 15%)",
+                middleColor: "hsl(20, 70%, 12%)",
+                endColor: "hsl(10, 60%, 10%)",
+                direction: "to right",
+                opacity: 0.9,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            packages: {
+              title: "Product Photography Packages",
+              description: "Professional product photography packages designed for e-commerce and marketing needs.",
+              tiers: [
+                {
+                  id: "basic",
+                  name: "Basic",
+                  price: "R150",
+                  duration: "Per product",
+                  features: [
+                    "5 angles per product",
+                    "White background",
+                    "Basic editing",
+                    "E-commerce ready",
+                    "24h turnaround"
+                  ],
+                  isPopular: false
+                },
+                {
+                  id: "lifestyle",
+                  name: "Lifestyle",
+                  price: "R350",
+                  duration: "Per product",
+                  features: [
+                    "10 angles",
+                    "Lifestyle shots",
+                    "Model usage",
+                    "Environmental shots",
+                    "Advanced editing"
+                  ],
+                  isPopular: true
+                },
+                {
+                  id: "premium",
+                  name: "Premium",
+                  price: "R500",
+                  duration: "Per product",
+                  features: [
+                    "Unlimited angles",
+                    "360° photography",
+                    "Video clips",
+                    "Detail shots",
+                    "Complete package"
+                  ],
+                  isPopular: false
+                }
+              ],
+              gradients: {
+                startColor: "hsl(0, 100%, 15%)",
+                middleColor: "hsl(340, 70%, 12%)",
+                endColor: "hsl(320, 60%, 10%)",
+                direction: "to right",
+                opacity: 0.8,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            recentWork: {
+              title: "Recent Work",
+              description: "Browse our latest product photography projects",
+              images: [
+                "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+                "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+                "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+              ],
+              gradients: {
+                startColor: "hsl(300, 100%, 15%)",
+                middleColor: "hsl(280, 70%, 12%)",
+                endColor: "hsl(260, 60%, 10%)",
+                direction: "to right",
+                opacity: 0.7,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            seoContent: {
+              title: "Professional Product Photography in Durban",
+              content: {
+                section1: {
+                  title: "Durban Product Photography Specialists",
+                  text: "Our Durban product photography team specializes in creating stunning commercial images that showcase your products and drive sales across all platforms."
+                },
+                section2: {
+                  title: "Product Photography Services and Solutions",
+                  text: "We offer comprehensive product photography services including e-commerce photography, lifestyle shots, 360° product views, and detailed macro photography. Each image is optimized for your specific needs."
+                },
+                conclusion: "Book your Durban product photographer today and ensure your products are showcased with professional quality that drives sales. Our product photography team is committed to creating compelling images that convert browsers into buyers."
+              },
+              gradients: {
+                startColor: "hsl(220, 13%, 18%)",
+                middleColor: "hsl(220, 13%, 15%)",
+                endColor: "hsl(220, 13%, 12%)",
+                direction: "to right",
+                opacity: 1,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            seo: {
+              title: "Product Photography Durban | SlyFox Studios",
+              description: "Showcase your products with stunning commercial photography that drives sales and engagement.",
+              keywords: "Durban product photographer, e-commerce photography, commercial photography, product catalog photography, lifestyle product photography South Africa"
+            }
+          },
+          graduation: {
+            hero: {
+              image: "/images/hero/graduation-photography-hero.jpg",
+              title: "Graduation Photography",
+              subtitle: "Celebrate academic achievements with memorable graduation photos",
+              ctaText: "Book Session"
+            },
+            serviceOverview: {
+              title: "Professional Graduation Photography",
+              description: "Graduation is a once-in-a-lifetime achievement that deserves to be celebrated and remembered. Our graduation photography services capture the pride, joy, and accomplishment of this significant milestone in your life.",
+              features: [
+                "Ceremony coverage",
+                "Individual portraits",
+                "Family group shots",
+                "Campus photography",
+                "Cap and gown shots",
+                "Diploma presentations",
+                "Celebration moments",
+                "Professional editing"
+              ],
+              gradients: {
+                startColor: "hsl(50, 100%, 15%)",
+                middleColor: "hsl(40, 70%, 12%)",
+                endColor: "hsl(30, 60%, 10%)",
+                direction: "to right",
+                opacity: 0.9,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            packages: {
+              title: "Graduation Photography Packages",
+              description: "Professional graduation photography packages to commemorate your academic achievement.",
+              tiers: [
+                {
+                  id: "individual",
+                  name: "Individual",
+                  price: "R1,200",
+                  duration: "1 hour",
+                  features: [
+                    "Individual portraits",
+                    "Campus locations",
+                    "10 edited photos",
+                    "Digital gallery",
+                    "Print package"
+                  ],
+                  isPopular: false
+                },
+                {
+                  id: "family",
+                  name: "Family",
+                  price: "R2,200",
+                  duration: "2 hours",
+                  features: [
+                    "Graduate portraits",
+                    "Family group shots",
+                    "Multiple locations",
+                    "25 edited photos",
+                    "Premium gallery"
+                  ],
+                  isPopular: true
+                },
+                {
+                  id: "complete",
+                  name: "Complete",
+                  price: "R3,200",
+                  duration: "Half day",
+                  features: [
+                    "Ceremony coverage",
+                    "Portrait session",
+                    "Family photos",
+                    "50+ edited photos",
+                    "Complete package"
+                  ],
+                  isPopular: false
+                }
+              ],
+              gradients: {
+                startColor: "hsl(40, 100%, 15%)",
+                middleColor: "hsl(30, 70%, 12%)",
+                endColor: "hsl(20, 60%, 10%)",
+                direction: "to right",
+                opacity: 0.8,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            recentWork: {
+              title: "Recent Work",
+              description: "Browse our latest graduation photography projects",
+              images: [
+                "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+                "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+                "https://images.unsplash.com/photo-1622810547313-15e6e0031e3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+              ],
+              gradients: {
+                startColor: "hsl(20, 100%, 15%)",
+                middleColor: "hsl(10, 70%, 12%)",
+                endColor: "hsl(0, 60%, 10%)",
+                direction: "to right",
+                opacity: 0.7,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            seoContent: {
+              title: "Professional Graduation Photography in Durban",
+              content: {
+                section1: {
+                  title: "Durban Graduation Photography Specialists",
+                  text: "Our Durban graduation photography team specializes in capturing the pride and joy of graduation day. We understand the importance of this milestone and ensure every precious moment is beautifully documented."
+                },
+                section2: {
+                  title: "Graduation Photography Services and Packages",
+                  text: "We offer comprehensive graduation photography services including ceremony coverage, individual portraits, family group photos, and campus photography. Each package is designed to commemorate your achievement."
+                },
+                conclusion: "Book your Durban graduation photographer today and ensure your academic achievement is celebrated with professional photography. Our graduation photography team is committed to capturing this important milestone for you to treasure forever."
+              },
+              gradients: {
+                startColor: "hsl(220, 13%, 18%)",
+                middleColor: "hsl(220, 13%, 15%)",
+                endColor: "hsl(220, 13%, 12%)",
+                direction: "to right",
+                opacity: 1,
+                textColors: {
+                  primary: "#ffffff",
+                  secondary: "#e2e8f0",
+                  tertiary: "#94a3b8"
+                }
+              }
+            },
+            seo: {
+              title: "Graduation Photography Durban | SlyFox Studios",
+              description: "Celebrate academic achievements with memorable graduation photos that commemorate this milestone.",
+              keywords: "Durban graduation photographer, university graduation photography, graduation ceremony photography, graduation portraits Durban, academic milestone photography"
+            }
+          }
+        },
+        videography: {}
+      },
+      gradients: {
+        hero: {
+          startColor: "#1e293b",
+          middleColor: "#334155", 
+          endColor: "#0f172a",
+          direction: "135deg"
+        },
+        testimonials: {
+          startColor: "#312e81",
+          middleColor: "#1e1b4b",
+          endColor: "#1e3a8a",
+          direction: "to bottom right"
+        },
+        portfolio: {
+          startColor: "#1e293b",
+          middleColor: "#334155",
+          endColor: "#0f172a",
+          direction: "135deg"
+        },
+        services: {
+          startColor: "#374151",
+          middleColor: "#1f2937",
+          endColor: "#111827",
+          direction: "135deg"
+        },
+        contact: {
+          startColor: "#0f172a",
+          middleColor: "#1e293b",
+          endColor: "#334155",
+          direction: "to bottom"
+        }
       }
     };
     
@@ -297,7 +1235,7 @@ router.get('/api/site-config', async (req, res) => {
           email: "info@slyfox.co.za",
           whatsapp: "+27 12 345 6789",
           address: {
-            displayText: "Cape Town, South Africa"
+            displayText: "Durban, South Africa"
           }
         },
         methods: [],
@@ -316,8 +1254,8 @@ router.get('/api/site-config', async (req, res) => {
           phone: { title: "Phone Calls", time: "Immediate", description: "Direct line during business hours" }
         },
         serviceAreas: {
-          primary: { title: "Primary Area:", area: "Cape Town Metro (no travel fees)" },
-          extended: { title: "Extended Area:", area: "Western Cape Province" },
+          primary: { title: "Primary Area:", area: "Durban Metro (no travel fees)" },
+          extended: { title: "Extended Area:", area: "KwaZulu-Natal Province" },
           destination: { title: "Destination:", area: "Anywhere in South Africa & beyond" },
           note: "Travel costs calculated based on distance and duration. Accommodation provided for multi-day shoots."
         },

@@ -17,7 +17,7 @@ export function useSiteConfig() {
     isLoading, 
     error 
   } = useQuery<SiteConfigInterface>({
-    queryKey: ['siteConfig'],
+    queryKey: ['/api/site-config'],
     queryFn: async () => {
       console.log('🔄 Fetching site config from API...');
       try {
@@ -60,7 +60,7 @@ export function useSiteConfig() {
     },
     onSuccess: (data, { path, value }) => {
       // Update the cache optimistically
-      queryClient.setQueryData(['siteConfig'], (oldData: SiteConfigInterface | undefined) => {
+      queryClient.setQueryData(['/api/site-config'], (oldData: SiteConfigInterface | undefined) => {
         if (!oldData) return siteConfig;
         
         const newData = { ...oldData };
@@ -69,12 +69,12 @@ export function useSiteConfig() {
       });
       
       // Invalidate to refetch and ensure consistency
-      queryClient.invalidateQueries({ queryKey: ['siteConfig'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/site-config'] });
     },
     onError: (error) => {
       console.error('Failed to update site config:', error);
       // Revert optimistic update by refetching
-      queryClient.invalidateQueries({ queryKey: ['siteConfig'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/site-config'] });
     }
   });
 
@@ -97,12 +97,12 @@ export function useSiteConfig() {
     },
     onSuccess: (data, updates) => {
       // Update cache with bulk changes
-      queryClient.setQueryData(['siteConfig'], (oldData: SiteConfigInterface | undefined) => {
+      queryClient.setQueryData(['/api/site-config'], (oldData: SiteConfigInterface | undefined) => {
         if (!oldData) return siteConfig;
         return deepMerge(oldData, updates);
       });
       
-      queryClient.invalidateQueries({ queryKey: ['siteConfig'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/site-config'] });
     }
   });
 
@@ -116,8 +116,8 @@ export function useSiteConfig() {
   };
 
   const resetConfig = () => {
-    queryClient.setQueryData(['siteConfig'], siteConfig);
-    queryClient.invalidateQueries({ queryKey: ['siteConfig'] });
+    queryClient.setQueryData(['/api/site-config'], siteConfig);
+    queryClient.invalidateQueries({ queryKey: ['/api/site-config'] });
   };
 
   return {

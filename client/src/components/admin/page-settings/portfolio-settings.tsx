@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FrontPageSettingsCard } from '../front-page-settings';
-import { useFrontPageSettings } from '@/hooks/use-front-page-settings';
+import { useSiteConfig } from '@/hooks/use-site-config';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { ArrowLeft } from "lucide-react";
@@ -13,55 +13,44 @@ interface PortfolioSettingsProps {
 
 export const PortfolioSettings: React.FC<PortfolioSettingsProps> = ({ onBack }) => {
   // Get current settings from the site configuration API
-  const frontPageSettings = useFrontPageSettings();
+  const { config, updateConfigBulk } = useSiteConfig();
+  const portfolioSettings = config?.portfolio?.featured;
   const queryClient = useQueryClient();
   
   // Local state for managing changes  
   const [currentSettings, setCurrentSettings] = useState<any>(null);
   const [hasInitialized, setHasInitialized] = useState(false);
   
-  // Mutation for saving settings to API
-  const saveMutation = useMutation({
-    mutationFn: (settings: any) => {
-      console.log('Making API request to save:', settings);
-      return apiRequest('PATCH', '/api/site-config/bulk', {
-        portfolio: {
-          featured: settings
-        }
-      });
-    },
-    onSuccess: (data) => {
-      console.log('Save successful:', data);
-      console.log('Invalidating queries with key:', ['/api/site-config']);
-      queryClient.invalidateQueries({ queryKey: ['/api/site-config'] });
-      // Also try to refetch immediately to force an update
-      queryClient.refetchQueries({ queryKey: ['/api/site-config'] });
-    },
-    onError: (error) => {
-      console.error('Save failed:', error);
-    }
-  });
+  // Use unified site config mutation
+  const handleSave = (settings: any) => {
+    console.log('Making API request to save:', settings);
+    updateConfigBulk({
+      portfolio: {
+        featured: settings
+      }
+    });
+  };
   
   // Update local state ONLY once on initial load - never overwrite user changes  
   React.useEffect(() => {
-    if (frontPageSettings && !hasInitialized) {
-      setCurrentSettings(frontPageSettings);
+    if (portfolioSettings && !hasInitialized) {
+      setCurrentSettings(portfolioSettings);
       setHasInitialized(true);
     }
-  }, [frontPageSettings, hasInitialized]);
+  }, [portfolioSettings, hasInitialized]);
 
   const handleSettingsChange = (newSettings: any) => {
     setCurrentSettings(newSettings);
   };
   
-  const handleSave = (settingsToSave?: any) => {
+  const handleSaveWithSettings = (settingsToSave?: any) => {
     const finalSettings = settingsToSave || currentSettings;
     console.log('Attempting to save settings:', finalSettings);
-    saveMutation.mutate(finalSettings);
+    handleSave(finalSettings);
   };
 
   // Show loading state while data is being fetched
-  if (!frontPageSettings || !currentSettings) {
+  if (!portfolioSettings || !currentSettings) {
     return (
       <div className="space-y-8">
         {/* Header */}
@@ -136,8 +125,8 @@ export const PortfolioSettings: React.FC<PortfolioSettingsProps> = ({ onBack }) 
       <FrontPageSettingsCard 
         settings={currentSettings}
         onSettingsChange={handleSettingsChange}
-        onSave={handleSave}
-        isSaving={saveMutation.isPending}
+        onSave={handleSaveWithSettings}
+        isSaving={false}
       />
     </div>
   );

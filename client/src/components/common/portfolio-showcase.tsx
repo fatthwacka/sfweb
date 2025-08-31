@@ -6,7 +6,7 @@ const portfolioItems = [
     id: 1,
     category: "weddings",
     title: "Garden Wedding",
-    location: "Cape Town • 2024",
+    location: "Durban • 2024",
     image: "/images/portfolio/wedding-couple-1.jpg"
   },
   {
@@ -27,7 +27,7 @@ const portfolioItems = [
     id: 4,
     category: "weddings",
     title: "Beach Wedding",
-    location: "Cape Town • 2024",
+    location: "Durban • 2024",
     image: "/images/portfolio/portrait-professional-2.jpg"
   },
   {

@@ -67,9 +67,9 @@ export const defaultConfig: SiteConfigInterface = {
 
   heroes: {
     home: {
-      backgroundImage: "/images/hero/professional-photography-services-cape-town.jpg",
+      backgroundImage: "/images/hero/professional-photography-services-durban.jpg",
       overlayOpacity: 0.6,
-      title: "Professional Photography Services in Cape Town", 
+      title: "Professional Photography Services in Durban", 
       subtitle: "Capturing life's most precious moments with artistic vision and technical excellence",
       ctaText: "View Our Work",
       ctaLink: "/photography"
@@ -94,7 +94,7 @@ export const defaultConfig: SiteConfigInterface = {
       backgroundImage: "/images/hero/about-hero.jpg", 
       overlayOpacity: 0.4,
       title: "About SlyFox Studios",
-      subtitle: "Meet the creative minds behind Cape Town's premier photography studio",
+      subtitle: "Meet the creative minds behind Durban's premier photography studio",
       ctaText: "Get In Touch",
       ctaLink: "/contact"
     },
@@ -121,7 +121,7 @@ export const defaultConfig: SiteConfigInterface = {
     team: [],
     story: {
       founded: "2019", 
-      location: "Cape Town, South Africa",
+      location: "Durban, South Africa",
       mission: "To capture life's most precious moments with artistic vision and technical excellence",
       values: []
     }
@@ -138,21 +138,21 @@ export const defaultConfig: SiteConfigInterface = {
     pages: {
       home: {
         title: "SlyFox Studios - Professional Photography & Videography",
-        description: "Cape Town's premier photography and videography studio.",
+        description: "Durban's premier photography and videography studio.",
         keywords: [],
         canonicalUrl: "/",
         ogImage: "/images/og/slyfox-home-og.jpg"
       },
       photography: {
         title: "Photography Services | SlyFox Studios", 
-        description: "Professional photography services in Cape Town.",
+        description: "Professional photography services in Durban.",
         keywords: [],
         canonicalUrl: "/photography",
         ogImage: "/images/og/slyfox-photography-og.jpg"
       },
       videography: {
         title: "Videography Services | SlyFox Studios",
-        description: "Professional videography services in Cape Town.",
+        description: "Professional videography services in Durban.",
         keywords: [],
         canonicalUrl: "/videography", 
         ogImage: "/images/og/slyfox-videography-og.jpg"
@@ -202,8 +202,8 @@ export const defaultConfig: SiteConfigInterface = {
       bookingEmail: "bookings@slyfox.co.za",
       address: {
         street: "123 Long Street",
-        city: "Cape Town",
-        province: "Western Cape",
+        city: "Durban",
+        province: "KwaZulu-Natal",
         postal: "8001", 
         country: "South Africa"
       }

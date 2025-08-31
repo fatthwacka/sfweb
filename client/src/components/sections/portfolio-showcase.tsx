@@ -1,10 +1,12 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, RefreshCw } from "lucide-react";
+import { formatClassification } from "@/lib/classification-utils";
 import { ImageUrl } from "@/lib/image-utils";
-import { useFrontPageSettings } from "@/hooks/use-front-page-settings";
+import { useSiteConfig } from "@/hooks/use-site-config";
+import { GradientBackground } from "@/components/common/gradient-background";
 import type { Image } from "@shared/schema";
 
 // Helper function to format classification for display
@@ -71,12 +73,15 @@ const getBalancedRandomSelection = (images: Image[], count: number = 9): Image[]
 
 export function PortfolioShowcase() {
   const [activeFilter, setActiveFilter] = useState("all");
-  const [filterOptions, setFilterOptions] = useState([{ label: "All Work", value: "all" }]);
+  const [filterOptions, setFilterOptions] = useState([{ label: "Random", value: "all" }]);
   const [modalOpen, setModalOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [randomSeed, setRandomSeed] = useState(Date.now());
 
-  // Get front page settings from admin panel
-  const frontPageSettings = useFrontPageSettings();
+  // Get site configuration including portfolio settings
+  const { config } = useSiteConfig();
+  const portfolioSettings = config?.portfolio?.featured;
 
   // Fetch featured images from Supabase
   const { data: featuredImages, isLoading: imagesLoading } = useQuery<Image[]>({
@@ -94,7 +99,7 @@ export function PortfolioShowcase() {
   useEffect(() => {
     if (classifications && classifications.length > 0) {
       const options = [
-        { label: "All Work", value: "all" },
+        { label: "Random", value: "all" },
         ...classifications.map(classification => ({
           label: formatClassificationLabel(classification),
           value: classification
@@ -108,10 +113,11 @@ export function PortfolioShowcase() {
   const filteredItems = useMemo(() => {
     if (!featuredImages) return [];
     
-    const MAX_DISPLAY_IMAGES = frontPageSettings?.imageCount || 9;
+    const MAX_DISPLAY_IMAGES = portfolioSettings?.imageCount || 9;
     
     if (activeFilter === "all") {
       // For "all" filter, show balanced random selection from all categories
+      // randomSeed dependency ensures re-shuffle on refresh
       return getBalancedRandomSelection(featuredImages, MAX_DISPLAY_IMAGES);
     } else {
       // For specific category filters, show up to configured number of images from that category
@@ -120,7 +126,7 @@ export function PortfolioShowcase() {
         ? shuffleArray(categoryImages).slice(0, MAX_DISPLAY_IMAGES)
         : categoryImages;
     }
-  }, [featuredImages, activeFilter, frontPageSettings?.imageCount]);
+  }, [featuredImages, activeFilter, portfolioSettings?.imageCount, randomSeed]);
 
   // Modal navigation functions
   const openModal = (index: number) => {
@@ -128,19 +134,54 @@ export function PortfolioShowcase() {
     setModalOpen(true);
   };
 
-  const nextImage = () => {
+  const nextImage = useCallback(() => {
     setCurrentImageIndex((prev) => (prev + 1) % filteredItems.length);
-  };
+  }, [filteredItems.length]);
 
-  const prevImage = () => {
+  const prevImage = useCallback(() => {
     setCurrentImageIndex((prev) => (prev - 1 + filteredItems.length) % filteredItems.length);
-  };
+  }, [filteredItems.length]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    if (!modalOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'ArrowLeft':
+          prevImage();
+          break;
+        case 'ArrowRight':
+          nextImage();
+          break;
+        case 'Escape':
+          setModalOpen(false);
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [modalOpen, nextImage, prevImage]);
 
   const currentImage = filteredItems[currentImageIndex];
 
+  // Handle Random button refresh functionality
+  const handleRandomRefresh = useCallback(() => {
+    if (activeFilter === "all") {
+      // Already on random - refresh with new images
+      setIsRefreshing(true);
+      setRandomSeed(Date.now());
+      setTimeout(() => setIsRefreshing(false), 500);
+    } else {
+      // Switch to random filter
+      setActiveFilter("all");
+    }
+  }, [activeFilter]);
+
   // Get aspect ratio class based on layout style
   const getAspectRatioClass = () => {
-    switch (frontPageSettings?.layoutStyle) {
+    switch (portfolioSettings?.layoutStyle) {
       case 'portrait':
         return 'aspect-[2/3]';
       case 'instagram':
@@ -153,54 +194,41 @@ export function PortfolioShowcase() {
 
   // Get grid styles based on settings
   const gridStyles = {
-    gap: `${frontPageSettings?.imagePadding || 2}px`,
+    gap: `${portfolioSettings?.imagePadding || 2}px`,
   };
 
   const imageStyles = {
-    borderRadius: `${frontPageSettings?.borderRadius || 8}px`,
+    borderRadius: `${portfolioSettings?.borderRadius || 8}px`,
   };
 
   const getBorderStyles = () => {
-    if (!frontPageSettings?.borderThickness) {
+    if (!portfolioSettings?.borderThickness) {
       return {};
     }
     
     return {
-      background: `linear-gradient(135deg, ${frontPageSettings.borderColor || '#ffffff'} 0%, ${frontPageSettings.borderColorEnd || '#cccccc'} 100%)`,
-      padding: `${frontPageSettings.borderThickness}px`,
-      borderRadius: `${frontPageSettings.borderRadius || 8}px`,
+      background: `linear-gradient(135deg, ${portfolioSettings.borderColor || '#ffffff'} 0%, ${portfolioSettings.borderColorEnd || '#cccccc'} 100%)`,
+      padding: `${portfolioSettings.borderThickness}px`,
+      borderRadius: `${portfolioSettings.borderRadius || 8}px`,
     };
   };
 
-  // Get section background gradient
-  const getSectionBackgroundStyle = () => {
-    const start = frontPageSettings?.backgroundGradientStart || '#1e293b';
-    const middle = frontPageSettings?.backgroundGradientMiddle || '#334155';
-    const end = frontPageSettings?.backgroundGradientEnd || '#0f172a';
-    
-    return {
-      background: `linear-gradient(135deg, ${start} 0%, ${middle} 50%, ${end} 100%)`,
-    };
-  };
 
   // Get text color style
   const getTextColorStyle = () => {
     return {
-      color: frontPageSettings?.textColor || '#e2e8f0',
+      color: portfolioSettings?.textColor || '#e2e8f0',
     };
   };
 
   return (
-    <section 
-      className="py-20" 
-      style={getSectionBackgroundStyle()}
-    >
+    <GradientBackground section="portfolio" className="py-20">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="cyan text-4xl lg:text-5xl mb-6">
             Recent <span>Work</span>
           </h2>
-          <p className="text-xl max-w-3xl mx-auto mb-8" style={getTextColorStyle()}>
+          <p className="text-xl max-w-3xl mx-auto mb-8">
             A glimpse into our creative journey - showcasing moments that matter, stories that inspire, and memories that last forever.
           </p>
 
@@ -209,15 +237,22 @@ export function PortfolioShowcase() {
             {filterOptions.map(option => (
               <Button
                 key={option.value}
-                onClick={() => setActiveFilter(option.value)}
+                onClick={option.value === "all" ? handleRandomRefresh : () => setActiveFilter(option.value)}
                 variant="outline"
                 className={`px-6 py-3 font-barlow font-semibold rounded-full transition-all duration-300 ${
                   activeFilter === option.value
-                    ? "border-salmon bg-gradient-to-r from-salmon-dark to-salmon text-white hover:from-salmon hover:to-salmon-muted"
-                    : "border-cyan bg-gradient-to-r from-cyan-dark/30 to-cyan-dark/10 text-cyan hover:border-cyan-bright hover:from-cyan/20 hover:to-cyan-bright/10 hover:text-cyan-bright"
+                    ? "border-gray-400 bg-gradient-to-r from-gray-600 to-gray-500 text-white hover:from-gray-500 hover:to-gray-400"
+                    : "border-gray-500 bg-gradient-to-r from-gray-700/30 to-gray-600/10 text-gray-300 hover:border-gray-400 hover:from-gray-600/20 hover:to-gray-500/10 hover:text-gray-200"
                 }`}
               >
-                {option.label}
+                {option.value === "all" ? (
+                  <>
+                    <RefreshCw className={`w-4 h-4 mr-2 transition-transform duration-500 ${isRefreshing ? 'animate-spin' : ''}`} />
+                    {option.label}
+                  </>
+                ) : (
+                  option.label
+                )}
               </Button>
             ))}
           </div>
@@ -232,9 +267,9 @@ export function PortfolioShowcase() {
           >
             {imagesLoading ? (
               // Loading skeleton - dynamic count based on settings
-              Array.from({ length: frontPageSettings?.imageCount || 9 }).map((_, i) => (
+              Array.from({ length: portfolioSettings?.imageCount || 9 }).map((_, i) => (
                 <div key={i} className="animate-pulse">
-                  {frontPageSettings?.borderThickness ? (
+                  {portfolioSettings?.borderThickness ? (
                     <div style={getBorderStyles()}>
                       <div 
                         className={`bg-gray-800/50 ${getAspectRatioClass()}`}
@@ -252,7 +287,7 @@ export function PortfolioShowcase() {
             ) : filteredItems.length > 0 ? (
               filteredItems.map((image, index) => (
                 <div key={image.id} className="group cursor-pointer" onClick={() => openModal(index)}>
-                  {frontPageSettings?.borderThickness ? (
+                  {portfolioSettings?.borderThickness ? (
                     <div style={getBorderStyles()}>
                       <div 
                         className={`relative overflow-hidden image-hover-effect ${getAspectRatioClass()} shadow-lg hover:shadow-2xl transition-all duration-300`}
@@ -261,17 +296,14 @@ export function PortfolioShowcase() {
                         <img 
                           src={ImageUrl.forViewing(image.storagePath)} 
                           alt={image.filename} 
-                          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                          className="w-full h-full object-cover"
                           loading="lazy"
                         />
 
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
-                          <div className="text-left p-4 w-full">
-                            <h4 className="text-lg lg:text-xl font-quicksand font-bold text-salmon mb-1">
-                              {formatClassificationLabel(image.classification)}
-                            </h4>
-                            <p className="text-gray-200 text-sm lg:text-base">
-                              {image.filename.replace(/\.[^/.]+$/, "")}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center">
+                          <div className="text-center pb-4">
+                            <p className="text-sm lg:text-base font-light text-gray-200">
+                              {formatClassificationLabel(image.classification)} Photography
                             </p>
                           </div>
                         </div>
@@ -285,17 +317,14 @@ export function PortfolioShowcase() {
                       <img 
                         src={ImageUrl.forViewing(image.storagePath)} 
                         alt={image.filename} 
-                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover"
                         loading="lazy"
                       />
 
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
-                        <div className="text-left p-4 w-full">
-                          <h4 className="text-lg lg:text-xl font-quicksand font-bold text-salmon mb-1">
-                            {formatClassificationLabel(image.classification)}
-                          </h4>
-                          <p className="text-gray-200 text-sm lg:text-base">
-                            {image.filename.replace(/\.[^/.]+$/, "")}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center">
+                        <div className="text-center pb-4">
+                          <p className="text-sm lg:text-base font-light text-gray-200">
+                            {formatClassificationLabel(image.classification)} Photography
                           </p>
                         </div>
                       </div>
@@ -333,28 +362,30 @@ export function PortfolioShowcase() {
               <X className="w-6 h-6" />
             </Button>
 
-            {/* Previous Button */}
+            {/* Previous Navigation Zone - Full height clickable area */}
             {filteredItems.length > 1 && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-50 text-white hover:bg-white/20"
+              <div
+                className="absolute left-0 top-0 bottom-0 w-20 z-50 flex items-center justify-start pl-4 bg-gradient-to-r from-black/20 to-transparent hover:from-black/40 cursor-pointer transition-all duration-200 group"
                 onClick={prevImage}
+                aria-label="Previous image"
               >
-                <ChevronLeft className="w-8 h-8" />
-              </Button>
+                <div className="bg-white/10 group-hover:bg-white/20 rounded-full p-2 transition-all duration-200">
+                  <ChevronLeft className="w-6 h-6 text-white" />
+                </div>
+              </div>
             )}
 
-            {/* Next Button */}
+            {/* Next Navigation Zone - Full height clickable area */}
             {filteredItems.length > 1 && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-50 text-white hover:bg-white/20"
+              <div
+                className="absolute right-0 top-0 bottom-0 w-20 z-50 flex items-center justify-end pr-4 bg-gradient-to-l from-black/20 to-transparent hover:from-black/40 cursor-pointer transition-all duration-200 group"
                 onClick={nextImage}
+                aria-label="Next image"
               >
-                <ChevronRight className="w-8 h-8" />
-              </Button>
+                <div className="bg-white/10 group-hover:bg-white/20 rounded-full p-2 transition-all duration-200">
+                  <ChevronRight className="w-6 h-6 text-white" />
+                </div>
+              </div>
             )}
 
             {/* Image Display */}
@@ -372,7 +403,7 @@ export function PortfolioShowcase() {
                     {formatClassificationLabel(currentImage.classification)}
                   </h3>
                   <p className="text-gray-300">
-                    {currentImage.filename.replace(/\.[^/.]+$/, "")}
+                    {formatClassificationLabel(currentImage.classification)} Photography
                   </p>
                   {filteredItems.length > 1 && (
                     <p className="text-sm text-gray-400 mt-2">
@@ -385,6 +416,6 @@ export function PortfolioShowcase() {
           </div>
         </DialogContent>
       </Dialog>
-    </section>
+    </GradientBackground>
   );
 }

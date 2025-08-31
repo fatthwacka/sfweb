@@ -26,9 +26,9 @@ export async function createSimpleTestData() {
     });
     
     const client3 = await storage.createClient({
-      name: 'Cape Town Corporate',
-      slug: 'capetown-corporate-headshots',
-      email: 'corporate@capetown.com',
+      name: 'Durban Corporate',
+      slug: 'durban-corporate-headshots',
+      email: 'corporate@durban.com',
       userId: null,
       createdBy: adminId
     });
@@ -53,9 +53,9 @@ export async function createSimpleTestData() {
     const engagementShoot = await storage.createShoot({
       clientId: client1.id.toString(),
       title: 'Engagement Session',
-      description: 'Romantic engagement photos at Kirstenbosch Gardens',
+      description: 'Romantic engagement photos at Durban Botanic Gardens Gardens',
       isPrivate: true,
-      seoTags: ['engagement', 'kirstenbosch', 'couple'],
+      seoTags: ['engagement', 'durban botanic gardens', 'couple'],
       createdBy: adminId
     });
     shoots.push(engagementShoot);
@@ -64,7 +64,7 @@ export async function createSimpleTestData() {
     const familyShoot = await storage.createShoot({
       clientId: client2.id.toString(),
       title: 'Family Portrait Session',
-      description: 'Multi-generational family photos at Camps Bay Beach',
+      description: 'Multi-generational family photos at uShaka Beach Beach',
       isPrivate: true,
       seoTags: ['family', 'beach', 'portraits'],
       createdBy: adminId

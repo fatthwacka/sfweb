@@ -10,16 +10,16 @@ interface SmartImageProps {
 
 // Asset fallback mapping
 const ASSET_FALLBACK_MAP: Record<string, string> = {
-  'hero/cape-town-wedding-photography-slyfox-studios': '/images/hero/cape-town-wedding-photography-slyfox-studios.jpg',
-  'hero/professional-photography-services-cape-town': '/images/hero/professional-photography-services-cape-town.jpg',
-  'hero/cape-town-wedding-photographer-portfolio': '/images/hero/cape-town-wedding-photographer-portfolio.jpg',
-  'hero/portrait-photographer-cape-town-studio': '/images/hero/portrait-photographer-cape-town-studio.jpg',
-  'hero/corporate-photography-cape-town-business': '/images/hero/corporate-photography-cape-town-business.jpg',
-  'hero/event-photographer-cape-town-professional': '/images/hero/event-photographer-cape-town-professional.jpg',
-  'hero/graduation-photography-cape-town-ceremony': '/images/hero/graduation-photography-cape-town-ceremony.jpg',
-  'hero/product-photography-cape-town-commercial': '/images/hero/product-photography-cape-town-commercial.jpg',
-  'hero/matric-dance-photographer-cape-town': '/images/hero/matric-dance-photographer-cape-town.jpg',
-  'backgrounds/photography-studio-cape-town-texture': '/images/backgrounds/photography-studio-cape-town-texture.jpg',
+  'hero/durban-wedding-photography-slyfox-studios': '/images/hero/durban-wedding-photography-slyfox-studios.jpg',
+  'hero/professional-photography-services-durban': '/images/hero/professional-photography-services-durban.jpg',
+  'hero/durban-wedding-photographer-portfolio': '/images/hero/durban-wedding-photographer-portfolio.jpg',
+  'hero/portrait-photographer-durban-studio': '/images/hero/portrait-photographer-durban-studio.jpg',
+  'hero/corporate-photography-durban-business': '/images/hero/corporate-photography-durban-business.jpg',
+  'hero/event-photographer-durban-professional': '/images/hero/event-photographer-durban-professional.jpg',
+  'hero/graduation-photography-durban-ceremony': '/images/hero/graduation-photography-durban-ceremony.jpg',
+  'hero/product-photography-durban-commercial': '/images/hero/product-photography-durban-commercial.jpg',
+  'hero/matric-dance-photographer-durban': '/images/hero/matric-dance-photographer-durban.jpg',
+  'backgrounds/photography-studio-durban-texture': '/images/backgrounds/photography-studio-durban-texture.jpg',
   'backgrounds/wedding-photography-background-elegant': '/images/backgrounds/wedding-photography-background-elegant.jpg',
   'backgrounds/portrait-photography-studio-backdrop': '/images/backgrounds/portrait-photography-studio-backdrop.jpg'
 };

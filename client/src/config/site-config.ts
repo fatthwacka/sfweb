@@ -91,9 +91,9 @@ export const siteConfig = {
    */
   heroes: {
     home: {
-      backgroundImage: "/images/hero/professional-photography-services-cape-town.jpg",
+      backgroundImage: "/images/hero/professional-photography-services-durban.jpg",
       overlayOpacity: 0.6,
-      title: "Professional Photography Services in Cape Town",
+      title: "Professional Photography Services in Durban",
       subtitle: "Capturing life's most precious moments with artistic vision and technical excellence",
       ctaText: "View Our Work",
       ctaLink: "/photography"
@@ -121,7 +121,7 @@ export const siteConfig = {
       backgroundImage: "/images/hero/about-hero.jpg",
       overlayOpacity: 0.4,
       title: "About SlyFox Studios",
-      subtitle: "Meet the creative minds behind Cape Town's premier photography studio",
+      subtitle: "Meet the creative minds behind Durban's premier photography studio",
       ctaText: "Get In Touch",
       ctaLink: "/contact"
     },
@@ -141,6 +141,30 @@ export const siteConfig = {
    * Service categories with descriptions, images, and features
    */
   photography: {
+    hero: {
+      title: "Professional Photography",
+      subtitle: "Capturing life's beautiful moments",
+      backgroundImage: "/images/hero/photography-hero.jpg",
+      overlayOpacity: 0.5
+    },
+    sections: {
+      intro: {
+        title: "Professional Photography",
+        subtitle: "Discover our range of photography services, each tailored to capture the unique essence of your moments."
+      },
+      callToAction: {
+        title: "Ready to Capture Your Story?",
+        subtitle: "Let's discuss your photography needs and create something beautiful together.",
+        primaryButton: {
+          text: "Start Your Project",
+          link: "/contact"
+        },
+        secondaryButton: {
+          text: "View Pricing", 
+          link: "/pricing"
+        }
+      }
+    },
     categories: [
       {
         name: "Weddings & Newborn",
@@ -172,7 +196,7 @@ export const siteConfig = {
           "Executive headshots",
           "Family portraits", 
           "Personal branding",
-          "Creative portraits"
+          "Studio sessions"
         ],
         pricing: {
           startingPrice: 800,
@@ -185,15 +209,36 @@ export const siteConfig = {
         }
       },
       {
-        name: "Events & Corporate",
+        name: "Products & Brands",
+        slug: "products",
+        description: "Showcase your products with stunning commercial photography",
+        image: "/images/hero/product-photography-hero.jpg",
+        features: [
+          "E-commerce photography",
+          "Catalog shoots",
+          "Lifestyle product shots",
+          "360° product views"
+        ],
+        pricing: {
+          startingPrice: 1200,
+          currency: "ZAR",
+          packages: [
+            { name: "Basic", price: 1200, duration: "2 hours" },
+            { name: "Standard", price: 2200, duration: "4 hours" },
+            { name: "Premium", price: 3500, duration: "Full day" }
+          ]
+        }
+      },
+      {
+        name: "Events & Functions",
         slug: "events", 
-        description: "Professional event coverage and corporate photography services",
-        image: "/images/hero/event-photography-hero.jpg",
+        description: "Documenting memorable moments at conferences, parties, and gatherings",
+        image: "/images/hero/Event-photography-hero.jpg",
         features: [
           "Conference photography",
-          "Product launches",
-          "Team building events", 
-          "Award ceremonies"
+          "Party coverage",
+          "Award ceremonies",
+          "Networking events"
         ],
         pricing: {
           startingPrice: 1500,
@@ -202,6 +247,48 @@ export const siteConfig = {
             { name: "Half Day", price: 1500, duration: "4 hours" },
             { name: "Full Day", price: 2800, duration: "8 hours" },
             { name: "Multi-Day", price: 5000, duration: "3 days" }
+          ]
+        }
+      },
+      {
+        name: "Corporate & Business",
+        slug: "corporate",
+        description: "Elevate your business image with professional corporate photography",
+        image: "/images/hero/corporate-photography-hero.jpg",
+        features: [
+          "Team headshots",
+          "Office photography",
+          "Corporate events",
+          "Brand documentation"
+        ],
+        pricing: {
+          startingPrice: 1800,
+          currency: "ZAR",
+          packages: [
+            { name: "Team Session", price: 1800, duration: "3 hours" },
+            { name: "Office Package", price: 3200, duration: "6 hours" },
+            { name: "Brand Package", price: 5500, duration: "Full day" }
+          ]
+        }
+      },
+      {
+        name: "Graduation & Matric Dances",
+        slug: "graduation",
+        description: "Celebrate academic achievements with memorable graduation photos",
+        image: "/images/hero/graduation-photography-hero.jpg",
+        features: [
+          "Graduation ceremonies",
+          "Individual portraits",
+          "Family group shots",
+          "Campus photography"
+        ],
+        pricing: {
+          startingPrice: 900,
+          currency: "ZAR",
+          packages: [
+            { name: "Individual", price: 900, duration: "1 hour" },
+            { name: "Family Package", price: 1400, duration: "2 hours" },
+            { name: "Ceremony Coverage", price: 2500, duration: "4 hours" }
           ]
         }
       }
@@ -250,7 +337,7 @@ export const siteConfig = {
       { number: "500+", label: "Happy Clients", icon: "Users" },
       { number: "5 Years", label: "Experience", icon: "Clock" },
       { number: "1000+", label: "Events Captured", icon: "Camera" },
-      { number: "Cape Town", label: "Based & Proud", icon: "MapPin" }
+      { number: "Durban", label: "Based & Proud", icon: "MapPin" }
     ],
     
     team: [
@@ -279,7 +366,7 @@ export const siteConfig = {
 
     story: {
       founded: "2019",
-      location: "Cape Town, South Africa", 
+      location: "Durban, South Africa", 
       mission: "To capture life's most precious moments with artistic vision and technical excellence",
       values: [
         "Artistic Excellence",
@@ -305,41 +392,41 @@ export const siteConfig = {
     
     pages: {
       home: {
-        title: "SlyFox Studios - Professional Photography & Videography in Cape Town", 
-        description: "Cape Town's premier photography and videography studio. Specializing in weddings, portraits, events, and corporate video production. Book your session today.",
-        keywords: ["photography cape town", "wedding photographer", "videography", "professional portraits", "corporate photography"],
+        title: "SlyFox Studios - Professional Photography & Videography in Durban", 
+        description: "Durban's premier photography and videography studio. Specializing in weddings, portraits, events, and corporate video production. Book your session today.",
+        keywords: ["photography durban", "wedding photographer", "videography", "professional portraits", "corporate photography"],
         canonicalUrl: "/",
         ogImage: "/images/og/slyfox-home-og.jpg"
       },
       
       photography: {
         title: "Photography Services - Weddings, Portraits & Events | SlyFox Studios",
-        description: "Professional photography services in Cape Town. Wedding photography, portrait sessions, headshots, and event coverage. View our portfolio and book today.",
-        keywords: ["photography services", "wedding photographer cape town", "portrait photography", "headshots", "event photography"],
+        description: "Professional photography services in Durban. Wedding photography, portrait sessions, headshots, and event coverage. View our portfolio and book today.",
+        keywords: ["photography services", "wedding photographer durban", "portrait photography", "headshots", "event photography"],
         canonicalUrl: "/photography", 
         ogImage: "/images/og/slyfox-photography-og.jpg"
       },
       
       videography: {
-        title: "Professional Videography Services Cape Town | SlyFox Studios",
-        description: "Cinematic videography services including wedding films, corporate videos, and event documentation. Professional video production in Cape Town.",
-        keywords: ["videography cape town", "wedding videographer", "corporate video", "video production", "cinematic films"],
+        title: "Professional Videography Services Durban | SlyFox Studios",
+        description: "Cinematic videography services including wedding films, corporate videos, and event documentation. Professional video production in Durban.",
+        keywords: ["videography durban", "wedding videographer", "corporate video", "video production", "cinematic films"],
         canonicalUrl: "/videography",
         ogImage: "/images/og/slyfox-videography-og.jpg" 
       },
       
       about: {
-        title: "About SlyFox Studios - Cape Town Photography & Video Team",
-        description: "Meet the creative team behind SlyFox Studios. Learn about our story, mission, and the passionate photographers and videographers serving Cape Town.",
-        keywords: ["about slyfox studios", "photography team cape town", "professional photographers", "videography team"],
+        title: "About SlyFox Studios - Durban Photography & Video Team",
+        description: "Meet the creative team behind SlyFox Studios. Learn about our story, mission, and the passionate photographers and videographers serving Durban.",
+        keywords: ["about slyfox studios", "photography team durban", "professional photographers", "videography team"],
         canonicalUrl: "/about",
         ogImage: "/images/og/slyfox-about-og.jpg"
       },
       
       contact: {
         title: "Contact SlyFox Studios - Book Your Photography Session",
-        description: "Get in touch with SlyFox Studios to book your photography or videography session. Serving Cape Town and surrounding areas. Free consultations available.",
-        keywords: ["contact photographer cape town", "book photography session", "wedding photographer booking", "photography consultation"],
+        description: "Get in touch with SlyFox Studios to book your photography or videography session. Serving Durban and surrounding areas. Free consultations available.",
+        keywords: ["contact photographer durban", "book photography session", "wedding photographer booking", "photography consultation"],
         canonicalUrl: "/contact", 
         ogImage: "/images/og/slyfox-contact-og.jpg"
       }
@@ -384,12 +471,12 @@ export const siteConfig = {
       whatsapp: "+27 12 345 6789",
       bookingEmail: "bookings@slyfox.co.za",
       address: {
-        street: "Cape Town, South Africa", 
-        city: "Cape Town",
-        province: "Western Cape",
+        street: "Durban, South Africa", 
+        city: "Durban",
+        province: "KwaZulu-Natal",
         postal: "8001",
         country: "South Africa",
-        displayText: "Cape Town, South Africa"
+        displayText: "Durban, South Africa"
       }
     },
 
@@ -423,7 +510,7 @@ export const siteConfig = {
         type: "location",
         title: "Visit Us",
         icon: "MapPin", 
-        details: ["Cape Town, South Africa", "By appointment only"],
+        details: ["Durban, South Africa", "By appointment only"],
         action: null,
         priority: 4
       }
@@ -469,13 +556,13 @@ export const siteConfig = {
     serviceAreas: {
       primary: {
         title: "Primary Area:",
-        area: "Cape Town Metro (no travel fees)",
-        description: "Cape Town Metro"
+        area: "Durban Metro (no travel fees)",
+        description: "Durban Metro"
       },
       extended: {
         title: "Extended Area:",
-        area: "Western Cape Province", 
-        description: "Western Cape Province"
+        area: "KwaZulu-Natal Province", 
+        description: "KwaZulu-Natal Province"
       },
       destination: {
         title: "Destination:",
@@ -514,8 +601,8 @@ export const siteConfig = {
     },
     
     integrations: {
-      supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
-      supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+      supabaseUrl: import.meta.env?.VITE_SUPABASE_URL || '',
+      supabaseAnonKey: import.meta.env?.VITE_SUPABASE_ANON_KEY || '',
       emailService: "emailjs", // or "sendgrid", "mailchimp"
     },
     

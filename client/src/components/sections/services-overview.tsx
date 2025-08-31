@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { ArrowRight, Camera, Video } from "lucide-react";
 import { useSiteConfig } from "@/hooks/use-site-config";
+import { GradientBackground } from "@/components/common/gradient-background";
 
 export function ServicesOverview() {
   const { config, isLoading } = useSiteConfig();
@@ -72,7 +73,7 @@ export function ServicesOverview() {
   };
 
   return (
-    <section id="services" className="pt-4 pb-20 bg-gradient-to-br from-slate-900/40 via-background to-gray-900/30">
+    <GradientBackground section="services" className="pt-4 pb-20" id="services">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h1 className="mb-12 leading-tight">
@@ -125,6 +126,6 @@ export function ServicesOverview() {
           </div>
         )}
       </div>
-    </section>
+    </GradientBackground>
   );
 }

@@ -55,7 +55,12 @@ class ErrorBoundary extends Component<
 // Pages
 import Home from "@/pages/home";
 import Photography from "@/pages/photography";
-import PhotographyCategory from "@/pages/photography-category";
+import PhotographyWeddings from "@/pages/photography-weddings";
+import PhotographyPortraits from "@/pages/photography-portraits";
+import PhotographyCorporate from "@/pages/photography-corporate";
+import PhotographyEvents from "@/pages/photography-events";
+import PhotographyProducts from "@/pages/photography-products";
+import PhotographyGraduation from "@/pages/photography-graduation";
 import Videography from "@/pages/videography";
 import VideographyCategory from "@/pages/videography-category";
 import About from "@/pages/about";
@@ -79,7 +84,12 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/photography" component={Photography} />
-      <Route path="/photography/:category" component={PhotographyCategory} />
+      <Route path="/photography/weddings" component={PhotographyWeddings} />
+      <Route path="/photography/portraits" component={PhotographyPortraits} />
+      <Route path="/photography/corporate" component={PhotographyCorporate} />
+      <Route path="/photography/events" component={PhotographyEvents} />
+      <Route path="/photography/products" component={PhotographyProducts} />
+      <Route path="/photography/graduation" component={PhotographyGraduation} />
       <Route path="/videography" component={Videography} />
       <Route path="/videography/:category" component={VideographyCategory} />
       <Route path="/about" component={About} />

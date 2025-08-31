@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSiteConfig } from "@/hooks/use-site-config";
+import { GradientBackground } from "@/components/common/gradient-background";
 
 interface HeroSlide {
   id: string;
@@ -114,19 +115,20 @@ export function EnhancedHeroSlider() {
 
   if (isLoading || totalSlides === 0) {
     return (
-      <section className="relative h-screen flex items-center justify-center bg-gray-900">
+      <GradientBackground section="hero" className="relative h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-salmon"></div>
-      </section>
+      </GradientBackground>
     );
   }
 
   const currentSlideData = slides[currentSlide];
 
   return (
-    <section 
-      ref={containerRef}
-      className="relative h-screen flex items-center justify-center overflow-hidden"
-    >
+    <GradientBackground section="hero" className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section 
+        ref={containerRef}
+        className="relative w-full h-full flex items-center justify-center overflow-hidden"
+      >
       {/* Multiple slides - always slide right-to-left */}
       <div className="absolute inset-0">
         {slides.map((slide, index) => {
@@ -171,9 +173,9 @@ export function EnhancedHeroSlider() {
           <div className="flex justify-center">
             <button 
               onClick={() => {
-                const servicesElement = document.getElementById('services');
+                const servicesElement = document.querySelector('#services');
                 if (servicesElement) {
-                  const headerOffset = 0;
+                  const headerOffset = 80; // Account for fixed navigation bar
                   const elementPosition = servicesElement.getBoundingClientRect().top;
                   const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
                   
@@ -222,6 +224,7 @@ export function EnhancedHeroSlider() {
           <div>Auto-Play: {isPlaying.toString()}</div>
         </div>
       )}
-    </section>
+      </section>
+    </GradientBackground>
   );
 }

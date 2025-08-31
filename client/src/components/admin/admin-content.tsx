@@ -19,6 +19,8 @@ import { SimpleAssetsPanel } from "./simple-assets-panel";
 import { ContactSettings } from "./page-settings/contact-settings";
 import { HomepageSettings } from "./page-settings/homepage-settings";
 import { PortfolioSettings } from "./page-settings/portfolio-settings";
+import { PhotographySettings } from "./page-settings/photography-settings";
+import AboutSettings from "./page-settings/about-settings";
 import {
   BarChart3,
   Users,
@@ -97,8 +99,8 @@ interface AdminContentProps {
 export function AdminContent({ userRole }: AdminContentProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'shoots' | 'images' | 'galleries' | 'site-management' | 'site-assets' | 'staff' | 'users'>('overview');
-  const [activePageSettings, setActivePageSettings] = useState<'contact' | 'homepage' | 'portfolio' | null>(null);
+  const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'shoots' | 'images' | 'galleries' | 'photography' | 'site-management' | 'site-assets' | 'staff' | 'users'>('overview');
+  const [activePageSettings, setActivePageSettings] = useState<'contact' | 'homepage' | 'portfolio' | 'about' | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [newClientOpen, setNewClientOpen] = useState(false);
   const [newShootOpen, setNewShootOpen] = useState(false);
@@ -729,6 +731,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
           { id: 'images', label: 'Images', icon: FileImage },
           { id: 'galleries', label: 'Gallery Management', icon: Palette },
           ...(userRole === 'super_admin' ? [
+            { id: 'photography', label: 'Photography', icon: Camera },
             { id: 'site-management', label: 'Site Management', icon: Home },
             { id: 'site-assets', label: 'Site Assets', icon: Palette },
             { id: 'staff', label: 'Staff Management', icon: Shield },
@@ -2000,6 +2003,9 @@ export function AdminContent({ userRole }: AdminContentProps) {
             </div>
           )}
 
+          {activeTab === 'photography' && userRole === 'super_admin' && (
+            <PhotographySettings />
+          )}
           {activeTab === 'site-management' && userRole === 'super_admin' && (
             <div className="space-y-8">
               <div className="bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-lg p-6 border border-purple-500/30">
@@ -2011,70 +2017,66 @@ export function AdminContent({ userRole }: AdminContentProps) {
                   Each page shows sections from top to bottom with integrated text, image, and styling controls.
                 </p>
                 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div 
-                    className="bg-slate-800/50 rounded-lg p-4 border border-slate-600 cursor-pointer"
+                    className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 cursor-pointer hover:border-slate-500 transition-colors"
                     onClick={() => setActivePageSettings('homepage')}
                   >
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2">
                       <span className="text-2xl">🏠</span>
                       <h3 className="text-lg font-semibold text-white">Homepage</h3>
                     </div>
-                    <p className="text-sm text-gray-400">Hero, Services, Portfolio, Contact sections</p>
                   </div>
                   
                   <div 
-                    className="bg-slate-800/50 rounded-lg p-4 border border-slate-600 hover:border-purple-500/50 transition-colors cursor-pointer"
+                    className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 hover:border-purple-500/50 transition-colors cursor-pointer"
                     onClick={() => setActivePageSettings('portfolio')}
                   >
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2">
                       <span className="text-2xl">🎨</span>
                       <h3 className="text-lg font-semibold text-white">Portfolio</h3>
                     </div>
-                    <p className="text-sm text-gray-400">Featured work display and styling settings</p>
                   </div>
                   
-                  <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-600 opacity-50">
-                    <div className="flex items-center gap-2 mb-2">
+                  <div className="bg-slate-800/30 rounded-lg p-3 border border-slate-600 opacity-50">
+                    <div className="flex items-center gap-2">
                       <span className="text-2xl">📸</span>
                       <h3 className="text-lg font-semibold text-white">Photography</h3>
                     </div>
-                    <p className="text-sm text-gray-400">Coming soon...</p>
                   </div>
                   
-                  <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-600 opacity-50">
-                    <div className="flex items-center gap-2 mb-2">
+                  <div className="bg-slate-800/30 rounded-lg p-3 border border-slate-600 opacity-50">
+                    <div className="flex items-center gap-2">
                       <span className="text-2xl">🎬</span>
                       <h3 className="text-lg font-semibold text-white">Videography</h3>
                     </div>
-                    <p className="text-sm text-gray-400">Coming soon...</p>
-                  </div>
-                  
-                  <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-600 opacity-50">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-2xl">👥</span>
-                      <h3 className="text-lg font-semibold text-white">About</h3>
-                    </div>
-                    <p className="text-sm text-gray-400">Coming soon...</p>
                   </div>
                   
                   <div 
-                    className="bg-slate-800/50 rounded-lg p-4 border border-slate-600 hover:border-cyan-500/50 transition-colors cursor-pointer"
+                    className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 hover:border-emerald-500/50 transition-colors cursor-pointer"
+                    onClick={() => setActivePageSettings('about')}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">👥</span>
+                      <h3 className="text-lg font-semibold text-white">About</h3>
+                    </div>
+                  </div>
+                  
+                  <div 
+                    className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 hover:border-cyan-500/50 transition-colors cursor-pointer"
                     onClick={() => setActivePageSettings('contact')}
                   >
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2">
                       <span className="text-2xl">📞</span>
                       <h3 className="text-lg font-semibold text-white">Contact</h3>
                     </div>
-                    <p className="text-sm text-gray-400">Business info, hours, response times</p>
                   </div>
                   
-                  <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-600 opacity-50">
-                    <div className="flex items-center gap-2 mb-2">
+                  <div className="bg-slate-800/30 rounded-lg p-3 border border-slate-600 opacity-50">
+                    <div className="flex items-center gap-2">
                       <span className="text-2xl">🔍</span>
                       <h3 className="text-lg font-semibold text-white">Global SEO</h3>
                     </div>
-                    <p className="text-sm text-gray-400">Coming soon...</p>
                   </div>
                 </div>
               </div>
@@ -2082,37 +2084,24 @@ export function AdminContent({ userRole }: AdminContentProps) {
               {/* Conditional Page Settings */}
               {activePageSettings === 'contact' && (
                 <div className="mt-8">
-                  <div className="mb-4">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setActivePageSettings(null)}
-                      className="text-gray-400 hover:text-white border-gray-600 hover:border-gray-400"
-                    >
-                      ← Back to Site Management
-                    </Button>
-                  </div>
                   <ContactSettings />
                 </div>
               )}
 
               {activePageSettings === 'homepage' && (
                 <div className="mt-8">
-                  <div className="mb-4">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setActivePageSettings(null)}
-                      className="text-gray-400 hover:text-white border-gray-600 hover:border-gray-400"
-                    >
-                      ← Back to Site Management
-                    </Button>
-                  </div>
                   <HomepageSettings />
                 </div>
               )}
 
               {activePageSettings === 'portfolio' && (
                 <div className="mt-8">
-                  <PortfolioSettings onBack={() => setActivePageSettings(null)} />
+                  <PortfolioSettings />
+                </div>
+              )}
+              {activePageSettings === 'about' && (
+                <div className="mt-8">
+                  <AboutSettings />
                 </div>
               )}
 
@@ -2607,7 +2596,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                       id="edit-location" 
                       name="location" 
                       defaultValue={editingShoot.location}
-                      placeholder="e.g., Cape Town Waterfront"
+                      placeholder="e.g., Durban Waterfront"
                       required 
                     />
                   </div>
@@ -2649,7 +2638,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                     id="edit-seoTags" 
                     name="seoTags" 
                     defaultValue={editingShoot.seoTags}
-                    placeholder="wedding photography, cape town, romantic, outdoor"
+                    placeholder="wedding photography, durban, romantic, outdoor"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     Comma-separated tags for SEO optimization

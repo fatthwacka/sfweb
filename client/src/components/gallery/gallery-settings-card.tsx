@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -12,9 +12,6 @@ import { Palette, Save } from "lucide-react";
 interface GallerySettings {
   backgroundColor?: string;
   layoutStyle?: string;
-  borderStyle?: string;
-  imageSpacing?: string;
-  dominantAspectRatio?: string;
   borderRadius?: number;
   imageSpacingValue?: number;
   coverPicAlignment?: string;
@@ -37,13 +34,19 @@ export const GallerySettingsCard: React.FC<GallerySettingsCardProps> = ({
   isSaving = false,
   standalone = true
 }) => {
-  // Convert borderStyle to borderRadius for the slider
-  const getBorderRadius = () => {
-    switch (gallerySettings.borderStyle) {
-      case 'sharp': return 0;
-      case 'circular': return 44;
-      default: return 22; // rounded
-    }
+  // Get current radius value (default to 8px)
+  const getCurrentRadius = () => {
+    return gallerySettings.borderRadius !== undefined ? gallerySettings.borderRadius : 8;
+  };
+
+  // Get current spacing value (default to 8px)
+  const getCurrentSpacing = () => {
+    return gallerySettings.imageSpacingValue !== undefined ? gallerySettings.imageSpacingValue : 8;
+  };
+
+  // Get current cover size value (default to 80%)
+  const getCurrentCoverSize = () => {
+    return gallerySettings.coverPicSize !== undefined ? gallerySettings.coverPicSize : 80;
   };
 
   // Local slider values (only for UI, not connected to settings during drag)
@@ -53,28 +56,37 @@ export const GallerySettingsCard: React.FC<GallerySettingsCardProps> = ({
   
   // Input field state
   const [radiusInputValue, setRadiusInputValue] = useState(getCurrentRadius().toString());
+  const [spacingInputValue, setSpacingInputValue] = useState(getCurrentSpacing().toString());
   
   // Simple timeouts for debounced saving
   const radiusTimeoutRef = useRef<NodeJS.Timeout>();
   const spacingTimeoutRef = useRef<NodeJS.Timeout>();
   const coverSizeTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Convert imageSpacing to imageSpacingValue for the slider
-  const getImageSpacingValue = () => {
-    switch (gallerySettings.imageSpacing) {
-      case 'tight': return 2;
-      case 'loose': return 16;
-      default: return 8; // normal
-    }
+  // Update local states when gallerySettings changes (handles async data loading)
+  useEffect(() => {
+    setLocalRadius(getCurrentRadius());
+    setLocalSpacing(getCurrentSpacing());
+    setLocalCoverSize(getCurrentCoverSize());
+    setRadiusInputValue(getCurrentRadius().toString());
+    setSpacingInputValue(getCurrentSpacing().toString());
+    setCoverSizeInputValue(getCurrentCoverSize().toString());
+  }, [gallerySettings.borderRadius, gallerySettings.imageSpacingValue, gallerySettings.coverPicSize]);
+
+  // Update functions
+  const updateImageSpacing = (spacing: number) => {
+    setGallerySettings(prev => ({...prev, imageSpacingValue: spacing}));
   };
 
-  // Simple input field state only
-  const [spacingInputValue, setSpacingInputValue] = useState(getCurrentSpacing().toString());
+  const updateBorderRadius = (radius: number) => {
+    setGallerySettings(prev => ({...prev, borderRadius: radius}));
+  };
 
-  // Simple update - no auto-save
+  // Update spacing with immediate save
   const updateSpacing = (spacing: number) => {
     setLocalSpacing(spacing);
     setSpacingInputValue(spacing.toString());
+    updateImageSpacing(spacing);
   };
 
   // Handle spacing input field changes
@@ -91,26 +103,12 @@ export const GallerySettingsCard: React.FC<GallerySettingsCardProps> = ({
     const numericValue = parseInt(spacingInputValue);
     if (isNaN(numericValue)) {
       // Reset to current value if invalid input
-      setSpacingInputValue(getImageSpacingValue().toString());
+      setSpacingInputValue(getCurrentSpacing().toString());
     } else {
       updateImageSpacing(numericValue);
     }
   };
 
-  // Get current spacing value (use imageSpacingValue if available, fallback to converted value)
-  const getCurrentSpacing = () => {
-    return gallerySettings.imageSpacingValue !== undefined ? gallerySettings.imageSpacingValue : getImageSpacingValue();
-  };
-
-  // Ensure layoutStyle defaults to 'automatic' if not set
-  useEffect(() => {
-    if (!gallerySettings.layoutStyle) {
-      console.log('Setting default layoutStyle to automatic');
-      setGallerySettings(prev => ({...prev, layoutStyle: 'automatic'}));
-    } else {
-      console.log('Current layoutStyle:', gallerySettings.layoutStyle);
-    }
-  }, [gallerySettings.layoutStyle, setGallerySettings]);
 
 
   // Color picker preset colors
@@ -125,6 +123,7 @@ export const GallerySettingsCard: React.FC<GallerySettingsCardProps> = ({
   // Local state for custom color picker
   const [customColor, setCustomColor] = useState(gallerySettings.backgroundColor || '#ffffff');
   const [hexInputValue, setHexInputValue] = useState(gallerySettings.backgroundColor || '#ffffff');
+  const localBackgroundColor = gallerySettings.backgroundColor || '#ffffff';
 
   // Update background color
   const updateBackgroundColor = (color: string) => {
@@ -163,11 +162,15 @@ export const GallerySettingsCard: React.FC<GallerySettingsCardProps> = ({
     }
   };
 
-  // Simple update - no auto-save
+  // Update radius with immediate save
   const updateRadius = (radius: number) => {
     setLocalRadius(radius);
     setRadiusInputValue(radius.toString());
+    updateBorderRadius(radius);
   };
+
+  // Handle cover size slider change
+  const [coverSizeInputValue, setCoverSizeInputValue] = useState(getCurrentCoverSize().toString());
 
   // Handle input field changes
   const handleRadiusInputChange = (value: string) => {
@@ -183,24 +186,11 @@ export const GallerySettingsCard: React.FC<GallerySettingsCardProps> = ({
     const numericValue = parseInt(radiusInputValue);
     if (isNaN(numericValue)) {
       // Reset to current value if invalid input
-      setRadiusInputValue(getBorderRadius().toString());
+      setRadiusInputValue(getCurrentRadius().toString());
     } else {
       updateBorderRadius(numericValue);
     }
   };
-
-  // Get current radius value (use borderRadius if available, fallback to converted value)
-  const getCurrentRadius = () => {
-    return gallerySettings.borderRadius !== undefined ? gallerySettings.borderRadius : getBorderRadius();
-  };
-
-  // Get current cover size value (default to 80%)
-  const getCurrentCoverSize = () => {
-    return gallerySettings.coverPicSize !== undefined ? gallerySettings.coverPicSize : 80;
-  };
-
-  // Handle cover size slider change
-  const [coverSizeInputValue, setCoverSizeInputValue] = useState(getCurrentCoverSize().toString());
 
   const handleCoverSizeInputChange = (value: string) => {
     setCoverSizeInputValue(value);
@@ -217,10 +207,11 @@ export const GallerySettingsCard: React.FC<GallerySettingsCardProps> = ({
     }
   };
 
-  // Simple update - no auto-save
+  // Update cover size with immediate save
   const updateCoverSize = (value: number) => {
     setLocalCoverSize(value);
     setCoverSizeInputValue(value.toString());
+    setGallerySettings(prev => ({...prev, coverPicSize: value}));
   };
 
   const content = (

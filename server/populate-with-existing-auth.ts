@@ -84,9 +84,9 @@ export async function populateWithExistingAuth() {
         createdBy: profileUUIDs[0]
       },
       {
-        name: 'Cape Town Corporate',
-        slug: 'cape-town-corporate',
-        email: 'events@capetowncorp.co.za',
+        name: 'Durban Corporate',
+        slug: 'durban-corporate',
+        email: 'events@durbancorp.co.za',
         userId: null,
         createdBy: profileUUIDs[1]
       },
@@ -108,18 +108,18 @@ export async function populateWithExistingAuth() {
       {
         clientId: createdClients[0].id.toString(),
         title: 'Sarah & Tom - Engagement Session',
-        description: 'Romantic engagement shoot at Camps Bay beach during golden hour. Captured their natural chemistry and love story with Cape Town\'s stunning coastline as backdrop.',
+        description: 'Romantic engagement shoot at uShaka Beach beach during golden hour. Captured their natural chemistry and love story with Durban\'s stunning coastline as backdrop.',
         isPrivate: false,
-        seoTags: ['engagement', 'couples', 'camps bay', 'beach', 'sunset', 'cape town', 'romantic'],
+        seoTags: ['engagement', 'couples', 'ushaka beach', 'beach', 'sunset', 'durban', 'romantic'],
         viewCount: 45,
         createdBy: profileUUIDs[0]
       },
       {
         clientId: createdClients[1].id.toString(),
         title: 'Wilson Family Portrait Session',
-        description: 'Fun family portrait session in Kirstenbosch Botanical Gardens. Three generations celebrating grandmother\'s 80th birthday with natural, candid moments.',
+        description: 'Fun family portrait session in Durban Botanic Gardens Botanical Gardens. Three generations celebrating grandmother\'s 80th birthday with natural, candid moments.',
         isPrivate: false,
-        seoTags: ['family', 'portraits', 'kirstenbosch', 'generations', 'birthday', 'cape town', 'natural'],
+        seoTags: ['family', 'portraits', 'durban botanic gardens', 'generations', 'birthday', 'durban', 'natural'],
         viewCount: 32,
         createdBy: profileUUIDs[1]
       },
@@ -135,7 +135,7 @@ export async function populateWithExistingAuth() {
       {
         clientId: createdClients[3].id.toString(),
         title: 'Corporate Event - Annual Gala',
-        description: 'Professional documentation of Cape Town Corporate\'s annual gala dinner. Executive headshots, award presentations, and networking moments captured.',
+        description: 'Professional documentation of Durban Corporate\'s annual gala dinner. Executive headshots, award presentations, and networking moments captured.',
         isPrivate: true,
         seoTags: ['corporate', 'gala', 'professional', 'headshots', 'awards', 'networking'],
         viewCount: 12,
@@ -144,9 +144,9 @@ export async function populateWithExistingAuth() {
       {
         clientId: createdClients[4].id.toString(),
         title: 'Mountain View Wedding - Sarah & James',
-        description: 'Intimate wedding ceremony overlooking Table Mountain. Captured ceremony, reception, and couple portraits with dramatic mountain backdrop.',
+        description: 'Intimate wedding ceremony overlooking uMhlanga Ridge. Captured ceremony, reception, and couple portraits with dramatic mountain backdrop.',
         isPrivate: false,
-        seoTags: ['wedding', 'mountain view', 'table mountain', 'ceremony', 'intimate', 'cape town', 'couples'],
+        seoTags: ['wedding', 'mountain view', 'table mountain', 'ceremony', 'intimate', 'durban', 'couples'],
         viewCount: 156,
         createdBy: profileUUIDs[0]
       }
@@ -203,9 +203,9 @@ export async function populateWithExistingAuth() {
       // Family Portrait Images (3 images)
       {
         shootId: createdShoots[1].id,
-        filename: 'family-kirstenbosch-01.jpg',
+        filename: 'family-durban botanic gardens-01.jpg',
         storagePath: 'https://images.unsplash.com/photo-1511895426328-dc8714efa2d8?w=800&h=600&fit=crop',
-        originalName: 'family-kirstenbosch-01.jpg',
+        originalName: 'family-durban botanic gardens-01.jpg',
         fileSize: 3500000,
         isPrivate: false,
         uploadOrder: 1,
@@ -213,9 +213,9 @@ export async function populateWithExistingAuth() {
       },
       {
         shootId: createdShoots[1].id,
-        filename: 'family-kirstenbosch-02.jpg',
+        filename: 'family-durban botanic gardens-02.jpg',
         storagePath: 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=800&h=600&fit=crop',
-        originalName: 'family-kirstenbosch-02.jpg',
+        originalName: 'family-durban botanic gardens-02.jpg',
         fileSize: 3100000,
         isPrivate: false,
         uploadOrder: 2,
@@ -223,9 +223,9 @@ export async function populateWithExistingAuth() {
       },
       {
         shootId: createdShoots[1].id,
-        filename: 'family-kirstenbosch-03.jpg',
+        filename: 'family-durban botanic gardens-03.jpg',
         storagePath: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=800&h=600&fit=crop',
-        originalName: 'family-kirstenbosch-03.jpg',
+        originalName: 'family-durban botanic gardens-03.jpg',
         fileSize: 2700000,
         isPrivate: false,
         uploadOrder: 3,
@@ -245,9 +245,9 @@ export async function populateWithExistingAuth() {
       },
       {
         shootId: createdShoots[2].id,
-        filename: 'portfolio-landscape-cape-town-01.jpg',
+        filename: 'portfolio-landscape-durban-01.jpg',
         storagePath: 'https://images.unsplash.com/photo-1580692270804-1404f9846f96?w=1200&h=800&fit=crop',
-        originalName: 'portfolio-landscape-cape-town-01.jpg',
+        originalName: 'portfolio-landscape-durban-01.jpg',
         fileSize: 4200000,
         isPrivate: false,
         uploadOrder: 2,

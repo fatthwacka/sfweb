@@ -29,7 +29,7 @@ async function seedData() {
       name: "Sarah Johnson",
       email: "sarah@example.com",
       phone: "+27 83 123 4567",
-      address: "123 Main Street, Cape Town, 8001",
+      address: "123 Main Street, Durban, 8001",
       slug: "sarah-johnson",
       userId: clientUser.id
     }).returning();
@@ -49,10 +49,10 @@ async function seedData() {
     const [portraitShoot] = await db.insert(shoots).values({
       clientId: testClient.id,
       title: "Sarah's Portrait Session",
-      description: "A beautiful outdoor portrait session in Kirstenbosch Gardens",
+      description: "A beautiful outdoor portrait session in Durban Botanic Gardens Gardens",
       shootType: "photography",
       shootDate: new Date("2024-01-15"),
-      location: "Kirstenbosch Botanical Gardens, Cape Town",
+      location: "Durban Botanic Gardens Botanical Gardens, Durban",
       notes: "Golden hour session with natural lighting",
       customSlug: "sarah-portraits-2024",
       customTitle: "Golden Hour Portraits",
@@ -61,7 +61,7 @@ async function seedData() {
       layoutType: "masonry",
       borderRadius: 12,
       imagePadding: 8,
-      seoTags: "portrait photography cape town kirstenbosch natural light"
+      seoTags: "portrait photography durban durban botanic gardens natural light"
     }).returning();
 
     const [weddingShoot] = await db.insert(shoots).values({
@@ -88,7 +88,7 @@ async function seedData() {
       description: "Annual family portrait session at the beach",
       shootType: "photography", 
       shootDate: new Date("2024-03-10"),
-      location: "Camps Bay Beach, Cape Town",
+      location: "uShaka Beach Beach, Durban",
       notes: "Beach session during sunset",
       customSlug: "johnson-family-2024",
       customTitle: "Family Moments by the Sea",
@@ -97,7 +97,7 @@ async function seedData() {
       layoutType: "masonry",
       borderRadius: 20,
       imagePadding: 12,
-      seoTags: "family photography camps bay beach sunset cape town"
+      seoTags: "family photography ushaka beach beach sunset durban"
     }).returning();
 
     console.log("✓ Created shoots");

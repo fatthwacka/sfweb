@@ -33,9 +33,9 @@ export function ContactSettings() {
     bookingEmail: config?.contact?.business?.bookingEmail || 'bookings@slyfox.co.za',
     
     // Address
-    displayAddress: config?.contact?.business?.address?.displayText || 'Cape Town, South Africa',
-    city: config?.contact?.business?.address?.city || 'Cape Town',
-    province: config?.contact?.business?.address?.province || 'Western Cape',
+    displayAddress: config?.contact?.business?.address?.displayText || 'Durban, South Africa',
+    city: config?.contact?.business?.address?.city || 'Durban',
+    province: config?.contact?.business?.address?.province || 'KwaZulu-Natal',
     country: config?.contact?.business?.address?.country || 'South Africa',
     
     // Hours
@@ -50,8 +50,8 @@ export function ContactSettings() {
     phoneResponseTime: config?.contact?.responseTimes?.phone?.time || 'Immediate',
     
     // Service areas
-    primaryArea: config?.contact?.serviceAreas?.primary?.area || 'Cape Town Metro (no travel fees)',
-    extendedArea: config?.contact?.serviceAreas?.extended?.area || 'Western Cape Province',
+    primaryArea: config?.contact?.serviceAreas?.primary?.area || 'Durban Metro (no travel fees)',
+    extendedArea: config?.contact?.serviceAreas?.extended?.area || 'KwaZulu-Natal Province',
     destinationArea: config?.contact?.serviceAreas?.destination?.area || 'Anywhere in South Africa & beyond',
     serviceAreasNote: config?.contact?.serviceAreas?.note || 'Travel costs calculated based on distance and duration. Accommodation provided for multi-day shoots.',
     
@@ -74,9 +74,9 @@ export function ContactSettings() {
         bookingEmail: config.contact.business?.bookingEmail || 'bookings@slyfox.co.za',
         
         // Address
-        displayAddress: config.contact.business?.address?.displayText || 'Cape Town, South Africa',
-        city: config.contact.business?.address?.city || 'Cape Town',
-        province: config.contact.business?.address?.province || 'Western Cape',
+        displayAddress: config.contact.business?.address?.displayText || 'Durban, South Africa',
+        city: config.contact.business?.address?.city || 'Durban',
+        province: config.contact.business?.address?.province || 'KwaZulu-Natal',
         country: config.contact.business?.address?.country || 'South Africa',
         
         // Hours
@@ -91,8 +91,8 @@ export function ContactSettings() {
         phoneResponseTime: config.contact.responseTimes?.phone?.time || 'Immediate',
         
         // Service areas
-        primaryArea: config.contact.serviceAreas?.primary?.area || 'Cape Town Metro (no travel fees)',
-        extendedArea: config.contact.serviceAreas?.extended?.area || 'Western Cape Province',
+        primaryArea: config.contact.serviceAreas?.primary?.area || 'Durban Metro (no travel fees)',
+        extendedArea: config.contact.serviceAreas?.extended?.area || 'KwaZulu-Natal Province',
         destinationArea: config.contact.serviceAreas?.destination?.area || 'Anywhere in South Africa & beyond',
         serviceAreasNote: config.contact.serviceAreas?.note || 'Travel costs calculated based on distance and duration. Accommodation provided for multi-day shoots.',
         
@@ -361,7 +361,7 @@ export function ContactSettings() {
                       value={contactData.displayAddress}
                       onChange={(e) => handleInputChange('displayAddress', e.target.value)}
                       className="bg-slate-700 border-slate-600 text-white"
-                      placeholder="Cape Town, South Africa"
+                      placeholder="Durban, South Africa"
                     />
                   </div>
                   
@@ -518,7 +518,7 @@ export function ContactSettings() {
                     value={contactData.primaryArea}
                     onChange={(e) => handleInputChange('primaryArea', e.target.value)}
                     className="bg-slate-700 border-slate-600 text-white"
-                    placeholder="Cape Town Metro (no travel fees)"
+                    placeholder="Durban Metro (no travel fees)"
                   />
                 </div>
                 
@@ -529,7 +529,7 @@ export function ContactSettings() {
                     value={contactData.extendedArea}
                     onChange={(e) => handleInputChange('extendedArea', e.target.value)}
                     className="bg-slate-700 border-slate-600 text-white"
-                    placeholder="Western Cape Province"
+                    placeholder="KwaZulu-Natal Province"
                   />
                 </div>
                 

@@ -3,6 +3,9 @@
 ## Agent Purpose
 Expert in SlyFox Studios site management system architecture, data flow patterns, and configuration governance. Specializes in site-config API integration, admin panel development, and content management workflows.
 
+## 📋 Complete Implementation Reference
+**Primary Documentation**: [`SITE_MANAGEMENT_GUIDE.md`](./SITE_MANAGEMENT_GUIDE.md) - Complete technical implementation guide covering GradientPicker component system and site configuration architecture.
+
 ## Core Expertise Areas
 
 ### 1. Site Configuration Architecture

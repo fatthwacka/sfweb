@@ -31,9 +31,9 @@ export async function populateRealisticData() {
         role: 'client' as const
       },
       {
-        email: 'corporate@capetown.com',
+        email: 'corporate@durban.com',
         password: 'client2025',
-        fullName: 'Cape Town Corporate',
+        fullName: 'Durban Corporate',
         role: 'client' as const
       }
     ];
@@ -67,9 +67,9 @@ export async function populateRealisticData() {
         createdBy: createdUsers[1]?.id || 'admin-uuid',
       },
       {
-        name: 'Cape Town Corporate',
-        slug: 'cape-town-corporate',
-        email: 'corporate@capetown.com',
+        name: 'Durban Corporate',
+        slug: 'durban-corporate',
+        email: 'corporate@durban.com',
         userId: createdUsers[2]?.id || null,
         createdBy: createdUsers[2]?.id || 'admin-uuid',
       }
@@ -97,9 +97,9 @@ export async function populateRealisticData() {
       {
         clientId: createdClients[0].id,
         title: 'Engagement Session',
-        description: 'Romantic engagement photos at Kirstenbosch Gardens',
+        description: 'Romantic engagement photos at Durban Botanic Gardens Gardens',
         shootDate: new Date('2024-04-20'),
-        location: 'Kirstenbosch Botanical Gardens',
+        location: 'Durban Botanic Gardens Botanical Gardens',
         isPublic: false,
         coverImageUrl: null,
         customization: {
@@ -108,8 +108,8 @@ export async function populateRealisticData() {
           fontFamily: 'sans-serif'
         },
         seoTitle: 'Sarah & Tom Engagement Photos - SlyFox Studios',
-        seoDescription: 'Romantic engagement photography in the heart of Cape Town',
-        seoTags: ['engagement', 'kirstenbosch', 'couple', 'romantic']
+        seoDescription: 'Romantic engagement photography in the heart of Durban',
+        seoTags: ['engagement', 'durban botanic gardens', 'couple', 'romantic']
       },
       // Wilson Family
       {
@@ -117,7 +117,7 @@ export async function populateRealisticData() {
         title: 'Family Portrait Session',
         description: 'Annual family photos with three generations at the beach',
         shootDate: new Date('2024-11-10'),
-        location: 'Camps Bay Beach',
+        location: 'uShaka Beach Beach',
         isPublic: false,
         coverImageUrl: null,
         customization: {
@@ -129,7 +129,7 @@ export async function populateRealisticData() {
         seoDescription: 'Multi-generational family portraits with stunning ocean backdrop',
         seoTags: ['family', 'beach', 'camps-bay', 'generations']
       },
-      // Cape Town Corporate - Multiple shoots
+      // Durban Corporate - Multiple shoots
       {
         clientId: createdClients[2].id,
         title: 'Executive Headshots 2024',
@@ -143,7 +143,7 @@ export async function populateRealisticData() {
           backgroundColor: '#FFFFFF',
           fontFamily: 'sans-serif'
         },
-        seoTitle: 'Corporate Headshots Cape Town - SlyFox Studios',
+        seoTitle: 'Corporate Headshots Durban - SlyFox Studios',
         seoDescription: 'Professional business headshots for executive team',
         seoTags: ['corporate', 'headshots', 'business', 'professional']
       },
@@ -152,7 +152,7 @@ export async function populateRealisticData() {
         title: 'Annual Conference Documentation',
         description: 'Full event coverage of company annual conference',
         shootDate: new Date('2024-10-15'),
-        location: 'Cape Town International Convention Centre',
+        location: 'Durban International Convention Centre',
         isPublic: false,
         coverImageUrl: null,
         customization: {

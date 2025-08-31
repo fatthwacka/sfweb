@@ -1,5 +1,6 @@
 import { Star } from "lucide-react";
 import { useSiteConfig } from "@/hooks/use-site-config";
+import { GradientBackground } from "@/components/common/gradient-background";
 
 export function Testimonials() {
   const { config, isLoading } = useSiteConfig();
@@ -32,7 +33,7 @@ export function Testimonials() {
     }
   ];
   return (
-    <section className="py-20 bg-gradient-to-br from-indigo-900/40 via-background to-blue-900/30">
+    <GradientBackground section="testimonials" className="py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="cyan text-4xl lg:text-5xl mb-6">
@@ -47,7 +48,11 @@ export function Testimonials() {
           {testimonials.map(testimonial => (
             <div 
               key={testimonial.id} 
-              className="bg-charcoal rounded-2xl p-8 border border-border hover:border-gold transition-all duration-300"
+              className="rounded-2xl p-8 border border-border hover:border-gold transition-all duration-300 shadow-lg backdrop-blur-sm"
+              style={{
+                background: 'linear-gradient(135deg, hsl(260, 25%, 18%) 0%, hsl(260, 20%, 16%) 50%, hsl(220, 20%, 14%) 100%)',
+                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 107, 107, 0.1)'
+              }}
             >
               <div className="flex items-center mb-6">
                 <div className="flex text-salmon">
@@ -76,6 +81,6 @@ export function Testimonials() {
           ))}
         </div>
       </div>
-    </section>
+    </GradientBackground>
   );
 }

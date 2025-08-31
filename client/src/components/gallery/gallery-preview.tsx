@@ -58,8 +58,7 @@ export function GalleryPreview({ images, shoot, className = "" }: GalleryPreview
   };
 
   const getImageClasses = () => {
-    const borderRadius = gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-lg';
-    return borderRadius;
+    return ''; // Border radius handled via inline styles
   };
 
   return (

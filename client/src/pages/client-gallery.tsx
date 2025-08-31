@@ -34,12 +34,10 @@ interface Shoot {
   customSlug: string;
   customTitle: string;
   gallerySettings: {
-    padding: string;
-    borderStyle: string;
     layoutStyle: string;
-    imageSpacing: string;
     backgroundColor: string;
-    dominantAspectRatio?: 'landscape' | 'portrait' | 'square';
+    borderRadius?: number;
+    imageSpacingValue?: number;
     navbarPosition?: string;
     coverPicSize?: number;
   };
@@ -367,82 +365,29 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     }
   };
 
-  const getGalleryPaddingClasses = () => {
-    switch (gallerySettings?.padding) {
-      case 'tight': return 'gallery-padding-tight';
-      case 'loose': return 'gallery-padding-loose';
-      default: return 'gallery-padding-normal';
-    }
-  };
+  // Removed getGalleryPaddingClasses - using imageSpacingValue directly
 
   const getSpacingStyle = () => {
-    // Use new imageSpacingValue if available, otherwise fall back to imageSpacing
-    if (gallerySettings?.imageSpacingValue !== undefined) {
-      return `${gallerySettings.imageSpacingValue}px`;
-    }
-    
-    // Legacy imageSpacing support
-    switch (gallerySettings?.imageSpacing) {
-      case 'tight': return '2px';
-      case 'loose': return '16px';
-      default: return '8px'; // normal
-    }
+    const spacing = gallerySettings?.imageSpacingValue !== undefined ? gallerySettings.imageSpacingValue : 8;
+    return `${spacing}px`;
   };
 
   const getBackgroundStyle = () => {
-    // Support both hex colors and legacy class names
-    const bgColor = gallerySettings?.backgroundColor;
-    if (!bgColor) {
-      return { backgroundColor: '#ffffff' }; // Default white
-    }
-    
-    // If it's a hex color, use it directly
-    if (bgColor.startsWith('#')) {
-      return { backgroundColor: bgColor };
-    }
-    
-    // Legacy color name mapping
-    const colorMap: Record<string, string> = {
-      'black': '#000000',
-      'dark-grey': '#1f2937',
-      'grey': '#4b5563',
-      'warm-grey': '#2d2d2d',
-      'cool-grey': '#1e293b',
-      'white': '#ffffff'
-    };
-    
-    return { backgroundColor: colorMap[bgColor] || '#ffffff' };
+    return { backgroundColor: gallerySettings?.backgroundColor || '#ffffff' };
   };
 
   const getBorderStyle = () => {
-    // Use new borderRadius if available, otherwise fall back to borderStyle
-    if (gallerySettings?.borderRadius !== undefined) {
-      return { borderRadius: `${gallerySettings.borderRadius}px` };
-    }
-    
-    // Legacy borderStyle support
-    switch (gallerySettings?.borderStyle) {
-      case 'sharp': return { borderRadius: '0px' };
-      case 'circular': return { borderRadius: '50%' };
-      default: return { borderRadius: '8px' }; // rounded
-    }
+    const radius = gallerySettings?.borderRadius !== undefined ? gallerySettings.borderRadius : 8;
+    return { borderRadius: `${radius}px` };
   };
 
   const getImageClasses = () => {
-    let classes = 'gallery-image';
-    
-    // Add base border class (overflow handling)
-    classes += ' overflow-hidden';
-    
-    // Add layout-specific classes
     const layoutStyle = gallerySettings?.layoutStyle || 'automatic';
     if (layoutStyle === 'masonry' || layoutStyle === 'automatic') {
-      classes += ' gallery-masonry-item gallery-image-auto';
+      return 'gallery-image overflow-hidden gallery-masonry-item gallery-image-auto';
     } else {
-      classes += ' gallery-image-square';
+      return 'gallery-image overflow-hidden gallery-image-square';
     }
-    
-    return classes;
   };
 
   const getAspectRatioClass = () => {
@@ -482,7 +427,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
   // Get cover pic size (default to 80vh)
   const getCoverPicSize = () => {
-    const size = shoot?.gallerySettings?.coverPicSize || 80;
+    const size = shoot?.gallerySettings?.coverPicSize !== undefined ? shoot?.gallerySettings?.coverPicSize : 80;
     return `${size}vh`;
   };
 
@@ -656,7 +601,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
       {/* Image Gallery Section - Full Width */}
       <section className="py-8" style={getBackgroundStyle()}>
-        <div className={`gallery-container-public ${getGalleryPaddingClasses()}`}>
+        <div className="gallery-container-public">
           {imagesLoading ? (
             <div 
               className={getGalleryLayoutClasses()}

@@ -1,55 +1,98 @@
-# Development Server Startup Guide
+# SlyFox Studios - Development Server Startup Guide
 
-Quick reference for starting the SlyFox Studios development environment on any device.
+Complete guide for starting the development server across different environments and devices with the latest configuration persistence fixes.
 
-## 🤖 Development Resources
+## 🚀 Quick Start (All Platforms)
 
-**Specialized Agents Available**: 8 specialist agents in root directory (auth, backend, css, database, frontend, gallery, seo, meta-updater) - use proactively via Task tool for domain-specific work. See CLAUDE.md for details.
-
-**Key Documentation**: 
-- `CLAUDE.md` - Primary development rules and agent usage
-- `CSS_REFERENCE.md` - Complete styling and design system guide
-- `SITE_MANAGEMENT_ARCHITECTURE.md` - Site configuration system implementation
-- `site-management-specialist.md` - Specialist agent for site content governance
-
-## 🚀 Quick Start Commands
-
-### Primary Development Server (Recommended)
+**⚠️ MANDATORY: Always use Docker for development - ensures consistent environment and configuration persistence.**
 
 ```bash
-# Start full Docker development environment
+# Start development environment with config persistence (ONLY correct method)
 npm run docker:dev
 
-# Start Adminer database admin interface (separate step required)
+# Optional: Start Adminer database interface
 docker-compose --profile dev up adminer -d
 ```
 
-**What this does:**
-- Starts PostgreSQL database
-- Starts SlyFox Studios app with hot reload
-- Automatically rebuilds containers if needed
-- **Note**: Adminer requires separate command due to dev profile configuration
-
 **Access URLs:**
-- **App**: http://localhost:3000
-- **Database Admin**: http://localhost:8080 (after running Adminer command)
-- **PostgreSQL**: localhost:5432
+- **Application**: http://localhost:3000
+- **Admin Panel**: http://localhost:3000/admin
+- **Site Management**: http://localhost:3000/admin → Site Management tab
+- **Database Admin**: http://localhost:8080 (if Adminer started)
 
-### Alternative Startup Methods
+## ✅ Verification Steps
+
+After startup, verify everything is working:
 
 ```bash
-# Start only database services
-npm run docker:db
+# Check containers are running
+docker ps
 
-# Start app directly (without Docker)
-npm run dev
+# Test API endpoints
+curl http://localhost:3000/api/site-config | jq '.contact.business.name'
 
-# Start production build locally
-npm run build
-npm run start
+# Check configuration persistence
+ls -la server/data/site-config-overrides.json
+```
+
+**Expected Output:**
+- Containers: `sfweb-app` and `sfweb-postgres` running
+- API returns: `"SlyFox Studio Group"` (or your custom name)
+- Config file exists with your customizations
+
+## ⚠️ Common Startup Issues & Solutions
+
+### Docker Desktop Not Running
+```
+Error: Cannot connect to the Docker daemon
+```
+**Solution**: Start Docker Desktop and wait for "Engine running" status.
+
+### Port Conflicts
+```
+Error: bind: address already in use
+```
+**Solution**: 
+```bash
+# Stop all project containers
+docker-compose down
+
+# Find and kill conflicting processes
+lsof -i :3000 :5432 :8080
+kill -9 <PID>
+```
+
+### Config Changes Not Persisting
+**Symptoms**: Admin changes don't save or revert on restart
+**Solution**: Ensure config volume is mounted correctly:
+```bash
+docker volume ls | grep config_data
+docker exec sfweb-app ls -la /app/server/data/
 ```
 
 ## 📂 File Structure & Storage Configuration
+
+### Local Development Structure
+```
+Project Root (Dropbox Synced)
+├── client/                    # React frontend
+├── server/                    # Express.js backend
+│   └── data/                 # Configuration persistence directory
+│       └── site-config-overrides.json  # Site management settings
+├── public/                   # Static assets
+│   └── uploads/              # User uploaded images
+├── docker-compose.yml        # Development container setup
+├── deploy-production.sh      # Production deployment script
+└── .env                      # Environment variables
+```
+
+### Configuration Persistence
+
+The site management system now includes persistent configuration:
+
+- **Development**: `server/data/` directory mounted directly
+- **Production**: Docker volume `config_data` ensures persistence
+- **Backup**: Configuration automatically backed up during deployments
 
 ### Dropbox vs Local Storage Overview
 
@@ -81,7 +124,7 @@ The SlyFox Studios project is designed for seamless cross-device development wit
 
 # Docker Storage (per device)
 Docker Images:                              # ~374MB (after cleanup)
-Docker Volumes:                             # ~48MB (postgres data)
+Docker Volumes:                             # ~48MB (postgres data + config_data)
 Docker Build Cache:                         # 0MB (after cleanup)
 
 # Application Build Artifacts (auto-generated)
@@ -94,7 +137,7 @@ sfweb/.npm-cache/                           # NPM cache (excluded from Dropbox)
 
 **Per Device:**
 - **Dropbox Project Folder**: ~50MB (source code only)
-- **Docker Overhead**: ~422MB (images + volumes)  
+- **Docker Overhead**: ~422MB (images + volumes + config persistence)  
 - **Node Dependencies**: ~344MB (auto-downloaded)
 - **IDE Configuration**: ~255MB (Windsurf)
 - **Total Local Storage**: ~1.1GB per device
@@ -102,49 +145,8 @@ sfweb/.npm-cache/                           # NPM cache (excluded from Dropbox)
 **Cross-Device Efficiency:**
 - Only source code syncs via Dropbox (~50MB)
 - Large dependencies (node_modules, Docker images) rebuilt locally
+- Configuration persists via Docker volumes
 - No unnecessary file transfer between devices
-
-### Windsurf IDE Configuration Backup
-
-Since Windsurf settings are local-only, here's how to backup/restore:
-
-```bash
-# Backup Windsurf settings (optional)
-cp -r ~/Library/Application\ Support/Windsurf/User ~/Desktop/windsurf-backup-$(date +%Y%m%d)
-
-# Restore on new device (if needed)
-cp -r ~/Desktop/windsurf-backup-*/User/* ~/Library/Application\ Support/Windsurf/User/
-```
-
-### Git Repository Structure
-
-The project is also version-controlled via Git:
-- **Remote**: https://github.com/fatthwacka/sfweb.git
-- **Local**: `.git/` folder within Dropbox (synced)
-- **Benefits**: Git history available on all devices without separate clones
-
-### Docker Storage Optimization
-
-Regular cleanup to maintain lean local storage:
-
-```bash
-# Check current Docker storage usage
-docker system df
-
-# Clean unused images, volumes, and cache (recommended monthly)
-docker system prune -a -f
-docker volume prune -f
-
-# Expected storage after cleanup:
-# Images: ~374MB (only Adminer + built containers)
-# Volumes: ~48MB (postgres data only)
-# Build Cache: 0MB (cleared)
-```
-
-**Configure Docker Desktop Storage Limits:**
-1. Open Docker Desktop → Settings → Resources
-2. Set "Disk image size" to 20-30GB (sufficient for this project)
-3. Enable "Use gRPC FUSE for file sharing" for better macOS performance
 
 ## 📱 Cross-Platform Device Setup
 
@@ -160,7 +162,7 @@ docker volume prune -f
 **⚠️ Apple Silicon (M1/M2/M3) Note:**
 - Docker multi-platform builds automatically handle ARM64 architecture
 - Expect 2-3x longer initial build times compared to Intel Macs
-- No special configuration required - just ensure Docker Desktop is updated
+- Configuration persistence works identically across architectures
 
 ```bash
 # 1. Ensure Dropbox sync is complete
@@ -178,6 +180,7 @@ npm run docker:dev
 
 # 5. Wait for containers to build and start
 # Look for: "express serving on port 5000"
+# Look for: "🔄 Loaded config overrides from disk"
 
 # 6. Start Adminer for database management
 docker-compose --profile dev up adminer -d
@@ -223,107 +226,6 @@ npm run docker:dev
 docker-compose --profile dev up adminer -d
 ```
 
-## 🔄 First-Time Device Setup
-
-### Complete Setup Workflow
-
-```bash
-# 1. Clone from GitHub (if not using Dropbox sync)
-git clone https://github.com/fatthwacka/sfweb.git
-cd sfweb
-
-# 2. Verify all required files are present
-ls -la
-
-# 3. Check Docker is running
-docker ps
-
-# 4. Start development environment
-npm run docker:dev
-
-# 5. Wait for startup messages:
-# "PostgreSQL Database directory appears to contain a database"
-# "express serving on port 5000"
-
-# 6. Start Adminer for database management
-docker-compose --profile dev up adminer -d
-
-# 7. Test the application
-curl -I http://localhost:3000
-# Should return: HTTP/1.1 200 OK
-
-# 8. Test database admin interface
-curl -I http://localhost:8080
-# Should return: HTTP/1.1 200 OK
-```
-
-### 🚨 First-Time Troubleshooting
-
-**If containers fail to start:**
-
-```bash
-# Clean Docker environment
-npm run docker:clean
-
-# Rebuild from scratch
-npm run docker:dev
-```
-
-**If port conflicts occur:**
-
-```bash
-# Check what's using ports
-lsof -i :3000
-lsof -i :5432
-lsof -i :8080
-
-# Option 1: Stop conflicting services
-sudo service nginx stop  # if nginx is running
-sudo service postgresql stop  # if local postgres is running
-
-# Option 2: Use alternative ports (recommended)
-cp docker-compose.override.yml.example docker-compose.override.yml
-# Edit docker-compose.override.yml to change ports
-# Example: Change 3000:5000 to 3001:5000
-nano docker-compose.override.yml
-
-# Then start with custom ports
-npm run docker:dev
-```
-
-**Port Conflict Solutions:**
-
-Create `docker-compose.override.yml` with alternative ports:
-
-```yaml
-version: "3.7"
-services:
-  postgres:
-    ports:
-      - "5433:5432"  # Use 5433 instead of 5432
-  app:
-    ports:
-      - "3001:5000"  # Use 3001 instead of 3000
-  adminer:
-    ports:
-      - "8081:8080"  # Use 8081 instead of 8080
-```
-
-**Access URLs with custom ports:**
-- App: http://localhost:3001
-- Database Admin: http://localhost:8081
-- PostgreSQL: localhost:5433
-
-**If Dropbox sync issues:**
-
-```bash
-# Force Dropbox sync (macOS)
-killall Dropbox && open -a Dropbox
-
-# Check sync status
-# Look for green checkmarks on files in Finder/Explorer
-```
-
 ## 📊 Startup Verification Checklist
 
 ### ✅ Container Status Check
@@ -345,12 +247,17 @@ docker ps
 curl -I http://localhost:3000
 # Expected: HTTP/1.1 200 OK
 
+# Test site configuration API
+curl http://localhost:3000/api/site-config | jq '.contact.business.name'
+# Expected: Returns your customized business name
+
 # Test database connection
 docker-compose exec postgres pg_isready -U postgres
 # Expected: accepting connections
 
-# View application logs
-npm run docker:logs
+# Check configuration persistence
+docker exec sfweb-app ls -la /app/server/data/
+# Expected: site-config-overrides.json exists
 ```
 
 ### ✅ Development Features Verification
@@ -358,7 +265,8 @@ npm run docker:logs
 - **Hot Reload**: Edit a file and check browser auto-refreshes
 - **Database**: Access http://localhost:8080 (Adminer)
 - **API Endpoints**: Test API routes work correctly
-- **TypeScript**: Check `npm run check` passes
+- **Site Management**: Access admin panel at http://localhost:3000/admin
+- **Config Persistence**: Make changes in admin → check they persist after restart
 
 ## 🛠️ Development Workflow Commands
 
@@ -369,13 +277,31 @@ npm run docker:logs
 npm run docker:dev
 
 # View logs while developing
-npm run docker:logs
+docker-compose logs -f
 
 # Stop development environment
-npm run docker:down
+docker-compose down
 
-# Quick restart
-npm run docker:down && npm run docker:dev
+# Quick restart (preserves config)
+docker-compose down && npm run docker:dev
+```
+
+### Configuration Management
+
+```bash
+# View current configuration
+curl http://localhost:3000/api/site-config | jq
+
+# Check saved configuration file
+docker exec sfweb-app cat /app/server/data/site-config-overrides.json | jq
+
+# Test configuration update
+curl -X PATCH http://localhost:3000/api/site-config/bulk \
+  -H "Content-Type: application/json" \
+  -d '{"test": {"timestamp": "'$(date)'"}}' | jq
+
+# Check configuration volume
+docker volume inspect sfweb_config_data
 ```
 
 ### Development Tools
@@ -388,105 +314,50 @@ npm run check
 npm run db:push
 
 # Access container shell
-npm run docker:shell
+docker exec -it sfweb-app sh
 
 # View only database logs
 docker-compose logs postgres -f
 ```
 
-### Code Synchronization
+### Production Deployment
 
 ```bash
-# Commit and push changes
-npm run deploy:commit
+# Deploy to production VPS (requires SSH setup)
+./deploy-production.sh
 
-# Pull latest changes
-git pull origin main
+# Check production status
+ssh slyfox-vps "cd /opt/sfweb && docker compose ps"
 
-# Push to production (after testing locally)
-npm run deploy:vps
+# View production logs
+ssh slyfox-vps "cd /opt/sfweb && docker compose logs -f"
 ```
 
-## 🔧 Platform-Specific Notes
-
-### macOS Considerations
-
-- **Docker Desktop**: Ensure adequate memory allocation (4GB+) 
-- **File Permissions**: Docker volume mounting works seamlessly
-- **Apple Silicon (M1/M2/M3)**: Multi-platform builds handle ARM64 automatically
-  - Initial builds take 2-3x longer than Intel Macs
-  - No performance impact once containers are built
-  - Docker Desktop 4.0+ required for optimal Apple Silicon support
-
-### Windows Considerations
-
-- **WSL2**: Recommended for better Docker performance
-- **Path Separators**: Use forward slashes in Docker paths
-- **Line Endings**: Git should handle CRLF→LF conversion
-
-### Linux Considerations
-
-- **Docker Permissions**: May need `sudo` for Docker commands
-- **systemd**: Ensure Docker service is enabled and started
-- **Firewall**: Check local firewall allows Docker ports
-
-## 📱 Device Switching Workflow
-
-### When Moving Between Devices
-
-1. **Ensure current work is saved**
-   ```bash
-   npm run deploy:commit
-   ```
-
-2. **Stop development on current device**
-   ```bash
-   npm run docker:down
-   ```
-
-3. **On new device (after Dropbox sync)**
-   ```bash
-   cd /path/to/sfweb
-   npm run docker:dev
-   ```
-
-4. **Verify everything works**
-   ```bash
-   curl -I http://localhost:3000
-   npm run check
-   ```
-
-## 🆘 Emergency Recovery
-
-### If Everything Breaks
+### Quick Reference Commands
 
 ```bash
-# Nuclear option - clean everything
-npm run docker:clean
-docker system prune -a -f
+# Essential development commands
+npm run docker:dev          # Start development with config persistence
+npm run check               # Type checking
+docker-compose down         # Stop all containers
+docker system prune -f      # Clean up Docker resources
 
-# Restart Docker Desktop
-# Then rebuild from scratch
-npm run docker:dev
-```
+# Configuration management
+curl http://localhost:3000/api/site-config | jq    # View current config
+docker exec sfweb-app cat /app/server/data/site-config-overrides.json  # View saved config
 
-### If Database Issues
+# Database management
+docker exec -it sfweb-postgres psql -U postgres -d slyfox_studios
+npm run db:push            # Push schema changes (inside container)
 
-```bash
-# Reset database
-docker volume rm sfweb_postgres_data
-npm run docker:dev
-npm run db:push
-```
+# Production deployment
+./deploy-production.sh     # Full production deployment with SSH
+ssh slyfox-vps "cd /opt/sfweb && docker compose ps"  # Check production status
 
-### If Git Issues
-
-```bash
-# Reset to last known good state
-git status
-git stash  # save local changes
-git pull origin main
-git stash pop  # restore local changes if needed
+# Monitoring and debugging
+docker logs sfweb-app      # View application logs
+docker stats --no-stream  # Container resource usage
+docker exec sfweb-app ls -la /app/server/data/  # Check config persistence
 ```
 
 ## 🔧 Port Customization
@@ -513,99 +384,73 @@ git stash pop  # restore local changes if needed
    npm run docker:dev
    ```
 
-### Common Alternative Port Configurations
+## 🆘 Emergency Recovery
 
-**Configuration A (Development Server Running):**
-```yaml
-# Use if you have another dev server on 3000
-services:
-  app:
-    ports:
-      - "3001:5000"
-```
-
-**Configuration B (Local PostgreSQL Running):**
-```yaml
-# Use if you have local PostgreSQL on 5432
-services:
-  postgres:
-    ports:
-      - "5433:5432"
-```
-
-**Configuration C (Full Alternative Ports):**
-```yaml
-# Use if multiple services conflict
-services:
-  postgres:
-    ports:
-      - "15432:5432"
-  app:
-    ports:
-      - "13000:5000"
-  adminer:
-    ports:
-      - "18080:8080"
-```
-
-## ✅ Complete Tested Startup Sequence
-
-**Verified on ARM-based Apple Silicon (M1/M2/M3 Macs):**
+### If Everything Breaks
 
 ```bash
-# 1. Ensure Docker Desktop is running
-docker --version
+# Nuclear option - clean everything
+docker-compose down -v
+docker system prune -a -f
 
-# 2. Start main development environment
+# Restart Docker Desktop
+# Then rebuild from scratch
 npm run docker:dev
-# Wait for: "express serving on port 5000" message
+```
 
-# 3. Start database admin interface
-docker-compose --profile dev up adminer -d
+### If Configuration Issues
 
-# 4. Verify all services are running
-docker ps
-# Expected: sfweb-app, sfweb-postgres, sfweb-adminer
+```bash
+# Reset configuration volume
+docker volume rm sfweb_config_data
+npm run docker:dev
 
-# 5. Test application accessibility
+# Configuration will be recreated from defaults
+```
+
+### If Database Issues
+
+```bash
+# Reset database
+docker volume rm sfweb_postgres_data
+npm run docker:dev
+npm run db:push
+```
+
+## 📋 Complete Setup Verification
+
+**Verified working configuration:**
+
+```bash
+# 1. Start development environment
+npm run docker:dev
+# Wait for: "🔄 Loaded config overrides from disk"
+
+# 2. Test application
 curl -I http://localhost:3000
 # Expected: HTTP/1.1 200 OK
 
-curl -I http://localhost:8080  
-# Expected: HTTP/1.1 200 OK (Adminer interface)
+# 3. Test site management API
+curl http://localhost:3000/api/site-config | jq '.contact.business.name'
+# Expected: Returns business name
+
+# 4. Test admin panel
+# Navigate to: http://localhost:3000/admin
+# Go to: Site Management → Homepage
+# Make a change and verify it persists
+
+# 5. Test configuration persistence
+docker-compose restart app
+# Wait 30 seconds, then check config is still there
+curl http://localhost:3000/api/site-config | jq '.contact.business.name'
 ```
 
-**Build Times (Apple Silicon):**
-- First build: ~3-5 minutes (npm install + Docker build)
-- Subsequent starts: ~30 seconds
-- Adminer start: ~10 seconds
-
-## 📋 Quick Reference
-
-**Essential Commands:**
-- Start: `npm run docker:dev`
-- Start Database Admin: `docker-compose --profile dev up adminer -d`
-- Stop: `npm run docker:down`
-- Logs: `npm run docker:logs`
-- Test: `curl -I http://localhost:3000`
-- Clean: `npm run docker:clean`
-- Port conflicts: `cp docker-compose.override.yml.example docker-compose.override.yml`
-
 **Default URLs:**
-- App: http://localhost:3000
-- Database Admin: http://localhost:8080 (after starting Adminer)
-- Production: http://168.231.86.89:3000
-
-**Default Ports:**
-- App: 3000 → 5000 (container)
-- PostgreSQL: 5432
-- Adminer: 8080
-
-**Alternative URLs (if using overrides):**
-- Check your `docker-compose.override.yml` for actual ports
-- App: http://localhost:[YOUR_APP_PORT]
-- Database Admin: http://localhost:[YOUR_ADMINER_PORT]
+- **App**: http://localhost:3000
+- **Admin Panel**: http://localhost:3000/admin
+- **Database Admin**: http://localhost:8080 (after starting Adminer)
+- **Production**: http://168.231.86.89:3000
 
 ---
 
-*This guide ensures you can start development immediately on any device, anywhere!*
+*This guide ensures consistent development environment with persistent configuration across all devices and platforms.*

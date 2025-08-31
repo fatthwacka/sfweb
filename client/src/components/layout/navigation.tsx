@@ -50,42 +50,42 @@ const NavigationComponent = memo(function Navigation() {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
             <Link href="/photography" className={cn(
-              "transition-colors duration-300 font-quicksand font-light",
+              "transition-colors duration-300 font-barlow font-light",
               location.startsWith('/photography') 
                 ? "text-orange-200" 
-                : "text-blue-100 hover:text-cyan-400"
+                : "text-blue-100 hover:text-cyan-bright"
             )}>
               Photography
             </Link>
             <Link href="/videography" className={cn(
-              "transition-colors duration-300 font-quicksand font-light",
+              "transition-colors duration-300 font-barlow font-light",
               location.startsWith('/videography') 
                 ? "text-orange-200" 
-                : "text-blue-100 hover:text-cyan-400"
+                : "text-blue-100 hover:text-cyan-bright"
             )}>
               Videography
             </Link>
             <Link href="/about" className={cn(
-              "transition-colors duration-300 font-quicksand font-light",
+              "transition-colors duration-300 font-barlow font-light",
               location === '/about' 
                 ? "text-orange-200" 
-                : "text-blue-100 hover:text-cyan-400"
+                : "text-blue-100 hover:text-cyan-bright"
             )}>
               About
             </Link>
             <Link href="/pricing" className={cn(
-              "transition-colors duration-300 font-quicksand font-light",
+              "transition-colors duration-300 font-barlow font-light",
               location === '/pricing' 
                 ? "text-orange-200" 
-                : "text-blue-100 hover:text-cyan-400"
+                : "text-blue-100 hover:text-cyan-bright"
             )}>
               Pricing
             </Link>
             <Link href="/contact" className={cn(
-              "transition-colors duration-300 font-quicksand font-light",
+              "transition-colors duration-300 font-barlow font-light",
               location === '/contact' 
                 ? "text-orange-200" 
-                : "text-blue-100 hover:text-cyan-400"
+                : "text-blue-100 hover:text-cyan-bright"
             )}>
               Contact
             </Link>

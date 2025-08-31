@@ -61,6 +61,13 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
 COPY --from=deps /app/node_modules ./node_modules
 
+# Copy server data directory for configuration persistence
+COPY --from=builder /app/server ./server
+
+# Set the correct permissions for configuration directory
+RUN mkdir -p ./server/data
+RUN chown -R nextjs:nodejs ./server
+
 # Set the correct permission for prerender cache
 RUN mkdir .next
 RUN chown nextjs:nodejs .next

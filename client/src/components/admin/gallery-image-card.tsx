@@ -46,9 +46,7 @@ export function GalleryImageCard({
       className={`group relative cursor-pointer bg-background rounded-lg overflow-hidden transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl ${
         draggedImage === image.id ? 'opacity-50' : ''
       } ${
-        gallerySettings.borderStyle === 'rounded' ? 'rounded-lg' : 
-        gallerySettings.borderStyle === 'circular' ? 'rounded-full aspect-square' : 
-        gallerySettings.borderStyle === 'sharp' ? 'rounded-none' : 'rounded-lg'
+        '' // Border radius handled via inline styles
       }`}
       draggable
       onDragStart={(e) => {

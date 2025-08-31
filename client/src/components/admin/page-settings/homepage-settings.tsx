@@ -8,6 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
+import { GradientPicker } from '@/components/ui/gradient-picker';
+import { useGradient } from '@/hooks/use-gradient';
+import { CategoryPagesConfig } from '@shared/types/category-config';
 
 interface HeroSlide {
   id: string;
@@ -33,7 +36,7 @@ interface Testimonial {
   name: string;
   role: string;
   company: string;
-  content: string;
+  quote: string;
   image?: string;
   rating: number;
 }
@@ -72,6 +75,13 @@ interface SiteConfig {
       items: Testimonial[];
     };
   };
+  // New category pages configuration
+  categoryPages?: CategoryPagesConfig;
+  // Existing gradients configuration
+  gradients?: {
+    [sectionName: string]: any;
+  };
+  portfolio?: any;
 }
 
 const defaultSiteConfig: SiteConfig = {
@@ -116,7 +126,7 @@ export function HomepageSettings() {
 
   // Fetch current site config
   const { data: siteConfig, isLoading } = useQuery({
-    queryKey: ['site-config'],
+    queryKey: ['/api/site-config'],
     queryFn: async () => {
       const response = await fetch('/api/site-config');
       if (!response.ok) throw new Error('Failed to fetch site config');
@@ -136,7 +146,7 @@ export function HomepageSettings() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['site-config'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/site-config'] });
       setHasUnsavedChanges(false);
       toast({
         title: "Settings saved",
@@ -223,7 +233,7 @@ export function HomepageSettings() {
         name: testimonial.name || 'Customer Name',
         role: testimonial.role || 'Customer',
         company: testimonial.company || '',
-        content: testimonial.content || '',
+        quote: testimonial.quote || '',
         image: testimonial.image || '/images/testimonials/customer-placeholder.jpg',
         rating: testimonial.rating || 5,
         ...testimonial
@@ -468,7 +478,7 @@ export function HomepageSettings() {
       name: 'New Customer',
       role: 'Customer',
       company: 'Company Name',
-      content: 'Add your testimonial content here...',
+      quote: 'Add your testimonial quote here...',
       image: '/images/testimonials/customer-placeholder.jpg',
       rating: 5
     };
@@ -522,6 +532,56 @@ export function HomepageSettings() {
           items: config.home.testimonials.items.map(testimonial =>
             testimonial.id === testimonialId ? { ...testimonial, ...updates } : testimonial
           )
+        }
+      }
+    });
+  };
+
+  // Private Gallery helper functions
+  const updatePrivateGalleryField = (field: string, value: string) => {
+    handleConfigChange({
+      ...config,
+      home: {
+        ...config.home,
+        privateGallery: {
+          ...config.home?.privateGallery,
+          [field]: value
+        }
+      }
+    });
+  };
+
+  const updatePrivateGalleryFeature = (featureId: string, updates: { title?: string; description?: string }) => {
+    if (!config.home?.privateGallery?.features) return;
+    
+    handleConfigChange({
+      ...config,
+      home: {
+        ...config.home,
+        privateGallery: {
+          ...config.home.privateGallery,
+          features: config.home.privateGallery.features.map(feature =>
+            feature.id === featureId ? { ...feature, ...updates } : feature
+          )
+        }
+      }
+    });
+  };
+
+  const updatePrivateGalleryButton = (buttonType: 'primary' | 'secondary', updates: { text?: string; action?: string }) => {
+    handleConfigChange({
+      ...config,
+      home: {
+        ...config.home,
+        privateGallery: {
+          ...config.home?.privateGallery,
+          buttons: {
+            ...config.home?.privateGallery?.buttons,
+            [buttonType]: {
+              ...config.home?.privateGallery?.buttons?.[buttonType],
+              ...updates
+            }
+          }
         }
       }
     });
@@ -692,12 +752,15 @@ export function HomepageSettings() {
       
       <CardContent>
         <Tabs defaultValue="hero-slides" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 bg-slate-800">
+        <TabsList className="grid w-full grid-cols-5 bg-slate-800">
           <TabsTrigger value="hero-slides" className="data-[state=active]:bg-salmon data-[state=active]:text-white">
             Hero Slides
           </TabsTrigger>
           <TabsTrigger value="services" className="data-[state=active]:bg-salmon data-[state=active]:text-white">
             Services
+          </TabsTrigger>
+          <TabsTrigger value="private-gallery" className="data-[state=active]:bg-salmon data-[state=active]:text-white">
+            Private Gallery
           </TabsTrigger>
           <TabsTrigger value="testimonials" className="data-[state=active]:bg-salmon data-[state=active]:text-white">
             Testimonials
@@ -812,6 +875,11 @@ export function HomepageSettings() {
                   </div>
                 )} 
               </div>
+
+            {/* Hero Background Gradient */}
+            <div className="space-y-4">
+              <HeroGradientSection />
+            </div>
           </div>
         </TabsContent>
 
@@ -983,6 +1051,178 @@ export function HomepageSettings() {
                 </div>
               )}
             </div>
+
+            {/* Services Background Gradient */}
+            <div className="space-y-4">
+              <ServicesGradientSection />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="private-gallery">
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold text-white">Private Gallery Section</h3>
+              <p className="text-sm text-gray-300">Configure the private client gallery section content and styling</p>
+            </div>
+
+            {/* Gradient Background */}
+            <PrivateGalleryGradientSection />
+
+            {/* Main Content */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="private-gallery-headline" className="text-sm font-medium text-white">Section Headline</Label>
+                  <Input
+                    id="private-gallery-headline"
+                    value={config.home?.privateGallery?.headline || ''}
+                    onChange={(e) => updatePrivateGalleryField('headline', e.target.value)}
+                    className="bg-slate-700 border-slate-600 text-white"
+                    placeholder="Your Private Gallery"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="private-gallery-description" className="text-sm font-medium text-white">Description</Label>
+                  <Textarea
+                    id="private-gallery-description"
+                    value={config.home?.privateGallery?.description || ''}
+                    onChange={(e) => updatePrivateGalleryField('description', e.target.value)}
+                    className="bg-slate-700 border-slate-600 text-white min-h-[100px]"
+                    placeholder="Access your photos anytime, anywhere..."
+                  />
+                </div>
+
+                {/* Hero Image - moved to left side with larger thumbnail */}
+                <div>
+                  <h4 className="font-medium text-white mb-3">Hero Image</h4>
+                  <div className="space-y-3">
+                    <div className="w-32 h-32 rounded-lg overflow-hidden bg-gray-100 border-2 border-gray-200 relative group">
+                      {config.home?.privateGallery?.image ? (
+                        <img
+                          src={config.home.privateGallery.image}
+                          alt="Private gallery hero"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <Upload size={32} />
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const formData = new FormData();
+                            formData.append('file', file);
+                            fetch('/api/upload', {
+                              method: 'POST',
+                              body: formData,
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                              if (data.path) {
+                                updatePrivateGalleryField('image', data.path);
+                              }
+                            })
+                            .catch(error => console.error('Upload error:', error));
+                          }
+                        }}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      />
+                    </div>
+                    <Input
+                      value={config.home?.privateGallery?.image || ''}
+                      onChange={(e) => updatePrivateGalleryField('image', e.target.value)}
+                      className="bg-slate-700 border-slate-600 text-white text-xs"
+                      placeholder="/images/gallery/wedding-gallery-1.jpg"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="font-medium text-white">Action Buttons</h4>
+                
+                <div>
+                  <Label htmlFor="primary-button-text" className="text-sm font-medium text-white">Primary Button Text</Label>
+                  <Input
+                    id="primary-button-text"
+                    value={config.home?.privateGallery?.buttons?.primary?.text || ''}
+                    onChange={(e) => updatePrivateGalleryButton('primary', { text: e.target.value })}
+                    className="bg-slate-700 border-slate-600 text-white"
+                    placeholder="Access My Gallery"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="primary-button-action" className="text-sm font-medium text-white">Primary Button Link</Label>
+                  <Input
+                    id="primary-button-action"
+                    value={config.home?.privateGallery?.buttons?.primary?.action || ''}
+                    onChange={(e) => updatePrivateGalleryButton('primary', { action: e.target.value })}
+                    className="bg-slate-700 border-slate-600 text-white"
+                    placeholder="/client-gallery"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="secondary-button-text" className="text-sm font-medium text-white">Secondary Button Text</Label>
+                  <Input
+                    id="secondary-button-text"
+                    value={config.home?.privateGallery?.buttons?.secondary?.text || ''}
+                    onChange={(e) => updatePrivateGalleryButton('secondary', { text: e.target.value })}
+                    className="bg-slate-700 border-slate-600 text-white"
+                    placeholder="Gallery Demo"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="secondary-button-action" className="text-sm font-medium text-white">Secondary Button Link</Label>
+                  <Input
+                    id="secondary-button-action"
+                    value={config.home?.privateGallery?.buttons?.secondary?.action || ''}
+                    onChange={(e) => updatePrivateGalleryButton('secondary', { action: e.target.value })}
+                    className="bg-slate-700 border-slate-600 text-white"
+                    placeholder="/gallery/demo"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Features List */}
+            <div className="space-y-4">
+              <h4 className="font-medium text-white">Features</h4>
+              {config.home?.privateGallery?.features?.map((feature, index) => (
+                <div key={feature.id} className="p-4 rounded-lg border bg-slate-700/50 border-slate-600 space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor={`feature-${feature.id}-title`} className="text-sm font-medium text-white">Feature Title</Label>
+                      <Input
+                        id={`feature-${feature.id}-title`}
+                        value={feature.title}
+                        onChange={(e) => updatePrivateGalleryFeature(feature.id, { title: e.target.value })}
+                        className="bg-slate-600 border-slate-500 text-white"
+                        placeholder="Feature Title"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor={`feature-${feature.id}-description`} className="text-sm font-medium text-white">Feature Description</Label>
+                      <Textarea
+                        id={`feature-${feature.id}-description`}
+                        value={feature.description}
+                        onChange={(e) => updatePrivateGalleryFeature(feature.id, { description: e.target.value })}
+                        className="bg-slate-600 border-slate-500 text-white min-h-[60px]"
+                        placeholder="Feature description..."
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </TabsContent>
 
@@ -1044,6 +1284,11 @@ export function HomepageSettings() {
               </div>
             </div>
 
+            {/* Testimonials Background Gradient */}
+            <div className="space-y-4">
+              <TestimonialsGradientSection />
+            </div>
+
             {/* Dynamic Testimonials */}
             <div className="space-y-4">
               {config.home?.testimonials?.items?.map((testimonial, index) => (
@@ -1102,14 +1347,14 @@ export function HomepageSettings() {
                         </div>
                       </div>
                       <div>
-                        <Label htmlFor={`testimonial-${testimonial.id}-content`} className="text-white">Testimonial Content</Label>
+                        <Label htmlFor={`testimonial-${testimonial.id}-quote`} className="text-white">Testimonial Quote</Label>
                         <Textarea
-                          id={`testimonial-${testimonial.id}-content`}
-                          value={testimonial.content}
-                          onChange={(e) => updateTestimonial(testimonial.id, { content: e.target.value })}
+                          id={`testimonial-${testimonial.id}-quote`}
+                          value={testimonial.quote || ''}
+                          onChange={(e) => updateTestimonial(testimonial.id, { quote: e.target.value })}
                           className="mt-1 bg-slate-700 border-slate-600 text-white"
                           rows={4}
-                          placeholder="Enter the testimonial content here..."
+                          placeholder="Enter the testimonial quote here..."
                         />
                       </div>
                       <div>
@@ -1245,7 +1490,7 @@ export function HomepageSettings() {
                         }
                       }
                     })}
-                    placeholder="Cape Town, South Africa"
+                    placeholder="Durban, South Africa"
                     className="mt-1 bg-slate-700 border-slate-600 text-white"
                   />
                 </div>
@@ -1311,10 +1556,95 @@ export function HomepageSettings() {
                 </div>
               </div>
             </div>
+
+            {/* Contact/CTA Background Gradient */}
+            <div className="space-y-4">
+              <ContactGradientSection />
+            </div>
           </div>
         </TabsContent>
         </Tabs>
       </CardContent>
     </Card>
+  );
+}
+
+// Gradient Section Components  
+function HeroGradientSection() {
+  const { gradient, updateGradient } = useGradient('hero');
+
+  return (
+    <GradientPicker
+      sectionKey="hero" 
+      label="Hero Section Background Gradient"
+      gradient={gradient}
+      onChange={updateGradient}
+      showDirection={true}
+      showOpacity={false}
+    />
+  );
+}
+
+function ServicesGradientSection() {
+  const { gradient, updateGradient } = useGradient('services');
+
+  return (
+    <GradientPicker
+      sectionKey="services" 
+      label="Services Section Background Gradient"
+      gradient={gradient}
+      onChange={updateGradient}
+      showDirection={true}
+      showOpacity={false}
+      showTextColors={true}
+    />
+  );
+}
+
+function TestimonialsGradientSection() {
+  const { gradient, updateGradient } = useGradient('testimonials');
+
+  return (
+    <GradientPicker
+      sectionKey="testimonials" 
+      label="Testimonials Background Gradient"
+      gradient={gradient}
+      onChange={updateGradient}
+      showDirection={true}
+      showOpacity={false}
+      showTextColors={true}
+    />
+  );
+}
+
+function ContactGradientSection() {
+  const { gradient, updateGradient } = useGradient('contact');
+
+  return (
+    <GradientPicker
+      sectionKey="contact" 
+      label="Contact/CTA Background Gradient"
+      gradient={gradient}
+      onChange={updateGradient}
+      showDirection={true}
+      showOpacity={false}
+      showTextColors={true}
+    />
+  );
+}
+
+function PrivateGalleryGradientSection() {
+  const { gradient, updateGradient } = useGradient('privateGallery');
+
+  return (
+    <GradientPicker
+      sectionKey="privateGallery" 
+      label="Private Gallery Background Gradient"
+      gradient={gradient}
+      onChange={updateGradient}
+      showDirection={true}
+      showOpacity={false}
+      showTextColors={true}
+    />
   );
 }

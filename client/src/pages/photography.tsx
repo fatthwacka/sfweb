@@ -3,88 +3,124 @@ import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Camera, ArrowRight } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { photography as defaultPhotography } from "@/config/site-config";
 
-const photographyCategories = [
-  {
-    name: "Weddings & Newborn",
-    slug: "weddings",
-    description:
-      "Capturing your special day with timeless elegance and emotion",
-    image: "/images/hero/wedding-photography-hero.jpg",
-    features: [
-      "Engagement sessions",
-      "Ceremony coverage",
-      "Reception photography",
-      "Bridal portraits",
-    ],
+// Fallback configuration in case import fails
+const fallbackPhotography = {
+  hero: {
+    title: "Professional Photography",
+    subtitle: "Capturing life's beautiful moments",
+    backgroundImage: "/images/hero/photography-hero.jpg",
+    overlayOpacity: 0.5
   },
-  {
-    name: "Portraits & Headshots",
-    slug: "portraits",
-    description:
-      "Professional headshots and personal portraits that tell your story",
-    image: "/images/hero/portrait-photography-hero.jpg",
-    features: [
-      "Executive headshots",
-      "Family portraits",
-      "Personal branding",
-      "Studio sessions",
-    ],
+  sections: {
+    intro: {
+      title: "Professional Photography",
+      subtitle: "Discover our range of photography services, each tailored to capture the unique essence of your moments."
+    },
+    callToAction: {
+      title: "Ready to Capture Your Story?",
+      subtitle: "Let's discuss your photography needs and create something beautiful together.",
+      primaryButton: {
+        text: "Start Your Project",
+        link: "/contact"
+      },
+      secondaryButton: {
+        text: "View Pricing",
+        link: "/pricing"
+      }
+    }
   },
-  {
-    name: "Products & Brands",
-    slug: "products",
-    description: "Showcase your products with stunning commercial photography",
-    image: "/images/hero/product-photography-hero.jpg",
-    features: [
-      "E-commerce photography",
-      "Catalog shoots",
-      "Lifestyle product shots",
-      "360° product views",
-    ],
-  },
-  {
-    name: "Events & Functions",
-    slug: "events",
-    description:
-      "Documenting memorable moments at conferences, parties, and gatherings",
-    image: "/images/hero/Event-photography-hero.jpg",
-    features: [
-      "Conference photography",
-      "Party coverage",
-      "Award ceremonies",
-      "Networking events",
-    ],
-  },
-  {
-    name: "Corporate & Business",
-    slug: "corporate",
-    description:
-      "Elevate your business image with professional corporate photography",
-    image: "/images/hero/corporate-photography-hero.jpg",
-    features: [
-      "Team headshots",
-      "Office photography",
-      "Corporate events",
-      "Brand documentation",
-    ],
-  },
-  {
-    name: "Graduation & Matric Dances",
-    slug: "graduation",
-    description:
-      "Celebrate academic achievements with memorable graduation photos",
-    image: "/images/hero/graduation-photography-hero.jpg",
-    features: [
-      "Graduation ceremonies",
-      "Individual portraits",
-      "Family group shots",
-      "Campus photography",
-    ],
-  },
-];
+  categories: [
+    {
+      name: "Weddings & Newborn",
+      slug: "weddings",
+      description: "Capturing your special day with timeless elegance and emotion",
+      image: "/images/hero/wedding-photography-hero.jpg",
+      features: ["Engagement sessions", "Ceremony coverage", "Reception photography", "Bridal portraits"]
+    },
+    {
+      name: "Portraits & Headshots",
+      slug: "portraits", 
+      description: "Professional headshots and personal portraits that tell your story",
+      image: "/images/hero/portrait-photography-hero.jpg",
+      features: ["Executive headshots", "Family portraits", "Personal branding", "Studio sessions"]
+    },
+    {
+      name: "Products & Brands",
+      slug: "products",
+      description: "Showcase your products with stunning commercial photography",
+      image: "/images/hero/product-photography-hero.jpg", 
+      features: ["E-commerce photography", "Catalog shoots", "Lifestyle product shots", "360° product views"]
+    },
+    {
+      name: "Events & Functions",
+      slug: "events",
+      description: "Documenting memorable moments at conferences, parties, and gatherings", 
+      image: "/images/hero/Event-photography-hero.jpg",
+      features: ["Conference photography", "Party coverage", "Award ceremonies", "Networking events"]
+    },
+    {
+      name: "Corporate & Business", 
+      slug: "corporate",
+      description: "Elevate your business image with professional corporate photography",
+      image: "/images/hero/corporate-photography-hero.jpg",
+      features: ["Team headshots", "Office photography", "Corporate events", "Brand documentation"]
+    },
+    {
+      name: "Graduation & Matric Dances",
+      slug: "graduation",
+      description: "Celebrate academic achievements with memorable graduation photos",
+      image: "/images/hero/graduation-photography-hero.jpg", 
+      features: ["Graduation ceremonies", "Individual portraits", "Family group shots", "Campus photography"]
+    }
+  ]
+};
 
 export default function Photography() {
+  // Fetch photography configuration
+  const { data: photographyConfig, isLoading, error } = useQuery({
+    queryKey: ["/api/site-config/photography"],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest("GET", "/api/site-config/photography");
+        return response;
+      } catch (error) {
+        console.log("No custom photography config found, using defaults");
+        return defaultPhotography || fallbackPhotography;
+      }
+    }
+  });
+
+  const config = photographyConfig || defaultPhotography || fallbackPhotography;
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-xl mb-2">Loading...</div>
+          <div className="text-muted-foreground">Preparing photography content</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Ensure config has required structure
+  if (!config || !config.hero || !config.sections || !config.categories) {
+    console.error("Invalid photography configuration:", config);
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-xl mb-2 text-red-400">Configuration Error</div>
+          <div className="text-muted-foreground">Photography settings are not properly configured</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground background-gradient-blobs">
       {/* SEO Meta Tags */}
@@ -105,7 +141,7 @@ export default function Photography() {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: `url('/images/hero/photography-hero.jpg')`,
+            backgroundImage: `url('${config.hero.backgroundImage}')`,
           }}
         >
           <div className="absolute inset-0 hero-gradient"></div>
@@ -113,10 +149,10 @@ export default function Photography() {
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="mb-6">
-            Professional Photography
+            {config.hero.title}
           </h1>
           <p className="script-tagline mb-8 max-w-3xl mx-auto">
-            Capturing life's beautiful moments
+            {config.hero.subtitle}
           </p>
         </div>
       </section>
@@ -126,16 +162,15 @@ export default function Photography() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6">
-              Professional Photography
+              {config.sections.intro.title}
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Discover our range of photography services, each tailored to
-              capture the unique essence of your moments.
+              {config.sections.intro.subtitle}
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            {photographyCategories.map((category, index) => (
+            {config.categories.map((category, index) => (
               <Link key={category.slug} href={`/photography/${category.slug}`}>
                 <div className="group cursor-pointer bg-gradient-to-br from-slate-800/60 to-gray-900/80 rounded-2xl overflow-hidden shadow-2xl hover:shadow-gold/20 transition-all duration-500 transform hover:scale-[1.02]">
                   <div className="relative h-64 overflow-hidden">
@@ -181,18 +216,17 @@ export default function Photography() {
       <section className="py-20 bg-gradient-to-br from-emerald-900/30 via-background to-cyan-900/20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl mb-6 h2-salmon">
-            Ready to Capture Your Story?
+            {config.sections.callToAction.title}
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
-            Let's discuss your photography needs and create something beautiful
-            together.
+            {config.sections.callToAction.subtitle}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/contact">
-              <Button className="btn-salmon">Start Your Project</Button>
+            <Link href={config.sections.callToAction.primaryButton.link}>
+              <Button className="btn-salmon">{config.sections.callToAction.primaryButton.text}</Button>
             </Link>
-            <Link href="/pricing">
-              <Button className="btn-outline-cyan">View Pricing</Button>
+            <Link href={config.sections.callToAction.secondaryButton.link}>
+              <Button className="btn-outline-cyan">{config.sections.callToAction.secondaryButton.text}</Button>
             </Link>
           </div>
         </div>

@@ -54,9 +54,9 @@ export default function Videography() {
   return (
     <div className="min-h-screen bg-background text-foreground background-gradient-blobs">
       {/* SEO Meta Tags */}
-      <title>Professional Videography Services Cape Town | SlyFox Studios</title>
-      <meta name="description" content="Expert videography services in Cape Town including wedding films, corporate videos, events, product videos, social media content, and animation. Cinematic video production in South Africa." />
-      <meta name="keywords" content="Cape Town videographer, wedding videography, corporate video production, event videography, product videos, social media content creation, animation services, video production South Africa" />
+      <title>Professional Videography Services Durban | SlyFox Studios</title>
+      <meta name="description" content="Expert videography services in Durban including wedding films, corporate videos, events, product videos, social media content, and animation. Cinematic video production in South Africa." />
+      <meta name="keywords" content="Durban videographer, wedding videography, corporate video production, event videography, product videos, social media content creation, animation services, video production South Africa" />
       
       <Navigation />
       

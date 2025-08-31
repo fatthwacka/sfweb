@@ -4,7 +4,7 @@ const stats = [
   { number: "500+", label: "Happy Clients" },
   { number: "5 Years", label: "Experience" },
   { number: "1000+", label: "Events Captured" },
-  { number: "Cape Town", label: "Based & Proud" }
+  { number: "Durban", label: "Based & Proud" }
 ];
 
 export function AboutSection() {
@@ -26,7 +26,7 @@ export function AboutSection() {
             </h2>
 
             <p className="text-xl text-muted-foreground mb-6">
-              Founded in the heart of Cape Town, SlyFox Studios is more than just a photography business—we're storytellers, memory makers, and artists passionate about capturing life's most precious moments.
+              Founded in the heart of Durban, SlyFox Studios is more than just a photography business—we're storytellers, memory makers, and artists passionate about capturing life's most precious moments.
             </p>
 
             <p className="text-lg text-muted-foreground mb-8">

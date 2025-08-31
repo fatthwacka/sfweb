@@ -53,6 +53,8 @@ services:
       - /app/dist
       # Mount public assets
       - ./public:/app/public
+      # Mount configuration data for persistence across containers
+      - config_data:/app/server/data
     ports:
       - "3000:5000"
     # No dependency on local postgres since we're using Supabase
@@ -79,6 +81,8 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+  config_data:
     driver: local
 
 networks:

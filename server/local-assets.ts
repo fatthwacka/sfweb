@@ -10,7 +10,7 @@ async function loadPersistedAltText(): Promise<Record<string, string>> {
   } catch (error) {
     // File doesn't exist or is invalid, return defaults
     return {
-      'hero-main': 'cape town wedding photographer slyfox studios',
+      'hero-main': 'durban wedding photographer slyfox studios',
       'hero-services': 'food photography durban', 
       'hero-portraits': 'professional portrait photography durban',
       'hero-weddings': 'professional photography durban',
@@ -53,7 +53,7 @@ export const ASSET_FILES = {
   'hero-contact': 'hero/contact-hero.jpg',
   
   // Background textures and overlays
-  'bg-studio': 'backgrounds/photography-studio-cape-town-texture.jpg',
+  'bg-studio': 'backgrounds/photography-studio-durban-texture.jpg',
   'bg-wedding': 'backgrounds/wedding-photography-background-elegant.jpg', 
   'bg-portrait': 'backgrounds/portrait-photography-studio-backdrop.jpg',
   'bg-videography': 'backgrounds/videography-studio-backdrop.jpg',

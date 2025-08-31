@@ -183,7 +183,7 @@ export default function MyGallery() {
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute('content', 
-        `${gallery.clientName}'s ${gallery.shootType} gallery by SlyFox Studios. Professional photography in ${gallery.location || 'Cape Town'}.`
+        `${gallery.clientName}'s ${gallery.shootType} gallery by SlyFox Studios. Professional photography in ${gallery.location || 'Durban'}.`
       );
     }
 

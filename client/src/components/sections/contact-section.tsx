@@ -245,7 +245,7 @@ export function ContactSection() {
                   </div>
                   <div>
                     <h4 className="font-barlow font-semibold text-lg mb-2">Studio Location</h4>
-                    <p className="text-foreground">{config?.contact?.business?.address?.displayText || "Cape Town, South Africa"}</p>
+                    <p className="text-foreground">{config?.contact?.business?.address?.displayText || "Durban, South Africa"}</p>
                     <p className="text-muted-foreground text-sm">Serving Durban & KZN</p>
                   </div>
                 </div>

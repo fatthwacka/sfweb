@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSiteConfig } from '@/hooks/use-site-config';
-import { useFrontPageSettings } from '@/hooks/use-front-page-settings';
+// Removed deprecated useFrontPageSettings import
 
 interface GradientBackgroundProps {
   section: 'hero' | 'testimonials' | 'portfolio' | 'services' | 'contact' | 'privateGallery';
@@ -8,6 +8,10 @@ interface GradientBackgroundProps {
   className?: string;
   fallbackGradient?: string;
   id?: string;
+  // New props for category pages
+  categoryType?: 'photography' | 'videography';
+  categoryName?: string;
+  categorySectionName?: 'serviceOverview' | 'packages' | 'recentWork' | 'seoContent';
 }
 
 export function GradientBackground({ 
@@ -15,14 +19,25 @@ export function GradientBackground({
   children, 
   className = '',
   fallbackGradient = 'linear-gradient(135deg, #1e293b 0%, #334155 50%, #0f172a 100%)',
-  id
+  id,
+  categoryType,
+  categoryName,
+  categorySectionName
 }: GradientBackgroundProps) {
   const { config } = useSiteConfig();
-  const frontPageSettings = useFrontPageSettings();
   
-  const gradientConfig = config?.gradients?.[section];
+  // Get gradient config from appropriate source
+  let gradientConfig;
   
-  // Special handling for portfolio section - check both new and old systems
+  if (categoryType && categoryName && categorySectionName) {
+    // Get gradient from category page config
+    gradientConfig = config?.categoryPages?.[categoryType]?.[categoryName]?.[categorySectionName]?.gradients;
+  } else {
+    // Get gradient from standard location
+    gradientConfig = config?.gradients?.[section];
+  }
+  
+  // Use unified gradient system for all sections
   let gradientStyle;
   let textColors;
   
@@ -32,29 +47,19 @@ export function GradientBackground({
       gradientStyle = `linear-gradient(${gradientConfig.direction}, ${gradientConfig.startColor} 0%, ${gradientConfig.middleColor || gradientConfig.startColor} 50%, ${gradientConfig.endColor} 100%)`;
       textColors = gradientConfig.textColors;
     } else if (config?.portfolio?.featured) {
-      // Fall back to old portfolio gradient system
+      // Fall back to portfolio featured configuration
       const portfolioConfig = config.portfolio.featured;
       const start = portfolioConfig.backgroundGradientStart || '#1e293b';
       const middle = portfolioConfig.backgroundGradientMiddle || '#334155';
       const end = portfolioConfig.backgroundGradientEnd || '#0f172a';
       gradientStyle = `linear-gradient(135deg, ${start} 0%, ${middle} 50%, ${end} 100%)`;
-    } else if (frontPageSettings) {
-      // Use front page settings for portfolio
-      const start = frontPageSettings.backgroundGradientStart || '#1e293b';
-      const middle = frontPageSettings.backgroundGradientMiddle || '#334155';
-      const end = frontPageSettings.backgroundGradientEnd || '#0f172a';
-      gradientStyle = `linear-gradient(135deg, ${start} 0%, ${middle} 50%, ${end} 100%)`;
+      textColors = {
+        primary: portfolioConfig.textColorPrimary,
+        secondary: portfolioConfig.textColorSecondary,
+        tertiary: portfolioConfig.textColorTertiary
+      };
     } else {
       gradientStyle = fallbackGradient;
-    }
-    
-    // Use front page settings for portfolio text colors
-    if (frontPageSettings) {
-      textColors = {
-        primary: frontPageSettings.textColorPrimary,
-        secondary: frontPageSettings.textColorSecondary,
-        tertiary: frontPageSettings.textColorTertiary
-      };
     }
   } else {
     // Use new gradient system for all other sections

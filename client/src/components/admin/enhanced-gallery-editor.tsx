@@ -137,14 +137,15 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   
   const [clientReassignDialogOpen, setClientReassignDialogOpen] = useState(false);
   
-  // Gallery appearance settings matching dashboard - defaults as requested
+  // Gallery appearance settings - clean absolute values only
   const [gallerySettings, setGallerySettings] = useState({
     backgroundColor: '#ffffff',
-    borderStyle: 'sharp',
-    padding: 'tight',
-    layoutStyle: 'grid',
-    imageSpacing: 'tight',
-    dominantAspectRatio: 'landscape' // landscape, portrait, or square
+    layoutStyle: 'automatic',
+    borderRadius: 8,
+    imageSpacingValue: 8,
+    coverPicSize: 80,
+    coverPicAlignment: 'center',
+    navbarPosition: 'top-left'
   });
 
   // All mutations must be declared before any conditional returns (Rules of Hooks)
@@ -299,11 +300,12 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       const settings = shoot.gallerySettings || {};
       setGallerySettings({
         backgroundColor: settings.backgroundColor || '#ffffff',
-        borderStyle: settings.borderStyle || 'sharp',
-        padding: settings.padding || 'tight',
-        layoutStyle: settings.layoutStyle || 'grid',
-        imageSpacing: settings.imageSpacing || 'tight',
-        dominantAspectRatio: settings.dominantAspectRatio || 'landscape'
+        layoutStyle: settings.layoutStyle || 'automatic',
+        borderRadius: settings.borderRadius !== undefined ? settings.borderRadius : 8,
+        imageSpacingValue: settings.imageSpacingValue !== undefined ? settings.imageSpacingValue : 8,
+        coverPicSize: settings.coverPicSize !== undefined ? settings.coverPicSize : 80,
+        coverPicAlignment: settings.coverPicAlignment || 'center',
+        navbarPosition: settings.navbarPosition || 'top-left'
       });
       
       setEditableShoot({
@@ -407,16 +409,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     return [...orderedImages, ...newImages];
   }, [images, imageOrder]);
   
-  // Auto-calculate dominant aspect ratio when images change
-  useEffect(() => {
-    if (images && images.length > 0) {
-      const dominantRatio = calculateDominantAspectRatio(images);
-      setGallerySettings(prev => ({
-        ...prev,
-        dominantAspectRatio: dominantRatio
-      }));
-    }
-  }, [images]);
+  // Removed auto-calculate dominant aspect ratio - using "automatic" layoutStyle instead
 
   // Save comprehensive shoot updates
   const saveCustomizationMutation = useMutation({
@@ -841,7 +834,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                         default: return 'center center';
                       }
                     })(),
-                    marginBottom: gallerySettings.imageSpacing === 'tight' ? '2px' : gallerySettings.imageSpacing === 'normal' ? '8px' : '16px'
+                    marginBottom: `${gallerySettings.imageSpacingValue || 8}px`
                   }}
                 >
                   <h2 className="text-xl font-bold text-white text-center">

@@ -156,7 +156,7 @@ export function BasicInfoSection({
                 id="shootLocation"
                 value={editableShoot.location}
                 onChange={(e) => setEditableShootWithAutoSave(prev => ({...prev, location: e.target.value}))}
-                placeholder="Cape Town Waterfront"
+                placeholder="Durban Waterfront"
                 className="bg-background"
               />
             </div>
@@ -427,7 +427,7 @@ export function AdvancedSettingsSection({ editableShoot, setEditableShoot, shoot
             id="seoTags"
             value={editableShoot.seoTags}
             onChange={(e) => setEditableShootWithAutoSave(prev => ({...prev, seoTags: e.target.value}))}
-            placeholder="wedding photography, cape town, romantic, outdoor"
+            placeholder="wedding photography, durban, romantic, outdoor"
             className="bg-background"
           />
           <p className="text-xs text-muted-foreground mt-1">
@@ -666,39 +666,26 @@ export function GalleryAppearanceSection({
 }: GalleryAppearanceSectionProps) {
   const [isExpanded, setIsExpanded] = React.useState(false);
   
-  // Simple manual save function
-  const handleManualSave = () => {
-    // This will be called by the Save button in GallerySettingsCard
-    console.log('Manual save triggered');
-  };
+  // Auto-save gallery settings hook  
+  const { debouncedSave, saveImmediately, saveStatus, isSaving } = useAutoSaveGallerySettings({
+    shootId
+  });
 
-  // Save status indicator component
-  const SaveStatusIndicator = () => {
-    switch (saveStatus.status) {
-      case 'saving':
-        return (
-          <div className="flex items-center gap-2 text-blue-400">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <span className="text-sm">Saving...</span>
-          </div>
-        );
-      case 'saved':
-        return (
-          <div className="flex items-center gap-2 text-green-400">
-            <Check className="w-4 h-4" />
-            <span className="text-sm">Saved</span>
-          </div>
-        );
-      case 'error':
-        return (
-          <div className="flex items-center gap-2 text-red-400">
-            <AlertCircle className="w-4 h-4" />
-            <span className="text-sm">Save failed</span>
-          </div>
-        );
-      default:
-        return null;
-    }
+  // Enhanced setGallerySettings that triggers auto-save
+  const handleGallerySettingsChange = React.useCallback((updateFn: (prev: any) => any) => {
+    setGallerySettings((prev) => {
+      const newSettings = updateFn(prev);
+      
+      // Trigger auto-save with the new settings
+      debouncedSave(newSettings);
+      
+      return newSettings;
+    });
+  }, [setGallerySettings, debouncedSave]);
+
+  // Manual save function for Save button
+  const handleManualSave = () => {
+    saveImmediately(gallerySettings);
   };
 
   return (
@@ -713,7 +700,6 @@ export function GalleryAppearanceSection({
             Gallery Appearance
           </CardTitle>
           <div className="flex items-center gap-3">
-            {isExpanded && <SaveStatusIndicator />}
             {isExpanded ? (
               <ChevronUp className="w-5 h-5 text-salmon" />
             ) : (
@@ -730,8 +716,9 @@ export function GalleryAppearanceSection({
               <div className="space-y-4 w-full gallery-two-column-layout">
                 <GallerySettingsCard
                   gallerySettings={gallerySettings}
-                  setGallerySettings={setGallerySettings}
+                  setGallerySettings={handleGallerySettingsChange}
                   onSave={handleManualSave}
+                  isSaving={isSaving}
                   standalone={false}
                 />
               </div>
@@ -748,7 +735,7 @@ export function GalleryAppearanceSection({
                     value={gallerySettings.layoutStyle || 'automatic'}
                     defaultValue="automatic"
                     onValueChange={(value) => {
-                      setGallerySettings(prev => ({...prev, layoutStyle: value}));
+                      handleGallerySettingsChange(prev => ({...prev, layoutStyle: value}));
                     }}
                   >
                     <SelectTrigger className="gallery-select-trigger w-full">
@@ -777,7 +764,7 @@ export function GalleryAppearanceSection({
                     value={gallerySettings.coverPicAlignment || 'centre'}
                     defaultValue="centre"
                     onValueChange={(value) => {
-                      setGallerySettings(prev => ({...prev, coverPicAlignment: value}));
+                      handleGallerySettingsChange(prev => ({...prev, coverPicAlignment: value}));
                     }}
                   >
                     <SelectTrigger className="gallery-select-trigger w-full">
@@ -803,7 +790,7 @@ export function GalleryAppearanceSection({
                     onValueChange={(value) => {
                       // Use setTimeout to prevent immediate re-renders that affect main navigation
                       setTimeout(() => {
-                        setGallerySettings(prev => ({...prev, navbarPosition: value}));
+                        handleGallerySettingsChange(prev => ({...prev, navbarPosition: value}));
                       }, 0);
                     }}
                   >

@@ -17,7 +17,7 @@ export function AboutSection() {
             </h2>
             
             <p className="text-xl text-gray-300 mb-6">
-              Founded in the heart of Cape Town, SlyFox Studios is more than just a photography business—we're storytellers, memory makers, and artists passionate about capturing life's most precious moments.
+              Founded in the heart of Durban, SlyFox Studios is more than just a photography business—we're storytellers, memory makers, and artists passionate about capturing life's most precious moments.
             </p>
             
             <p className="text-lg text-gray-400 mb-8">
@@ -38,7 +38,7 @@ export function AboutSection() {
                 <p className="text-gray-400">Events Captured</p>
               </div>
               <div>
-                <div className="text-3xl font-quicksand font-bold text-cyan mb-2">Cape Town</div>
+                <div className="text-3xl font-quicksand font-bold text-cyan mb-2">Durban</div>
                 <p className="text-gray-400">Based & Proud</p>
               </div>
             </div>

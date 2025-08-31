@@ -37,6 +37,10 @@
   --cyan-bright: hsl(180, 100%, 65%);
   --purple-dark: hsl(260, 40%, 12%);
   --grey-dark: hsl(220, 15%, 10%);
+  
+  /* Theme color mappings for text color pickers */
+  --color-primary: var(--salmon);
+  --color-secondary: var(--cyan);
 }
 
 /* Admin panel gradient card class */
@@ -420,6 +424,82 @@
     @apply mb-4 flex justify-center;
     color: hsl(180, 100%, 50%);
     filter: drop-shadow(0 0 8px rgba(78, 205, 196, 0.6));
+  }
+
+  /* Phone card - red/orange */
+  .contact-info-card-phone {
+    @apply rounded-xl p-6 border transition-all duration-300 hover:scale-105;
+    background: linear-gradient(135deg, hsl(15, 30%, 12%) 0%, hsl(30, 25%, 10%) 100%);
+    border-color: rgba(255, 107, 107, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  .contact-info-card-phone:hover {
+    border-color: rgba(255, 107, 107, 0.6);
+    box-shadow: 0 8px 30px rgba(255, 107, 107, 0.2);
+  }
+
+  .contact-info-icon-phone {
+    @apply mb-4 flex justify-center;
+    color: hsl(15, 100%, 50%);
+    filter: drop-shadow(0 0 8px rgba(255, 107, 107, 0.6));
+  }
+
+  /* Email card - cyan (same as original) */
+  .contact-info-card-email {
+    @apply rounded-xl p-6 border transition-all duration-300 hover:scale-105;
+    background: linear-gradient(135deg, hsl(180, 30%, 12%) 0%, hsl(260, 25%, 10%) 100%);
+    border-color: rgba(78, 205, 196, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  .contact-info-card-email:hover {
+    border-color: rgba(78, 205, 196, 0.6);
+    box-shadow: 0 8px 30px rgba(78, 205, 196, 0.2);
+  }
+
+  .contact-info-icon-email {
+    @apply mb-4 flex justify-center;
+    color: hsl(180, 100%, 50%);
+    filter: drop-shadow(0 0 8px rgba(78, 205, 196, 0.6));
+  }
+
+  /* WhatsApp card - green */
+  .contact-info-card-whatsapp {
+    @apply rounded-xl p-6 border transition-all duration-300 hover:scale-105;
+    background: linear-gradient(135deg, hsl(120, 30%, 12%) 0%, hsl(140, 25%, 10%) 100%);
+    border-color: rgba(37, 211, 102, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  .contact-info-card-whatsapp:hover {
+    border-color: rgba(37, 211, 102, 0.6);
+    box-shadow: 0 8px 30px rgba(37, 211, 102, 0.2);
+  }
+
+  .contact-info-icon-whatsapp {
+    @apply mb-4 flex justify-center;
+    color: hsl(120, 100%, 50%);
+    filter: drop-shadow(0 0 8px rgba(37, 211, 102, 0.6));
+  }
+
+  /* Visit Us card - pink/purple */
+  .contact-info-card-location {
+    @apply rounded-xl p-6 border transition-all duration-300 hover:scale-105;
+    background: linear-gradient(135deg, hsl(300, 30%, 12%) 0%, hsl(320, 25%, 10%) 100%);
+    border-color: rgba(219, 112, 147, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  .contact-info-card-location:hover {
+    border-color: rgba(219, 112, 147, 0.6);
+    box-shadow: 0 8px 30px rgba(219, 112, 147, 0.2);
+  }
+
+  .contact-info-icon-location {
+    @apply mb-4 flex justify-center;
+    color: hsl(300, 100%, 50%);
+    filter: drop-shadow(0 0 8px rgba(219, 112, 147, 0.6));
   }
   
   /* General icon styling classes for alternating sections */
@@ -1248,7 +1328,6 @@
   }
   
   .image-hover-effect:hover {
-    transform: scale(1.05);
     box-shadow: 0 20px 40px rgba(0,0,0,0.3);
   }
 }
@@ -1299,8 +1378,8 @@
 /* === REUSABLE SLIDER CONTROL STYLING === */
 .gallery-slider-container {
   max-width: calc(50% - 8px);
-  border: 1px solid hsl(280, 50%, 20%);
-  background: linear-gradient(to right, hsl(280, 60%, 15%), hsl(280, 50%, 10%));
+  border: 1px solid hsl(220, 13%, 25%);
+  background: linear-gradient(to right, hsl(220, 13%, 18%), hsl(220, 13%, 15%));
   border-radius: 0.5rem;
   padding: 0.75rem;
 }
@@ -1615,4 +1694,512 @@
       transform: none;
     }
   }
+}
+
+/* === SECTION-SPECIFIC TEXT COLOR MAPPINGS === */
+
+/* Services Section Text Colors */
+.services-section h1,
+.services-section h2,
+[data-gradient-section="services"] h1,
+[data-gradient-section="services"] h2 {
+  color: var(--services-text-primary, #ffffff) !important;
+}
+
+.services-section p,
+.services-section h3,
+[data-gradient-section="services"] p,
+[data-gradient-section="services"] h3 {
+  color: var(--services-text-secondary, #e2e8f0) !important;
+}
+
+.services-section .service-card-more-btn span,
+.services-section .text-muted-foreground,
+[data-gradient-section="services"] .service-card-more-btn span,
+[data-gradient-section="services"] .text-muted-foreground {
+  color: var(--services-text-tertiary, #94a3b8) !important;
+}
+
+/* Testimonials Section Text Colors */
+.testimonials-section h2,
+[data-gradient-section="testimonials"] h2 {
+  color: var(--testimonials-text-primary, #ffffff) !important;
+}
+
+.testimonials-section p,
+.testimonials-section blockquote,
+[data-gradient-section="testimonials"] p,
+[data-gradient-section="testimonials"] blockquote {
+  color: var(--testimonials-text-secondary, #e2e8f0) !important;
+}
+
+.testimonials-section .font-saira,
+.testimonials-section .text-muted-foreground,
+[data-gradient-section="testimonials"] .font-saira,
+[data-gradient-section="testimonials"] .text-muted-foreground {
+  color: var(--testimonials-text-tertiary, #94a3b8) !important;
+}
+
+/* Contact Section Text Colors */
+.contact-section h2,
+.contact-section h3,
+[data-gradient-section="contact"] h2,
+[data-gradient-section="contact"] h3 {
+  color: var(--contact-text-primary, #ffffff) !important;
+}
+
+.contact-section p,
+.contact-section h4,
+[data-gradient-section="contact"] p,
+[data-gradient-section="contact"] h4 {
+  color: var(--contact-text-secondary, #e2e8f0) !important;
+}
+
+.contact-section .text-muted-foreground,
+.contact-section label,
+[data-gradient-section="contact"] .text-muted-foreground,
+[data-gradient-section="contact"] label {
+  color: var(--contact-text-tertiary, #94a3b8) !important;
+}
+
+/* Private Gallery Section Text Colors */
+.private-gallery-section h2,
+[data-gradient-section="privateGallery"] h2 {
+  color: var(--privateGallery-text-primary, #ffffff) !important;
+}
+
+.private-gallery-section p,
+.private-gallery-section h4,
+[data-gradient-section="privateGallery"] p,
+[data-gradient-section="privateGallery"] h4 {
+  color: var(--privateGallery-text-secondary, #e2e8f0) !important;
+}
+
+.private-gallery-section .text-muted-foreground,
+[data-gradient-section="privateGallery"] .text-muted-foreground {
+  color: var(--privateGallery-text-tertiary, #94a3b8) !important;
+}
+
+/* Portfolio Section Text Colors */
+.portfolio-section h1,
+.portfolio-section h2,
+[data-gradient-section="portfolio"] h1,
+[data-gradient-section="portfolio"] h2 {
+  color: var(--portfolio-text-primary, #ffffff) !important;
+}
+
+.portfolio-section p,
+.portfolio-section h3,
+[data-gradient-section="portfolio"] p,
+[data-gradient-section="portfolio"] h3 {
+  color: var(--portfolio-text-secondary, #e2e8f0) !important;
+}
+
+.portfolio-section .text-muted-foreground,
+[data-gradient-section="portfolio"] .text-muted-foreground {
+  color: var(--portfolio-text-tertiary, #94a3b8) !important;
+}
+
+/* === CATEGORY PAGE SECTION TEXT COLOR MAPPINGS === */
+
+/* Photography Category Pages - Service Overview Sections */
+[data-gradient-section="photography-weddings-overview"] h1,
+[data-gradient-section="photography-weddings-overview"] h2,
+[data-gradient-section="photography-portraits-overview"] h1,
+[data-gradient-section="photography-portraits-overview"] h2,
+[data-gradient-section="photography-corporate-overview"] h1,
+[data-gradient-section="photography-corporate-overview"] h2,
+[data-gradient-section="photography-events-overview"] h1,
+[data-gradient-section="photography-events-overview"] h2,
+[data-gradient-section="photography-products-overview"] h1,
+[data-gradient-section="photography-products-overview"] h2,
+[data-gradient-section="photography-graduation-overview"] h1,
+[data-gradient-section="photography-graduation-overview"] h2 {
+  color: var(--photography-overview-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-weddings-overview"] p,
+[data-gradient-section="photography-weddings-overview"] h3,
+[data-gradient-section="photography-portraits-overview"] p,
+[data-gradient-section="photography-portraits-overview"] h3,
+[data-gradient-section="photography-corporate-overview"] p,
+[data-gradient-section="photography-corporate-overview"] h3,
+[data-gradient-section="photography-events-overview"] p,
+[data-gradient-section="photography-events-overview"] h3,
+[data-gradient-section="photography-products-overview"] p,
+[data-gradient-section="photography-products-overview"] h3,
+[data-gradient-section="photography-graduation-overview"] p,
+[data-gradient-section="photography-graduation-overview"] h3 {
+  color: var(--photography-overview-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-weddings-overview"] .text-muted-foreground,
+[data-gradient-section="photography-portraits-overview"] .text-muted-foreground,
+[data-gradient-section="photography-corporate-overview"] .text-muted-foreground,
+[data-gradient-section="photography-events-overview"] .text-muted-foreground,
+[data-gradient-section="photography-products-overview"] .text-muted-foreground,
+[data-gradient-section="photography-graduation-overview"] .text-muted-foreground {
+  color: var(--photography-overview-text-tertiary, #94a3b8) !important;
+}
+
+/* Photography Category Pages - Package Sections */
+[data-gradient-section="photography-weddings-packages"] h1,
+[data-gradient-section="photography-weddings-packages"] h2,
+[data-gradient-section="photography-portraits-packages"] h1,
+[data-gradient-section="photography-portraits-packages"] h2,
+[data-gradient-section="photography-corporate-packages"] h1,
+[data-gradient-section="photography-corporate-packages"] h2,
+[data-gradient-section="photography-events-packages"] h1,
+[data-gradient-section="photography-events-packages"] h2,
+[data-gradient-section="photography-products-packages"] h1,
+[data-gradient-section="photography-products-packages"] h2,
+[data-gradient-section="photography-graduation-packages"] h1,
+[data-gradient-section="photography-graduation-packages"] h2 {
+  color: var(--photography-packages-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-weddings-packages"] p,
+[data-gradient-section="photography-weddings-packages"] h3,
+[data-gradient-section="photography-portraits-packages"] p,
+[data-gradient-section="photography-portraits-packages"] h3,
+[data-gradient-section="photography-corporate-packages"] p,
+[data-gradient-section="photography-corporate-packages"] h3,
+[data-gradient-section="photography-events-packages"] p,
+[data-gradient-section="photography-events-packages"] h3,
+[data-gradient-section="photography-products-packages"] p,
+[data-gradient-section="photography-products-packages"] h3,
+[data-gradient-section="photography-graduation-packages"] p,
+[data-gradient-section="photography-graduation-packages"] h3 {
+  color: var(--photography-packages-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-weddings-packages"] .text-muted-foreground,
+[data-gradient-section="photography-portraits-packages"] .text-muted-foreground,
+[data-gradient-section="photography-corporate-packages"] .text-muted-foreground,
+[data-gradient-section="photography-events-packages"] .text-muted-foreground,
+[data-gradient-section="photography-products-packages"] .text-muted-foreground,
+[data-gradient-section="photography-graduation-packages"] .text-muted-foreground {
+  color: var(--photography-packages-text-tertiary, #94a3b8) !important;
+}
+
+/* Photography Category Pages - Recent Work Sections */
+[data-gradient-section="photography-weddings-work"] h1,
+[data-gradient-section="photography-weddings-work"] h2,
+[data-gradient-section="photography-portraits-work"] h1,
+[data-gradient-section="photography-portraits-work"] h2,
+[data-gradient-section="photography-corporate-work"] h1,
+[data-gradient-section="photography-corporate-work"] h2,
+[data-gradient-section="photography-events-work"] h1,
+[data-gradient-section="photography-events-work"] h2,
+[data-gradient-section="photography-products-work"] h1,
+[data-gradient-section="photography-products-work"] h2,
+[data-gradient-section="photography-graduation-work"] h1,
+[data-gradient-section="photography-graduation-work"] h2 {
+  color: var(--photography-work-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-weddings-work"] p,
+[data-gradient-section="photography-weddings-work"] h3,
+[data-gradient-section="photography-portraits-work"] p,
+[data-gradient-section="photography-portraits-work"] h3,
+[data-gradient-section="photography-corporate-work"] p,
+[data-gradient-section="photography-corporate-work"] h3,
+[data-gradient-section="photography-events-work"] p,
+[data-gradient-section="photography-events-work"] h3,
+[data-gradient-section="photography-products-work"] p,
+[data-gradient-section="photography-products-work"] h3,
+[data-gradient-section="photography-graduation-work"] p,
+[data-gradient-section="photography-graduation-work"] h3 {
+  color: var(--photography-work-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-weddings-work"] .text-muted-foreground,
+[data-gradient-section="photography-portraits-work"] .text-muted-foreground,
+[data-gradient-section="photography-corporate-work"] .text-muted-foreground,
+[data-gradient-section="photography-events-work"] .text-muted-foreground,
+[data-gradient-section="photography-products-work"] .text-muted-foreground,
+[data-gradient-section="photography-graduation-work"] .text-muted-foreground {
+  color: var(--photography-work-text-tertiary, #94a3b8) !important;
+}
+
+/* Photography Category Pages - SEO Content Sections */
+[data-gradient-section="photography-weddings-seo"] h1,
+[data-gradient-section="photography-weddings-seo"] h2,
+[data-gradient-section="photography-portraits-seo"] h1,
+[data-gradient-section="photography-portraits-seo"] h2,
+[data-gradient-section="photography-corporate-seo"] h1,
+[data-gradient-section="photography-corporate-seo"] h2,
+[data-gradient-section="photography-events-seo"] h1,
+[data-gradient-section="photography-events-seo"] h2,
+[data-gradient-section="photography-products-seo"] h1,
+[data-gradient-section="photography-products-seo"] h2,
+[data-gradient-section="photography-graduation-seo"] h1,
+[data-gradient-section="photography-graduation-seo"] h2 {
+  color: var(--photography-seo-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-weddings-seo"] p,
+[data-gradient-section="photography-weddings-seo"] h3,
+[data-gradient-section="photography-portraits-seo"] p,
+[data-gradient-section="photography-portraits-seo"] h3,
+[data-gradient-section="photography-corporate-seo"] p,
+[data-gradient-section="photography-corporate-seo"] h3,
+[data-gradient-section="photography-events-seo"] p,
+[data-gradient-section="photography-events-seo"] h3,
+[data-gradient-section="photography-products-seo"] p,
+[data-gradient-section="photography-products-seo"] h3,
+[data-gradient-section="photography-graduation-seo"] p,
+[data-gradient-section="photography-graduation-seo"] h3 {
+  color: var(--photography-seo-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-weddings-seo"] .text-muted-foreground,
+[data-gradient-section="photography-portraits-seo"] .text-muted-foreground,
+[data-gradient-section="photography-corporate-seo"] .text-muted-foreground,
+[data-gradient-section="photography-events-seo"] .text-muted-foreground,
+[data-gradient-section="photography-products-seo"] .text-muted-foreground,
+[data-gradient-section="photography-graduation-seo"] .text-muted-foreground {
+  color: var(--photography-seo-text-tertiary, #94a3b8) !important;
+}
+
+/* Videography Category Pages - Service Overview Sections */
+[data-gradient-section="videography-weddings-overview"] h1,
+[data-gradient-section="videography-weddings-overview"] h2,
+[data-gradient-section="videography-corporate-overview"] h1,
+[data-gradient-section="videography-corporate-overview"] h2,
+[data-gradient-section="videography-events-overview"] h1,
+[data-gradient-section="videography-events-overview"] h2,
+[data-gradient-section="videography-promotional-overview"] h1,
+[data-gradient-section="videography-promotional-overview"] h2,
+[data-gradient-section="videography-documentary-overview"] h1,
+[data-gradient-section="videography-documentary-overview"] h2,
+[data-gradient-section="videography-social-overview"] h1,
+[data-gradient-section="videography-social-overview"] h2 {
+  color: var(--videography-overview-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="videography-weddings-overview"] p,
+[data-gradient-section="videography-weddings-overview"] h3,
+[data-gradient-section="videography-corporate-overview"] p,
+[data-gradient-section="videography-corporate-overview"] h3,
+[data-gradient-section="videography-events-overview"] p,
+[data-gradient-section="videography-events-overview"] h3,
+[data-gradient-section="videography-promotional-overview"] p,
+[data-gradient-section="videography-promotional-overview"] h3,
+[data-gradient-section="videography-documentary-overview"] p,
+[data-gradient-section="videography-documentary-overview"] h3,
+[data-gradient-section="videography-social-overview"] p,
+[data-gradient-section="videography-social-overview"] h3 {
+  color: var(--videography-overview-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="videography-weddings-overview"] .text-muted-foreground,
+[data-gradient-section="videography-corporate-overview"] .text-muted-foreground,
+[data-gradient-section="videography-events-overview"] .text-muted-foreground,
+[data-gradient-section="videography-promotional-overview"] .text-muted-foreground,
+[data-gradient-section="videography-documentary-overview"] .text-muted-foreground,
+[data-gradient-section="videography-social-overview"] .text-muted-foreground {
+  color: var(--videography-overview-text-tertiary, #94a3b8) !important;
+}
+
+/* Videography Category Pages - Package Sections */
+[data-gradient-section="videography-weddings-packages"] h1,
+[data-gradient-section="videography-weddings-packages"] h2,
+[data-gradient-section="videography-corporate-packages"] h1,
+[data-gradient-section="videography-corporate-packages"] h2,
+[data-gradient-section="videography-events-packages"] h1,
+[data-gradient-section="videography-events-packages"] h2,
+[data-gradient-section="videography-promotional-packages"] h1,
+[data-gradient-section="videography-promotional-packages"] h2,
+[data-gradient-section="videography-documentary-packages"] h1,
+[data-gradient-section="videography-documentary-packages"] h2,
+[data-gradient-section="videography-social-packages"] h1,
+[data-gradient-section="videography-social-packages"] h2 {
+  color: var(--videography-packages-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="videography-weddings-packages"] p,
+[data-gradient-section="videography-weddings-packages"] h3,
+[data-gradient-section="videography-corporate-packages"] p,
+[data-gradient-section="videography-corporate-packages"] h3,
+[data-gradient-section="videography-events-packages"] p,
+[data-gradient-section="videography-events-packages"] h3,
+[data-gradient-section="videography-promotional-packages"] p,
+[data-gradient-section="videography-promotional-packages"] h3,
+[data-gradient-section="videography-documentary-packages"] p,
+[data-gradient-section="videography-documentary-packages"] h3,
+[data-gradient-section="videography-social-packages"] p,
+[data-gradient-section="videography-social-packages"] h3 {
+  color: var(--videography-packages-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="videography-weddings-packages"] .text-muted-foreground,
+[data-gradient-section="videography-corporate-packages"] .text-muted-foreground,
+[data-gradient-section="videography-events-packages"] .text-muted-foreground,
+[data-gradient-section="videography-promotional-packages"] .text-muted-foreground,
+[data-gradient-section="videography-documentary-packages"] .text-muted-foreground,
+[data-gradient-section="videography-social-packages"] .text-muted-foreground {
+  color: var(--videography-packages-text-tertiary, #94a3b8) !important;
+}
+
+/* Videography Category Pages - Recent Work Sections */
+[data-gradient-section="videography-weddings-work"] h1,
+[data-gradient-section="videography-weddings-work"] h2,
+[data-gradient-section="videography-corporate-work"] h1,
+[data-gradient-section="videography-corporate-work"] h2,
+[data-gradient-section="videography-events-work"] h1,
+[data-gradient-section="videography-events-work"] h2,
+[data-gradient-section="videography-promotional-work"] h1,
+[data-gradient-section="videography-promotional-work"] h2,
+[data-gradient-section="videography-documentary-work"] h1,
+[data-gradient-section="videography-documentary-work"] h2,
+[data-gradient-section="videography-social-work"] h1,
+[data-gradient-section="videography-social-work"] h2 {
+  color: var(--videography-work-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="videography-weddings-work"] p,
+[data-gradient-section="videography-weddings-work"] h3,
+[data-gradient-section="videography-corporate-work"] p,
+[data-gradient-section="videography-corporate-work"] h3,
+[data-gradient-section="videography-events-work"] p,
+[data-gradient-section="videography-events-work"] h3,
+[data-gradient-section="videography-promotional-work"] p,
+[data-gradient-section="videography-promotional-work"] h3,
+[data-gradient-section="videography-documentary-work"] p,
+[data-gradient-section="videography-documentary-work"] h3,
+[data-gradient-section="videography-social-work"] p,
+[data-gradient-section="videography-social-work"] h3 {
+  color: var(--videography-work-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="videography-weddings-work"] .text-muted-foreground,
+[data-gradient-section="videography-corporate-work"] .text-muted-foreground,
+[data-gradient-section="videography-events-work"] .text-muted-foreground,
+[data-gradient-section="videography-promotional-work"] .text-muted-foreground,
+[data-gradient-section="videography-documentary-work"] .text-muted-foreground,
+[data-gradient-section="videography-social-work"] .text-muted-foreground {
+  color: var(--videography-work-text-tertiary, #94a3b8) !important;
+}
+
+/* Videography Category Pages - SEO Content Sections */
+[data-gradient-section="videography-weddings-seo"] h1,
+[data-gradient-section="videography-weddings-seo"] h2,
+[data-gradient-section="videography-corporate-seo"] h1,
+[data-gradient-section="videography-corporate-seo"] h2,
+[data-gradient-section="videography-events-seo"] h1,
+[data-gradient-section="videography-events-seo"] h2,
+[data-gradient-section="videography-promotional-seo"] h1,
+[data-gradient-section="videography-promotional-seo"] h2,
+[data-gradient-section="videography-documentary-seo"] h1,
+[data-gradient-section="videography-documentary-seo"] h2,
+[data-gradient-section="videography-social-seo"] h1,
+[data-gradient-section="videography-social-seo"] h2 {
+  color: var(--videography-seo-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="videography-weddings-seo"] p,
+[data-gradient-section="videography-weddings-seo"] h3,
+[data-gradient-section="videography-corporate-seo"] p,
+[data-gradient-section="videography-corporate-seo"] h3,
+[data-gradient-section="videography-events-seo"] p,
+[data-gradient-section="videography-events-seo"] h3,
+[data-gradient-section="videography-promotional-seo"] p,
+[data-gradient-section="videography-promotional-seo"] h3,
+[data-gradient-section="videography-documentary-seo"] p,
+[data-gradient-section="videography-documentary-seo"] h3,
+[data-gradient-section="videography-social-seo"] p,
+[data-gradient-section="videography-social-seo"] h3 {
+  color: var(--videography-seo-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="videography-weddings-seo"] .text-muted-foreground,
+[data-gradient-section="videography-corporate-seo"] .text-muted-foreground,
+[data-gradient-section="videography-events-seo"] .text-muted-foreground,
+[data-gradient-section="videography-promotional-seo"] .text-muted-foreground,
+[data-gradient-section="videography-documentary-seo"] .text-muted-foreground,
+[data-gradient-section="videography-social-seo"] .text-muted-foreground {
+  color: var(--videography-seo-text-tertiary, #94a3b8) !important;
+}
+
+/* About Page Section Text Colors */
+[data-gradient-section="aboutHero"] h1,
+[data-gradient-section="aboutHero"] h2 {
+  color: var(--aboutHero-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="aboutHero"] p,
+[data-gradient-section="aboutHero"] h3 {
+  color: var(--aboutHero-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="aboutHero"] .text-muted-foreground {
+  color: var(--aboutHero-text-tertiary, #94a3b8) !important;
+}
+
+[data-gradient-section="aboutStory"] h1,
+[data-gradient-section="aboutStory"] h2 {
+  color: var(--aboutStory-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="aboutStory"] p,
+[data-gradient-section="aboutStory"] h3 {
+  color: var(--aboutStory-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="aboutStory"] .text-muted-foreground {
+  color: var(--aboutStory-text-tertiary, #94a3b8) !important;
+}
+
+[data-gradient-section="aboutValues"] h1,
+[data-gradient-section="aboutValues"] h2 {
+  color: var(--aboutValues-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="aboutValues"] p,
+[data-gradient-section="aboutValues"] h3 {
+  color: var(--aboutValues-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="aboutValues"] .text-muted-foreground {
+  color: var(--aboutValues-text-tertiary, #94a3b8) !important;
+}
+
+[data-gradient-section="aboutTeam"] h1,
+[data-gradient-section="aboutTeam"] h2 {
+  color: var(--aboutTeam-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="aboutTeam"] p,
+[data-gradient-section="aboutTeam"] h3 {
+  color: var(--aboutTeam-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="aboutTeam"] .text-muted-foreground {
+  color: var(--aboutTeam-text-tertiary, #94a3b8) !important;
+}
+
+[data-gradient-section="aboutCta"] h1,
+[data-gradient-section="aboutCta"] h2 {
+  color: var(--aboutCta-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="aboutCta"] p,
+[data-gradient-section="aboutCta"] h3 {
+  color: var(--aboutCta-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="aboutCta"] .text-muted-foreground {
+  color: var(--aboutCta-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="aboutLocation"] h1,
+[data-gradient-section="aboutLocation"] h2 {
+  color: var(--aboutLocation-text-primary, #ffffff) !important;
+}
+[data-gradient-section="aboutLocation"] p,
+[data-gradient-section="aboutLocation"] h3 {
+  color: var(--aboutLocation-text-secondary, #e2e8f0) !important;
+}
+[data-gradient-section="aboutLocation"] .text-muted-foreground {
+  color: var(--aboutLocation-text-tertiary, #94a3b8) !important;
 }

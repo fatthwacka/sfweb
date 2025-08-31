@@ -51,21 +51,21 @@ INSERT INTO clients (id, name, slug, email, user_id, created_by, created_at, upd
 
 (3, 'Demo Gallery Client', 'demo-gallery', 'demo@slyfox.co.za', (SELECT id FROM profiles WHERE email = 'demo@slyfox.co.za' LIMIT 1), (SELECT id FROM profiles WHERE email = 'dax@slyfox.co.za' LIMIT 1), NOW(), NOW()),
 
-(4, 'Cape Town Corporate', 'cape-town-corporate', 'events@capetowncorp.co.za', NULL, (SELECT id FROM profiles WHERE email = 'eben@slyfox.co.za' LIMIT 1), NOW(), NOW()),
+(4, 'Durban Corporate', 'durban-corporate', 'events@durbancorp.co.za', NULL, (SELECT id FROM profiles WHERE email = 'eben@slyfox.co.za' LIMIT 1), NOW(), NOW()),
 
 (5, 'Mountain View Wedding', 'mountain-view-wedding', 'info@mountainviewvenue.co.za', NULL, (SELECT id FROM profiles WHERE email = 'dax@slyfox.co.za' LIMIT 1), NOW(), NOW());
 
 -- 5. SHOOTS TABLE (Photography/videography sessions)
 INSERT INTO shoots (id, client_id, title, description, is_private, banner_image_id, seo_tags, view_count, created_by, created_at, updated_at) VALUES
-(gen_random_uuid(), 1, 'Sarah & Tom - Engagement Session', 'Romantic engagement shoot at Camps Bay beach during golden hour. Captured their natural chemistry and love story with Cape Town''s stunning coastline as backdrop.', false, NULL, ARRAY['engagement', 'couples', 'camps bay', 'beach', 'sunset', 'cape town', 'romantic'], 45, (SELECT id FROM profiles WHERE email = 'dax@slyfox.co.za' LIMIT 1), NOW(), NOW()),
+(gen_random_uuid(), 1, 'Sarah & Tom - Engagement Session', 'Romantic engagement shoot at uShaka Beach beach during golden hour. Captured their natural chemistry and love story with Durban''s stunning coastline as backdrop.', false, NULL, ARRAY['engagement', 'couples', 'ushaka beach', 'beach', 'sunset', 'durban', 'romantic'], 45, (SELECT id FROM profiles WHERE email = 'dax@slyfox.co.za' LIMIT 1), NOW(), NOW()),
 
-(gen_random_uuid(), 2, 'Wilson Family Portrait Session', 'Fun family portrait session in Kirstenbosch Botanical Gardens. Three generations celebrating grandmother''s 80th birthday with natural, candid moments.', false, NULL, ARRAY['family', 'portraits', 'kirstenbosch', 'generations', 'birthday', 'cape town', 'natural'], 32, (SELECT id FROM profiles WHERE email = 'eben@slyfox.co.za' LIMIT 1), NOW(), NOW()),
+(gen_random_uuid(), 2, 'Wilson Family Portrait Session', 'Fun family portrait session in Durban Botanic Gardens Botanical Gardens. Three generations celebrating grandmother''s 80th birthday with natural, candid moments.', false, NULL, ARRAY['family', 'portraits', 'durban botanic gardens', 'generations', 'birthday', 'durban', 'natural'], 32, (SELECT id FROM profiles WHERE email = 'eben@slyfox.co.za' LIMIT 1), NOW(), NOW()),
 
 (gen_random_uuid(), 3, 'Demo Portfolio Showcase', 'Curated collection showcasing SlyFox Studios'' diverse photography styles and technical expertise across various genres and lighting conditions.', false, NULL, ARRAY['portfolio', 'showcase', 'diverse', 'professional', 'studio work', 'outdoor'], 78, (SELECT id FROM profiles WHERE email = 'dax@slyfox.co.za' LIMIT 1), NOW(), NOW()),
 
-(gen_random_uuid(), 4, 'Corporate Event - Annual Gala', 'Professional documentation of Cape Town Corporate''s annual gala dinner. Executive headshots, award presentations, and networking moments captured.', true, NULL, ARRAY['corporate', 'gala', 'professional', 'headshots', 'awards', 'networking'], 12, (SELECT id FROM profiles WHERE email = 'eben@slyfox.co.za' LIMIT 1), NOW(), NOW()),
+(gen_random_uuid(), 4, 'Corporate Event - Annual Gala', 'Professional documentation of Durban Corporate''s annual gala dinner. Executive headshots, award presentations, and networking moments captured.', true, NULL, ARRAY['corporate', 'gala', 'professional', 'headshots', 'awards', 'networking'], 12, (SELECT id FROM profiles WHERE email = 'eben@slyfox.co.za' LIMIT 1), NOW(), NOW()),
 
-(gen_random_uuid(), 5, 'Mountain View Wedding - Sarah & James', 'Intimate wedding ceremony overlooking Table Mountain. Captured ceremony, reception, and couple portraits with dramatic mountain backdrop.', false, NULL, ARRAY['wedding', 'mountain view', 'table mountain', 'ceremony', 'intimate', 'cape town', 'couples'], 156, (SELECT id FROM profiles WHERE email = 'dax@slyfox.co.za' LIMIT 1), NOW(), NOW());
+(gen_random_uuid(), 5, 'Mountain View Wedding - Sarah & James', 'Intimate wedding ceremony overlooking uMhlanga Ridge. Captured ceremony, reception, and couple portraits with dramatic mountain backdrop.', false, NULL, ARRAY['wedding', 'mountain view', 'table mountain', 'ceremony', 'intimate', 'durban', 'couples'], 156, (SELECT id FROM profiles WHERE email = 'dax@slyfox.co.za' LIMIT 1), NOW(), NOW());
 
 -- 6. IMAGES TABLE (Individual photos)
 -- We'll create realistic image entries using Unsplash for demonstration
@@ -74,7 +74,7 @@ WITH shoot_data AS (
 ),
 image_series AS (
   -- Engagement Session Images
-  SELECT s.shoot_id, s.created_by, 'engagement-beach-sunset-01.jpg' as filename, 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=800&h=1200&fit=crop&crop=faces' as storage_path, 1 as upload_order, 'Romantic sunset moment on Camps Bay beach' as alt_text
+  SELECT s.shoot_id, s.created_by, 'engagement-beach-sunset-01.jpg' as filename, 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=800&h=1200&fit=crop&crop=faces' as storage_path, 1 as upload_order, 'Romantic sunset moment on uShaka Beach beach' as alt_text
   FROM shoot_data s WHERE s.title LIKE '%Engagement%'
   
   UNION ALL
@@ -91,15 +91,15 @@ image_series AS (
   
   UNION ALL
   -- Family Portrait Images
-  SELECT s.shoot_id, s.created_by, 'family-kirstenbosch-01.jpg', 'https://images.unsplash.com/photo-1511895426328-dc8714efa2d8?w=800&h=600&fit=crop', 1, 'Three generations family group portrait'
+  SELECT s.shoot_id, s.created_by, 'family-durban botanic gardens-01.jpg', 'https://images.unsplash.com/photo-1511895426328-dc8714efa2d8?w=800&h=600&fit=crop', 1, 'Three generations family group portrait'
   FROM shoot_data s WHERE s.title LIKE '%Wilson Family%'
   
   UNION ALL
-  SELECT s.shoot_id, s.created_by, 'family-kirstenbosch-02.jpg', 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=800&h=600&fit=crop', 2, 'Grandchildren with grandmother'
+  SELECT s.shoot_id, s.created_by, 'family-durban botanic gardens-02.jpg', 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=800&h=600&fit=crop', 2, 'Grandchildren with grandmother'
   FROM shoot_data s WHERE s.title LIKE '%Wilson Family%'
   
   UNION ALL
-  SELECT s.shoot_id, s.created_by, 'family-kirstenbosch-03.jpg', 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=800&h=600&fit=crop', 3, 'Natural candid family interaction'
+  SELECT s.shoot_id, s.created_by, 'family-durban botanic gardens-03.jpg', 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=800&h=600&fit=crop', 3, 'Natural candid family interaction'
   FROM shoot_data s WHERE s.title LIKE '%Wilson Family%'
   
   UNION ALL
@@ -108,7 +108,7 @@ image_series AS (
   FROM shoot_data s WHERE s.title LIKE '%Demo Portfolio%'
   
   UNION ALL
-  SELECT s.shoot_id, s.created_by, 'portfolio-landscape-cape-town-01.jpg', 'https://images.unsplash.com/photo-1580692270804-1404f9846f96?w=1200&h=800&fit=crop', 2, 'Cape Town cityscape from Table Mountain'
+  SELECT s.shoot_id, s.created_by, 'portfolio-landscape-durban-01.jpg', 'https://images.unsplash.com/photo-1580692270804-1404f9846f96?w=1200&h=800&fit=crop', 2, 'Durban cityscape from uMhlanga Ridge'
   FROM shoot_data s WHERE s.title LIKE '%Demo Portfolio%'
   
   UNION ALL
@@ -126,7 +126,7 @@ image_series AS (
   
   UNION ALL
   -- Wedding Images
-  SELECT s.shoot_id, s.created_by, 'wedding-ceremony-mountain-view-01.jpg', 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&h=800&fit=crop', 1, 'Wedding ceremony with Table Mountain backdrop'
+  SELECT s.shoot_id, s.created_by, 'wedding-ceremony-mountain-view-01.jpg', 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&h=800&fit=crop', 1, 'Wedding ceremony with uMhlanga Ridge backdrop'
   FROM shoot_data s WHERE s.title LIKE '%Mountain View Wedding%'
   
   UNION ALL
@@ -152,7 +152,7 @@ FROM image_series;
 INSERT INTO bookings (id, email, phone, message, service_type, preferred_date, budget_range, status, inquiry_data, client_id, package_id, created_at) VALUES
 (1, 'newclient@example.com', '+27 82 123 4567', 'Hi! We''re getting married in March 2025 and would love to discuss wedding photography packages. We''re particularly interested in the luxury package.', 'wedding', '2025-03-15'::timestamp, '10000-15000', 'pending', '{"venue": "Babylonstoren", "guest_count": 80, "style_preference": "natural_candid"}', NULL, NULL, NOW() - INTERVAL '2 days'),
 
-(2, 'corporate@techstartup.co.za', '+27 21 456 7890', 'We need professional headshots for our team of 25 people. Can you provide a quote for on-site corporate photography?', 'corporate', '2025-02-20'::timestamp, '5000-8000', 'contacted', '{"company": "Tech Startup Cape Town", "employee_count": 25, "location": "office"}', NULL, NULL, NOW() - INTERVAL '5 days'),
+(2, 'corporate@techstartup.co.za', '+27 21 456 7890', 'We need professional headshots for our team of 25 people. Can you provide a quote for on-site corporate photography?', 'corporate', '2025-02-20'::timestamp, '5000-8000', 'contacted', '{"company": "Tech Startup Durban", "employee_count": 25, "location": "office"}', NULL, NULL, NOW() - INTERVAL '5 days'),
 
 (3, 'family.portraits@gmail.com', '+27 83 987 6543', 'Looking for a family portrait session for our family of 5. We have young children so would prefer an outdoor session with a relaxed atmosphere.', 'family', '2025-01-30'::timestamp, '2000-3000', 'quoted', '{"family_size": 5, "children_ages": [3, 7, 12], "location_preference": "outdoor"}', NULL, NULL, NOW() - INTERVAL '1 week'),
 
