@@ -99,8 +99,8 @@ interface AdminContentProps {
 export function AdminContent({ userRole }: AdminContentProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'shoots' | 'images' | 'galleries' | 'photography' | 'site-management' | 'site-assets' | 'staff' | 'users'>('overview');
-  const [activePageSettings, setActivePageSettings] = useState<'contact' | 'homepage' | 'portfolio' | 'about' | null>(null);
+  const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'shoots' | 'images' | 'galleries' | 'site-management' | 'staff' | 'users'>('overview');
+  const [activePageSettings, setActivePageSettings] = useState<'contact' | 'homepage' | 'portfolio' | 'photography' | 'about' | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [newClientOpen, setNewClientOpen] = useState(false);
   const [newShootOpen, setNewShootOpen] = useState(false);
@@ -731,9 +731,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
           { id: 'images', label: 'Images', icon: FileImage },
           { id: 'galleries', label: 'Gallery Management', icon: Palette },
           ...(userRole === 'super_admin' ? [
-            { id: 'photography', label: 'Photography', icon: Camera },
             { id: 'site-management', label: 'Site Management', icon: Home },
-            { id: 'site-assets', label: 'Site Assets', icon: Palette },
             { id: 'staff', label: 'Staff Management', icon: Shield },
             { id: 'users', label: 'User Management', icon: User }
           ] : [])
@@ -2003,9 +2001,6 @@ export function AdminContent({ userRole }: AdminContentProps) {
             </div>
           )}
 
-          {activeTab === 'photography' && userRole === 'super_admin' && (
-            <PhotographySettings />
-          )}
           {activeTab === 'site-management' && userRole === 'super_admin' && (
             <div className="space-y-8">
               <div className="bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-lg p-6 border border-purple-500/30">
@@ -2013,67 +2008,90 @@ export function AdminContent({ userRole }: AdminContentProps) {
                   🏠 Site Management
                 </h2>
                 <p className="text-gray-300 mb-6">
-                  Manage your website content, images, and styling organized by page and section.
+                  Manage the website content, images, and styling.
                   Each page shows sections from top to bottom with integrated text, image, and styling controls.
                 </p>
                 
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div 
-                    className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 cursor-pointer hover:border-slate-500 transition-colors"
+                    className={`rounded-lg p-4 border cursor-pointer transition-all duration-200 ${
+                      activePageSettings === 'homepage'
+                        ? 'bg-blue-500/20 border-blue-400 shadow-lg shadow-blue-500/20 ring-1 ring-blue-400/30'
+                        : 'bg-slate-800/50 border-slate-600 hover:border-slate-500'
+                    }`}
                     onClick={() => setActivePageSettings('homepage')}
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-center gap-2 h-full">
                       <span className="text-2xl">🏠</span>
                       <h3 className="text-lg font-semibold text-white">Homepage</h3>
                     </div>
                   </div>
                   
                   <div 
-                    className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 hover:border-purple-500/50 transition-colors cursor-pointer"
+                    className={`rounded-lg p-4 border cursor-pointer transition-all duration-200 ${
+                      activePageSettings === 'portfolio'
+                        ? 'bg-blue-500/20 border-blue-400 shadow-lg shadow-blue-500/20 ring-1 ring-blue-400/30'
+                        : 'bg-slate-800/50 border-slate-600 hover:border-purple-500/50'
+                    }`}
                     onClick={() => setActivePageSettings('portfolio')}
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-center gap-2 h-full">
                       <span className="text-2xl">🎨</span>
                       <h3 className="text-lg font-semibold text-white">Portfolio</h3>
                     </div>
                   </div>
                   
-                  <div className="bg-slate-800/30 rounded-lg p-3 border border-slate-600 opacity-50">
-                    <div className="flex items-center gap-2">
+                  <div 
+                    className={`rounded-lg p-4 border cursor-pointer transition-all duration-200 ${
+                      activePageSettings === 'photography'
+                        ? 'bg-blue-500/20 border-blue-400 shadow-lg shadow-blue-500/20 ring-1 ring-blue-400/30'
+                        : 'bg-slate-800/50 border-slate-600 hover:border-yellow-500/50'
+                    }`}
+                    onClick={() => setActivePageSettings('photography')}
+                  >
+                    <div className="flex items-center justify-center gap-2 h-full">
                       <span className="text-2xl">📸</span>
                       <h3 className="text-lg font-semibold text-white">Photography</h3>
                     </div>
                   </div>
                   
-                  <div className="bg-slate-800/30 rounded-lg p-3 border border-slate-600 opacity-50">
-                    <div className="flex items-center gap-2">
+                  <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-600 opacity-50">
+                    <div className="flex items-center justify-center gap-2 h-full">
                       <span className="text-2xl">🎬</span>
                       <h3 className="text-lg font-semibold text-white">Videography</h3>
                     </div>
                   </div>
                   
                   <div 
-                    className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 hover:border-emerald-500/50 transition-colors cursor-pointer"
+                    className={`rounded-lg p-4 border cursor-pointer transition-all duration-200 ${
+                      activePageSettings === 'about'
+                        ? 'bg-blue-500/20 border-blue-400 shadow-lg shadow-blue-500/20 ring-1 ring-blue-400/30'
+                        : 'bg-slate-800/50 border-slate-600 hover:border-emerald-500/50'
+                    }`}
                     onClick={() => setActivePageSettings('about')}
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-center gap-2 h-full">
                       <span className="text-2xl">👥</span>
                       <h3 className="text-lg font-semibold text-white">About</h3>
                     </div>
                   </div>
                   
                   <div 
-                    className="bg-slate-800/50 rounded-lg p-3 border border-slate-600 hover:border-cyan-500/50 transition-colors cursor-pointer"
+                    className={`rounded-lg p-4 border cursor-pointer transition-all duration-200 ${
+                      activePageSettings === 'contact'
+                        ? 'bg-blue-500/20 border-blue-400 shadow-lg shadow-blue-500/20 ring-1 ring-blue-400/30'
+                        : 'bg-slate-800/50 border-slate-600 hover:border-cyan-500/50'
+                    }`}
                     onClick={() => setActivePageSettings('contact')}
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-center gap-2 h-full">
                       <span className="text-2xl">📞</span>
                       <h3 className="text-lg font-semibold text-white">Contact</h3>
                     </div>
                   </div>
                   
-                  <div className="bg-slate-800/30 rounded-lg p-3 border border-slate-600 opacity-50">
-                    <div className="flex items-center gap-2">
+                  <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-600 opacity-50">
+                    <div className="flex items-center justify-center gap-2 h-full">
                       <span className="text-2xl">🔍</span>
                       <h3 className="text-lg font-semibold text-white">Global SEO</h3>
                     </div>
@@ -2104,6 +2122,12 @@ export function AdminContent({ userRole }: AdminContentProps) {
                   <AboutSettings />
                 </div>
               )}
+              
+              {activePageSettings === 'photography' && (
+                <div className="mt-8">
+                  <PhotographySettings />
+                </div>
+              )}
 
               {!activePageSettings && (
                 <div className="p-8 text-center text-gray-400 border-2 border-dashed border-gray-600 rounded-lg">
@@ -2115,9 +2139,6 @@ export function AdminContent({ userRole }: AdminContentProps) {
             </div>
           )}
 
-          {activeTab === 'site-assets' && userRole === 'super_admin' && (
-            <SimpleAssetsPanel />
-          )}
 
           {activeTab === 'staff' && userRole === 'super_admin' && (
             <StaffManagement />
