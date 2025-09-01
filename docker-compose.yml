@@ -60,7 +60,28 @@ services:
     # No dependency on local postgres since we're using Supabase
     networks:
       - sfweb-network
+      - root_default  # Connect to Traefik network
     restart: unless-stopped
+    labels:
+      # Enable Traefik
+      - "traefik.enable=true"
+      - "traefik.docker.network=root_default"
+      
+      # HTTP to HTTPS redirect
+      - "traefik.http.routers.slyfox-http.rule=Host(`slyfox.co.za`)"
+      - "traefik.http.routers.slyfox-http.entrypoints=web"
+      - "traefik.http.routers.slyfox-http.middlewares=slyfox-redirect"
+      - "traefik.http.middlewares.slyfox-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.slyfox-redirect.redirectscheme.permanent=true"
+      
+      # HTTPS configuration
+      - "traefik.http.routers.slyfox-https.rule=Host(`slyfox.co.za`)"
+      - "traefik.http.routers.slyfox-https.entrypoints=websecure"
+      - "traefik.http.routers.slyfox-https.tls=true"
+      - "traefik.http.routers.slyfox-https.tls.certresolver=mytlschallenge"
+      
+      # Service configuration
+      - "traefik.http.services.slyfox.loadbalancer.server.port=5000"
 
   # Development-only: Adminer for database management
   adminer:
@@ -87,3 +108,5 @@ volumes:
 networks:
   sfweb-network:
     driver: bridge
+  root_default:
+    external: true
