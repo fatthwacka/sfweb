@@ -736,6 +736,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
         setClientReassignDialogOpen={setClientReassignDialogOpen}
         shootId={shootId}
         toast={toast}
+        images={images}
       />
 
       {/* Advanced Settings */}

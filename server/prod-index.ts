@@ -29,6 +29,7 @@ const serveStatic = (app: express.Express) => {
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 };
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -80,19 +81,9 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    // In development: serve public directory and setup vite
-    app.use(express.static(path.resolve(import.meta.dirname, "..", "public")));
-    const { setupVite } = await import("./vite");
-    await setupVite(app, server);
-  } else {
-    // In production: serve public directory first, then built client files
-    app.use(express.static(path.resolve(import.meta.dirname, "..", "public")));
-    serveStatic(app);
-  }
+  // In production: serve public directory first, then built client files
+  app.use(express.static(path.resolve(import.meta.dirname, "..", "public")));
+  serveStatic(app);
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
   // Other ports are firewalled. Default to 3000 if not specified.

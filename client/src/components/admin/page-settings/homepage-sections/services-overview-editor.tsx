@@ -5,7 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Upload, Image, Type, Palette, Search, Eye, Camera, Video, ImageIcon, Folder } from 'lucide-react';
+import { Upload, Image, Type, Palette, Search, Eye, Camera, Video, ImageIcon, Folder, FolderOpen } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DragDropImageUpload } from '../shared/drag-drop-image-upload';
 import { ColorPicker } from '../shared/color-picker';
 import { useSiteConfig } from '@/hooks/use-site-config';
@@ -297,18 +298,55 @@ export function ServicesOverviewEditor({ onChange, onSave }: ServicesOverviewEdi
                 aspectRatio="4:3"
               />
               
-              {/* Browse Existing Button */}
-              <div className="flex justify-center">
-                <Button 
-                  type="button"
-                  variant="outline" 
-                  onClick={() => setIsPhotoBrowserOpen(true)}
-                  className="flex items-center gap-2"
-                >
-                  <ImageIcon className="w-4 h-4" />
-                  Browse Existing
-                </Button>
-              </div>
+              {/* Icon-based Image Management */}
+              <TooltipProvider>
+                <div className="flex justify-center gap-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        type="button"
+                        size="icon"
+                        variant="outline" 
+                        onClick={() => setIsPhotoBrowserOpen(true)}
+                        className="h-8 w-8"
+                      >
+                        <FolderOpen className="w-4 h-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Browse existing images</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        type="button"
+                        size="icon"
+                        variant="outline" 
+                        onClick={() => {
+                          const input = document.createElement('input');
+                          input.type = 'file';
+                          input.accept = 'image/*';
+                          input.onchange = (e) => {
+                            const files = (e.target as HTMLInputElement).files;
+                            if (files && files[0]) {
+                              handleImageUpload('photography', files[0]);
+                            }
+                          };
+                          input.click();
+                        }}
+                        className="h-8 w-8"
+                      >
+                        <Upload className="w-4 h-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Upload new image</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </TooltipProvider>
               
               <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-2">
@@ -360,18 +398,55 @@ export function ServicesOverviewEditor({ onChange, onSave }: ServicesOverviewEdi
                 aspectRatio="4:3"
               />
               
-              {/* Browse Existing Button */}
-              <div className="flex justify-center">
-                <Button 
-                  type="button"
-                  variant="outline" 
-                  onClick={() => setIsVideoBrowserOpen(true)}
-                  className="flex items-center gap-2"
-                >
-                  <ImageIcon className="w-4 h-4" />
-                  Browse Existing
-                </Button>
-              </div>
+              {/* Icon-based Image Management */}
+              <TooltipProvider>
+                <div className="flex justify-center gap-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        type="button"
+                        size="icon"
+                        variant="outline" 
+                        onClick={() => setIsVideoBrowserOpen(true)}
+                        className="h-8 w-8"
+                      >
+                        <FolderOpen className="w-4 h-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Browse existing images</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        type="button"
+                        size="icon"
+                        variant="outline" 
+                        onClick={() => {
+                          const input = document.createElement('input');
+                          input.type = 'file';
+                          input.accept = 'image/*';
+                          input.onchange = (e) => {
+                            const files = (e.target as HTMLInputElement).files;
+                            if (files && files[0]) {
+                              handleImageUpload('videography', files[0]);
+                            }
+                          };
+                          input.click();
+                        }}
+                        className="h-8 w-8"
+                      >
+                        <Upload className="w-4 h-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Upload new image</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </TooltipProvider>
               
               <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-2">

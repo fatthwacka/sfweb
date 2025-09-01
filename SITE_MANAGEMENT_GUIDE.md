@@ -1,5 +1,122 @@
 # Site Management Complete Implementation Guide
 
+## 🚨 **CRITICAL: CONFIGURATION PERSISTENCE & DEPLOYMENT** ⭐ **MUST READ**
+
+**⚠️ WARNING: Configuration changes made in development DO NOT automatically sync to production!**
+
+### **Configuration System Architecture (Post-Incident Analysis)**
+
+**ROOT CAUSE OF DEPLOYMENT ISSUES**: The site management system stores configuration in **multiple separate systems** that don't sync automatically during deployment.
+
+```
+CONFIGURATION STORAGE LAYERS:
+┌─────────────────────────────────────────────────────────────┐
+│ 1. API-BASED CONFIGURATION (PRIMARY)                       │
+│    Source: Admin Dashboard → API calls                     │
+│    Storage: /server/data/site-config-overrides.json        │
+│    Scope: ALL admin content (team, hero, colors, text)     │
+│    Sync: MANUAL via cURL API calls                         │
+└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│ 2. FILE-BASED CONFIGURATION                                │
+│    Source: Direct file uploads/edits                       │
+│    Storage: alt-text-storage.json, public/uploads/         │
+│    Scope: Alt text, uploaded images                        │  
+│    Sync: MANUAL via scp/rsync                              │
+└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│ 3. CODE-BASED FALLBACKS                                    │  
+│    Source: TypeScript files                                │
+│    Storage: shared/types/category-config.ts                │
+│    Scope: Default content when no admin settings exist     │
+│    Sync: Automatic via Docker (code deployment)            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### **🎯 MANDATORY DEPLOYMENT WORKFLOW**
+
+**LESSON LEARNED**: Docker deployment only syncs CODE, not CONFIGURATION DATA.
+
+```bash
+# STEP 1: Deploy code changes (handles layer 3 only)
+./deploy-production.sh
+
+# STEP 2: Sync API-based configuration (layer 1) 
+curl -s http://localhost:3000/api/site-config > /tmp/config-sync.json
+curl -X PATCH http://168.231.86.89:3000/api/site-config/bulk \
+  -H "Content-Type: application/json" \
+  -d @/tmp/config-sync.json
+
+# STEP 3: Sync file-based configuration (layer 2)
+# Alt text storage
+scp "alt-text-storage.json" slyfox-vps:/opt/sfweb/
+ssh slyfox-vps "docker cp /opt/sfweb/alt-text-storage.json sfweb-app:/app/"
+
+# Uploaded images  
+rsync -av "public/uploads/" slyfox-vps:/opt/sfweb/public/uploads/
+ssh slyfox-vps "cd /opt/sfweb && docker compose restart app"
+
+# STEP 4: Verify sync worked
+curl -s http://168.231.86.89:3000/api/site-config | jq '.about.team.members | length'
+# Should match development environment count
+```
+
+### **🔍 Configuration File Locations (COMPLETE LIST)**
+
+#### **Development Environment**
+```
+/Volumes/.../sfweb/
+├── server/data/site-config-overrides.json     ← PRIMARY: All admin content
+├── alt-text-storage.json                      ← Alt text for images  
+├── public/uploads/                            ← All uploaded images
+└── shared/types/category-config.ts            ← Fallback defaults
+```
+
+#### **Production Environment**  
+```
+/opt/sfweb/
+├── server/data/site-config-overrides.json     ← PRIMARY: All admin content
+├── alt-text-storage.json                      ← Alt text for images
+├── public/uploads/                            ← All uploaded images  
+└── shared/types/category-config.ts            ← Fallback defaults
+
+Container: sfweb-app
+├── /app/server/data/site-config-overrides.json  ← Volume mount
+├── /app/alt-text-storage.json                   ← Direct copy
+├── /app/public/uploads/                         ← Volume mount
+└── /app/shared/types/category-config.ts         ← Code deployment
+```
+
+### **🚨 Debugging Configuration Issues**
+
+**SYMPTOM**: Admin panel or live site shows defaults/old content after deployment
+
+**DIAGNOSIS COMMANDS**:
+```bash
+# Check what production API is serving
+curl -s http://168.231.86.89:3000/api/site-config | jq 'keys'
+
+# Compare with development
+curl -s http://localhost:3000/api/site-config | jq 'keys' 
+
+# Check specific sections (About page example)
+curl -s http://168.231.86.89:3000/api/site-config | jq '.about.team.members | length'
+curl -s http://localhost:3000/api/site-config | jq '.about.team.members | length'
+
+# Should return same numbers. If different = config not synced
+```
+
+**QUICK FIX**:
+```bash
+# Re-sync configuration from development to production
+curl -s http://localhost:3000/api/site-config > /tmp/fix-config.json
+curl -X PATCH http://168.231.86.89:3000/api/site-config/bulk \
+  -H "Content-Type: application/json" \
+  -d @/tmp/fix-config.json
+```
+
+---
+
 ## 🎯 How Site Management Works (Plain English)
 
 The SlyFox Studios website has an admin dashboard where you can change content, colors, and settings. When you make changes in the admin, they are saved to files on the server and immediately appear on the live website.
@@ -852,26 +969,137 @@ interface AboutConfig {
 
 ---
 
-## 📚 Related Files Reference
+## 📚 Complete Files Reference
 
-### Component Files
-- `/client/src/components/ui/gradient-picker.tsx` - Main reusable component
-- `/client/src/components/ui/text-color-picker.tsx` - Text color picker components
-- `/client/src/components/common/gradient-background.tsx` - CSS variable application
-- `/client/src/components/admin/page-settings/homepage-settings.tsx` - **CURRENT FORWARD MODEL** Homepage admin
-- `/client/src/components/admin/front-page-settings.tsx` - **⚠️ LEGACY** Portfolio admin
+### **Configuration Storage Files** ⭐ **CRITICAL**
 
-### Hook Files
-- `/client/src/hooks/use-gradient.tsx` - Gradient state management
-- `/client/src/hooks/use-site-config.tsx` - Site config data access
-- `/client/src/hooks/use-front-page-settings.tsx` - **⚠️ LEGACY** Portfolio settings access
+#### **Primary Configuration Files**
+- **`/server/data/site-config-overrides.json`** ⭐ **MAIN STORAGE** - All admin settings persist here
+  - Homepage (hero slides, services, testimonials, private gallery)
+  - Contact (business info, methods, hours, response times, service areas)
+  - About (hero, story, values, team, CTA)
+  - Portfolio (featured settings, layout controls)
+  - Photography categories (weddings, corporate, portraits, events, products, graduation)
+  - Gradients (section-specific colors for all sections)
 
-### Server Files
-- `/server/site-config-api.ts` - **PRIMARY CONFIGURATION FILE** - Contains all photography category settings that serve both admin dashboard and target pages
-- `/server/data/site-config-overrides.json` - Persistent configuration storage for homepage/contact settings
+- **`/shared/types/category-config.ts`** ⭐ **CATEGORY FALLBACKS** - Default content for category pages
+  - Contains `defaultCategoryPageConfig` structure
+  - Used when no saved category data exists
+  - **⚠️ CRITICAL**: Contains "Cape Town" references that should be "Durban"
 
-### Styling Files
-- `/client/src/index.css` - Section-specific CSS variable mappings (lines 1624+)
+#### **Backup & Recovery Files**
+- `/server/data/site-config-backup-*.json` - Deployment backups (automatic)
+- `/tmp/dev-config-backup.json` - Manual sync backups
+
+### **Admin Dashboard Components**
+
+#### **Current Forward Model** ✅ **RECOMMENDED PATTERN**
+- **`/client/src/components/admin/page-settings/homepage-settings.tsx`** - Homepage management
+  - Manages: Hero slides, services, testimonials, private gallery, company info
+  - Config Paths: `home.hero`, `home.servicesOverview`, `home.testimonials`, `home.privateGallery`
+
+- **`/client/src/components/admin/page-settings/contact-settings.tsx`** - Contact management
+  - Manages: Business info, contact methods, hours, response times, service areas
+  - Config Paths: `contact.business`, `contact.methods`, `contact.hours`, `contact.responseTimes`, `contact.serviceAreas`, `contact.emergency`
+
+- **`/client/src/components/admin/page-settings/about-settings.tsx`** - About page management
+  - Manages: Hero stats, story paragraphs, values, team members, CTA
+  - Config Paths: `about.hero`, `about.story`, `about.values`, `about.team`, `about.cta`
+
+- **`/client/src/components/admin/page-settings/category-page-settings.tsx`** - Category management
+  - Manages: All photography/videography category content
+  - Config Paths: `categoryPages.photography.[category]`, `categoryPages.videography.[category]`
+  - Fallbacks: Uses `/shared/types/category-config.ts`
+
+- **`/client/src/components/admin/page-settings/photography-settings.tsx`** - Photography coordinator
+  - Provides tab interface for 6 photography categories
+  - Delegates to CategoryPageSettings component
+
+- **`/client/src/components/admin/page-settings/portfolio-settings.tsx`** - Portfolio management
+  - Manages: Featured portfolio section settings
+  - Config Paths: `portfolio.featured`
+
+#### **Legacy Components** ⚠️ **MARKED FOR CLEANUP**
+- **`/client/src/components/admin/front-page-settings.tsx`** - Legacy portfolio admin
+  - Direct API calls instead of hooks
+  - Scheduled for refactoring to current pattern
+
+### **Target Page Components**
+
+#### **Homepage Target Components** (URL: `/`)
+- **`/client/src/components/sections/enhanced-hero-slider.tsx`**
+  - Config: `config.home.hero.slides[]` | Admin: HomepageSettings → Hero Slides tab
+- **`/client/src/components/sections/services-overview.tsx`**
+  - Config: `config.home.servicesOverview` | Admin: HomepageSettings → Services tab
+- **`/client/src/components/sections/testimonials.tsx`**
+  - Config: `config.home.testimonials` | Admin: HomepageSettings → Testimonials tab
+- **`/client/src/components/sections/client-gallery-access.tsx`**
+  - Config: `config.home.privateGallery` | Admin: HomepageSettings → Private Gallery tab
+- **`/client/src/components/sections/portfolio-showcase.tsx`**
+  - Config: `config.portfolio.featured` | Admin: PortfolioSettings
+- **`/client/src/components/sections/contact-section.tsx`**
+  - Config: `config.contact.*` | Admin: ContactSettings
+
+#### **Category Page Templates**
+- **`/client/src/pages/photography-category.tsx`** - Dynamic template for all photography categories
+  - Config: `config.categoryPages.photography.[category]` | Admin: CategoryPageSettings
+  - Fallbacks: `defaultCategoryPageConfig` from category-config.ts
+  - URLs: `/photography/weddings`, `/photography/corporate`, etc.
+
+- **Individual Category Pages**: `/client/src/pages/photography-{category}.tsx`
+  - weddings, corporate, portraits, events, products, graduation
+  - Each uses the dynamic template with category-specific data
+
+#### **About Page Components** (URL: `/about`)
+- **`/client/src/pages/about.tsx`** - About page template
+  - Config: `config.about.*` | Admin: AboutSettings
+  - Sections: Hero stats, story, values, team, CTA
+
+#### **Contact Page Components** (URL: `/contact`)
+- **`/client/src/pages/contact.tsx`** - Contact page template
+  - Config: `config.contact.*` | Admin: ContactSettings
+  - Integration: Contact form + reCAPTCHA + business info
+
+### **Component Architecture Files**
+
+#### **Core UI Components**
+- **`/client/src/components/ui/gradient-picker.tsx`** - Reusable Section Colors component
+- **`/client/src/components/ui/text-color-picker.tsx`** - Text color picker components
+- **`/client/src/components/common/gradient-background.tsx`** - CSS variable application
+- **`/client/src/components/shared/category-featured-grid.tsx`** - Category image grids
+
+#### **Hook Files**
+- **`/client/src/hooks/use-site-config.tsx`** ⭐ **PRIMARY HOOK** - All components use this
+- **`/client/src/hooks/use-gradient.tsx`** - Gradient state management
+- **`/client/src/hooks/use-front-page-settings.tsx`** ⚠️ **LEGACY** - Portfolio settings access
+
+#### **API & Server Files**
+- **`/server/site-config-api.ts`** - Configuration API endpoints and data merging
+- **`/server/routes.ts`** - Main API routing including `/api/site-config/bulk`
+- **`/server/storage.ts`** - File upload handling for images
+
+#### **Styling Files**
+- **`/client/src/index.css`** - Section-specific CSS variable mappings (lines 1624+)
+  - Maps GradientBackground sections to CSS variables
+  - Defines text color inheritance patterns
+
+### **Critical File Dependencies Map**
+
+```
+Admin Component → Config File → API → Target Page
+├── HomepageSettings → site-config-overrides.json → /api/site-config → Homepage sections
+├── ContactSettings → site-config-overrides.json → /api/site-config → Contact page
+├── AboutSettings → site-config-overrides.json → /api/site-config → About page
+├── CategoryPageSettings → site-config-overrides.json → /api/site-config → Category pages
+│                      ↳ category-config.ts (fallbacks)
+└── PortfolioSettings → site-config-overrides.json → /api/site-config → Portfolio section
+```
+
+### **Static Files** (No Admin Management)
+- `/pages/pricing.tsx` - Static pricing content
+- `/components/layout/footer.tsx` - Static footer content  
+- `/components/layout/navigation.tsx` - Static navigation structure
+- `/pages/photography.tsx`, `/pages/videography.tsx` - Static overview pages
 
 This guide serves as the complete reference for implementing and extending the site management system. All information is current as of the latest implementation and reflects the actual working methodology.
 

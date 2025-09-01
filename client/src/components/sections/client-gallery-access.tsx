@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import { List, Download, Share, Shield, Download as DownloadIcon, Share2 } from "lucide-react";
 import { GradientBackground } from "@/components/common/gradient-background";
 import { useSiteConfig } from "@/hooks/use-site-config";
+import { AuthButton } from "@/components/ui/auth-button";
+import { Link } from "wouter";
 
 const iconMap: Record<string, any> = {
   'secure-access': Shield,
@@ -77,19 +79,18 @@ export function ClientGalleryAccess() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button 
+              <AuthButton 
+                buttonText={primaryButton.text}
                 className="bg-salmon text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-salmon-muted transition-all duration-300 transform hover:scale-105"
-                onClick={() => window.location.href = primaryButton.action}
-              >
-                {primaryButton.text}
-              </Button>
-              <Button 
-                variant="outline"
-                className="border-2 border-border text-muted-foreground px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:border-gold hover:text-gold transition-all duration-300"
-                onClick={() => window.location.href = secondaryButton.action}
-              >
-                {secondaryButton.text}
-              </Button>
+              />
+              <Link href="/gallery/classic-car">
+                <Button 
+                  variant="outline"
+                  className="border-2 border-border text-muted-foreground px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:border-gold hover:text-gold transition-all duration-300"
+                >
+                  {secondaryButton.text}
+                </Button>
+              </Link>
             </div>
           </div>
 

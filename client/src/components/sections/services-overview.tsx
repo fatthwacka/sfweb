@@ -68,6 +68,12 @@ export function ServicesOverview() {
     if (lowerTitle.includes('photo') || lowerTitle.includes('portrait') || lowerTitle.includes('wedding')) {
       return '/photography';
     }
+    if (lowerTitle.includes('social') || lowerTitle.includes('media') || lowerTitle.includes('instagram') || lowerTitle.includes('tiktok')) {
+      return '/social-media';
+    }
+    if (lowerTitle.includes('web') || lowerTitle.includes('app') || lowerTitle.includes('development') || lowerTitle.includes('website')) {
+      return '/web-apps';
+    }
     // Default fallback based on service ID or first service type
     return service.services?.[0] ? `/services/${service.id}` : '/contact';
   };

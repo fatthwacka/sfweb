@@ -65,6 +65,22 @@ const NavigationComponent = memo(function Navigation() {
             )}>
               Videography
             </Link>
+            <Link href="/social-media" className={cn(
+              "transition-colors duration-300 font-barlow font-light",
+              location === '/social-media' 
+                ? "text-orange-200" 
+                : "text-blue-100 hover:text-cyan-bright"
+            )}>
+              Social Media
+            </Link>
+            <Link href="/web-apps" className={cn(
+              "transition-colors duration-300 font-barlow font-light",
+              location === '/web-apps' 
+                ? "text-orange-200" 
+                : "text-blue-100 hover:text-cyan-bright"
+            )}>
+              Web & Apps
+            </Link>
             <Link href="/about" className={cn(
               "transition-colors duration-300 font-barlow font-light",
               location === '/about' 
@@ -72,14 +88,6 @@ const NavigationComponent = memo(function Navigation() {
                 : "text-blue-100 hover:text-cyan-bright"
             )}>
               About
-            </Link>
-            <Link href="/pricing" className={cn(
-              "transition-colors duration-300 font-barlow font-light",
-              location === '/pricing' 
-                ? "text-orange-200" 
-                : "text-blue-100 hover:text-cyan-bright"
-            )}>
-              Pricing
             </Link>
             <Link href="/contact" className={cn(
               "transition-colors duration-300 font-barlow font-light",
@@ -114,8 +122,8 @@ const NavigationComponent = memo(function Navigation() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-border">
-            <div className="space-y-4">
+          <div className="lg:hidden py-4 px-4 border-t border-border bg-gray-800/85 backdrop-blur-sm">
+            <div className="space-y-4 text-right">
               <Link
                 href="/photography"
                 className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
@@ -131,18 +139,25 @@ const NavigationComponent = memo(function Navigation() {
                 Videography
               </Link>
               <Link
+                href="/social-media"
+                className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Social Media
+              </Link>
+              <Link
+                href="/web-apps"
+                className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Web & Apps
+              </Link>
+              <Link
                 href="/about"
                 className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 About
-              </Link>
-              <Link
-                href="/pricing"
-                className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Pricing
               </Link>
               <Link
                 href="/contact"

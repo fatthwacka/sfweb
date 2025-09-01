@@ -7,7 +7,172 @@ This comprehensive guide covers both development and production deployment for t
 | Environment | Command | Access | Purpose |
 |-------------|---------|--------|---------|
 | **Development** | `npm run docker:dev` | http://localhost:3000 | Local development with hot reload |
-| **Production** | `./deploy-production.sh` | http://168.231.86.89:3000 | VPS deployment with persistence |
+| **Production** | `./deploy-production.sh` | https://slyfox.co.za | Live website with SSL and domain |
+
+## 🔴 **CRITICAL: WE'RE LIVE - PRODUCTION SAFETY FIRST** ⭐ **READ THIS FIRST**
+
+**⚠️ LIVE WEBSITE WARNING: https://slyfox.co.za is accessible to real users - NO RISKY OPERATIONS**
+
+### **🛡️ LIVE-SAFE DEPLOYMENT RULES** 
+
+**❌ FORBIDDEN OPERATIONS (Site is live!):**
+```bash
+# NEVER use these commands - they WIPE LIVE DATA:
+docker compose down -v        # ❌ Deletes volumes = SITE BROKEN
+docker system prune -a -f     # ❌ Emergency only - corrupts config  
+docker volume rm config_data  # ❌ INSTANT SITE BREAKAGE
+```
+
+**✅ LIVE-SAFE OPERATIONS ONLY:**
+```bash
+# SAFE: Preserves all live site data
+docker compose down           # Graceful stop only
+docker compose up -d --build  # Rebuild preserving data
+./deploy-production.sh        # Uses safe methods
+```
+
+**🚨 MANDATORY BEFORE ANY CHANGE:**
+```bash
+# Backup live site state (30 seconds max downtime acceptable)
+curl -s https://slyfox.co.za/api/site-config > /tmp/live-backup-$(date +%Y%m%d-%H%M%S).json
+
+# Verify site is responding  
+curl -I https://slyfox.co.za  # Must return 200 before proceeding
+```
+
+## 🚨 **CRITICAL: CONFIGURATION SYNC PROCESS** ⭐ **ESSENTIAL FOR LIVE SITE**
+
+**⚠️ MANDATORY: Every deployment MUST include configuration sync to prevent LIVE SITE showing defaults**
+
+### **Root Cause of Recurring Issues**
+The primary cause of "settings not showing up after deployment" is **configuration data living in development but not being synced to production**. Code deployment alone is insufficient.
+
+### **The Complete Configuration System** 
+```
+Development Environment:
+├── Code changes → Git commits → Deployment script
+├── Configuration data → JSON files → MUST BE MANUALLY SYNCED
+└── Uploaded images → public/uploads/ → MUST BE MANUALLY SYNCED
+
+Production Environment:
+├── Code ✅ (Automated via git/docker)
+├── Configuration ❌ (MANUAL SYNC REQUIRED)  
+└── Images ❌ (MANUAL SYNC REQUIRED)
+```
+
+### **🔧 MANDATORY Pre-Deployment Configuration Sync**
+
+**Before running `./deploy-production.sh`, ALWAYS run these commands:**
+
+```bash
+# Step 1: Verify development environment is working
+curl -s http://localhost:3000/api/site-config | jq '.about.team.members | length'
+# Expected: > 0 (should show number of team members)
+
+# Step 2: Download complete development configuration  
+curl -s http://localhost:3000/api/site-config > /tmp/dev-config-sync.json
+
+# Step 3: Verify development config is complete
+cat /tmp/dev-config-sync.json | jq 'keys | length'
+# Expected: >= 5 (should have contact, home, about, portfolio, etc.)
+
+# Step 4: Push configuration to production (AFTER deployment)
+curl -X PATCH https://slyfox.co.za/api/site-config/bulk \
+  -H "Content-Type: application/json" \
+  -d @/tmp/dev-config-sync.json
+
+# Step 5: Verify production config sync success
+curl -s https://slyfox.co.za/api/site-config | jq '.about.team.members | length'
+# Expected: Should match development count
+```
+
+### **🗂️ ALL Configuration Files That Must Be Synced**
+
+#### **PRIMARY CONFIGURATION (API-Based)**
+- **Data**: Complete admin dashboard settings
+- **Source**: Development API endpoint `/api/site-config`
+- **Target**: Production API endpoint `/api/site-config/bulk`
+- **Sync Method**: cURL PATCH request (shown above)
+- **Contains**:
+  - Homepage (hero slides, services, testimonials)
+  - About page (team members, story, values)  
+  - Contact info (business details, hours, response times)
+  - Portfolio settings (featured layout, colors)
+  - Photography categories (weddings, corporate, etc.)
+  - Section colors and gradients
+
+#### **FILE-BASED CONFIGURATION**
+```bash
+# Alt-text storage
+scp "dev/alt-text-storage.json" slyfox-vps:/opt/sfweb/
+ssh slyfox-vps "docker cp /opt/sfweb/alt-text-storage.json sfweb-app:/app/"
+
+# Uploaded images directory  
+rsync -av "dev/public/uploads/" slyfox-vps:/opt/sfweb/public/uploads/
+ssh slyfox-vps "cd /opt/sfweb && docker compose restart app"
+
+# Category configuration fallbacks (if modified)
+scp "dev/shared/types/category-config.ts" slyfox-vps:/opt/sfweb/shared/types/
+ssh slyfox-vps "docker cp /opt/sfweb/shared/types/category-config.ts sfweb-app:/app/shared/types/"
+```
+
+### **🎯 Deployment Order (CRITICAL)**
+
+**WRONG ORDER (Causes Issues):**
+1. Deploy code changes → 2. Sync configuration ❌
+
+**CORRECT ORDER:**
+1. ✅ **Commit and push code changes**
+2. ✅ **Deploy code**: `./deploy-production.sh`  
+3. ✅ **Verify containers running**: `docker compose ps`
+4. ✅ **Sync configuration**: API + file sync commands above
+5. ✅ **Test live site**: Verify changes appear
+
+### **🚨 LIVE SITE EMERGENCY CONFIGURATION RECOVERY** ⚠️ **CRITICAL**
+
+**⚠️ WARNING: WE'RE LIVE - USERS ARE WATCHING! IMMEDIATE RESPONSE REQUIRED**
+
+If production shows defaults/old data after deployment:
+
+```bash
+# STEP 1: IMMEDIATE backup of current live state
+curl -s https://slyfox.co.za/api/site-config > /tmp/live-emergency-backup-$(date +%Y%m%d-%H%M%S).json
+
+# STEP 2: Quick fix - Re-sync development config
+curl -s http://localhost:3000/api/site-config > /tmp/emergency-sync.json
+curl -X PATCH https://slyfox.co.za/api/site-config/bulk \
+  -H "Content-Type: application/json" \
+  -d @/tmp/emergency-sync.json
+
+# STEP 3: IMMEDIATE verification (< 30 seconds)
+curl -s https://slyfox.co.za/api/site-config | jq '.about.team.members | length'
+curl -I https://slyfox.co.za  # Must return 200
+
+# STEP 4: Visual verification in browser
+# Open https://slyfox.co.za - check team section shows 5+ members
+```
+
+**🚨 LIVE SITE IMPACT**: Configuration loss = visitors see incomplete content
+
+### **✅ Success Verification Checklist**
+
+After every deployment, verify these work:
+- [ ] **Main site loads**: https://slyfox.co.za returns HTTP 200
+- [ ] **Admin panel works**: https://slyfox.co.za/admin shows admin interface  
+- [ ] **API serves data**: `curl https://slyfox.co.za/api/site-config | jq '.about.team.members | length'` shows > 0
+- [ ] **About page shows team**: Team section displays 5+ members with photos
+- [ ] **Admin panel shows data**: Site Management → About → Meet the Team shows populated team
+- [ ] **Recent images load**: New uploaded images accessible at `/uploads/filename`
+
+### **⚡ Why This Process is Required**
+
+**Technical Reason**: The application has two separate data systems:
+1. **Code** (React components, API logic) → Deployed via Docker
+2. **Configuration Data** (admin dashboard content) → Stored in JSON files + Docker volumes
+
+**Docker deployment rebuilds containers but does NOT sync configuration data between environments.**
+
+---
 
 ## 🖥️ Development Environment
 
@@ -249,35 +414,174 @@ ssh slyfox-vps "echo 'SSH Connection successful'"
 
 **Note**: The SSH key is pre-configured in Hostinger control panel as `claude-deploy`. The local private key must match this public key.
 
-## 🔧 Configuration Persistence Architecture
+## 🔧 Configuration Persistence Architecture ⭐ **CRITICAL FOR DEPLOYMENTS**
 
-### Development vs Production
+### **Complete Configuration System Overview**
 
-| Environment | Storage Method | Persistence | Access |
-|-------------|----------------|-------------|--------|
-| **Development** | Direct file mount | Immediate | `server/data/` |
-| **Production** | Docker volume | Across deployments | `config_data` volume |
+The SlyFox Studios website uses a comprehensive configuration management system that stores ALL admin dashboard settings in persistent files. Understanding this system is CRITICAL for successful deployments.
 
-### Site Management System
+### **Configuration Storage Architecture**
 
-**Features that persist in production:**
-- ✅ **Homepage Settings**: Hero slides, services, testimonials
-- ✅ **Contact Settings**: Business info, hours, contact methods
-- ✅ **Portfolio Settings**: Gallery layouts, colors, spacing
-- ✅ **Real-time Updates**: Changes reflect immediately
-- ✅ **Deployment Survival**: Settings persist across container rebuilds
+| Environment | Primary Storage | Backup Storage | API Access | Persistence Method |
+|-------------|----------------|-----------------|------------|-------------------|
+| **Development** | `server/data/site-config-overrides.json` | Manual backups | `/api/site-config/bulk` (PATCH) | Direct file mount |
+| **Production** | `config_data` volume → `/app/server/data/site-config-overrides.json` | Auto deployment backups | `/api/site-config/bulk` (PATCH) | Docker volume |
 
-### Configuration Files Structure
+### **All Configuration Files in Production**
 
+#### **PRIMARY CONFIGURATION STORAGE** ⭐
+- **File**: `/app/server/data/site-config-overrides.json` (inside container)
+- **Volume**: `config_data` Docker volume (persistent storage)
+- **Contains**: ALL admin dashboard settings including:
+  ```json
+  {
+    "contact": {
+      "business": { "name", "phone", "email", "address", "whatsapp" },
+      "methods": [ /* contact cards */ ],
+      "hours": { "monday-sunday" },
+      "responseTimes": { "email", "whatsapp", "phone" },
+      "serviceAreas": { "primary", "extended", "destination" },
+      "emergency": { "title", "subtitle", "contacts" }
+    },
+    "home": {
+      "hero": { "slides": [ /* hero slides */ ] },
+      "servicesOverview": { /* services section */ },
+      "testimonials": { "items": [ /* testimonials */ ] },
+      "privateGallery": { /* private gallery section */ }
+    },
+    "about": {
+      "hero": { /* about stats */ },
+      "story": { /* paragraphs */ },
+      "values": { /* values array */ },
+      "team": { "members": [ /* team profiles */ ] },
+      "cta": { /* call-to-action */ }
+    },
+    "portfolio": { "featured": { /* portfolio settings */ } },
+    "categoryPages": {
+      "photography": {
+        "weddings": { /* complete wedding page */ },
+        "corporate": { /* complete corporate page */ },
+        "portraits": { /* complete portraits page */ },
+        "events": { /* complete events page */ },
+        "products": { /* complete products page */ },
+        "graduation": { /* complete graduation page */ }
+      }
+    },
+    "gradients": {
+      "services": { /* colors */ },
+      "testimonials": { /* colors */ },
+      "contact": { /* colors */ },
+      "privateGallery": { /* colors */ },
+      "portfolio": { /* colors */ }
+    }
+  }
+  ```
+
+#### **FALLBACK CONFIGURATION FILES**
+- **File**: `/shared/types/category-config.ts`
+- **Purpose**: Default content when no admin settings exist
+- **Critical Issue**: Contains "Cape Town" references instead of "Durban"
+- **Used By**: Category pages (photography/videography) when no saved data
+
+#### **DEPLOYMENT BACKUP FILES**
+- **Pattern**: `/opt/sfweb-backup-YYYYMMDD-HHMMSS/site-config-overrides.json`
+- **Created By**: `deploy-production.sh` script automatically
+- **Purpose**: Recovery point before each deployment
+
+### **All Admin Dashboard Components → Configuration Mappings**
+
+| Admin Component | Config File Path | Admin UI Location | Target Pages |
+|----------------|------------------|-------------------|--------------|
+| **HomepageSettings** | `home.*` | Admin → Site Management → Homepage | Homepage sections |
+| **ContactSettings** | `contact.*` | Admin → Site Management → Contact | Contact page + homepage contact |
+| **AboutSettings** | `about.*` | Admin → Site Management → About | About page sections |
+| **PortfolioSettings** | `portfolio.featured` | Admin → Site Management → Portfolio | Homepage portfolio section |
+| **CategoryPageSettings** | `categoryPages.photography.*` | Admin → Photography Page Settings | `/photography/*` pages |
+| **GradientPickers** | `gradients.*` | All admin components | Section background colors |
+
+### **Site Management Features That Persist**
+
+**✅ FULL PERSISTENCE (Survives Deployments):**
+- **Homepage Settings**: Hero slides with images, titles, subtitles, CTAs
+- **Services Section**: Headlines, descriptions, service cards, colors
+- **Testimonials**: Customer reviews, ratings, names, photos, colors
+- **Private Gallery**: Section content, features, buttons, colors
+- **Contact Information**: Business name, phone, email, address, WhatsApp
+- **Contact Methods**: Contact cards with icons, details, actions
+- **Business Hours**: Complete schedule with display formatting
+- **Response Times**: Email, WhatsApp, phone response expectations
+- **Service Areas**: Primary, extended, destination service areas
+- **Emergency Contacts**: Title, subtitle, all contact numbers
+- **About Page**: Hero stats, story paragraphs, values, team profiles, CTA
+- **Photography Categories**: Complete content for weddings, corporate, portraits, events, products, graduation
+- **Portfolio Settings**: Featured gallery layout, colors, spacing
+- **Section Colors**: Background gradients and text colors for all sections
+
+**✅ REAL-TIME UPDATES**: All changes reflect immediately on live website
+**✅ DEPLOYMENT SURVIVAL**: Settings persist through container rebuilds and deployments
+
+### **Configuration Sync Between Environments**
+
+#### **Development → Production Sync Process**
+```bash
+# 1. Backup production config
+curl -s http://168.231.86.89:3000/api/site-config > /tmp/production-backup.json
+
+# 2. Get development config
+curl -s http://localhost:3000/api/site-config > /tmp/dev-config.json
+
+# 3. Push development config to production
+curl -X PATCH http://168.231.86.89:3000/api/site-config/bulk \
+  -H "Content-Type: application/json" \
+  -d @/tmp/dev-config.json
+
+# 4. Verify sync success
+curl -s http://168.231.86.89:3000/api/site-config | jq '.contact.business.phone'
 ```
-Production Container: /app/server/data/
-├── site-config-overrides.json    # Site management settings
-└── [automatic backups during deployment]
 
-Docker Volume: config_data
-├── Persistent across container rebuilds
-├── Backed up during deployments
-└── Atomic writes prevent corruption
+#### **Configuration Drift Detection**
+```bash
+# Compare contact info (common drift area)
+echo "=== DEVELOPMENT ===" && curl -s http://localhost:3000/api/site-config | jq '.contact.business.phone,.contact.business.address.displayText'
+echo "=== PRODUCTION ===" && curl -s http://168.231.86.89:3000/api/site-config | jq '.contact.business.phone,.contact.business.address.displayText'
+
+# Compare homepage hero slides count
+echo "DEV Hero Slides:" && curl -s http://localhost:3000/api/site-config | jq '.home.hero.slides | length'
+echo "PROD Hero Slides:" && curl -s http://168.231.86.89:3000/api/site-config | jq '.home.hero.slides | length'
+```
+
+### **Configuration Loss Prevention** 🚨 **CRITICAL**
+
+#### **Why Configuration Loss Happens**
+1. **Nuclear deployment** with `-v` flag wipes Docker volumes
+2. **Development/Production drift** - environments get out of sync
+3. **Failed deployments** that corrupt configuration files
+4. **Manual changes** that aren't properly backed up
+
+#### **MANDATORY Configuration Backup During Deployments**
+The `deploy-production.sh` script automatically:
+1. **Backs up existing config** before any changes
+2. **Preserves config volume** during normal deployments  
+3. **Provides recovery commands** if nuclear option needed
+
+#### **Emergency Recovery Process**
+```bash
+# If admin dashboard shows defaults instead of custom content:
+
+# Step 1: Check if config file exists
+ssh slyfox-vps "docker exec sfweb-app ls -la /app/server/data/"
+
+# Step 2: If missing, restore from backup
+ssh slyfox-vps "cp /opt/sfweb-backup-[LATEST]/site-config-overrides.json /opt/sfweb/server/data/"
+
+# Step 3: If backup also missing, restore from development
+curl -s http://localhost:3000/api/site-config > /tmp/dev-config.json
+curl -X PATCH http://168.231.86.89:3000/api/site-config/bulk \
+  -H "Content-Type: application/json" \
+  -d @/tmp/dev-config.json
+
+# Step 4: Verify recovery
+curl -s http://168.231.86.89:3000/api/site-config | jq '.contact.business.name'
 ```
 
 ## 🚨 If Deployment Fails (FIRST AID)
@@ -288,26 +592,44 @@ Docker Volume: config_data
 - Application returns HTTP 500 instead of 200
 - Logs show: `Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/node_modules/vite/dist/node/...`
 
-**Immediate Fix (DOCUMENTED - TESTED 2025-08-31)**:
-```bash
-# Step 1: Nuclear option - clean everything
-ssh slyfox-vps "cd /opt/sfweb && docker compose down -v"
-ssh slyfox-vps "docker system prune -a -f"
+**🚨 EMERGENCY ONLY - NUCLEAR OPTION (LIVE SITE WILL BE DOWN):**
 
-# Step 2: Rebuild from scratch 
+**⚠️ CRITICAL WARNING: This BREAKS LIVE SITE for 3-5 minutes - Only use if site is already broken**
+
+```bash
+# ⚠️ BACKUP FIRST - THIS WIPES ALL DATA
+curl -s https://slyfox.co.za/api/site-config > /tmp/nuclear-backup-$(date +%Y%m%d-%H%M%S).json
+
+# 🚨 NUCLEAR OPTION - COMPLETE DESTRUCTION AND REBUILD
+ssh slyfox-vps "cd /opt/sfweb && docker compose down -v"  # ⚠️ WIPES VOLUMES
+ssh slyfox-vps "docker system prune -a -f"               # ⚠️ WIPES CACHE
+
+# Rebuild from scratch 
 ssh slyfox-vps "cd /opt/sfweb && docker compose up -d --build"
 
-# Step 3: Verify fix
-curl -s -o /dev/null -w '%{http_code}' http://168.231.86.89:3000
+# IMMEDIATE configuration recovery
+curl -X PATCH https://slyfox.co.za/api/site-config/bulk \
+  -H "Content-Type: application/json" \
+  -d @/tmp/nuclear-backup-*.json
+
+# Verify fix
+curl -s -o /dev/null -w '%{http_code}' https://slyfox.co.za
 # Expected: 200
 ```
+
+**💥 IMPACT**: 
+- **LIVE SITE DOWN**: 3-5 minutes complete outage
+- **DATA LOSS**: All volumes wiped (recovered from backup)
+- **USER EXPERIENCE**: Visitors see connection errors
 
 **Why This Works**: 
 - Completely removes corrupted Docker cache
 - Rebuilds all dependencies from scratch  
 - Prevents incremental build conflicts
 
-**Recovery Time**: ~3-5 minutes
+**⏱️ Downtime**: 3-5 minutes COMPLETE SITE OUTAGE
+
+**🚨 ONLY USE WHEN**: Site already completely broken (returns 500/no response)
 
 ---
 

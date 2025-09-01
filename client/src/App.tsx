@@ -66,6 +66,8 @@ import VideographyCategory from "@/pages/videography-category";
 import About from "@/pages/about";
 import Pricing from "@/pages/pricing";
 import Contact from "@/pages/contact";
+import SocialMedia from "@/pages/social-media";
+import WebApps from "@/pages/web-apps";
 import ClientGallery from "@/pages/client-gallery";
 import Dashboard from "@/pages/dashboard";
 import ClientDashboard from "@/pages/client-dashboard";
@@ -92,6 +94,8 @@ function Router() {
       <Route path="/photography/graduation" component={PhotographyGraduation} />
       <Route path="/videography" component={Videography} />
       <Route path="/videography/:category" component={VideographyCategory} />
+      <Route path="/social-media" component={SocialMedia} />
+      <Route path="/web-apps" component={WebApps} />
       <Route path="/about" component={About} />
       <Route path="/pricing" component={Pricing} />
       <Route path="/contact" component={Contact} />

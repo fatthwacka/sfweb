@@ -47,11 +47,66 @@ fi
 echo "✅ VPS connection and Docker verified"
 
 echo ""
+echo "🚨 Step 1.5: CRITICAL Infrastructure Verification"
+echo "================================================"
+
+# CRITICAL: Check if live domain is currently working
+echo "🌐 Testing LIVE DOMAIN (this is what users see):"
+if curl -s -o /dev/null -w "%{http_code}" https://slyfox.co.za | grep -q "200"; then
+    echo "✅ Live domain https://slyfox.co.za is responding (HTTP 200)"
+else
+    echo "⚠️  Live domain https://slyfox.co.za is not responding properly"
+    echo "   This could indicate Traefik routing issues"
+    read -p "   Continue anyway? (y/N): " continue_anyway
+    if [[ ! $continue_anyway =~ ^[Yy]$ ]]; then
+        echo "❌ Deployment aborted for safety"
+        exit 1
+    fi
+fi
+
+# Check if Traefik is running
+echo "🔧 Checking Traefik infrastructure:"
+if run_on_vps "docker ps | grep -q traefik"; then
+    echo "✅ Traefik container is running"
+    
+    # Check if SlyFox service is configured in Traefik
+    if run_on_vps "cd /root && docker compose config | grep -q slyfox"; then
+        echo "✅ SlyFox service is configured in Traefik"
+    else
+        echo "⚠️  SlyFox service NOT found in Traefik configuration"
+        echo "   This will cause live domain routing to fail"
+        read -p "   Continue anyway? (y/N): " continue_traefik
+        if [[ ! $continue_traefik =~ ^[Yy]$ ]]; then
+            echo "❌ Deployment aborted - fix Traefik configuration first"
+            exit 1
+        fi
+    fi
+else
+    echo "❌ Traefik container not running - live domain will not work"
+    read -p "   Continue anyway? (y/N): " continue_no_traefik
+    if [[ ! $continue_no_traefik =~ ^[Yy]$ ]]; then
+        echo "❌ Deployment aborted for safety"
+        exit 1
+    fi
+fi
+
+# Check Docker Compose command format
+echo "🐳 Verifying Docker Compose command format:"
+if run_on_vps "docker compose version" 2>/dev/null; then
+    echo "✅ Using 'docker compose' (new format)"
+else
+    echo "❌ 'docker compose' not available - this script will fail"
+    exit 1
+fi
+
+echo "✅ Infrastructure verification completed"
+
+echo ""
 echo "🛑 Step 2: Stop Current Production Services"
 echo "============================================"
 
 # Stop existing containers gracefully
-run_on_vps "cd $VPS_APP_DIR && docker-compose down || echo 'No containers to stop'"
+run_on_vps "cd $VPS_APP_DIR && docker compose down || echo 'No containers to stop'"
 
 echo "✅ Production services stopped"
 
@@ -123,7 +178,7 @@ echo "🏗️  Step 6: Build and Start Production Services"
 echo "==============================================="
 
 # Build and start containers
-run_on_vps "cd $VPS_APP_DIR && docker-compose up -d --build"
+run_on_vps "cd $VPS_APP_DIR && docker compose up -d --build"
 
 echo "⏳ Waiting for services to start..."
 sleep 30
@@ -133,7 +188,7 @@ if run_on_vps "docker ps | grep -q sfweb"; then
     echo "✅ Production containers started successfully"
 else
     echo "❌ Containers failed to start - checking logs..."
-    run_on_vps "cd $VPS_APP_DIR && docker-compose logs --tail=20"
+    run_on_vps "cd $VPS_APP_DIR && docker compose logs --tail=20"
     exit 1
 fi
 
@@ -162,8 +217,52 @@ echo "===================================="
 # Wait a bit more for full startup
 sleep 15
 
-# Test API endpoint
-echo "Testing site configuration API..."
+# CRITICAL: Test the LIVE domain first (what users actually see)
+echo "🚨 CRITICAL: Testing LIVE DOMAIN (what users see):"
+if curl -s -o /dev/null -w "%{http_code}" https://slyfox.co.za | grep -q "200"; then
+    echo "✅ SUCCESS: Live domain https://slyfox.co.za is working (HTTP 200)"
+    
+    # Test specific new pages deployed
+    echo "🆕 Testing newly deployed service pages:"
+    
+    if curl -s -o /dev/null -w "%{http_code}" https://slyfox.co.za/services/social-media | grep -q "200"; then
+        echo "✅ Social Media service page working"
+    else
+        echo "❌ Social Media service page NOT working"
+    fi
+    
+    if curl -s -o /dev/null -w "%{http_code}" https://slyfox.co.za/services/web-apps | grep -q "200"; then
+        echo "✅ Web Apps service page working"
+    else
+        echo "❌ Web Apps service page NOT working"
+    fi
+    
+else
+    echo "❌ CRITICAL FAILURE: Live domain https://slyfox.co.za NOT WORKING"
+    echo "   This means the deployment has FAILED - users cannot access the site"
+    echo "   Checking Traefik connectivity and server binding..."
+    
+    # Test if container is responding internally
+    if run_on_vps "curl -s -o /dev/null -w '%{http_code}' http://localhost:3000" | grep -q "200"; then
+        echo "   ➜ Container responds internally - likely Traefik routing issue"
+        echo "   ➜ Check: Traefik configuration, Docker networks, domain routing"
+    else
+        echo "   ➜ Container not responding internally - application startup issue"
+        echo "   ➜ Check: Server binding (should be 0.0.0.0:5000), DOCKER_ENV variable"
+    fi
+    
+    echo ""
+    echo "🔧 IMMEDIATE DEBUGGING STEPS:"
+    echo "1. Check Traefik logs: ssh $VPS_HOST 'docker logs traefik --tail 20'"
+    echo "2. Check app logs: ssh $VPS_HOST 'cd $VPS_APP_DIR && docker logs sfweb-app --tail 20'"
+    echo "3. Check networks: ssh $VPS_HOST 'docker network ls && docker inspect sfweb-app | grep -A 10 Networks'"
+    echo "4. Check binding: ssh $VPS_HOST 'docker exec sfweb-app netstat -tulpn | grep 5000'"
+    
+    exit 1
+fi
+
+# Test API endpoint (secondary check)
+echo "📡 Testing site configuration API..."
 if run_on_vps "curl -s -f http://localhost:3000/api/site-config | head -10"; then
     echo "✅ Site configuration API responding"
 else
@@ -176,7 +275,7 @@ echo ""
 echo "📊 Step 9: Production Status Summary"
 echo "===================================="
 
-run_on_vps "cd $VPS_APP_DIR && docker-compose ps"
+run_on_vps "cd $VPS_APP_DIR && docker compose ps"
 run_on_vps "docker stats --no-stream --format 'table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}'"
 
 echo ""
@@ -184,8 +283,9 @@ echo "🎉 Deployment Complete!"
 echo "======================"
 echo ""
 echo "🔗 Production URLs:"
-echo "   Main Site: http://$VPS_HOST:3000"
-echo "   Admin Panel: http://$VPS_HOST:3000/admin"
+echo "   🌐 LIVE SITE (users): https://slyfox.co.za"
+echo "   🛠️  Admin Panel: https://slyfox.co.za/admin"
+echo "   🔧 Direct Access: http://168.231.86.89:3000 (for debugging)"
 echo ""
 echo "📁 Important Paths:"
 echo "   Application: $VPS_APP_DIR"
@@ -193,9 +293,11 @@ echo "   Backup: $BACKUP_DIR"
 echo "   Logs: docker logs sfweb-app"
 echo ""
 echo "🔧 Management Commands:"
-echo "   View Logs: ssh $VPS_USER@$VPS_HOST 'cd $VPS_APP_DIR && docker-compose logs -f'"
-echo "   Restart: ssh $VPS_USER@$VPS_HOST 'cd $VPS_APP_DIR && docker-compose restart'"
-echo "   Stop: ssh $VPS_USER@$VPS_HOST 'cd $VPS_APP_DIR && docker-compose down'"
+echo "   View Logs: ssh $VPS_USER@$VPS_HOST 'cd $VPS_APP_DIR && docker compose logs -f'"
+echo "   Restart: ssh $VPS_USER@$VPS_HOST 'cd $VPS_APP_DIR && docker compose restart'"
+echo "   Stop: ssh $VPS_USER@$VPS_HOST 'cd $VPS_APP_DIR && docker compose down'"
 echo ""
 echo "✨ Configuration management should now work correctly!"
-echo "   Test at: http://$VPS_HOST:3000/admin → Site Management"
+echo "   🎯 Test at: https://slyfox.co.za/admin → Site Management"
+echo ""
+echo "🚨 CRITICAL: Always verify https://slyfox.co.za works before considering deployment successful!"

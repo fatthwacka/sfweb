@@ -267,6 +267,7 @@ export type InsertLocalSiteAsset = z.infer<typeof insertLocalSiteAssetSchema>;
 
 // Classification constants
 export const SHOOT_TYPES = [
+  'birthday',
   'commercial',
   'corporate', 
   'engagement',
@@ -277,9 +278,9 @@ export const SHOOT_TYPES = [
   'maternity',
   'matric dance',
   'newborn',
-  'other',
   'portrait',
   'product',
+  'studio',
   'wedding'
 ] as const;
 

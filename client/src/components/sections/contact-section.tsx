@@ -223,6 +223,19 @@ export function ContactSection() {
               >
                 {contactMutation.isPending ? "Sending..." : "Send Message"}
               </Button>
+              
+              {/* reCAPTCHA attribution text - required when badge is hidden */}
+              <div className="mt-3 text-xs text-muted-foreground text-center">
+                This site is protected by reCAPTCHA and the Google{' '}
+                <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+                  Privacy Policy
+                </a>{' '}
+                and{' '}
+                <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+                  Terms of Service
+                </a>{' '}
+                apply.
+              </div>
             </form>
           </div>
 

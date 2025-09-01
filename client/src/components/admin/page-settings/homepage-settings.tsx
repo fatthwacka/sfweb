@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Upload, Save, AlertCircle, ChevronUp, ChevronDown, X, Plus } from 'lucide-react';
+import { Upload, Save, AlertCircle, ChevronUp, ChevronDown, X, Plus, FolderOpen } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -123,6 +125,20 @@ export function HomepageSettings() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [config, setConfig] = useState<SiteConfig>(defaultSiteConfig);
   const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
+  const [isImageBrowserOpen, setIsImageBrowserOpen] = useState(false);
+  const [browserCallback, setBrowserCallback] = useState<((path: string) => void) | null>(null);
+
+  // Fetch ALL images from ALL folders for image browser
+  const { data: allImages, isLoading: imagesLoading } = useQuery({
+    queryKey: ['all-site-images'],
+    queryFn: async () => {
+      const response = await fetch('/api/browse-images');
+      if (!response.ok) {
+        throw new Error('Failed to fetch images');
+      }
+      return response.json();
+    }
+  });
 
   // Fetch current site config
   const { data: siteConfig, isLoading } = useQuery({
@@ -587,6 +603,20 @@ export function HomepageSettings() {
     });
   };
 
+  // Handle image browser selection
+  const handleBrowseImages = (onSelectCallback: (path: string) => void) => {
+    setBrowserCallback(() => onSelectCallback);
+    setIsImageBrowserOpen(true);
+  };
+
+  const handleImageSelect = (imagePath: string) => {
+    if (browserCallback) {
+      browserCallback(imagePath);
+    }
+    setIsImageBrowserOpen(false);
+    setBrowserCallback(null);
+  };
+
   // Image thumbnail component
   const ImageThumbnail = ({ imagePath, onPathChange }: { 
     imagePath: string; 
@@ -662,51 +692,103 @@ export function HomepageSettings() {
     };
 
     return (
-      <div 
-        className={`relative group ${isDragOver ? 'scale-105' : ''}`}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-      >
-        <div className={`w-20 h-20 rounded-lg overflow-hidden bg-gray-100 border-2 transition-all duration-200 ${
-          isDragOver ? 'border-salmon bg-salmon/10' : 'border-gray-200'
-        }`}>
-          {previewUrl ? (
-            <img
-              src={previewUrl}
-              alt="Hero slide thumbnail"
-              className="w-full h-full object-cover"
-              onError={() => setPreviewUrl('')}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400">
-              <Upload size={24} />
-            </div>
-          )}
-          {isUploading && (
-            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-            </div>
-          )}
-          {isDragOver && (
-            <div className="absolute inset-0 bg-salmon bg-opacity-20 flex items-center justify-center">
-              <Upload className="text-salmon" size={20} />
-            </div>
-          )}
+      <div className="space-y-1">
+        <div 
+          className={`relative group ${isDragOver ? 'scale-105' : ''}`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <div className={`w-20 h-20 rounded-lg overflow-hidden bg-gray-100 border-2 transition-all duration-200 ${
+            isDragOver ? 'border-salmon bg-salmon/10' : 'border-gray-200'
+          }`}>
+            {previewUrl ? (
+              <img
+                src={previewUrl}
+                alt="Hero slide thumbnail"
+                className="w-full h-full object-cover"
+                onError={() => setPreviewUrl('')}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-400">
+                <Upload size={24} />
+              </div>
+            )}
+            {isUploading && (
+              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+              </div>
+            )}
+            {isDragOver && (
+              <div className="absolute inset-0 bg-salmon bg-opacity-20 flex items-center justify-center">
+                <Upload className="text-salmon" size={20} />
+              </div>
+            )}
+          </div>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFileUpload(file);
+            }}
+            className="absolute inset-0 opacity-0 cursor-pointer"
+            disabled={isUploading}
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 rounded-lg flex items-center justify-center">
+            <Upload className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" size={16} />
+          </div>
         </div>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) handleFileUpload(file);
-          }}
-          className="absolute inset-0 opacity-0 cursor-pointer"
-          disabled={isUploading}
-        />
-        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 rounded-lg flex items-center justify-center">
-          <Upload className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" size={16} />
-        </div>
+        
+        {/* Icon-based Image Management Buttons */}
+        <TooltipProvider>
+          <div className="flex justify-center gap-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  type="button"
+                  size="icon"
+                  variant="outline" 
+                  onClick={() => handleBrowseImages(onPathChange)}
+                  className="h-6 w-6 border-slate-500 text-white hover:bg-slate-600"
+                >
+                  <FolderOpen className="w-3 h-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="font-semibold text-sm">Browse existing images</p>
+              </TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  type="button"
+                  size="icon"
+                  variant="outline" 
+                  onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.onchange = (e) => {
+                      const files = (e.target as HTMLInputElement).files;
+                      if (files && files[0]) {
+                        handleFileUpload(files[0]);
+                      }
+                    };
+                    input.click();
+                  }}
+                  className="h-6 w-6 border-slate-500 text-white hover:bg-slate-600"
+                >
+                  <Upload className="w-3 h-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="font-semibold text-sm">Upload new image</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
       </div>
     );
   };
@@ -1565,6 +1647,60 @@ export function HomepageSettings() {
         </TabsContent>
         </Tabs>
       </CardContent>
+
+      {/* Image Browser Dialog */}
+      <Dialog open={isImageBrowserOpen} onOpenChange={setIsImageBrowserOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FolderOpen className="w-5 h-5" />
+              Browse Site Images
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto">
+            {imagesLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              </div>
+            ) : allImages && Object.keys(allImages).length > 0 ? (
+              <div className="space-y-4">
+                {Object.entries(allImages).map(([folderName, images]) => (
+                  <div key={folderName}>
+                    <h3 className="font-medium text-sm mb-2 flex items-center gap-2">
+                      <FolderOpen className="w-4 h-4" />
+                      {folderName} ({(images as string[]).length} images)
+                    </h3>
+                    <div className="grid grid-cols-6 gap-2">
+                      {(images as string[]).map((imagePath, index) => (
+                        <div 
+                          key={index}
+                          className="relative aspect-square cursor-pointer rounded overflow-hidden hover:ring-2 hover:ring-blue-500 transition-all"
+                          onClick={() => handleImageSelect(imagePath)}
+                        >
+                          <img
+                            src={`${imagePath}?t=${Date.now()}`}
+                            alt={`${folderName} ${index + 1}`}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-600">No images found</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Upload some images first or check your image folders
+                </p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </Card>
   );
 }

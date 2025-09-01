@@ -10,7 +10,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { LogOut, User, Settings, Shield } from "lucide-react";
 import { useLocation } from "wouter";
 
-export function AuthButton() {
+interface AuthButtonProps {
+  buttonText?: string;
+  className?: string;
+}
+
+export function AuthButton({ buttonText = "Account", className }: AuthButtonProps) {
   const { user, login, logout } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
@@ -103,8 +108,8 @@ export function AuthButton() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-salmon text-white hover:bg-salmon-muted">
-          Account
+        <Button className={className || "bg-salmon text-white hover:bg-salmon-muted"}>
+          {buttonText}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">

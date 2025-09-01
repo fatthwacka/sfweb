@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SHOOT_TYPES } from '@shared/schema';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -37,6 +39,7 @@ interface BasicInfoSectionProps {
   setClientReassignDialogOpen: (open: boolean) => void;
   shootId: string;
   toast: any;
+  images: any[];
 }
 
 export function BasicInfoSection({ 
@@ -46,7 +49,8 @@ export function BasicInfoSection({
   clientReassignDialogOpen, 
   setClientReassignDialogOpen, 
   shootId,
-  toast 
+  toast,
+  images 
 }: BasicInfoSectionProps) {
   const [isExpanded, setIsExpanded] = React.useState(false);
   
@@ -55,6 +59,44 @@ export function BasicInfoSection({
     successMessage: "Basic shoot information saved successfully!",
     errorMessage: "Failed to save basic information"
   });
+
+  const queryClient = useQueryClient();
+
+  // Classification update mutation
+  const classificationMutation = useMutation({
+    mutationFn: (classification: string) => 
+      apiRequest('PATCH', `/api/shoots/${shootId}/images/classification`, { classification }),
+    onSuccess: (response) => {
+      toast({
+        title: "Success", 
+        description: response.message || "Classification updated successfully",
+        duration: 2000
+      });
+      // Refresh image data
+      queryClient.invalidateQueries({ queryKey: ['/api/images'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Classification Update Failed",
+        description: error.message || "Failed to update image classifications",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Debounced classification update (1000ms)
+  const debouncedUpdateClassification = useMemo(() => {
+    let timeoutId: NodeJS.Timeout;
+    return (classification: string) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        if (images.length > 0) {
+          classificationMutation.mutate(classification);
+        }
+      }, 1000);
+    };
+  }, [classificationMutation, images.length]);
 
   // Enhanced setEditableShoot that triggers auto-save
   const setEditableShootWithAutoSave = React.useCallback((updateFn: (prev: any) => any, immediate = false) => {
@@ -76,6 +118,9 @@ export function BasicInfoSection({
         seoTags: newShoot.seoTags?.trim()
       };
       
+      // Check if shootType changed for classification update
+      const shootTypeChanged = prev.shootType !== newShoot.shootType;
+      
       // Trigger auto-save
       if (immediate) {
         saveImmediately(data);
@@ -83,9 +128,15 @@ export function BasicInfoSection({
         debouncedSave(data);
       }
       
+      // Trigger classification update if shootType changed
+      if (shootTypeChanged && newShoot.shootType && images.length > 0) {
+        const classification = newShoot.shootType.toLowerCase();
+        debouncedUpdateClassification(classification);
+      }
+      
       return newShoot;
     });
-  }, [setEditableShoot, debouncedSave, saveImmediately]);
+  }, [setEditableShoot, debouncedSave, saveImmediately, images.length, debouncedUpdateClassification]);
 
   // Save status indicator component
   const SaveStatusIndicator = () => {

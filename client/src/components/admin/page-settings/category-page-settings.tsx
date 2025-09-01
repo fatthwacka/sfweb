@@ -303,51 +303,45 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
     (category.endsWith('s') ? '' : category === 'photography' ? ' Photography' : ' Videography');
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold text-white">
-            {categoryDisplayName} Page Settings
-          </h2>
-          <p className="text-muted-foreground mt-1">
-            Manage all sections of your {category} {type} page
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {hasUnsavedChanges && (
-            <div className="flex items-center text-yellow-400 text-sm">
-              <AlertCircle className="w-4 h-4 mr-1" />
-              Unsaved changes
-            </div>
-          )}
-          <Button 
-            onClick={handleSave} 
-            disabled={!hasUnsavedChanges || saveMutation.isPending}
-            className="btn-salmon"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
-          </Button>
-        </div>
-      </div>
-
-      <Tabs defaultValue="hero" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="hero">Hero</TabsTrigger>
-          <TabsTrigger value="overview">Service Overview</TabsTrigger>
-          <TabsTrigger value="packages">Packages</TabsTrigger>
-          <TabsTrigger value="work">Recent Work</TabsTrigger>
-          <TabsTrigger value="seo">SEO Content</TabsTrigger>
-        </TabsList>
+    <div className="max-w-7xl mx-auto space-y-6">
+      <div className="bg-gradient-to-br from-purple-900/30 to-purple-800/20 border border-purple-700/30 rounded-lg p-6">
+        <Tabs defaultValue="hero" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5 bg-slate-800/50 border border-slate-600">
+            <TabsTrigger value="hero" className="data-[state=active]:bg-secondary data-[state=active]:font-semibold" style={{color: '#374151'}}>Hero</TabsTrigger>
+            <TabsTrigger value="overview" className="data-[state=active]:bg-secondary data-[state=active]:font-semibold" style={{color: '#374151'}}>Service Overview</TabsTrigger>
+            <TabsTrigger value="packages" className="data-[state=active]:bg-secondary data-[state=active]:font-semibold" style={{color: '#374151'}}>Packages</TabsTrigger>
+            <TabsTrigger value="work" className="data-[state=active]:bg-secondary data-[state=active]:font-semibold" style={{color: '#374151'}}>Recent Work</TabsTrigger>
+            <TabsTrigger value="seo" className="data-[state=active]:bg-secondary data-[state=active]:font-semibold" style={{color: '#374151'}}>SEO Content</TabsTrigger>
+          </TabsList>
 
         {/* Hero Section */}
         <TabsContent value="hero">
           <Card>
             <CardHeader>
-              <CardTitle>Hero Section</CardTitle>
-              <CardDescription>
-                Manage the full-screen hero image and overlay text
-              </CardDescription>
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle>Hero Section</CardTitle>
+                  <CardDescription>
+                    Manage the full-screen hero image and overlay text
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-3">
+                  {hasUnsavedChanges && (
+                    <div className="flex items-center text-yellow-400 text-sm">
+                      <AlertCircle className="w-4 h-4 mr-1" />
+                      Unsaved changes
+                    </div>
+                  )}
+                  <Button 
+                    onClick={handleSave} 
+                    disabled={!hasUnsavedChanges || saveMutation.isPending}
+                    className="btn-salmon"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Hero Image Upload */}
@@ -408,6 +402,7 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
                   </div>
                 </div>
               </div>
+
             </CardContent>
           </Card>
         </TabsContent>
@@ -416,10 +411,30 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
         <TabsContent value="overview">
           <Card>
             <CardHeader>
-              <CardTitle>Service Overview Section</CardTitle>
-              <CardDescription>
-                Manage the service description and feature list with section colors
-              </CardDescription>
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle>Service Overview Section</CardTitle>
+                  <CardDescription>
+                    Manage the service description and feature list with section colors
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-3">
+                  {hasUnsavedChanges && (
+                    <div className="flex items-center text-yellow-400 text-sm">
+                      <AlertCircle className="w-4 h-4 mr-1" />
+                      Unsaved changes
+                    </div>
+                  )}
+                  <Button 
+                    onClick={handleSave} 
+                    disabled={!hasUnsavedChanges || saveMutation.isPending}
+                    className="btn-salmon"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Section Colors */}
@@ -526,10 +541,30 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
         <TabsContent value="packages">
           <Card>
             <CardHeader>
-              <CardTitle>Pricing Packages Section</CardTitle>
-              <CardDescription>
-                Manage pricing tiers with detailed features and section colors
-              </CardDescription>
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle>Pricing Packages Section</CardTitle>
+                  <CardDescription>
+                    Manage pricing tiers with detailed features and section colors
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-3">
+                  {hasUnsavedChanges && (
+                    <div className="flex items-center text-yellow-400 text-sm">
+                      <AlertCircle className="w-4 h-4 mr-1" />
+                      Unsaved changes
+                    </div>
+                  )}
+                  <Button 
+                    onClick={handleSave} 
+                    disabled={!hasUnsavedChanges || saveMutation.isPending}
+                    className="btn-salmon"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Section Colors */}
@@ -664,6 +699,7 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
                   ))}
                 </div>
               </div>
+
             </CardContent>
           </Card>
         </TabsContent>
@@ -672,10 +708,30 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
         <TabsContent value="work">
           <Card>
             <CardHeader>
-              <CardTitle>Recent Work Gallery</CardTitle>
-              <CardDescription>
-                Manage gallery images and section styling
-              </CardDescription>
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle>Recent Work Gallery</CardTitle>
+                  <CardDescription>
+                    Manage gallery images and section styling
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-3">
+                  {hasUnsavedChanges && (
+                    <div className="flex items-center text-yellow-400 text-sm">
+                      <AlertCircle className="w-4 h-4 mr-1" />
+                      Unsaved changes
+                    </div>
+                  )}
+                  <Button 
+                    onClick={handleSave} 
+                    disabled={!hasUnsavedChanges || saveMutation.isPending}
+                    className="btn-salmon"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Section Colors */}
@@ -763,6 +819,7 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
                   </div>
                 )}
               </div>
+
             </CardContent>
           </Card>
         </TabsContent>
@@ -771,10 +828,30 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
         <TabsContent value="seo">
           <Card>
             <CardHeader>
-              <CardTitle>SEO Content Section</CardTitle>
-              <CardDescription>
-                Manage rich text content for search optimization
-              </CardDescription>
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle>SEO Content Section</CardTitle>
+                  <CardDescription>
+                    Manage rich text content for search optimization
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-3">
+                  {hasUnsavedChanges && (
+                    <div className="flex items-center text-yellow-400 text-sm">
+                      <AlertCircle className="w-4 h-4 mr-1" />
+                      Unsaved changes
+                    </div>
+                  )}
+                  <Button 
+                    onClick={handleSave} 
+                    disabled={!hasUnsavedChanges || saveMutation.isPending}
+                    className="btn-salmon"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Section Colors */}
@@ -912,10 +989,12 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
                   </div>
                 </div>
               </Card>
+
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
+        </Tabs>
+      </div>
     </div>
   );
 }

@@ -43,6 +43,11 @@
   --color-secondary: var(--cyan);
 }
 
+/* Hide reCAPTCHA badge - Google allows this with proper attribution */
+.grecaptcha-badge {
+  visibility: hidden !important;
+}
+
 /* Admin panel gradient card class */
 .admin-gradient-card {
   background: linear-gradient(135deg, 
@@ -1377,7 +1382,7 @@
 
 /* === REUSABLE SLIDER CONTROL STYLING === */
 .gallery-slider-container {
-  max-width: calc(50% - 8px);
+  width: 100%;
   border: 1px solid hsl(220, 13%, 25%);
   background: linear-gradient(to right, hsl(220, 13%, 18%), hsl(220, 13%, 15%));
   border-radius: 0.5rem;

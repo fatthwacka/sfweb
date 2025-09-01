@@ -47,25 +47,15 @@ export function PhotographySettings() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Camera className="w-8 h-8 text-salmon" />
-        <div>
-          <h1 className="text-3xl font-bold text-white">Photography Page Settings</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage all photography category pages with complete section control
-          </p>
-        </div>
-      </div>
-
       <Tabs value={activeCategory} onValueChange={setActiveCategory} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-6 bg-slate-800/50 border border-slate-600">
           {photographyCategories.map((category) => {
             const Icon = category.icon;
             return (
               <TabsTrigger
                 key={category.slug}
                 value={category.slug}
-                className="flex items-center gap-2 text-xs"
+                className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold"
               >
                 <Icon className="w-4 h-4" />
                 {category.name}
