@@ -127,9 +127,6 @@ export default function About() {
                 alt="SlyFox Studios team at work"
                 className="w-full rounded-2xl shadow-2xl"
               />
-              <div className="absolute -bottom-6 -right-6 bg-gold text-black p-4 rounded-xl">
-                <Camera className="w-8 h-8" />
-              </div>
             </div>
           </div>
         </div>
@@ -239,13 +236,10 @@ export default function About() {
             
             <div className="relative">
               <img 
-                src="https://images.unsplash.com/photo-1580060839134-75a5edca2e99?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+                src="/images/backgrounds/tiger-and-model-walking.jpg"
                 alt="Durban landscape"
                 className="w-full rounded-2xl shadow-2xl"
               />
-              <div className="absolute -bottom-6 -left-6 bg-gold text-black p-4 rounded-xl">
-                <MapPin className="w-8 h-8" />
-              </div>
             </div>
           </div>
         </div>

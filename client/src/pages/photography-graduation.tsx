@@ -97,9 +97,6 @@ export default function PhotographyGraduation() {
                 alt="Graduation Photography example"
                 className="w-full rounded-2xl shadow-2xl"
               />
-              <div className="absolute -bottom-6 -right-6 bg-gradient-to-br from-salmon to-cyan text-white p-4 rounded-xl">
-                <Camera className="w-8 h-8" />
-              </div>
             </div>
           </div>
         </div>

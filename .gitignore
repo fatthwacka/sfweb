@@ -12,6 +12,3 @@ docker-compose.override.yml
 .env.local
 .env.*.local
 
-# Site configuration overrides (environment-specific)
-# server/data/site-config-overrides.json  # Now tracking in git for deployment sync
-# server/data/*.json  # Now tracking all config files in git for deployment sync

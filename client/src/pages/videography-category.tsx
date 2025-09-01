@@ -356,9 +356,6 @@ export default function VideographyCategory() {
               <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-50 rounded-2xl opacity-0 hover:opacity-100 transition-opacity duration-300 cursor-pointer">
                 <Play className="w-16 h-16 text-gold" />
               </div>
-              <div className="absolute -bottom-6 -right-6 bg-gold text-black p-4 rounded-xl">
-                <Video className="w-8 h-8" />
-              </div>
             </div>
           </div>
         </div>
