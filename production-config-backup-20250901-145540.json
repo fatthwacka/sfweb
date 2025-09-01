@@ -1,0 +1,1485 @@
+{
+  "home": {
+    "hero": {
+      "slides": [
+        {
+          "id": "slide-1756060030414",
+          "title": "Fashion",
+          "subtitle": "Strong Bold Images",
+          "image": "/uploads/fashion-photography-hero_1756060034755.jpg",
+          "cta": "Learn More",
+          "gradient": [
+            "rgba(0,0,0,0.7)",
+            "rgba(0,0,0,0.3)"
+          ]
+        },
+        {
+          "id": "slide-1756052475554",
+          "title": "Portraits",
+          "subtitle": "Stunning Glossy Magazine Pics",
+          "image": "/uploads/homepage-main-hero_1756059978969.jpg",
+          "cta": "Learn More",
+          "gradient": [
+            "rgba(0,0,0,0.7)",
+            "rgba(0,0,0,0.3)"
+          ]
+        },
+        {
+          "id": "test-slide",
+          "title": "Prestige",
+          "subtitle": "Celebrity & Event Photography",
+          "cta": "Book now",
+          "image": "/uploads/Event-photography-hero_1756059986933.jpg",
+          "gradient": [
+            "rgba(255,0,0,0.5)",
+            "rgba(0,255,0,0.5)"
+          ]
+        },
+        {
+          "id": "slide-1756060051119",
+          "title": "Headshots",
+          "subtitle": "Profile & Corporate Pics",
+          "image": "/uploads/Celebrity-photography-hero_1756063622855.jpg",
+          "cta": "Learn More",
+          "gradient": [
+            "rgba(0,0,0,0.7)",
+            "rgba(0,0,0,0.3)"
+          ]
+        },
+        {
+          "id": "slide-1756156317246",
+          "title": "Products",
+          "subtitle": "Make your Brand Radiate",
+          "image": "/uploads/product-photography-med_1756156455626.jpg",
+          "cta": "Learn More",
+          "gradient": [
+            "rgba(0,0,0,0.7)",
+            "rgba(0,0,0,0.3)"
+          ]
+        }
+      ],
+      "autoAdvance": false,
+      "interval": 6000,
+      "effects": [
+        "liquid_dissolve"
+      ]
+    },
+    "servicesOverview": {
+      "headline": "Commercial Services",
+      "description": "From intimate portraits to grand celebrations, from ecommerce websites to mobile apps, we execute every project with artistic vision and technical excellence.",
+      "photography": {
+        "title": "Photography",
+        "description": "Capture life's precious moments with our professional photography services. From weddings to corporate events, we create stunning visual narratives.",
+        "image": "/images/services/photography-service-showcase.jpg",
+        "services": [
+          "Weddings",
+          "Portraits",
+          "Corporate",
+          "Events",
+          "Products",
+          "Graduation"
+        ],
+        "ctaText": "Explore Photography"
+      },
+      "videography": {
+        "title": "Videography",
+        "description": "Bring your stories to life with cinematic videography. From wedding films to corporate content, we create compelling visual experiences.",
+        "image": "/images/services/photography-service-showcase.jpg",
+        "services": [
+          "Wedding Films",
+          "Corporate Videos",
+          "Events",
+          "Product Videos",
+          "Social Media",
+          "Animation"
+        ],
+        "ctaText": "Explore Videography"
+      },
+      "services": [
+        {
+          "id": "photography-service",
+          "title": "Photography",
+          "description": "Capture the perfect images with professional photography.",
+          "image": "/uploads/wedding-videography-hero_1756052522344.jpg",
+          "ctaText": "Explore Photography",
+          "services": [
+            "Weddings",
+            "Portraits",
+            "Corporate",
+            "Events",
+            "Products",
+            "Graduation"
+          ],
+          "color": "salmon"
+        },
+        {
+          "id": "videography-service",
+          "title": "Videography",
+          "description": "Bring your stories to life with cinematic visual experiences.",
+          "image": "/uploads/animation-videography-hero_1756054970653.jpg",
+          "ctaText": "Explore Videography",
+          "services": [
+            "Wedding Films",
+            "Corporate Videos",
+            "Events",
+            "Product Videos",
+            "Social Media",
+            "Animation"
+          ],
+          "color": "cyan"
+        },
+        {
+          "id": "service-1756054883450",
+          "title": "Ai Automation",
+          "description": "Enhance your social channel with content production.",
+          "image": "/uploads/Lavender-3-bars-stacked-with-lather_1756326067465.jpg",
+          "ctaText": "Explore Service",
+          "services": [
+            "Service Type 1",
+            "Service Type 2",
+            "Service Type 3"
+          ],
+          "color": "salmon"
+        },
+        {
+          "id": "service-1756055294048",
+          "title": "Web & Apps",
+          "description": "Deploy the features and functions of your vision with speed and agility.",
+          "image": "/uploads/product2-videography-hero_1756055342578.jpg",
+          "ctaText": "Explore Service",
+          "services": [
+            "Service Type 1",
+            "Service Type 2",
+            "Service Type 3"
+          ],
+          "color": "salmon"
+        }
+      ]
+    },
+    "privateGallery": {
+      "headline": "Your Private Gallery",
+      "description": "Showcase your images with style. Each shoot with Slyfox includes a professional online portfolio with all your shoot images. Access your photos anytime, anywhere. Share with family and friends, download high-resolution images, and relive your special moments through our secure client portal.",
+      "features": [
+        {
+          "id": "secure-access",
+          "title": "Secure Access",
+          "description": "Private password-protected galleries accessible only to you and those you share access with."
+        },
+        {
+          "id": "easy-downloads",
+          "title": "Easy Downloads",
+          "description": "Download individual photos or entire albums in various resolutions for different uses."
+        },
+        {
+          "id": "share-anywhere",
+          "title": "Share Anywhere",
+          "description": "Share your gallery link via social media, email, or embed custom invitations."
+        }
+      ],
+      "buttons": {
+        "primary": {
+          "text": "Access My Gallery",
+          "action": "/client-gallery"
+        },
+        "secondary": {
+          "text": "Gallery Demo",
+          "action": "/gallery/demo"
+        }
+      },
+      "image": "/uploads/Professional-Portrait-Photography-by-Slyfox-Executive-Headshot-_1756301693089.jpg"
+    },
+    "testimonials": {
+      "headline": "Production Experts",
+      "description": "You're in safe hands, with a team that has an eye for detail, and a passion for beauty.",
+      "items": [
+        {
+          "id": 1,
+          "name": "Sarah Troydon",
+          "role": "Wedding",
+          "company": "",
+          "quote": "Thank you so much guys, absolutely love the pics, and the team was a joy to work with",
+          "image": "/images/testimonials/client-sarah-jones.jpg",
+          "rating": 5,
+          "content": ""
+        },
+        {
+          "id": 2,
+          "name": "Michael Thompson",
+          "role": "Owner",
+          "company": "",
+          "quote": "Very cool headshots. really elevated our brand image. the guys were really creative and talented. ",
+          "image": "/images/testimonials/client-mike-johnson.jpg",
+          "rating": 5,
+          "content": ""
+        },
+        {
+          "id": 3,
+          "name": "Emma Rodriguez",
+          "role": "Brand manager",
+          "company": "Natural Elixir",
+          "quote": "thanks fo much , really loved the product shots and prodict videos so much, will be back soon",
+          "image": "/images/testimonials/client-emma-davis.jpg",
+          "rating": 5,
+          "content": ""
+        }
+      ]
+    }
+  },
+  "contact": {
+    "business": {
+      "name": "SlyFox Studio Group",
+      "tagline": "Professional Photography & Videography, Website design, App development",
+      "phone": "076 916 3113",
+      "email": "info@slyfox.co.za",
+      "whatsapp": "+27 76 916 3113",
+      "bookingEmail": "bookings@slyfox.co.za",
+      "address": {
+        "street": "La Lucia, Umhlanga, Durban",
+        "city": "Durban",
+        "province": "KZN",
+        "postal": "8001",
+        "country": "South Africa",
+        "displayText": "La Lucia, Umhlanga, Durban"
+      }
+    },
+    "methods": [
+      {
+        "type": "phone",
+        "title": "Call Us",
+        "icon": "Phone",
+        "details": [
+          "+27 12 345 6789",
+          "Available Mon-Fri 9AM-6PM"
+        ],
+        "action": "tel:+27123456789",
+        "priority": 1
+      },
+      {
+        "type": "email",
+        "title": "Email Us",
+        "icon": "Mail",
+        "details": [
+          "info@slyfox.co.za",
+          "We respond within 24 hours"
+        ],
+        "action": "mailto:info@slyfox.co.za",
+        "priority": 2
+      },
+      {
+        "type": "whatsapp",
+        "title": "WhatsApp",
+        "icon": "MessageCircle",
+        "details": [
+          "+27 12 345 6789",
+          "Quick responses during business hours"
+        ],
+        "action": "https://wa.me/27123456789",
+        "priority": 3
+      },
+      {
+        "type": "location",
+        "title": "Visit Us",
+        "icon": "MapPin",
+        "details": [
+          "Cape Town, South Africa",
+          "By appointment only"
+        ],
+        "action": null,
+        "priority": 4
+      }
+    ],
+    "hours": {
+      "monday": "9:00 AM - 6:00 PM",
+      "tuesday": "9:00 AM - 6:00 PM",
+      "wednesday": "9:00 AM - 6:00 PM",
+      "thursday": "9:00 AM - 6:00 PM",
+      "friday": "9:00 AM - 6:00 PM",
+      "saturday": "10:00 AM - 4:00 PM",
+      "sunday": "By appointment",
+      "weekdaysDisplay": "Monday - Friday",
+      "weekdaysTime": "9:00 AM - 6:00 PM",
+      "saturdayDisplay": "Saturday",
+      "saturdayTime": "10:00 AM - 4:00 PM",
+      "sundayDisplay": "Sunday",
+      "sundayTime": "By appointment",
+      "note": "Evening and weekend shoots available by arrangement."
+    },
+    "responseTimes": {
+      "email": {
+        "title": "Email Inquiries",
+        "time": "Usually within hours",
+        "description": "Detailed responses to all project inquiries"
+      },
+      "whatsapp": {
+        "title": "WhatsApp Messages",
+        "time": "Usually within minutes",
+        "description": "Quick questions and availability checks"
+      },
+      "phone": {
+        "title": "Phone Calls",
+        "time": "Immediate",
+        "description": "Direct line during business hours"
+      }
+    },
+    "serviceAreas": {
+      "primary": {
+        "title": "Primary Area:",
+        "area": "Durban and northern suburbs, Midlands, KZN, SA",
+        "description": "Durban and northern suburbs, Midlands, KZN, SA"
+      },
+      "extended": {
+        "title": "Extended Area:",
+        "area": "KZN Province",
+        "description": "KZN Province"
+      },
+      "destination": {
+        "title": "Destination:",
+        "area": "Anywhere in South Africa & beyond",
+        "description": "Anywhere in South Africa & beyond"
+      },
+      "note": "Travel costs calculated based on distance and duration. Accommodation provided for multi-day shoots."
+    },
+    "emergency": {
+      "title": "Need Urgent Assistance?",
+      "subtitle": "For time-sensitive inquiries or last-minute bookings, contact us directly for the fastest response. Alternative numbers: Slyfox 076 916 3113 ; Slyfox 072 154 3507 ; Dax 079 093 3541 ; Eben 068 243 1792 ",
+      "phone": "0769163113",
+      "whatsapp": "https://wa.me/27769163113"
+    },
+    "social": {}
+  },
+  "portfolio": {
+    "featured": {
+      "imagePadding": 34,
+      "borderRadius": 28,
+      "imageCount": 6,
+      "layoutStyle": "square",
+      "borderColor": "#493732",
+      "borderColorEnd": "#394c44",
+      "borderThickness": 1,
+      "backgroundGradientStart": "#cddaee",
+      "backgroundGradientEnd": "#6e6a81",
+      "backgroundGradientMiddle": "#081b30",
+      "textColor": "#ffffff",
+      "textColorEnd": "#537093",
+      "textColorPrimary": "#ffffff",
+      "textColorSecondary": "#e2e8f0",
+      "textColorTertiary": "#94a3b8"
+    }
+  },
+  "gradients": {
+    "testimonials": {
+      "startColor": "#3b3a3a",
+      "middleColor": "#334155",
+      "endColor": "#5b5b62",
+      "direction": "135deg",
+      "opacity": 0.1,
+      "textColors": {
+        "primary": "#f7eded",
+        "secondary": "#e2e7ee",
+        "tertiary": "#97a8be"
+      }
+    },
+    "services": {
+      "startColor": "#1f2c41",
+      "middleColor": "#595959",
+      "endColor": "#25463b",
+      "direction": "135deg",
+      "textColors": {
+        "primary": "#fefbfb",
+        "secondary": "#e2eaf3",
+        "tertiary": "#e8eef7"
+      }
+    },
+    "portfolio": {
+      "startColor": "#cddaee",
+      "middleColor": "#081b30",
+      "endColor": "#6e6a81",
+      "direction": "135deg"
+    },
+    "privateGallery": {
+      "startColor": "#808080",
+      "middleColor": "#334155",
+      "endColor": "#a6aba7",
+      "direction": "135deg",
+      "textColors": {
+        "primary": "#fcfcfc",
+        "secondary": "#ecf1f8",
+        "tertiary": "#94a3b8"
+      }
+    },
+    "contact": {
+      "startColor": "#747b8b",
+      "middleColor": "#1e293b",
+      "endColor": "#334155",
+      "direction": "45deg",
+      "textColors": {
+        "secondary": "#e5eaf0"
+      }
+    },
+    "hero": {
+      "startColor": "#1e293b",
+      "middleColor": "#334155",
+      "endColor": "#0f172a",
+      "direction": "135deg"
+    },
+    "aboutTeam": {
+      "startColor": "#1a242d",
+      "middleColor": "#27142f",
+      "endColor": "#0c1427",
+      "direction": "135deg",
+      "opacity": 1,
+      "textColors": {
+        "primary": "#fafbff",
+        "secondary": "#e2e8f0",
+        "tertiary": "#94a3b8"
+      }
+    },
+    "aboutHero": {
+      "startColor": "#1e293b",
+      "middleColor": "#334155",
+      "endColor": "#0f172a",
+      "direction": "135deg",
+      "opacity": 1,
+      "textColors": {
+        "primary": "#dd3131",
+        "secondary": "#22569b",
+        "tertiary": "#c41c97"
+      }
+    },
+    "aboutStory": {
+      "startColor": "#442808",
+      "middleColor": "#170e07",
+      "endColor": "#966136",
+      "direction": "135deg",
+      "opacity": 1,
+      "textColors": {
+        "primary": "#ffffff",
+        "secondary": "#e2e8f0",
+        "tertiary": "#94a3b8"
+      }
+    },
+    "aboutValues": {
+      "startColor": "#1c2f4f",
+      "middleColor": "#334155",
+      "endColor": "#111a2c",
+      "direction": "135deg",
+      "opacity": 1,
+      "textColors": {
+        "primary": "#ffffff",
+        "secondary": "#e2e8f0",
+        "tertiary": "#94a3b8"
+      }
+    }
+  },
+  "categoryPages": {
+    "photography": {
+      "weddings": {
+        "hero": {
+          "image": "/images/hero/wedding-photography-hero.jpg",
+          "title": "Wedding Photography",
+          "subtitle": "Love stories captured timelessly",
+          "ctaText": "Book Session"
+        },
+        "serviceOverview": {
+          "title": "Professional Wedding Photography",
+          "description": "Your wedding day is one of the most important days of your life, and we're here to ensure every precious moment is captured with artistic vision and emotional depth.",
+          "features": [
+            "Engagement session included",
+            "Full ceremony coverage",
+            "Reception photography",
+            "Bridal party portraits",
+            "Family group photos",
+            "Detail shots of decor",
+            "Online gallery delivery",
+            "High-resolution downloads"
+          ],
+          "gradients": {
+            "startColor": "hsl(305, 100%, 15%)",
+            "middleColor": "hsl(280, 70%, 12%)",
+            "endColor": "hsl(260, 60%, 10%)",
+            "direction": "to right",
+            "opacity": 0.9,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#e2e8f0",
+              "tertiary": "#94a3b8"
+            }
+          },
+          "image": "/images/hero/wedding-videography-hero.jpg"
+        },
+        "packages": {
+          "title": "Wedding Photography Packages",
+          "description": "Choose the perfect package for your needs. All packages include professional editing and digital delivery.",
+          "tiers": [
+            {
+              "id": "essential",
+              "name": "Essential",
+              "price": "R8,500",
+              "duration": "6 hours",
+              "features": [
+                "Pre-wedding consultation",
+                "6 hours coverage",
+                "200+ edited photos",
+                "Online gallery",
+                "USB drive"
+              ],
+              "isPopular": false
+            },
+            {
+              "id": "premium",
+              "name": "Premium",
+              "price": "R12,500",
+              "duration": "8 hours",
+              "features": [
+                "Engagement session",
+                "8 hours coverage",
+                "400+ edited photos",
+                "Premium gallery",
+                "USB drive",
+                "Print release"
+              ],
+              "isPopular": true
+            },
+            {
+              "id": "elite",
+              "name": "Elite",
+              "price": "R18,500",
+              "duration": "Full day",
+              "features": [
+                "Engagement session",
+                "Full day coverage",
+                "600+ edited photos",
+                "Luxury gallery",
+                "2 photographers",
+                "Photo album",
+                "Print release"
+              ],
+              "isPopular": false
+            }
+          ],
+          "gradients": {
+            "startColor": "hsl(200, 100%, 15%)",
+            "middleColor": "hsl(190, 70%, 12%)",
+            "endColor": "hsl(180, 60%, 10%)",
+            "direction": "to right",
+            "opacity": 0.8,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#e2e8f0",
+              "tertiary": "#94a3b8"
+            }
+          }
+        },
+        "recentWork": {
+          "title": "Recent Work",
+          "description": "Browse our latest wedding photography projects",
+          "images": [
+            "/images/gallery/wedding-gallery-1.jpg",
+            "/images/gallery/wedding-gallery-2.jpg",
+            "/images/gallery/wedding-gallery-3.jpg"
+          ],
+          "gradients": {
+            "startColor": "#e5d7de",
+            "middleColor": "#e0d1d1",
+            "endColor": "#d6a9b6",
+            "direction": "to right",
+            "opacity": 0.7,
+            "textColors": {
+              "primary": "#b21f75",
+              "secondary": "#325f9a",
+              "tertiary": "#c639a0"
+            }
+          }
+        },
+        "seoContent": {
+          "title": "Professional Wedding Photography KZN",
+          "content": {
+            "section1": {
+              "title": "Professional Wedding Photography",
+              "text": "Our Durban wedding photography team specializes in capturing the most precious moments of your special day. With years of experience in wedding photography, we understand the importance of preserving every emotion, every glance, and every celebration that makes your wedding unique."
+            },
+            "section2": {
+              "title": "Wedding Photography Packages and Pricing",
+              "text": "We offer comprehensive wedding photography packages designed to fit different budgets and requirements. Our wedding photography services include engagement sessions, full wedding day coverage, professional editing, and beautiful wedding albums."
+            },
+            "conclusion": "Book your KZN wedding photographer today and ensure your special day is captured with the artistry and professionalism it deserves. Our wedding photography team is committed to creating timeless images that you'll treasure for a lifetime."
+          },
+          "gradients": {
+            "startColor": "hsl(220, 13%, 18%)",
+            "middleColor": "hsl(220, 13%, 15%)",
+            "endColor": "hsl(220, 13%, 12%)",
+            "direction": "to right",
+            "opacity": 1,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#e2e8f0",
+              "tertiary": "#94a3b8"
+            }
+          }
+        },
+        "seo": {
+          "title": "Wedding Photography KZN | SlyFox Studios",
+          "description": "Capture your special day with timeless elegance and emotion. Professional wedding photography services in Durban.",
+          "keywords": "Durban KZN wedding photographer, wedding photography Durban, KZN midlands wedding photographer, bridal photography, wedding ceremony photography"
+        }
+      },
+      "portraits": {
+        "hero": {
+          "image": "/uploads/homepage-main-hero_1756041774851.jpg",
+          "title": "Portraits",
+          "subtitle": "Stunning headshots & portraits",
+          "ctaText": "Book Session"
+        },
+        "serviceOverview": {
+          "title": "Professional Portrait Photography",
+          "description": "Whether you need professional headshots for your career or personal portraits that capture your essence, our portrait sessions are designed to make you look and feel your best.",
+          "features": [
+            "Professional lighting setup",
+            "Multiple outfit changes",
+            "Variety of backgrounds",
+            "Posing guidance",
+            "Immediate preview",
+            "Professional retouching",
+            "Multiple format delivery",
+            "Print-ready files"
+          ],
+          "gradients": {
+            "startColor": "#5e5555",
+            "middleColor": "#727279",
+            "endColor": "#4e435b",
+            "direction": "135deg",
+            "opacity": 0.9,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#dae2ec",
+              "tertiary": "#d1d9e5"
+            }
+          },
+          "image": "/uploads/product2-videography-hero_1756055342578.jpg"
+        },
+        "packages": {
+          "title": "Portrait Photography Pricing",
+          "description": "Professional portrait packages to suit any occasion. ",
+          "tiers": [
+            {
+              "id": "basic",
+              "name": "Basic",
+              "price": "R1,350",
+              "duration": "1 hour",
+              "features": [
+                "1 hour session",
+                "Up to 5 people",
+                "20 images magazine grade edit",
+                "50 images basic edit",
+                "Print release"
+              ],
+              "isPopular": false
+            },
+            {
+              "id": "professional",
+              "name": "Professional",
+              "price": "R2,500",
+              "duration": "2 hours",
+              "features": [
+                "2 hour session",
+                "3 outfits",
+                "25 edited photos",
+                "Multiple backgrounds",
+                "LinkedIn optimization"
+              ],
+              "isPopular": false
+            },
+            {
+              "id": "premium",
+              "name": "Premium",
+              "price": "R3,500",
+              "duration": "3 hours",
+              "features": [
+                "3 hour session",
+                "Unlimited outfits",
+                "50 edited photos",
+                "Studio & location",
+                "Professional makeup consultation"
+              ],
+              "isPopular": false
+            }
+          ],
+          "gradients": {
+            "startColor": "#605c5c",
+            "middleColor": "#453b3b",
+            "endColor": "#7b6f6f",
+            "direction": "to right",
+            "opacity": 0.8,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#e2e8f0",
+              "tertiary": "#94a3b8"
+            }
+          }
+        },
+        "recentWork": {
+          "title": "Recent Work",
+          "description": "Browse our latest portrait photography projects",
+          "images": [
+            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+            "https://images.unsplash.com/photo-1494790108755-2616b612b8c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+          ],
+          "gradients": {
+            "startColor": "#676565",
+            "middleColor": "#938a8a",
+            "endColor": "#717075",
+            "direction": "135deg",
+            "opacity": 0.7,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#e2e8f0",
+              "tertiary": "#94a3b8"
+            }
+          }
+        },
+        "seoContent": {
+          "title": "Professional Portrait Photography in Durban",
+          "content": {
+            "section1": {
+              "title": "Durban Portrait Photography Specialists",
+              "text": "Our Durban portrait photography team specialises in creating professional headshots and personal portraits that capture your unique personality and professional brand."
+            },
+            "section2": {
+              "title": "Portrait Photography Services and Packages",
+              "text": "We offer comprehensive portrait photography services including corporate headshots, LinkedIn profiles, personal branding photography, and family portraits. Each session is tailored to your specific needs."
+            },
+            "conclusion": "Book your Durban portrait photographer today and ensure your professional image reflects your best self. Our portrait photography team is committed to creating stunning images that enhance your personal and professional brand."
+          },
+          "gradients": {
+            "startColor": "hsl(220, 13%, 18%)",
+            "middleColor": "hsl(220, 13%, 15%)",
+            "endColor": "hsl(220, 13%, 12%)",
+            "direction": "to right",
+            "opacity": 1,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#e2e8f0",
+              "tertiary": "#94a3b8"
+            }
+          }
+        },
+        "seo": {
+          "title": "Professional Portrait Photography Durban | SlyFox Studios",
+          "description": "Professional headshots and personal portraits that tell your story with confidence and style.",
+          "keywords": "Durban portrait photographer, professional headshots Durban, Umhlanga, executive portraits, personal branding photography, corporate headshots South Africa"
+        }
+      },
+      "corporate": {
+        "hero": {
+          "image": "/images/hero/corporate-photography-hero.jpg",
+          "title": "Corporate Photography",
+          "subtitle": "Elevate your business image with professional photography",
+          "ctaText": "Book Session"
+        },
+        "serviceOverview": {
+          "title": "Professional Corporate Photography Services",
+          "description": "Professional corporate photography is essential for building trust and credibility in today's business world. We provide comprehensive corporate photography services including executive portraits, team photos, office environments, and corporate event coverage.",
+          "features": [
+            "Executive portraits",
+            "Team photography",
+            "Office environment shots",
+            "Corporate event coverage",
+            "Brand consistency",
+            "Quick turnaround",
+            "Professional editing",
+            "Multiple format delivery"
+          ],
+          "gradients": {
+            "startColor": "#637188",
+            "middleColor": "hsl(200, 70%, 12%)",
+            "endColor": "#806f6f",
+            "direction": "135deg",
+            "opacity": 0.9,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#e2e8f0",
+              "tertiary": "#94a3b8"
+            }
+          }
+        },
+        "packages": {
+          "title": "Corporate Photography Packages",
+          "description": "Professional corporate photography packages designed for businesses of all sizes.",
+          "tiers": [
+            {
+              "id": "executive",
+              "name": "Executive",
+              "price": "R3,500",
+              "duration": "Half day",
+              "features": [
+                "5 executive portraits",
+                "Professional lighting",
+                "Multiple poses",
+                "Same-day editing",
+                "LinkedIn ready"
+              ],
+              "isPopular": false
+            },
+            {
+              "id": "team",
+              "name": "Team",
+              "price": "R5,500",
+              "duration": "Full day",
+              "features": [
+                "Up to 20 team members",
+                "Individual portraits",
+                "Group photos",
+                "Office environment",
+                "Brand guidelines"
+              ],
+              "isPopular": true
+            },
+            {
+              "id": "complete",
+              "name": "Complete",
+              "price": "R8,500",
+              "duration": "2 days",
+              "features": [
+                "Unlimited team members",
+                "Office photography",
+                "Event coverage",
+                "Environmental portraits",
+                "Full brand package"
+              ],
+              "isPopular": false
+            }
+          ],
+          "gradients": {
+            "startColor": "hsl(240, 100%, 15%)",
+            "middleColor": "hsl(220, 70%, 12%)",
+            "endColor": "hsl(200, 60%, 10%)",
+            "direction": "to right",
+            "opacity": 0.8,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#e2e8f0",
+              "tertiary": "#94a3b8"
+            }
+          }
+        },
+        "recentWork": {
+          "title": "Recent Work",
+          "description": "Browse our latest corporate photography projects",
+          "images": [
+            "https://images.unsplash.com/photo-1556761175-4b46a572b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+            "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+            "https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+          ],
+          "gradients": {
+            "startColor": "hsl(280, 100%, 15%)",
+            "middleColor": "hsl(260, 70%, 12%)",
+            "endColor": "hsl(240, 60%, 10%)",
+            "direction": "to right",
+            "opacity": 0.7,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#e2e8f0",
+              "tertiary": "#94a3b8"
+            }
+          }
+        },
+        "seoContent": {
+          "title": "Professional Corporate Photography in Durban",
+          "content": {
+            "section1": {
+              "title": "Durban Corporate Photography Specialists",
+              "text": "Our Durban corporate photography team specializes in creating professional business imagery that enhances your company's brand and credibility."
+            },
+            "section2": {
+              "title": "Corporate Photography Services and Packages",
+              "text": "We offer comprehensive corporate photography services including executive portraits, team photography, office environments, and corporate event coverage. Each package is designed to meet your business needs."
+            },
+            "conclusion": "Book your Durban corporate photographer today and ensure your business image reflects professionalism and quality. Our corporate photography team is committed to enhancing your brand through powerful visual content."
+          },
+          "gradients": {
+            "startColor": "hsl(220, 13%, 18%)",
+            "middleColor": "hsl(220, 13%, 15%)",
+            "endColor": "hsl(220, 13%, 12%)",
+            "direction": "to right",
+            "opacity": 1,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#e2e8f0",
+              "tertiary": "#94a3b8"
+            }
+          }
+        },
+        "seo": {
+          "title": "Corporate Photography Services Durban | SlyFox Studios",
+          "description": "Elevate your business image with professional corporate photography that builds trust and credibility.",
+          "keywords": "Cape Town corporate photographer, business photography, executive portraits Cape Town, corporate headshots, office photography South Africa"
+        }
+      },
+      "events": {
+        "hero": {
+          "image": "/images/hero/Event-photography-hero.jpg",
+          "title": "Event Photography",
+          "subtitle": "Document memorable moments at conferences, parties, and gatherings",
+          "ctaText": "Book Session"
+        },
+        "serviceOverview": {
+          "title": "Professional Event Photography",
+          "description": "From intimate gatherings to large-scale conferences, we capture the energy and emotion of your events. Our unobtrusive approach ensures we document authentic moments while maintaining the natural flow of your event.",
+          "features": [
+            "Conference documentation",
+            "Party coverage",
+            "Award ceremonies",
+            "Networking events",
+            "Keynote speakers",
+            "Candid interactions",
+            "Venue photography",
+            "Same-day highlights"
+          ],
+          "gradients": {
+            "startColor": "hsl(160, 100%, 15%)",
+            "middleColor": "hsl(140, 70%, 12%)",
+            "endColor": "hsl(120, 60%, 10%)",
+            "direction": "to right",
+            "opacity": 0.9,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#e2e8f0",
+              "tertiary": "#94a3b8"
+            }
+          },
+          "image": "/images/hero/food-photography-hero.jpg"
+        },
+        "packages": {
+          "title": "Event Photography Packages",
+          "description": "Professional event photography packages for all types of gatherings and celebrations.",
+          "tiers": [
+            {
+              "id": "basic",
+              "name": "Basic",
+              "price": "R2,500",
+              "duration": "4 hours",
+              "features": [
+                "4 hours coverage",
+                "100+ photos",
+                "Online gallery",
+                "Social media ready",
+                "Quick turnaround"
+              ],
+              "isPopular": false
+            },
+            {
+              "id": "full",
+              "name": "Full",
+              "price": "R4,500",
+              "duration": "8 hours",
+              "features": [
+                "8 hours coverage",
+                "300+ photos",
+                "Multiple photographers",
+                "Live social sharing",
+                "Highlight reel"
+              ],
+              "isPopular": true
+            },
+            {
+              "id": "premium",
+              "name": "Premium",
+              "price": "R6,500",
+              "duration": "Full day",
+              "features": [
+                "Full day coverage",
+                "500+ photos",
+                "Multi-angle coverage",
+                "Real-time uploads",
+                "Professional editing"
+              ],
+              "isPopular": false
+            }
+          ],
+          "gradients": {
+            "startColor": "hsl(120, 100%, 15%)",
+            "middleColor": "hsl(100, 70%, 12%)",
+            "endColor": "hsl(80, 60%, 10%)",
+            "direction": "to right",
+            "opacity": 0.8,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#e2e8f0",
+              "tertiary": "#94a3b8"
+            }
+          }
+        },
+        "recentWork": {
+          "title": "Recent Work",
+          "description": "Browse our latest event photography projects",
+          "images": [
+            "https://images.unsplash.com/photo-1511578314322-379afb476865?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+            "https://images.unsplash.com/photo-1505236858219-8359eb29e329?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+            "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+          ],
+          "gradients": {
+            "startColor": "hsl(60, 100%, 15%)",
+            "middleColor": "hsl(40, 70%, 12%)",
+            "endColor": "hsl(20, 60%, 10%)",
+            "direction": "to right",
+            "opacity": 0.7,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#e2e8f0",
+              "tertiary": "#94a3b8"
+            }
+          }
+        },
+        "seoContent": {
+          "title": "Professional Event Photography in Durban",
+          "content": {
+            "section1": {
+              "title": "Durban Event Photography Specialists",
+              "text": "Our Durban event photography team specializes in capturing the energy and excitement of corporate events, conferences, parties, and special gatherings."
+            },
+            "section2": {
+              "title": "Event Photography Services and Coverage",
+              "text": "We offer comprehensive event photography services including conference documentation, corporate events, award ceremonies, and private celebrations. Our unobtrusive approach captures authentic moments."
+            },
+            "conclusion": "Book your Durban event photographer today and ensure your special event is documented professionally. Our event photography team is committed to capturing every important moment and memory."
+          },
+          "gradients": {
+            "startColor": "hsl(220, 13%, 18%)",
+            "middleColor": "hsl(220, 13%, 15%)",
+            "endColor": "hsl(220, 13%, 12%)",
+            "direction": "to right",
+            "opacity": 1,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#e2e8f0",
+              "tertiary": "#94a3b8"
+            }
+          }
+        },
+        "seo": {
+          "title": "Event Photography Durban | SlyFox Studios",
+          "description": "Document memorable moments at conferences, parties, and gatherings with professional event photography.",
+          "keywords": "Durban event photographer, conference photography, corporate event photography, party photography Durban, event documentation South Africa"
+        }
+      },
+      "products": {
+        "hero": {
+          "image": "/images/hero/product-photography-hero.jpg",
+          "title": "Product Photography",
+          "subtitle": "Showcase your products with stunning commercial photography",
+          "ctaText": "Book Session"
+        },
+        "serviceOverview": {
+          "title": "Professional Product Photography",
+          "description": "High-quality product photography is crucial for e-commerce success and brand credibility. We create compelling product images that highlight your products' best features and drive customer engagement across all platforms.",
+          "features": [
+            "E-commerce optimization",
+            "White background shots",
+            "Lifestyle photography",
+            "360° product views",
+            "Detail macro shots",
+            "Color accuracy",
+            "Multiple angles",
+            "Batch processing"
+          ],
+          "gradients": {
+            "startColor": "#494646",
+            "middleColor": "hsl(20, 70%, 12%)",
+            "endColor": "#143343",
+            "direction": "to right",
+            "opacity": 0.9,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#e7eff8",
+              "tertiary": "#a5b2c5"
+            }
+          },
+          "image": "/images/hero/product-videography-hero.jpg"
+        },
+        "packages": {
+          "title": "Product Photography Packages",
+          "description": "Professional product photography packages designed for e-commerce and marketing needs.",
+          "tiers": [
+            {
+              "id": "basic",
+              "name": "TOO CHEPA",
+              "price": "R150",
+              "duration": "Per product",
+              "features": [
+                "5 angles per productddddd",
+                "White background",
+                "Basic editing",
+                "E-commerce ready",
+                "24h turnaround"
+              ],
+              "isPopular": false
+            },
+            {
+              "id": "lifestyle",
+              "name": "SPECIVE",
+              "price": "R350",
+              "duration": "Per product",
+              "features": [
+                "10 angles",
+                "Lifestyle shots",
+                "Model usage",
+                "Environmental shots",
+                "Advanced editing"
+              ],
+              "isPopular": true
+            },
+            {
+              "id": "premium",
+              "name": "Premium",
+              "price": "R500",
+              "duration": "Per product",
+              "features": [
+                "Unlimited angles",
+                "360° photography",
+                "Video clips",
+                "Detail shots",
+                "Complete package"
+              ],
+              "isPopular": false
+            }
+          ],
+          "gradients": {
+            "startColor": "#6f6767",
+            "middleColor": "#6b4343",
+            "endColor": "#320101",
+            "direction": "to right",
+            "opacity": 0.8,
+            "textColors": {
+              "primary": "#f0e5e5",
+              "secondary": "#cfb4bc",
+              "tertiary": "#b2a59f"
+            }
+          }
+        },
+        "recentWork": {
+          "title": "Recent Work",
+          "description": "Browse our latest product photography projects",
+          "images": [
+            "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+            "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+            "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+          ],
+          "gradients": {
+            "startColor": "hsl(300, 100%, 15%)",
+            "middleColor": "hsl(280, 70%, 12%)",
+            "endColor": "hsl(260, 60%, 10%)",
+            "direction": "to right",
+            "opacity": 0.7,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#e2e8f0",
+              "tertiary": "#94a3b8"
+            }
+          }
+        },
+        "seoContent": {
+          "title": "Professional Product Photography in Durban",
+          "content": {
+            "section1": {
+              "title": "Durban Product Photography Specialists",
+              "text": "Our Durban product photography team specializes in creating stunning commercial images that showcase your products and drive sales across all platforms."
+            },
+            "section2": {
+              "title": "Product Photography Services and Solutions",
+              "text": "We offer comprehensive product photography services including e-commerce photography, lifestyle shots, 360° product views, and detailed macro photography. Each image is optimized for your specific needs."
+            },
+            "conclusion": "Book your Durban product photographer today and ensure your products are showcased with professional quality that drives sales. Our product photography team is committed to creating compelling images that convert browsers into buyers."
+          },
+          "gradients": {
+            "startColor": "hsl(220, 13%, 18%)",
+            "middleColor": "hsl(220, 13%, 15%)",
+            "endColor": "hsl(220, 13%, 12%)",
+            "direction": "to right",
+            "opacity": 1,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#e2e8f0",
+              "tertiary": "#94a3b8"
+            }
+          }
+        },
+        "seo": {
+          "title": "Product Photography Durban | SlyFox Studios",
+          "description": "Showcase your products with stunning commercial photography that drives sales and engagement.",
+          "keywords": "Durban product photographer, e-commerce photography, commercial photography, product catalog photography, lifestyle product photography South Africa"
+        }
+      },
+      "graduation": {
+        "hero": {
+          "image": "/images/hero/graduation-photography-hero.jpg",
+          "title": "Graduation Photography",
+          "subtitle": "Celebrate academic achievements with memorable graduation photos",
+          "ctaText": "Book Session"
+        },
+        "serviceOverview": {
+          "title": "Professional Graduation Photography",
+          "description": "Graduation is a once-in-a-lifetime achievement that deserves to be celebrated and remembered. Our graduation photography services capture the pride, joy, and accomplishment of this significant milestone in your life.",
+          "features": [
+            "Ceremony coverage",
+            "Individual portraits",
+            "Family group shots",
+            "Campus photography",
+            "Cap and gown shots",
+            "Diploma presentations",
+            "Celebration moments",
+            "Professional editing"
+          ],
+          "gradients": {
+            "startColor": "hsl(50, 100%, 15%)",
+            "middleColor": "hsl(40, 70%, 12%)",
+            "endColor": "hsl(30, 60%, 10%)",
+            "direction": "to right",
+            "opacity": 0.9,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#e2e8f0",
+              "tertiary": "#94a3b8"
+            }
+          }
+        },
+        "packages": {
+          "title": "Graduation Photography Packages",
+          "description": "Professional graduation photography packages to commemorate your academic achievement.",
+          "tiers": [
+            {
+              "id": "individual",
+              "name": "Individual",
+              "price": "R1,200",
+              "duration": "1 hour",
+              "features": [
+                "Individual portraits",
+                "Campus locations",
+                "10 edited photos",
+                "Digital gallery",
+                "Print package"
+              ],
+              "isPopular": false
+            },
+            {
+              "id": "family",
+              "name": "Family",
+              "price": "R2,200",
+              "duration": "2 hours",
+              "features": [
+                "Graduate portraits",
+                "Family group shots",
+                "Multiple locations",
+                "25 edited photos",
+                "Premium gallery"
+              ],
+              "isPopular": true
+            },
+            {
+              "id": "complete",
+              "name": "Complete",
+              "price": "R3,200",
+              "duration": "Half day",
+              "features": [
+                "Ceremony coverage",
+                "Portrait session",
+                "Family photos",
+                "50+ edited photos",
+                "Complete package"
+              ],
+              "isPopular": false
+            }
+          ],
+          "gradients": {
+            "startColor": "hsl(40, 100%, 15%)",
+            "middleColor": "hsl(30, 70%, 12%)",
+            "endColor": "hsl(20, 60%, 10%)",
+            "direction": "to right",
+            "opacity": 0.8,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#e2e8f0",
+              "tertiary": "#94a3b8"
+            }
+          }
+        },
+        "recentWork": {
+          "title": "Recent Work",
+          "description": "Browse our latest graduation photography projects",
+          "images": [
+            "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+            "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+            "https://images.unsplash.com/photo-1622810547313-15e6e0031e3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+          ],
+          "gradients": {
+            "startColor": "hsl(20, 100%, 15%)",
+            "middleColor": "hsl(10, 70%, 12%)",
+            "endColor": "hsl(0, 60%, 10%)",
+            "direction": "to right",
+            "opacity": 0.7,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#e2e8f0",
+              "tertiary": "#94a3b8"
+            }
+          }
+        },
+        "seoContent": {
+          "title": "Professional Graduation Photography in Durban",
+          "content": {
+            "section1": {
+              "title": "Cape Town Graduation Photography Specialists",
+              "text": "Our Cape Town graduation photography team specializes in capturing the pride and joy of graduation day. We understand the importance of this milestone and ensure every precious moment is beautifully documented."
+            },
+            "section2": {
+              "title": "Graduation Photography Services and Packages",
+              "text": "We offer comprehensive graduation photography services including ceremony coverage, individual portraits, family group photos, and campus photography. Each package is designed to commemorate your achievement."
+            },
+            "conclusion": "Book your Durban graduation photographer today and ensure your academic achievement is celebrated with professional photography. Our graduation photography team is committed to capturing this important milestone for you to treasure forever."
+          },
+          "gradients": {
+            "startColor": "hsl(220, 13%, 18%)",
+            "middleColor": "hsl(220, 13%, 15%)",
+            "endColor": "hsl(220, 13%, 12%)",
+            "direction": "to right",
+            "opacity": 1,
+            "textColors": {
+              "primary": "#ffffff",
+              "secondary": "#e2e8f0",
+              "tertiary": "#94a3b8"
+            }
+          }
+        },
+        "seo": {
+          "title": "Graduation Photography Durban | SlyFox Studios",
+          "description": "Celebrate academic achievements with memorable graduation photos that commemorate this milestone.",
+          "keywords": "Durban graduation photographer, university graduation photography, graduation ceremony photography, graduation portraits Durban, academic milestone photography"
+        }
+      }
+    },
+    "videography": {}
+  },
+  "about": {
+    "hero": {
+      "title": "About SlyFox Studios",
+      "description": "Founded in the heart of Durban, we're more than just a photography business—we're storytellers, memory makers, and artists passionate about capturing life's most precious moments.",
+      "stats": [
+        {
+          "id": "stat-1",
+          "number": "500+",
+          "label": "Happy Clients",
+          "icon": "Users"
+        },
+        {
+          "id": "stat-2",
+          "number": "5 Years",
+          "label": "Experience",
+          "icon": "Clock"
+        },
+        {
+          "id": "stat-3",
+          "number": "1000+",
+          "label": "Events Captured",
+          "icon": "Camera"
+        },
+        {
+          "id": "stat-4",
+          "number": "Durban",
+          "label": "Based & Proud",
+          "icon": "MapPin"
+        }
+      ]
+    },
+    "story": {
+      "title": "Our Story",
+      "paragraphs": [
+        "SlyFox Studios was born from a passion for visual storytelling and a commitment to capturing the authentic moments that matter most. Founded in Durban, we've grown from a small startup to a trusted name in professional photography and videography.",
+        "Our journey began with a simple belief: every moment has a story worth telling. Whether it's the joy of a wedding day, the professionalism of a corporate headshot, or the celebration of a graduation, we approach each project with the same dedication to excellence.",
+        "Today, we're proud to serve clients across Durban and beyond, combining artistic vision with technical expertise to create images and videos that stand the test of time."
+      ],
+      "image": "/uploads/food-photography-hero_1756060136335.jpg"
+    },
+    "values": {
+      "title": "Our Values",
+      "description": "These core values guide everything we do, from our initial consultation to the final delivery of your images.",
+      "items": [
+        {
+          "id": "value-1",
+          "icon": "Camera",
+          "title": "Artistic Excellence",
+          "description": "We approach every project with creative vision and technical precision, ensuring stunning results that exceed expectations."
+        },
+        {
+          "id": "value-2",
+          "icon": "Users",
+          "title": "Client-Centered",
+          "description": "Your vision is our priority. We listen, collaborate, and deliver personalized experiences that reflect your unique story."
+        },
+        {
+          "id": "value-3",
+          "icon": "Award",
+          "title": "Professional Quality",
+          "description": "From equipment to editing, we maintain the highest professional standards in every aspect of our work."
+        },
+        {
+          "id": "value-4",
+          "icon": "Clock",
+          "title": "Timely Delivery",
+          "description": "We respect your deadlines and deliver high-quality work within agreed timeframes, every time."
+        }
+      ]
+    },
+    "team": {
+      "title": "Meet Our Team",
+      "description": "The creative minds behind SlyFox Studios, each bringing unique skills and passion to every project.",
+      "members": [
+        {
+          "id": "team-1",
+          "name": "Dax Tucker",
+          "role": "Chief Kick Starter",
+          "email": "dax@slyfox.co.za",
+          "image": "/uploads/helping1_1756659404627.jpg",
+          "description": "Operating with officially half a brain and a world of varied career experiences, Dax brings joy to the office like a knocked down wasp nest. With background in engineering, design, and nightlife, results are sure to haphazrd."
+        },
+        {
+          "id": "team-2",
+          "name": "Eben Mpongo",
+          "role": "Senior Photographer",
+          "email": "eben@slyfox.co.za",
+          "image": "/uploads/linkedin-headshot_1756659349863.jpg",
+          "description": "Eben excels at glossy magazine grade photographs, capturing the subjects perfectly, and editing magical mastery. Whether he's behind the camera or the editing computer, beautiful creations will be in progress."
+        },
+        {
+          "id": "team-1756657853204",
+          "name": "Rainier Potgieter",
+          "role": "Chief Technical Officer",
+          "email": "rain@slyfox.co.za",
+          "image": "/uploads/rain_1756657920900.jpeg",
+          "description": "Rain has 0s and 1s coursing through his veins and pushes the boundaries of what's possible and what shouldn't be attempted without risk of having satellites start falling out the sky, all before breakfast on a Monday morning."
+        },
+        {
+          "id": "team-1756658266555",
+          "name": "Jarid Norman",
+          "role": "Sculpture & Master 3D Artist",
+          "email": "jarid@slyfox.co.za",
+          "image": "/uploads/jarid-norman_1756658590927.jpg",
+          "description": "Jarid Norman, a name synonymous with amazing Hollywood grade special FX, costumes, and 3D models, Jarid is as nifty with chainsaw as he is with doing the make up to look like an actor has been chainsawed."
+        },
+        {
+          "id": "team-1756666622457",
+          "name": "Kyle Wiesner",
+          "role": "Content Creator",
+          "email": "kyle@slyfox.co.za",
+          "image": "/uploads/jarid-norman-02_1756658319171.jpeg",
+          "description": "Kyle oversees creative content creation direction and ensures every project meets our high standards of excellence."
+        }
+      ]
+    },
+    "cta": {
+      "title": "Ready to Create Together?",
+      "description": "Let's discuss your vision and create something beautiful that tells your unique story.",
+      "buttonText": "Get In Touch",
+      "backgroundImage": "/images/hero/animation-videography-hero.jpg"
+    }
+  }
+}
