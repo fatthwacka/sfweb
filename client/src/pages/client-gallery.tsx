@@ -436,8 +436,9 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     
     switch (alignment) {
       case 'top': return 'center top';
+      case 'centre': return 'center center'; // British spelling from admin panel
+      case 'center': return 'center center'; // American spelling fallback
       case 'bottom': return 'center bottom'; 
-      case 'center': return 'center center';
       default: return 'center top';
     }
   };
@@ -473,112 +474,133 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
       {/* Custom Navigation Bar for Gallery */}
       <nav
-        className={`fixed ${getNavbarPositionClasses()} z-50 transition-all duration-300 ${navbarVisible ? "opacity-75" : "opacity-0"}`}
+        className={`fixed ${getNavbarPositionClasses()} z-50 transition-all duration-300 ${navbarVisible ? "" : "opacity-0"}`}
+        style={{ 
+          margin: "30px",
+          opacity: navbarVisible ? 1.0 : 0
+        }}
       >
-        <div className="bg-black/05 backdrop-blur-md border border-white/10 rounded-full px-6 py-3 shadow-lg">
-          {/* Left-aligned Container with Equal Spacing */}
-          <div className="flex items-center gap-8">
-            {/* Logo */}
-            <Link href="/">
-              <img
-                src="/images/logos/slyfox-logo-white.png"
-                alt="SlyFox Studios"
-                className="h-8 hover:opacity-80 transition-opacity"
-              />
-            </Link>
-
-            {/* Shoot Type (styled as main title) */}
-            <h2
-              style={{
-                color: "white",
-                fontSize: "18px",
-                fontWeight: "bold",
-                margin: 0,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {shoot.shootType ? 
+        <div className="bg-black/05 backdrop-blur-md border border-white/10 rounded-2xl px-8 py-6 shadow-lg">
+          {/* Vertical Stack Layout */}
+          <div className="flex flex-col items-center text-center space-y-4">
+            
+            {/* Main Title (Shoot Type) */}
+            <h2 className="font-barlow font-bold text-3xl text-white uppercase tracking-wide" style={{ color: '#ffffff', opacity: 1 }}>
+              {shoot.customTitle || shoot.title || (shoot.shootType ? 
                 shoot.shootType.charAt(0).toUpperCase() + shoot.shootType.slice(1) 
-                : "Portfolio"}
+                : "Portfolio")}
             </h2>
 
-            {/* Shoot Title (H1 for SEO, but styled as subtitle on same line) */}
-            {shoot.title && (
-              <h1
-                className="gallery-nav-h1"
-                style={{
-                  fontSize: "14px",
-                  fontWeight: "100",
-                  margin: 0,
-                  fontStyle: "italic",
-                  opacity: 0.8,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {shoot.title}
-              </h1>
+            {/* Shoot Date */}
+            {shoot.shootDate && (
+              <div className="font-barlow font-light text-sm text-white/80 uppercase tracking-widest">
+                {new Date(shoot.shootDate).toLocaleDateString('en-US', { 
+                  month: 'long', 
+                  day: 'numeric',
+                  year: 'numeric'
+                }).replace(',', 'TH,')}
+              </div>
             )}
 
-            {/* Previous Album Button */}
-            {previousShoot && (
-              <Link href={`/gallery/${previousShoot.customSlug}`}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-white hover:bg-white/10 text-xs"
-                  title="Previous Album"
+            {/* VIEW GALLERY Button */}
+            <Button
+              onClick={() => {
+                document.querySelector('.gallery-container-public')?.scrollIntoView({ 
+                  behavior: 'smooth', 
+                  block: 'start' 
+                });
+              }}
+              className="border border-white/40 text-white hover:bg-white hover:text-black transition-all duration-300 px-6 py-2 rounded-md font-barlow font-medium text-sm uppercase tracking-wide bg-transparent"
+            >
+              VIEW GALLERY
+            </Button>
+
+            {/* Action Icons Row */}
+            <div className="flex items-center justify-center gap-6 mt-4">
+              
+              {/* Logo/Home Link */}
+              <div className="relative group flex items-center justify-center">
+                <Link href="/" className="flex items-center justify-center">
+                  <img
+                    src="/images/logos/slyfox-logo-white.png"
+                    alt="SlyFox Studios"
+                    className="h-8 w-8 object-contain hover:scale-110 transition-all duration-300"
+                  />
+                </Link>
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-black/90 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
+                  SlyFox Studios
+                </div>
+              </div>
+
+              {/* Shoot Info Icon */}
+              <div className="relative group flex items-center justify-center">
+                <Info className="w-6 h-6 text-white cursor-default hover:scale-110 transition-all duration-300" />
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-black/90 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
+                  <div className="flex items-center gap-4">
+                    {shoot.location && (
+                      <div className="flex items-center">
+                        <MapPin className="w-3 h-3 mr-1" />
+                        {shoot.location}
+                      </div>
+                    )}
+                    {shoot.shootDate && (
+                      <div className="flex items-center">
+                        <Calendar className="w-3 h-3 mr-1" />
+                        {new Date(shoot.shootDate).toLocaleDateString()}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Share Button */}
+              <div className="relative group flex items-center justify-center">
+                <button
+                  onClick={handleShareGallery}
+                  className="bg-transparent text-white hover:scale-110 transition-all duration-300 p-0 flex items-center justify-center"
                 >
-                  <ChevronLeft className="w-3 h-3 mr-1" />
-                  {previousShoot.customSlug}
-                </Button>
-              </Link>
-            )}
-
-            {/* Shoot Info Icon */}
-            <div className="relative group">
-              <Info className="w-6 h-6 text-white cursor-default" />
-              <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-black/90 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                <div className="flex items-center gap-4">
-                  {shoot.location && (
-                    <div className="flex items-center">
-                      <MapPin className="w-3 h-3 mr-1" />
-                      {shoot.location}
-                    </div>
-                  )}
-                  {shoot.shootDate && (
-                    <div className="flex items-center">
-                      <Calendar className="w-3 h-3 mr-1" />
-                      {new Date(shoot.shootDate).toLocaleDateString()}
-                    </div>
-                  )}
+                  <Share2 className="w-6 h-6" />
+                </button>
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-black/90 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
+                  Share Gallery
                 </div>
               </div>
             </div>
 
-            {/* Next Album Button */}
-            {nextShoot && (
-              <Link href={`/gallery/${nextShoot.customSlug}`}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-white hover:bg-white/10 text-xs"
-                  title="Next Album"
-                >
-                  {nextShoot.customSlug}
-                  <ChevronRight className="w-3 h-3 ml-1" />
-                </Button>
-              </Link>
-            )}
+            {/* Navigation Buttons Row (if any exist) */}
+            {(previousShoot || nextShoot) && (
+              <div className="flex items-center gap-3 mt-2">
+                {/* Previous Album Button */}
+                {previousShoot && (
+                  <Link href={`/gallery/${previousShoot.customSlug}`}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-white hover:bg-white/10 text-xs font-barlow"
+                      title="Previous Album"
+                    >
+                      <ChevronLeft className="w-3 h-3 mr-1" />
+                      {previousShoot.customSlug}
+                    </Button>
+                  </Link>
+                )}
 
-            {/* Share Button */}
-            <Button
-              onClick={handleShareGallery}
-              className="bg-white text-black hover:bg-gray-200 transition-all duration-300"
-              style={{ padding: "2px", minWidth: "auto", height: "auto" }}
-              title="Share Gallery"
-            >
-              <Share2 className="w-3 h-3" />
-            </Button>
+                {/* Next Album Button */}
+                {nextShoot && (
+                  <Link href={`/gallery/${nextShoot.customSlug}`}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-white hover:bg-white/10 text-xs font-barlow"
+                      title="Next Album"
+                    >
+                      {nextShoot.customSlug}
+                      <ChevronRight className="w-3 h-3 ml-1" />
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </nav>
@@ -600,7 +622,11 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
       </section>
 
       {/* Image Gallery Section - Full Width */}
-      <section className="py-8" style={getBackgroundStyle()}>
+      <section style={{
+        ...getBackgroundStyle(),
+        paddingTop: getSpacingStyle(),
+        paddingBottom: getSpacingStyle()
+      }}>
         <div className="gallery-container-public">
           {imagesLoading ? (
             <div 
