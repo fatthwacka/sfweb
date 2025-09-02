@@ -524,6 +524,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public galleries endpoint for demo page and public showcases
+  app.get("/api/galleries/public", async (req, res) => {
+    try {
+      const publicShoots = await storage.getPublicShoots();
+      res.json(publicShoots);
+    } catch (error) {
+      console.error("Fetch public galleries error:", error);
+      res.status(500).json({ message: "Failed to fetch public galleries" });
+    }
+  });
+
   app.get("/api/shoots/:id", async (req, res) => {
     try {
       const shootId = req.params.id; // Keep as string for UUID

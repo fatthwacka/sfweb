@@ -1,4 +1,5 @@
 import { useParams } from "wouter";
+import { useEffect } from "react";
 import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,19 @@ export default function PhotographyCategory() {
   const category = params.category;
   
   const { config, isLoading } = useSiteConfig();
+  
+  // Handle hash navigation on page load
+  useEffect(() => {
+    if (window.location.hash === '#pricing') {
+      // Small delay to ensure page is rendered
+      setTimeout(() => {
+        const element = document.getElementById('pricing');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+  }, []);
   
   // Get category configuration from unified site config
   const categoryConfig = config?.categoryPages?.photography?.[category || 'weddings'] || {
@@ -167,7 +181,7 @@ export default function PhotographyCategory() {
       </section>
 
       {/* Packages Section */}
-      <section className="py-20 relative" style={{
+      <section id="pricing" className="py-20 relative scroll-mt-20" style={{
         background: categoryConfig.packages.gradients ? 
           `linear-gradient(${categoryConfig.packages.gradients.direction}, ${categoryConfig.packages.gradients.startColor} 0%, ${categoryConfig.packages.gradients.middleColor} 50%, ${categoryConfig.packages.gradients.endColor} 100%)` :
           'linear-gradient(135deg, #1e293b 0%, #334155 50%, #0f172a 100%)',

@@ -260,10 +260,10 @@ export function GalleryDemo() {
                     Book Your Session
                   </Button>
                 </Link>
-                <Link href="/pricing">
-                  <Button variant="outline" className="border-2 border-cyan text-cyan hover:bg-cyan hover:text-black px-8 py-3 text-lg">
+                <Link href="/photography/portraits#pricing">
+                  <button className="btn-cyan px-8 py-3 text-lg">
                     View Packages
-                  </Button>
+                  </button>
                 </Link>
               </div>
             </div>

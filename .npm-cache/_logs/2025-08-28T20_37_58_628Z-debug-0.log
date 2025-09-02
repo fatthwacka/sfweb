@@ -1,0 +1,2084 @@
+0 verbose cli /usr/local/bin/node /usr/local/bin/npm
+1 info using npm@10.9.3
+2 info using node@v22.18.0
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/.npmrc
+5 silly config load:file:/Users/daddapiggy/.npmrc
+6 silly config load:file:/usr/local/etc/npmrc
+7 verbose title npm install nodemailer @types/nodemailer
+8 verbose argv "install" "nodemailer" "@types/nodemailer" "--cache" "./.npm-cache"
+9 verbose logfile logs-max:10 dir:/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/.npm-cache/_logs/2025-08-28T20_37_58_628Z-
+10 verbose logfile /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/.npm-cache/_logs/2025-08-28T20_37_58_628Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:2197815296 maxSize:549453824 maxEntrySize:274726912
+13 silly idealTree buildDeps
+14 silly fetch manifest nodemailer@*
+15 silly packumentCache full:https://registry.npmjs.org/nodemailer cache-miss
+16 verbose shrinkwrap failed to load node_modules/.package-lock.json out of date, updated: node_modules
+17 http fetch GET 200 https://registry.npmjs.org/npm 261ms
+18 http fetch GET 200 https://registry.npmjs.org/nodemailer 432ms (cache miss)
+19 silly packumentCache full:https://registry.npmjs.org/nodemailer set size:undefined disposed:false
+20 silly fetch manifest @types/nodemailer@*
+21 silly packumentCache full:https://registry.npmjs.org/@types%2fnodemailer cache-miss
+22 http fetch GET 200 https://registry.npmjs.org/@types%2fnodemailer 46ms (cache miss)
+23 silly packumentCache full:https://registry.npmjs.org/@types%2fnodemailer set size:undefined disposed:false
+24 silly placeDep ROOT @types/nodemailer@7.0.1 OK for: rest-express@1.0.0 want: *
+25 silly placeDep ROOT nodemailer@7.0.5 OK for: rest-express@1.0.0 want: *
+26 silly fetch manifest @aws-sdk/client-sesv2@^3.839.0
+27 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fclient-sesv2 cache-miss
+28 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2fclient-sesv2 75ms (cache miss)
+29 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fclient-sesv2 set size:undefined disposed:false
+30 silly placeDep ROOT @aws-sdk/client-sesv2@3.876.0 OK for: @types/nodemailer@7.0.1 want: ^3.839.0
+31 silly fetch manifest @aws-crypto/sha256-browser@5.2.0
+32 silly packumentCache full:https://registry.npmjs.org/@aws-crypto%2fsha256-browser cache-miss
+33 silly fetch manifest @aws-crypto/sha256-js@5.2.0
+34 silly packumentCache full:https://registry.npmjs.org/@aws-crypto%2fsha256-js cache-miss
+35 silly fetch manifest @aws-sdk/core@3.876.0
+36 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fcore cache-miss
+37 silly fetch manifest @aws-sdk/credential-provider-node@3.876.0
+38 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fcredential-provider-node cache-miss
+39 silly fetch manifest @aws-sdk/middleware-host-header@3.873.0
+40 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fmiddleware-host-header cache-miss
+41 silly fetch manifest @aws-sdk/middleware-logger@3.876.0
+42 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fmiddleware-logger cache-miss
+43 silly fetch manifest @aws-sdk/middleware-recursion-detection@3.873.0
+44 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fmiddleware-recursion-detection cache-miss
+45 http fetch GET 200 https://registry.npmjs.org/@aws-crypto%2fsha256-js 54ms (cache miss)
+46 silly packumentCache full:https://registry.npmjs.org/@aws-crypto%2fsha256-js set size:undefined disposed:false
+47 silly fetch manifest @aws-sdk/middleware-user-agent@3.876.0
+48 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fmiddleware-user-agent cache-miss
+49 http fetch GET 200 https://registry.npmjs.org/@aws-crypto%2fsha256-browser 55ms (cache miss)
+50 silly packumentCache full:https://registry.npmjs.org/@aws-crypto%2fsha256-browser set size:undefined disposed:false
+51 silly fetch manifest @aws-sdk/region-config-resolver@3.873.0
+52 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fregion-config-resolver cache-miss
+53 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2fcore 83ms (cache miss)
+54 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fcore set size:undefined disposed:false
+55 silly fetch manifest @aws-sdk/signature-v4-multi-region@3.876.0
+56 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fsignature-v4-multi-region cache-miss
+57 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2fmiddleware-logger 90ms (cache miss)
+58 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fmiddleware-logger set size:undefined disposed:false
+59 silly fetch manifest @aws-sdk/types@3.862.0
+60 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2ftypes cache-miss
+61 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2fmiddleware-recursion-detection 93ms (cache miss)
+62 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fmiddleware-recursion-detection set size:undefined disposed:false
+63 silly fetch manifest @aws-sdk/util-endpoints@3.873.0
+64 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2futil-endpoints cache-miss
+65 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2fmiddleware-host-header 116ms (cache miss)
+66 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fmiddleware-host-header set size:undefined disposed:false
+67 silly fetch manifest @aws-sdk/util-user-agent-browser@3.873.0
+68 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2futil-user-agent-browser cache-miss
+69 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2fcredential-provider-node 121ms (cache miss)
+70 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fcredential-provider-node set size:undefined disposed:false
+71 silly fetch manifest @aws-sdk/util-user-agent-node@3.876.0
+72 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2futil-user-agent-node cache-miss
+73 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2fregion-config-resolver 77ms (cache miss)
+74 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fregion-config-resolver set size:undefined disposed:false
+75 silly fetch manifest @smithy/config-resolver@^4.1.5
+76 silly packumentCache full:https://registry.npmjs.org/@smithy%2fconfig-resolver cache-miss
+77 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2fmiddleware-user-agent 83ms (cache miss)
+78 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fmiddleware-user-agent set size:undefined disposed:false
+79 silly fetch manifest @smithy/core@^3.8.0
+80 silly packumentCache full:https://registry.npmjs.org/@smithy%2fcore cache-miss
+81 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2fsignature-v4-multi-region 63ms (cache miss)
+82 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fsignature-v4-multi-region set size:undefined disposed:false
+83 silly fetch manifest @smithy/fetch-http-handler@^5.1.1
+84 silly packumentCache full:https://registry.npmjs.org/@smithy%2ffetch-http-handler cache-miss
+85 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2ftypes 61ms (cache miss)
+86 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2ftypes set size:undefined disposed:false
+87 silly fetch manifest @smithy/hash-node@^4.0.5
+88 silly packumentCache full:https://registry.npmjs.org/@smithy%2fhash-node cache-miss
+89 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2futil-user-agent-browser 47ms (cache miss)
+90 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2futil-user-agent-browser set size:undefined disposed:false
+91 silly fetch manifest @smithy/invalid-dependency@^4.0.5
+92 silly packumentCache full:https://registry.npmjs.org/@smithy%2finvalid-dependency cache-miss
+93 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2futil-user-agent-node 57ms (cache miss)
+94 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2futil-user-agent-node set size:undefined disposed:false
+95 silly fetch manifest @smithy/middleware-content-length@^4.0.5
+96 silly packumentCache full:https://registry.npmjs.org/@smithy%2fmiddleware-content-length cache-miss
+97 http fetch GET 200 https://registry.npmjs.org/@smithy%2fconfig-resolver 55ms (cache miss)
+98 silly packumentCache full:https://registry.npmjs.org/@smithy%2fconfig-resolver set size:undefined disposed:false
+99 silly fetch manifest @smithy/middleware-endpoint@^4.1.18
+100 silly packumentCache full:https://registry.npmjs.org/@smithy%2fmiddleware-endpoint cache-miss
+101 http fetch GET 200 https://registry.npmjs.org/@smithy%2fcore 61ms (cache miss)
+102 silly packumentCache full:https://registry.npmjs.org/@smithy%2fcore set size:undefined disposed:false
+103 silly fetch manifest @smithy/middleware-retry@^4.1.19
+104 silly packumentCache full:https://registry.npmjs.org/@smithy%2fmiddleware-retry cache-miss
+105 http fetch GET 200 https://registry.npmjs.org/@smithy%2fhash-node 50ms (cache miss)
+106 silly packumentCache full:https://registry.npmjs.org/@smithy%2fhash-node set size:undefined disposed:false
+107 silly fetch manifest @smithy/middleware-serde@^4.0.9
+108 silly packumentCache full:https://registry.npmjs.org/@smithy%2fmiddleware-serde cache-miss
+109 http fetch GET 200 https://registry.npmjs.org/@smithy%2ffetch-http-handler 58ms (cache miss)
+110 silly packumentCache full:https://registry.npmjs.org/@smithy%2ffetch-http-handler set size:undefined disposed:false
+111 silly fetch manifest @smithy/middleware-stack@^4.0.5
+112 silly packumentCache full:https://registry.npmjs.org/@smithy%2fmiddleware-stack cache-miss
+113 http fetch GET 200 https://registry.npmjs.org/@smithy%2finvalid-dependency 45ms (cache miss)
+114 silly packumentCache full:https://registry.npmjs.org/@smithy%2finvalid-dependency set size:undefined disposed:false
+115 silly fetch manifest @smithy/node-config-provider@^4.1.4
+116 silly packumentCache full:https://registry.npmjs.org/@smithy%2fnode-config-provider cache-miss
+117 http fetch GET 200 https://registry.npmjs.org/@smithy%2fmiddleware-content-length 45ms (cache miss)
+118 silly packumentCache full:https://registry.npmjs.org/@smithy%2fmiddleware-content-length set size:undefined disposed:false
+119 silly fetch manifest @smithy/node-http-handler@^4.1.1
+120 silly packumentCache full:https://registry.npmjs.org/@smithy%2fnode-http-handler cache-miss
+121 http fetch GET 200 https://registry.npmjs.org/@smithy%2fmiddleware-endpoint 47ms (cache miss)
+122 silly packumentCache full:https://registry.npmjs.org/@smithy%2fmiddleware-endpoint set size:undefined disposed:false
+123 silly fetch manifest @smithy/protocol-http@^5.1.3
+124 silly packumentCache full:https://registry.npmjs.org/@smithy%2fprotocol-http cache-miss
+125 http fetch GET 200 https://registry.npmjs.org/@smithy%2fmiddleware-serde 36ms (cache miss)
+126 silly packumentCache full:https://registry.npmjs.org/@smithy%2fmiddleware-serde set size:undefined disposed:false
+127 silly fetch manifest @smithy/smithy-client@^4.4.10
+128 silly packumentCache full:https://registry.npmjs.org/@smithy%2fsmithy-client cache-miss
+129 http fetch GET 200 https://registry.npmjs.org/@smithy%2fmiddleware-retry 51ms (cache miss)
+130 silly packumentCache full:https://registry.npmjs.org/@smithy%2fmiddleware-retry set size:undefined disposed:false
+131 silly fetch manifest @smithy/types@^4.3.2
+132 silly packumentCache full:https://registry.npmjs.org/@smithy%2ftypes cache-miss
+133 http fetch GET 200 https://registry.npmjs.org/@smithy%2fnode-config-provider 44ms (cache miss)
+134 silly packumentCache full:https://registry.npmjs.org/@smithy%2fnode-config-provider set size:undefined disposed:false
+135 silly fetch manifest @smithy/url-parser@^4.0.5
+136 silly packumentCache full:https://registry.npmjs.org/@smithy%2furl-parser cache-miss
+137 http fetch GET 200 https://registry.npmjs.org/@smithy%2fmiddleware-stack 56ms (cache miss)
+138 silly packumentCache full:https://registry.npmjs.org/@smithy%2fmiddleware-stack set size:undefined disposed:false
+139 silly fetch manifest @smithy/util-base64@^4.0.0
+140 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-base64 cache-miss
+141 http fetch GET 200 https://registry.npmjs.org/@smithy%2fnode-http-handler 42ms (cache miss)
+142 silly packumentCache full:https://registry.npmjs.org/@smithy%2fnode-http-handler set size:undefined disposed:false
+143 silly fetch manifest @smithy/util-body-length-browser@^4.0.0
+144 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-body-length-browser cache-miss
+145 http fetch GET 200 https://registry.npmjs.org/@smithy%2fsmithy-client 43ms (cache miss)
+146 silly packumentCache full:https://registry.npmjs.org/@smithy%2fsmithy-client set size:undefined disposed:false
+147 silly fetch manifest @smithy/util-body-length-node@^4.0.0
+148 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-body-length-node cache-miss
+149 http fetch GET 200 https://registry.npmjs.org/@smithy%2fprotocol-http 53ms (cache miss)
+150 silly packumentCache full:https://registry.npmjs.org/@smithy%2fprotocol-http set size:undefined disposed:false
+151 silly fetch manifest @smithy/util-defaults-mode-browser@^4.0.26
+152 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-defaults-mode-browser cache-miss
+153 http fetch GET 200 https://registry.npmjs.org/@smithy%2furl-parser 38ms (cache miss)
+154 silly packumentCache full:https://registry.npmjs.org/@smithy%2furl-parser set size:undefined disposed:false
+155 silly fetch manifest @smithy/util-defaults-mode-node@^4.0.26
+156 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-defaults-mode-node cache-miss
+157 http fetch GET 200 https://registry.npmjs.org/@smithy%2futil-base64 38ms (cache miss)
+158 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-base64 set size:undefined disposed:false
+159 silly fetch manifest @smithy/util-endpoints@^3.0.7
+160 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-endpoints cache-miss
+161 http fetch GET 200 https://registry.npmjs.org/@smithy%2ftypes 58ms (cache miss)
+162 silly packumentCache full:https://registry.npmjs.org/@smithy%2ftypes set size:undefined disposed:false
+163 silly fetch manifest @smithy/util-middleware@^4.0.5
+164 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-middleware cache-miss
+165 http fetch GET 200 https://registry.npmjs.org/@smithy%2futil-body-length-node 37ms (cache miss)
+166 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-body-length-node set size:undefined disposed:false
+167 silly fetch manifest @smithy/util-retry@^4.0.7
+168 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-retry cache-miss
+169 http fetch GET 200 https://registry.npmjs.org/@smithy%2futil-defaults-mode-node 43ms (cache miss)
+170 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-defaults-mode-node set size:undefined disposed:false
+171 silly fetch manifest @smithy/util-utf8@^4.0.0
+172 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-utf8 cache-miss
+173 http fetch GET 200 https://registry.npmjs.org/@smithy%2futil-body-length-browser 76ms (cache miss)
+174 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-body-length-browser set size:undefined disposed:false
+175 http fetch GET 200 https://registry.npmjs.org/@smithy%2futil-defaults-mode-browser 59ms (cache miss)
+176 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-defaults-mode-browser set size:undefined disposed:false
+177 http fetch GET 200 https://registry.npmjs.org/@smithy%2futil-endpoints 50ms (cache miss)
+178 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-endpoints set size:undefined disposed:false
+179 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2futil-endpoints 258ms (cache miss)
+180 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2futil-endpoints set size:undefined disposed:false
+181 http fetch GET 200 https://registry.npmjs.org/@smithy%2futil-middleware 47ms (cache miss)
+182 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-middleware set size:undefined disposed:false
+183 http fetch GET 200 https://registry.npmjs.org/@smithy%2futil-retry 36ms (cache miss)
+184 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-retry set size:undefined disposed:false
+185 http fetch GET 200 https://registry.npmjs.org/@smithy%2futil-utf8 73ms (cache miss)
+186 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-utf8 set size:undefined disposed:false
+187 silly fetch manifest aws-crt@>=1.0.0
+188 silly packumentCache full:https://registry.npmjs.org/aws-crt cache-miss
+189 http fetch GET 200 https://registry.npmjs.org/aws-crt 43ms (cache miss)
+190 silly packumentCache full:https://registry.npmjs.org/aws-crt set size:undefined disposed:false
+191 silly placeDep ROOT @aws-crypto/sha256-browser@5.2.0 OK for: @aws-sdk/client-sesv2@3.876.0 want: 5.2.0
+192 silly placeDep ROOT @aws-crypto/sha256-js@5.2.0 OK for: @aws-sdk/client-sesv2@3.876.0 want: 5.2.0
+193 silly placeDep ROOT @aws-sdk/core@3.876.0 OK for: @aws-sdk/client-sesv2@3.876.0 want: 3.876.0
+194 silly placeDep ROOT @aws-sdk/credential-provider-node@3.876.0 OK for: @aws-sdk/client-sesv2@3.876.0 want: 3.876.0
+195 silly placeDep ROOT @aws-sdk/middleware-host-header@3.873.0 OK for: @aws-sdk/client-sesv2@3.876.0 want: 3.873.0
+196 silly placeDep ROOT @aws-sdk/middleware-logger@3.876.0 OK for: @aws-sdk/client-sesv2@3.876.0 want: 3.876.0
+197 silly placeDep ROOT @aws-sdk/middleware-recursion-detection@3.873.0 OK for: @aws-sdk/client-sesv2@3.876.0 want: 3.873.0
+198 silly placeDep ROOT @aws-sdk/middleware-user-agent@3.876.0 OK for: @aws-sdk/client-sesv2@3.876.0 want: 3.876.0
+199 silly placeDep ROOT @aws-sdk/region-config-resolver@3.873.0 OK for: @aws-sdk/client-sesv2@3.876.0 want: 3.873.0
+200 silly placeDep ROOT @aws-sdk/signature-v4-multi-region@3.876.0 OK for: @aws-sdk/client-sesv2@3.876.0 want: 3.876.0
+201 silly placeDep ROOT @aws-sdk/types@3.862.0 OK for: @aws-sdk/client-sesv2@3.876.0 want: 3.862.0
+202 silly placeDep ROOT @aws-sdk/util-endpoints@3.873.0 OK for: @aws-sdk/client-sesv2@3.876.0 want: 3.873.0
+203 silly placeDep ROOT @aws-sdk/util-user-agent-browser@3.873.0 OK for: @aws-sdk/client-sesv2@3.876.0 want: 3.873.0
+204 silly placeDep ROOT @aws-sdk/util-user-agent-node@3.876.0 OK for: @aws-sdk/client-sesv2@3.876.0 want: 3.876.0
+205 silly placeDep ROOT @smithy/config-resolver@4.1.5 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^4.1.5
+206 silly placeDep ROOT @smithy/core@3.9.0 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^3.8.0
+207 silly placeDep ROOT @smithy/fetch-http-handler@5.1.1 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^5.1.1
+208 silly placeDep ROOT @smithy/hash-node@4.0.5 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^4.0.5
+209 silly placeDep ROOT @smithy/invalid-dependency@4.0.5 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^4.0.5
+210 silly placeDep ROOT @smithy/middleware-content-length@4.0.5 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^4.0.5
+211 silly placeDep ROOT @smithy/middleware-endpoint@4.1.19 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^4.1.18
+212 silly placeDep ROOT @smithy/middleware-retry@4.1.20 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^4.1.19
+213 silly placeDep ROOT @smithy/middleware-serde@4.0.9 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^4.0.9
+214 silly placeDep ROOT @smithy/middleware-stack@4.0.5 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^4.0.5
+215 silly placeDep ROOT @smithy/node-config-provider@4.1.4 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^4.1.4
+216 silly placeDep ROOT @smithy/node-http-handler@4.1.1 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^4.1.1
+217 silly placeDep ROOT @smithy/protocol-http@5.1.3 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^5.1.3
+218 silly placeDep ROOT @smithy/smithy-client@4.5.0 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^4.4.10
+219 silly placeDep ROOT @smithy/types@4.3.2 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^4.3.2
+220 silly placeDep ROOT @smithy/url-parser@4.0.5 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^4.0.5
+221 silly placeDep ROOT @smithy/util-base64@4.0.0 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^4.0.0
+222 silly placeDep ROOT @smithy/util-body-length-browser@4.0.0 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^4.0.0
+223 silly placeDep ROOT @smithy/util-body-length-node@4.0.0 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^4.0.0
+224 silly placeDep ROOT @smithy/util-defaults-mode-browser@4.0.27 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^4.0.26
+225 silly placeDep ROOT @smithy/util-defaults-mode-node@4.0.27 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^4.0.26
+226 silly placeDep ROOT @smithy/util-endpoints@3.0.7 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^3.0.7
+227 silly placeDep ROOT @smithy/util-middleware@4.0.5 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^4.0.5
+228 silly placeDep ROOT @smithy/util-retry@4.0.7 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^4.0.7
+229 silly placeDep ROOT @smithy/util-utf8@4.0.0 OK for: @aws-sdk/client-sesv2@3.876.0 want: ^4.0.0
+230 silly fetch manifest @aws-sdk/types@^3.222.0
+231 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2ftypes cache-miss
+232 silly fetch manifest @aws-crypto/util@^5.2.0
+233 silly packumentCache full:https://registry.npmjs.org/@aws-crypto%2futil cache-miss
+234 silly fetch manifest @smithy/util-utf8@^2.0.0
+235 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-utf8 cache-miss
+236 silly fetch manifest @aws-crypto/sha256-js@^5.2.0
+237 silly packumentCache full:https://registry.npmjs.org/@aws-crypto%2fsha256-js cache-miss
+238 silly fetch manifest @aws-sdk/util-locate-window@^3.0.0
+239 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2futil-locate-window cache-miss
+240 silly fetch manifest @aws-crypto/supports-web-crypto@^5.2.0
+241 silly packumentCache full:https://registry.npmjs.org/@aws-crypto%2fsupports-web-crypto cache-miss
+242 silly fetch manifest @aws-sdk/types@^3.222.0
+243 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2ftypes cache-miss
+244 http cache https://registry.npmjs.org/@aws-crypto%2fsha256-js 7ms (cache hit)
+245 silly packumentCache full:https://registry.npmjs.org/@aws-crypto%2fsha256-js set size:54628 disposed:false
+246 silly fetch manifest @aws-crypto/util@^5.2.0
+247 silly packumentCache full:https://registry.npmjs.org/@aws-crypto%2futil cache-miss
+248 http cache https://registry.npmjs.org/@aws-sdk%2ftypes 8ms (cache hit)
+249 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2ftypes set size:457665 disposed:false
+250 silly fetch manifest @aws-sdk/xml-builder@3.873.0
+251 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fxml-builder cache-miss
+252 http cache https://registry.npmjs.org/@smithy%2futil-utf8 11ms (cache hit)
+253 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-utf8 set size:38635 disposed:false
+254 silly fetch manifest @smithy/property-provider@^4.0.5
+255 silly packumentCache full:https://registry.npmjs.org/@smithy%2fproperty-provider cache-miss
+256 http cache https://registry.npmjs.org/@aws-sdk%2ftypes 12ms (cache hit)
+257 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2ftypes set size:457665 disposed:false
+258 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2ftypes dispose
+259 silly fetch manifest @smithy/signature-v4@^5.1.3
+260 silly packumentCache full:https://registry.npmjs.org/@smithy%2fsignature-v4 cache-miss
+261 http fetch GET 200 https://registry.npmjs.org/@aws-crypto%2fsupports-web-crypto 39ms (cache miss)
+262 silly packumentCache full:https://registry.npmjs.org/@aws-crypto%2fsupports-web-crypto set size:undefined disposed:false
+263 silly fetch manifest fast-xml-parser@5.2.5
+264 silly packumentCache full:https://registry.npmjs.org/fast-xml-parser cache-miss
+265 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2fxml-builder 47ms (cache miss)
+266 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fxml-builder set size:undefined disposed:false
+267 silly fetch manifest @aws-sdk/credential-provider-env@3.876.0
+268 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fcredential-provider-env cache-miss
+269 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2futil-locate-window 61ms (cache miss)
+270 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2futil-locate-window set size:undefined disposed:false
+271 silly fetch manifest @aws-sdk/credential-provider-http@3.876.0
+272 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fcredential-provider-http cache-miss
+273 http fetch GET 200 https://registry.npmjs.org/@aws-crypto%2futil 63ms (cache miss)
+274 silly packumentCache full:https://registry.npmjs.org/@aws-crypto%2futil set size:undefined disposed:false
+275 silly fetch manifest @aws-sdk/credential-provider-ini@3.876.0
+276 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fcredential-provider-ini cache-miss
+277 http fetch GET 200 https://registry.npmjs.org/@aws-crypto%2futil 56ms (cache miss)
+278 silly packumentCache full:https://registry.npmjs.org/@aws-crypto%2futil set size:undefined disposed:false
+279 silly fetch manifest @aws-sdk/credential-provider-process@3.876.0
+280 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fcredential-provider-process cache-miss
+281 http fetch GET 200 https://registry.npmjs.org/@smithy%2fproperty-provider 54ms (cache miss)
+282 silly packumentCache full:https://registry.npmjs.org/@smithy%2fproperty-provider set size:undefined disposed:false
+283 silly fetch manifest @aws-sdk/credential-provider-sso@3.876.0
+284 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fcredential-provider-sso cache-miss
+285 http fetch GET 200 https://registry.npmjs.org/@smithy%2fsignature-v4 59ms (cache miss)
+286 silly packumentCache full:https://registry.npmjs.org/@smithy%2fsignature-v4 set size:undefined disposed:false
+287 silly fetch manifest @aws-sdk/credential-provider-web-identity@3.876.0
+288 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fcredential-provider-web-identity cache-miss
+289 http fetch GET 200 https://registry.npmjs.org/fast-xml-parser 45ms (cache miss)
+290 silly packumentCache full:https://registry.npmjs.org/fast-xml-parser set size:undefined disposed:false
+291 silly fetch manifest @smithy/credential-provider-imds@^4.0.7
+292 silly packumentCache full:https://registry.npmjs.org/@smithy%2fcredential-provider-imds cache-miss
+293 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2fcredential-provider-http 75ms (cache miss)
+294 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fcredential-provider-http set size:undefined disposed:false
+295 silly fetch manifest @smithy/shared-ini-file-loader@^4.0.5
+296 silly packumentCache full:https://registry.npmjs.org/@smithy%2fshared-ini-file-loader cache-miss
+297 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2fcredential-provider-sso 73ms (cache miss)
+298 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fcredential-provider-sso set size:undefined disposed:false
+299 silly fetch manifest @smithy/util-config-provider@^4.0.0
+300 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-config-provider cache-miss
+301 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2fcredential-provider-process 85ms (cache miss)
+302 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fcredential-provider-process set size:undefined disposed:false
+303 silly fetch manifest @aws-sdk/middleware-sdk-s3@3.876.0
+304 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fmiddleware-sdk-s3 cache-miss
+305 http fetch GET 200 https://registry.npmjs.org/@smithy%2fcredential-provider-imds 95ms (cache miss)
+306 silly packumentCache full:https://registry.npmjs.org/@smithy%2fcredential-provider-imds set size:undefined disposed:false
+307 silly fetch manifest bowser@^2.11.0
+308 silly packumentCache full:https://registry.npmjs.org/bowser cache-miss
+309 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2fcredential-provider-web-identity 110ms (cache miss)
+310 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fcredential-provider-web-identity set size:undefined disposed:false
+311 silly fetch manifest @smithy/util-config-provider@^4.0.0
+312 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-config-provider cache-miss
+313 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2fcredential-provider-ini 128ms (cache miss)
+314 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fcredential-provider-ini set size:undefined disposed:false
+315 silly fetch manifest @smithy/util-stream@^4.2.4
+316 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-stream cache-miss
+317 http fetch GET 200 https://registry.npmjs.org/@smithy%2futil-config-provider 53ms (cache miss)
+318 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-config-provider set size:undefined disposed:false
+319 silly fetch manifest @types/uuid@^9.0.1
+320 silly packumentCache full:https://registry.npmjs.org/@types%2fuuid cache-miss
+321 http fetch GET 200 https://registry.npmjs.org/@smithy%2fshared-ini-file-loader 66ms (cache miss)
+322 silly packumentCache full:https://registry.npmjs.org/@smithy%2fshared-ini-file-loader set size:undefined disposed:false
+323 silly fetch manifest uuid@^9.0.1
+324 silly packumentCache full:https://registry.npmjs.org/uuid cache-miss
+325 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2fmiddleware-sdk-s3 60ms (cache miss)
+326 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fmiddleware-sdk-s3 set size:undefined disposed:false
+327 silly fetch manifest @smithy/querystring-builder@^4.0.5
+328 silly packumentCache full:https://registry.npmjs.org/@smithy%2fquerystring-builder cache-miss
+329 http fetch GET 200 https://registry.npmjs.org/bowser 37ms (cache miss)
+330 silly packumentCache full:https://registry.npmjs.org/bowser set size:undefined disposed:false
+331 silly fetch manifest @smithy/util-buffer-from@^4.0.0
+332 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-buffer-from cache-miss
+333 http fetch GET 200 https://registry.npmjs.org/@smithy%2futil-config-provider 37ms (cache miss)
+334 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-config-provider set size:undefined disposed:false
+335 silly fetch manifest @smithy/service-error-classification@^4.0.7
+336 silly packumentCache full:https://registry.npmjs.org/@smithy%2fservice-error-classification cache-miss
+337 http fetch GET 200 https://registry.npmjs.org/@types%2fuuid 31ms (cache miss)
+338 silly packumentCache full:https://registry.npmjs.org/@types%2fuuid set size:undefined disposed:false
+339 silly fetch manifest @smithy/smithy-client@^4.5.0
+340 silly packumentCache full:https://registry.npmjs.org/@smithy%2fsmithy-client cache-miss
+341 http cache https://registry.npmjs.org/@smithy%2fsmithy-client 4ms (cache hit)
+342 silly packumentCache full:https://registry.npmjs.org/@smithy%2fsmithy-client set size:344470 disposed:false
+343 silly fetch manifest uuid@^9.0.1
+344 silly packumentCache full:https://registry.npmjs.org/uuid cache-miss
+345 http fetch GET 200 https://registry.npmjs.org/uuid 36ms (cache miss)
+346 silly packumentCache full:https://registry.npmjs.org/uuid set size:undefined disposed:false
+347 silly fetch manifest @smithy/abort-controller@^4.0.5
+348 silly packumentCache full:https://registry.npmjs.org/@smithy%2fabort-controller cache-miss
+349 http fetch GET 200 https://registry.npmjs.org/@smithy%2futil-stream 50ms (cache miss)
+350 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-stream set size:undefined disposed:false
+351 silly fetch manifest @smithy/querystring-builder@^4.0.5
+352 silly packumentCache full:https://registry.npmjs.org/@smithy%2fquerystring-builder cache-miss
+353 http fetch GET 200 https://registry.npmjs.org/uuid 23ms (cache miss)
+354 silly packumentCache full:https://registry.npmjs.org/uuid set size:undefined disposed:false
+355 silly fetch manifest @smithy/querystring-parser@^4.0.5
+356 silly packumentCache full:https://registry.npmjs.org/@smithy%2fquerystring-parser cache-miss
+357 http fetch GET 200 https://registry.npmjs.org/@smithy%2fservice-error-classification 36ms (cache miss)
+358 silly packumentCache full:https://registry.npmjs.org/@smithy%2fservice-error-classification set size:undefined disposed:false
+359 silly fetch manifest @smithy/util-buffer-from@^4.0.0
+360 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-buffer-from cache-miss
+361 http fetch GET 200 https://registry.npmjs.org/@smithy%2fquerystring-builder 51ms (cache miss)
+362 silly packumentCache full:https://registry.npmjs.org/@smithy%2fquerystring-builder set size:undefined disposed:false
+363 silly fetch manifest @smithy/util-buffer-from@^4.0.0
+364 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-buffer-from cache-miss
+365 http fetch GET 200 https://registry.npmjs.org/@smithy%2futil-buffer-from 45ms (cache miss)
+366 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-buffer-from set size:undefined disposed:false
+367 http cache https://registry.npmjs.org/@smithy%2futil-buffer-from 2ms (cache hit)
+368 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-buffer-from set size:31498 disposed:false
+369 http fetch GET 200 https://registry.npmjs.org/@smithy%2fabort-controller 54ms (cache miss)
+370 silly packumentCache full:https://registry.npmjs.org/@smithy%2fabort-controller set size:undefined disposed:false
+371 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2fcredential-provider-env 243ms (cache miss)
+372 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fcredential-provider-env set size:undefined disposed:false
+373 http fetch GET 200 https://registry.npmjs.org/@smithy%2futil-buffer-from 40ms (cache miss)
+374 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-buffer-from set size:undefined disposed:false
+375 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-buffer-from dispose
+376 http fetch GET 200 https://registry.npmjs.org/@smithy%2fquerystring-builder 55ms (cache miss)
+377 silly packumentCache full:https://registry.npmjs.org/@smithy%2fquerystring-builder set size:undefined disposed:false
+378 http fetch GET 200 https://registry.npmjs.org/@smithy%2fquerystring-parser 44ms (cache miss)
+379 silly packumentCache full:https://registry.npmjs.org/@smithy%2fquerystring-parser set size:undefined disposed:false
+380 silly placeDep ROOT @aws-crypto/supports-web-crypto@5.2.0 OK for: @aws-crypto/sha256-browser@5.2.0 want: ^5.2.0
+381 silly placeDep ROOT @aws-crypto/util@5.2.0 OK for: @aws-crypto/sha256-browser@5.2.0 want: ^5.2.0
+382 silly placeDep ROOT @aws-sdk/util-locate-window@3.873.0 OK for: @aws-crypto/sha256-browser@5.2.0 want: ^3.0.0
+383 silly placeDep node_modules/@aws-crypto/sha256-browser @smithy/util-utf8@2.3.0 OK for: @aws-crypto/sha256-browser@5.2.0 want: ^2.0.0
+384 silly fetch manifest @smithy/util-buffer-from@^2.2.0
+385 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-buffer-from cache-miss
+386 http cache https://registry.npmjs.org/@smithy%2futil-buffer-from 2ms (cache hit)
+387 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-buffer-from set size:31498 disposed:true
+388 silly placeDep node_modules/@aws-crypto/util @smithy/util-utf8@2.3.0 OK for: @aws-crypto/util@5.2.0 want: ^2.0.0
+389 silly placeDep ROOT @aws-sdk/xml-builder@3.873.0 OK for: @aws-sdk/core@3.876.0 want: 3.873.0
+390 silly placeDep ROOT @smithy/property-provider@4.0.5 OK for: @aws-sdk/core@3.876.0 want: ^4.0.5
+391 silly placeDep ROOT @smithy/signature-v4@5.1.3 OK for: @aws-sdk/core@3.876.0 want: ^5.1.3
+392 silly placeDep ROOT fast-xml-parser@5.2.5 OK for: @aws-sdk/core@3.876.0 want: 5.2.5
+393 silly fetch manifest @smithy/is-array-buffer@^4.0.0
+394 silly packumentCache full:https://registry.npmjs.org/@smithy%2fis-array-buffer cache-miss
+395 silly fetch manifest @smithy/util-hex-encoding@^4.0.0
+396 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-hex-encoding cache-miss
+397 silly fetch manifest @smithy/util-uri-escape@^4.0.0
+398 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-uri-escape cache-miss
+399 silly fetch manifest strnum@^2.1.0
+400 silly packumentCache full:https://registry.npmjs.org/strnum cache-miss
+401 http fetch GET 200 https://registry.npmjs.org/strnum 32ms (cache miss)
+402 silly packumentCache full:https://registry.npmjs.org/strnum set size:undefined disposed:false
+403 http fetch GET 200 https://registry.npmjs.org/@smithy%2futil-hex-encoding 46ms (cache miss)
+404 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-hex-encoding set size:undefined disposed:false
+405 http fetch GET 200 https://registry.npmjs.org/@smithy%2futil-uri-escape 48ms (cache miss)
+406 silly packumentCache full:https://registry.npmjs.org/@smithy%2futil-uri-escape set size:undefined disposed:false
+407 http fetch GET 200 https://registry.npmjs.org/@smithy%2fis-array-buffer 59ms (cache miss)
+408 silly packumentCache full:https://registry.npmjs.org/@smithy%2fis-array-buffer set size:undefined disposed:false
+409 silly placeDep ROOT @aws-sdk/credential-provider-env@3.876.0 OK for: @aws-sdk/credential-provider-node@3.876.0 want: 3.876.0
+410 silly placeDep ROOT @aws-sdk/credential-provider-http@3.876.0 OK for: @aws-sdk/credential-provider-node@3.876.0 want: 3.876.0
+411 silly placeDep ROOT @aws-sdk/credential-provider-ini@3.876.0 OK for: @aws-sdk/credential-provider-node@3.876.0 want: 3.876.0
+412 silly placeDep ROOT @aws-sdk/credential-provider-process@3.876.0 OK for: @aws-sdk/credential-provider-node@3.876.0 want: 3.876.0
+413 silly placeDep ROOT @aws-sdk/credential-provider-sso@3.876.0 OK for: @aws-sdk/credential-provider-node@3.876.0 want: 3.876.0
+414 silly placeDep ROOT @aws-sdk/credential-provider-web-identity@3.876.0 OK for: @aws-sdk/credential-provider-node@3.876.0 want: 3.876.0
+415 silly placeDep ROOT @smithy/credential-provider-imds@4.0.7 OK for: @aws-sdk/credential-provider-node@3.876.0 want: ^4.0.7
+416 silly placeDep ROOT @smithy/shared-ini-file-loader@4.0.5 OK for: @aws-sdk/credential-provider-node@3.876.0 want: ^4.0.5
+417 silly fetch manifest @aws-sdk/nested-clients@3.876.0
+418 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fnested-clients cache-miss
+419 silly fetch manifest @aws-sdk/client-sso@3.876.0
+420 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fclient-sso cache-miss
+421 silly fetch manifest @aws-sdk/token-providers@3.876.0
+422 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2ftoken-providers cache-miss
+423 silly fetch manifest @aws-sdk/nested-clients@3.876.0
+424 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fnested-clients cache-miss
+425 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2fnested-clients 132ms (cache miss)
+426 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fnested-clients set size:undefined disposed:false
+427 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2fnested-clients 137ms (cache miss)
+428 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fnested-clients set size:undefined disposed:false
+429 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2ftoken-providers 140ms (cache miss)
+430 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2ftoken-providers set size:undefined disposed:false
+431 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2fclient-sso 156ms (cache miss)
+432 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fclient-sso set size:undefined disposed:false
+433 silly placeDep ROOT @smithy/util-stream@4.2.4 OK for: @aws-sdk/credential-provider-http@3.876.0 want: ^4.2.4
+434 silly placeDep ROOT @aws-sdk/nested-clients@3.876.0 OK for: @aws-sdk/credential-provider-ini@3.876.0 want: 3.876.0
+435 silly placeDep ROOT @aws-sdk/client-sso@3.876.0 OK for: @aws-sdk/credential-provider-sso@3.876.0 want: 3.876.0
+436 silly placeDep ROOT @aws-sdk/token-providers@3.876.0 OK for: @aws-sdk/credential-provider-sso@3.876.0 want: 3.876.0
+437 silly placeDep ROOT @smithy/util-config-provider@4.0.0 OK for: @aws-sdk/region-config-resolver@3.873.0 want: ^4.0.0
+438 silly placeDep ROOT @aws-sdk/middleware-sdk-s3@3.876.0 OK for: @aws-sdk/signature-v4-multi-region@3.876.0 want: 3.876.0
+439 silly fetch manifest @aws-sdk/util-arn-parser@3.873.0
+440 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2futil-arn-parser cache-miss
+441 http fetch GET 200 https://registry.npmjs.org/@aws-sdk%2futil-arn-parser 50ms (cache miss)
+442 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2futil-arn-parser set size:undefined disposed:false
+443 silly placeDep ROOT @aws-sdk/util-arn-parser@3.873.0 OK for: @aws-sdk/middleware-sdk-s3@3.876.0 want: 3.873.0
+444 silly placeDep ROOT bowser@2.12.1 OK for: @aws-sdk/util-user-agent-browser@3.873.0 want: ^2.11.0
+445 silly placeDep ROOT @types/uuid@9.0.8 OK for: @smithy/core@3.9.0 want: ^9.0.1
+446 silly placeDep ROOT uuid@9.0.1 OK for: @smithy/core@3.9.0 want: ^9.0.1
+447 silly placeDep ROOT @smithy/querystring-builder@4.0.5 OK for: @smithy/fetch-http-handler@5.1.1 want: ^4.0.5
+448 silly placeDep ROOT @smithy/util-buffer-from@4.0.0 OK for: @smithy/hash-node@4.0.5 want: ^4.0.0
+449 silly placeDep ROOT @smithy/service-error-classification@4.0.7 OK for: @smithy/middleware-retry@4.1.20 want: ^4.0.7
+450 silly placeDep ROOT @smithy/abort-controller@4.0.5 OK for: @smithy/node-http-handler@4.1.1 want: ^4.0.5
+451 silly placeDep ROOT @smithy/util-uri-escape@4.0.0 OK for: @smithy/querystring-builder@4.0.5 want: ^4.0.0
+452 silly placeDep ROOT @smithy/is-array-buffer@4.0.0 OK for: @smithy/signature-v4@5.1.3 want: ^4.0.0
+453 silly placeDep ROOT @smithy/util-hex-encoding@4.0.0 OK for: @smithy/signature-v4@5.1.3 want: ^4.0.0
+454 silly placeDep ROOT @smithy/querystring-parser@4.0.5 OK for: @smithy/url-parser@4.0.5 want: ^4.0.5
+455 silly placeDep ROOT strnum@2.1.1 OK for: fast-xml-parser@5.2.5 want: ^2.1.0
+456 silly placeDep node_modules/@aws-crypto/sha256-browser @smithy/util-buffer-from@2.2.0 OK for: @smithy/util-utf8@2.3.0 want: ^2.2.0
+457 silly fetch manifest @smithy/is-array-buffer@^2.2.0
+458 silly packumentCache full:https://registry.npmjs.org/@smithy%2fis-array-buffer cache-miss
+459 http cache https://registry.npmjs.org/@smithy%2fis-array-buffer 3ms (cache hit)
+460 silly packumentCache full:https://registry.npmjs.org/@smithy%2fis-array-buffer set size:28725 disposed:false
+461 silly placeDep node_modules/@aws-crypto/sha256-browser @smithy/is-array-buffer@2.2.0 OK for: @smithy/util-buffer-from@2.2.0 want: ^2.2.0
+462 silly placeDep node_modules/@aws-crypto/util @smithy/util-buffer-from@2.2.0 OK for: @smithy/util-utf8@2.3.0 want: ^2.2.0
+463 silly placeDep node_modules/@aws-crypto/util @smithy/is-array-buffer@2.2.0 OK for: @smithy/util-buffer-from@2.2.0 want: ^2.2.0
+464 silly reify moves {}
+465 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-wasm32-wasi
+466 silly reify mark deleted [
+466 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-wasm32-wasi'
+466 silly reify ]
+467 silly audit bulk request {
+467 silly audit   '@alloc/quick-lru': [ '5.2.0' ],
+467 silly audit   '@ampproject/remapping': [ '2.3.0' ],
+467 silly audit   '@babel/code-frame': [ '7.27.1' ],
+467 silly audit   '@babel/compat-data': [ '7.28.0' ],
+467 silly audit   '@babel/core': [ '7.28.3' ],
+467 silly audit   '@babel/generator': [ '7.28.3' ],
+467 silly audit   '@babel/helper-compilation-targets': [ '7.27.2' ],
+467 silly audit   '@babel/helper-globals': [ '7.28.0' ],
+467 silly audit   '@babel/helper-module-imports': [ '7.27.1' ],
+467 silly audit   '@babel/helper-module-transforms': [ '7.28.3' ],
+467 silly audit   '@babel/helper-plugin-utils': [ '7.27.1' ],
+467 silly audit   '@babel/helper-string-parser': [ '7.27.1' ],
+467 silly audit   '@babel/helper-validator-identifier': [ '7.27.1' ],
+467 silly audit   '@babel/helper-validator-option': [ '7.27.1' ],
+467 silly audit   '@babel/helpers': [ '7.28.3' ],
+467 silly audit   '@babel/parser': [ '7.28.3' ],
+467 silly audit   '@babel/plugin-transform-react-jsx-self': [ '7.27.1' ],
+467 silly audit   '@babel/plugin-transform-react-jsx-source': [ '7.27.1' ],
+467 silly audit   '@babel/runtime': [ '7.28.3' ],
+467 silly audit   '@babel/template': [ '7.27.2' ],
+467 silly audit   '@babel/traverse': [ '7.28.3' ],
+467 silly audit   '@babel/types': [ '7.28.2' ],
+467 silly audit   '@drizzle-team/brocli': [ '0.10.2' ],
+467 silly audit   '@esbuild-kit/core-utils': [ '3.3.2' ],
+467 silly audit   '@esbuild/android-arm': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/android-arm64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/android-x64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/darwin-arm64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/darwin-x64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/freebsd-arm64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/freebsd-x64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/linux-arm': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/linux-arm64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/linux-ia32': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/linux-loong64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/linux-mips64el': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/linux-ppc64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/linux-riscv64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/linux-s390x': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/linux-x64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/netbsd-x64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/openbsd-x64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/sunos-x64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/win32-arm64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/win32-ia32': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/win32-x64': [ '0.18.20', '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   esbuild: [ '0.18.20', '0.19.12', '0.25.9', '0.21.5' ],
+467 silly audit   '@esbuild-kit/esm-loader': [ '2.6.5' ],
+467 silly audit   '@esbuild/aix-ppc64': [ '0.25.9', '0.19.12', '0.21.5' ],
+467 silly audit   '@esbuild/netbsd-arm64': [ '0.25.9' ],
+467 silly audit   '@esbuild/openbsd-arm64': [ '0.25.9' ],
+467 silly audit   '@esbuild/openharmony-arm64': [ '0.25.9' ],
+467 silly audit   '@floating-ui/core': [ '1.7.3' ],
+467 silly audit   '@floating-ui/dom': [ '1.7.3' ],
+467 silly audit   '@floating-ui/react-dom': [ '2.1.5' ],
+467 silly audit   '@floating-ui/utils': [ '0.2.10' ],
+467 silly audit   '@hookform/resolvers': [ '3.10.0' ],
+467 silly audit   '@isaacs/cliui': [ '8.0.2' ],
+467 silly audit   '@isaacs/fs-minipass': [ '4.0.1' ],
+467 silly audit   '@jridgewell/gen-mapping': [ '0.3.13' ],
+467 silly audit   '@jridgewell/remapping': [ '2.3.5' ],
+467 silly audit   '@jridgewell/resolve-uri': [ '3.1.2' ],
+467 silly audit   '@jridgewell/sourcemap-codec': [ '1.5.5' ],
+467 silly audit   '@jridgewell/trace-mapping': [ '0.3.30' ],
+467 silly audit   '@neondatabase/serverless': [ '0.10.4' ],
+467 silly audit   '@nodelib/fs.scandir': [ '2.1.5' ],
+467 silly audit   '@nodelib/fs.stat': [ '2.0.5' ],
+467 silly audit   '@nodelib/fs.walk': [ '1.2.8' ],
+467 silly audit   '@petamoriken/float16': [ '3.9.2' ],
+467 silly audit   '@pkgjs/parseargs': [ '0.11.0' ],
+467 silly audit   '@radix-ui/number': [ '1.1.1' ],
+467 silly audit   '@radix-ui/primitive': [ '1.1.3' ],
+467 silly audit   '@radix-ui/react-accordion': [ '1.2.12' ],
+467 silly audit   '@radix-ui/react-alert-dialog': [ '1.1.15' ],
+467 silly audit   '@radix-ui/react-arrow': [ '1.1.7' ],
+467 silly audit   '@radix-ui/react-aspect-ratio': [ '1.1.7' ],
+467 silly audit   '@radix-ui/react-avatar': [ '1.1.10' ],
+467 silly audit   '@radix-ui/react-checkbox': [ '1.3.3' ],
+467 silly audit   '@radix-ui/react-collapsible': [ '1.1.12' ],
+467 silly audit   '@radix-ui/react-collection': [ '1.1.7' ],
+467 silly audit   '@radix-ui/react-compose-refs': [ '1.1.2' ],
+467 silly audit   '@radix-ui/react-context': [ '1.1.2' ],
+467 silly audit   '@radix-ui/react-context-menu': [ '2.2.16' ],
+467 silly audit   '@radix-ui/react-dialog': [ '1.1.15' ],
+467 silly audit   '@radix-ui/react-direction': [ '1.1.1' ],
+467 silly audit   '@radix-ui/react-dismissable-layer': [ '1.1.11' ],
+467 silly audit   '@radix-ui/react-dropdown-menu': [ '2.1.16' ],
+467 silly audit   '@radix-ui/react-focus-guards': [ '1.1.3' ],
+467 silly audit   '@radix-ui/react-focus-scope': [ '1.1.7' ],
+467 silly audit   '@radix-ui/react-hover-card': [ '1.1.15' ],
+467 silly audit   '@radix-ui/react-id': [ '1.1.1' ],
+467 silly audit   '@radix-ui/react-label': [ '2.1.7' ],
+467 silly audit   '@radix-ui/react-menu': [ '2.1.16' ],
+467 silly audit   '@radix-ui/react-menubar': [ '1.1.16' ],
+467 silly audit   '@radix-ui/react-navigation-menu': [ '1.2.14' ],
+467 silly audit   '@radix-ui/react-popover': [ '1.1.15' ],
+467 silly audit   '@radix-ui/react-popper': [ '1.2.8' ],
+467 silly audit   '@radix-ui/react-portal': [ '1.1.9' ],
+467 silly audit   '@radix-ui/react-presence': [ '1.1.5' ],
+467 silly audit   '@radix-ui/react-primitive': [ '2.1.3' ],
+467 silly audit   '@radix-ui/react-progress': [ '1.1.7' ],
+467 silly audit   '@radix-ui/react-radio-group': [ '1.3.8' ],
+467 silly audit   '@radix-ui/react-roving-focus': [ '1.1.11' ],
+467 silly audit   '@radix-ui/react-scroll-area': [ '1.2.10' ],
+467 silly audit   '@radix-ui/react-select': [ '2.2.6' ],
+467 silly audit   '@radix-ui/react-separator': [ '1.1.7' ],
+467 silly audit   '@radix-ui/react-slider': [ '1.3.6' ],
+467 silly audit   '@radix-ui/react-slot': [ '1.2.3' ],
+467 silly audit   '@radix-ui/react-switch': [ '1.2.6' ],
+467 silly audit   '@radix-ui/react-tabs': [ '1.1.13' ],
+467 silly audit   '@radix-ui/react-toast': [ '1.2.15' ],
+467 silly audit   '@radix-ui/react-toggle': [ '1.1.10' ],
+467 silly audit   '@radix-ui/react-toggle-group': [ '1.1.11' ],
+467 silly audit   '@radix-ui/react-tooltip': [ '1.2.8' ],
+467 silly audit   '@radix-ui/react-use-callback-ref': [ '1.1.1' ],
+467 silly audit   '@radix-ui/react-use-controllable-state': [ '1.2.2' ],
+467 silly audit   '@radix-ui/react-use-effect-event': [ '0.0.2' ],
+467 silly audit   '@radix-ui/react-use-escape-keydown': [ '1.1.1' ],
+467 silly audit   '@radix-ui/react-use-is-hydrated': [ '0.1.0' ],
+467 silly audit   '@radix-ui/react-use-layout-effect': [ '1.1.1' ],
+467 silly audit   '@radix-ui/react-use-previous': [ '1.1.1' ],
+467 silly audit   '@radix-ui/react-use-rect': [ '1.1.1' ],
+467 silly audit   '@radix-ui/react-use-size': [ '1.1.1' ],
+467 silly audit   '@radix-ui/react-visually-hidden': [ '1.2.3' ],
+467 silly audit   '@radix-ui/rect': [ '1.1.1' ],
+467 silly audit   '@replit/vite-plugin-cartographer': [ '0.2.8' ],
+467 silly audit   '@replit/vite-plugin-runtime-error-modal': [ '0.0.3' ],
+467 silly audit   '@rolldown/pluginutils': [ '1.0.0-beta.27' ],
+467 silly audit   '@rollup/rollup-android-arm-eabi': [ '4.46.3' ],
+467 silly audit   '@rollup/rollup-android-arm64': [ '4.46.3' ],
+467 silly audit   '@rollup/rollup-darwin-arm64': [ '4.46.3' ],
+467 silly audit   '@rollup/rollup-darwin-x64': [ '4.46.3' ],
+467 silly audit   '@rollup/rollup-freebsd-arm64': [ '4.46.3' ],
+467 silly audit   '@rollup/rollup-freebsd-x64': [ '4.46.3' ],
+467 silly audit   '@rollup/rollup-linux-arm-gnueabihf': [ '4.46.3' ],
+467 silly audit   '@rollup/rollup-linux-arm-musleabihf': [ '4.46.3' ],
+467 silly audit   '@rollup/rollup-linux-arm64-gnu': [ '4.46.3' ],
+467 silly audit   '@rollup/rollup-linux-arm64-musl': [ '4.46.3' ],
+467 silly audit   '@rollup/rollup-linux-loongarch64-gnu': [ '4.46.3' ],
+467 silly audit   '@rollup/rollup-linux-ppc64-gnu': [ '4.46.3' ],
+467 silly audit   '@rollup/rollup-linux-riscv64-gnu': [ '4.46.3' ],
+467 silly audit   '@rollup/rollup-linux-riscv64-musl': [ '4.46.3' ],
+467 silly audit   '@rollup/rollup-linux-s390x-gnu': [ '4.46.3' ],
+467 silly audit   '@rollup/rollup-linux-x64-gnu': [ '4.46.3' ],
+467 silly audit   '@rollup/rollup-linux-x64-musl': [ '4.46.3' ],
+467 silly audit   '@rollup/rollup-win32-arm64-msvc': [ '4.46.3' ],
+467 silly audit   '@rollup/rollup-win32-ia32-msvc': [ '4.46.3' ],
+467 silly audit   '@rollup/rollup-win32-x64-msvc': [ '4.46.3' ],
+467 silly audit   '@supabase/auth-js': [ '2.71.1' ],
+467 silly audit   '@supabase/functions-js': [ '2.4.5' ],
+467 silly audit   '@supabase/node-fetch': [ '2.6.15' ],
+467 silly audit   '@supabase/postgrest-js': [ '1.19.4' ],
+467 silly audit   '@supabase/realtime-js': [ '2.15.1' ],
+467 silly audit   '@supabase/storage-js': [ '2.11.0' ],
+467 silly audit   '@supabase/supabase-js': [ '2.55.0' ],
+467 silly audit   '@tailwindcss/node': [ '4.1.12' ],
+467 silly audit   tailwindcss: [ '4.1.12', '3.4.17' ],
+467 silly audit   '@tailwindcss/oxide': [ '4.1.12' ],
+467 silly audit   '@tailwindcss/oxide-android-arm64': [ '4.1.12' ],
+467 silly audit   '@tailwindcss/oxide-darwin-arm64': [ '4.1.12' ],
+467 silly audit   '@tailwindcss/oxide-darwin-x64': [ '4.1.12' ],
+467 silly audit   '@tailwindcss/oxide-freebsd-x64': [ '4.1.12' ],
+467 silly audit   '@tailwindcss/oxide-linux-arm-gnueabihf': [ '4.1.12' ],
+467 silly audit   '@tailwindcss/oxide-linux-arm64-gnu': [ '4.1.12' ],
+467 silly audit   '@tailwindcss/oxide-linux-arm64-musl': [ '4.1.12' ],
+467 silly audit   '@tailwindcss/oxide-linux-x64-gnu': [ '4.1.12' ],
+467 silly audit   '@tailwindcss/oxide-linux-x64-musl': [ '4.1.12' ],
+467 silly audit   '@tailwindcss/oxide-win32-arm64-msvc': [ '4.1.12' ],
+467 silly audit   '@tailwindcss/oxide-win32-x64-msvc': [ '4.1.12' ],
+467 silly audit   '@tailwindcss/typography': [ '0.5.16' ],
+467 silly audit   '@tailwindcss/vite': [ '4.1.12' ],
+467 silly audit   '@tanstack/query-core': [ '5.85.3' ],
+467 silly audit   '@tanstack/react-query': [ '5.85.3' ],
+467 silly audit   '@types/babel__core': [ '7.20.5' ],
+467 silly audit   '@types/babel__generator': [ '7.27.0' ],
+467 silly audit   '@types/babel__template': [ '7.4.4' ],
+467 silly audit   '@types/babel__traverse': [ '7.28.0' ],
+467 silly audit   '@types/bcryptjs': [ '2.4.6' ],
+467 silly audit   '@types/body-parser': [ '1.19.6' ],
+467 silly audit   '@types/connect': [ '3.4.38' ],
+467 silly audit   '@types/connect-pg-simple': [ '7.0.3' ],
+467 silly audit   '@types/d3-array': [ '3.2.1' ],
+467 silly audit   '@types/d3-color': [ '3.1.3' ],
+467 silly audit   '@types/d3-ease': [ '3.0.2' ],
+467 silly audit   '@types/d3-interpolate': [ '3.0.4' ],
+467 silly audit   '@types/d3-path': [ '3.1.1' ],
+467 silly audit   '@types/d3-scale': [ '4.0.9' ],
+467 silly audit   '@types/d3-shape': [ '3.1.7' ],
+467 silly audit   '@types/d3-time': [ '3.0.4' ],
+467 silly audit   '@types/d3-timer': [ '3.0.2' ],
+467 silly audit   '@types/estree': [ '1.0.8' ],
+467 silly audit   '@types/express': [ '4.17.21' ],
+467 silly audit   '@types/express-serve-static-core': [ '4.19.6' ],
+467 silly audit   '@types/express-session': [ '1.18.2' ],
+467 silly audit   '@types/http-errors': [ '2.0.5' ],
+467 silly audit   '@types/mime': [ '1.3.5' ],
+467 silly audit   '@types/multer': [ '2.0.0' ],
+467 silly audit   '@types/node': [ '20.16.11' ],
+467 silly audit   '@types/passport': [ '1.0.17' ],
+467 silly audit   '@types/passport-local': [ '1.0.38' ],
+467 silly audit   '@types/passport-strategy': [ '0.2.38' ],
+467 silly audit   '@types/pg': [ '8.11.6' ],
+467 silly audit   '@types/phoenix': [ '1.6.6' ],
+467 silly audit   '@types/prop-types': [ '15.7.15' ],
+467 silly audit   '@types/qs': [ '6.14.0' ],
+467 silly audit   '@types/range-parser': [ '1.2.7' ],
+467 silly audit   '@types/react': [ '18.3.23' ],
+467 silly audit   '@types/react-dom': [ '18.3.7' ],
+467 silly audit   '@types/send': [ '0.17.5' ],
+467 silly audit   '@types/serve-static': [ '1.15.8' ],
+467 silly audit   '@types/ws': [ '8.18.1' ],
+467 silly audit   '@vitejs/plugin-react': [ '4.7.0' ],
+467 silly audit   accepts: [ '1.3.8' ],
+467 silly audit   'ansi-regex': [ '6.2.0', '5.0.1' ],
+467 silly audit   'ansi-styles': [ '6.2.1', '4.3.0' ],
+467 silly audit   'any-promise': [ '1.3.0' ],
+467 silly audit   anymatch: [ '3.1.3' ],
+467 silly audit   'append-field': [ '1.0.0' ],
+467 silly audit   arg: [ '5.0.2' ],
+467 silly audit   'aria-hidden': [ '1.2.6' ],
+467 silly audit   'array-flatten': [ '1.1.1' ],
+467 silly audit   autoprefixer: [ '10.4.21' ],
+467 silly audit   'balanced-match': [ '1.0.2' ],
+467 silly audit   bcryptjs: [ '3.0.2' ],
+467 silly audit   'binary-extensions': [ '2.3.0' ],
+467 silly audit   'body-parser': [ '1.20.3' ],
+467 silly audit   debug: [ '2.6.9', '4.4.1' ],
+467 silly audit   ms: [ '2.0.0', '2.1.3' ],
+467 silly audit   'brace-expansion': [ '2.0.2' ],
+467 silly audit   braces: [ '3.0.3' ],
+467 silly audit   browserslist: [ '4.25.3' ],
+467 silly audit   'buffer-from': [ '1.1.2' ],
+467 silly audit   bufferutil: [ '4.0.9' ],
+467 silly audit   busboy: [ '1.6.0' ],
+467 silly audit   bytes: [ '3.1.2' ],
+467 silly audit   'call-bind-apply-helpers': [ '1.0.2' ],
+467 silly audit   'call-bound': [ '1.0.4' ],
+467 silly audit   'camelcase-css': [ '2.0.1' ],
+467 silly audit   'caniuse-lite': [ '1.0.30001735' ],
+467 silly audit   chokidar: [ '3.6.0' ],
+467 silly audit   'glob-parent': [ '5.1.2', '6.0.2' ],
+467 silly audit   chownr: [ '3.0.0' ],
+467 silly audit   'class-variance-authority': [ '0.7.1' ],
+467 silly audit   clsx: [ '2.1.1' ],
+467 silly audit   cmdk: [ '1.1.1' ],
+467 silly audit   'color-convert': [ '2.0.1' ],
+467 silly audit   'color-name': [ '1.1.4' ],
+467 silly audit   commander: [ '4.1.1' ],
+467 silly audit   'concat-stream': [ '2.0.0' ],
+467 silly audit   'connect-pg-simple': [ '10.0.0' ],
+467 silly audit   'content-disposition': [ '0.5.4' ],
+467 silly audit   'content-type': [ '1.0.5' ],
+467 silly audit   'convert-source-map': [ '2.0.0' ],
+467 silly audit   cookie: [ '0.7.1', '0.7.2' ],
+467 silly audit   'cookie-signature': [ '1.0.6', '1.0.7' ],
+467 silly audit   'cross-spawn': [ '7.0.6' ],
+467 silly audit   isexe: [ '2.0.0', '3.1.1' ],
+467 silly audit   which: [ '2.0.2', '4.0.0' ],
+467 silly audit   cssesc: [ '3.0.0' ],
+467 silly audit   csstype: [ '3.1.3' ],
+467 silly audit   'd3-array': [ '3.2.4' ],
+467 silly audit   'd3-color': [ '3.1.0' ],
+467 silly audit   'd3-ease': [ '3.0.1' ],
+467 silly audit   'd3-format': [ '3.1.0' ],
+467 silly audit   'd3-interpolate': [ '3.0.1' ],
+467 silly audit   'd3-path': [ '3.1.0' ],
+467 silly audit   'd3-scale': [ '4.0.2' ],
+467 silly audit   'd3-shape': [ '3.2.0' ],
+467 silly audit   'd3-time': [ '3.1.0' ],
+467 silly audit   'd3-time-format': [ '4.1.0' ],
+467 silly audit   'd3-timer': [ '3.0.1' ],
+467 silly audit   'date-fns': [ '3.6.0' ],
+467 silly audit   'decimal.js-light': [ '2.5.1' ],
+467 silly audit   depd: [ '2.0.0' ],
+467 silly audit   destroy: [ '1.2.0' ],
+467 silly audit   'detect-libc': [ '2.0.4' ],
+467 silly audit   'detect-node-es': [ '1.1.0' ],
+467 silly audit   didyoumean: [ '1.2.2' ],
+467 silly audit   dlv: [ '1.1.3' ],
+467 silly audit   'dom-helpers': [ '5.2.1' ],
+467 silly audit   dotenv: [ '17.2.1' ],
+467 silly audit   'drizzle-kit': [ '0.30.6' ],
+467 silly audit   'drizzle-orm': [ '0.39.3' ],
+467 silly audit   'drizzle-zod': [ '0.7.1' ],
+467 silly audit   'dunder-proto': [ '1.0.1' ],
+467 silly audit   eastasianwidth: [ '0.2.0' ],
+467 silly audit   'ee-first': [ '1.1.1' ],
+467 silly audit   'electron-to-chromium': [ '1.5.206' ],
+467 silly audit   'embla-carousel': [ '8.6.0' ],
+467 silly audit   'embla-carousel-react': [ '8.6.0' ],
+467 silly audit   'embla-carousel-reactive-utils': [ '8.6.0' ],
+467 silly audit   'emoji-regex': [ '9.2.2', '8.0.0' ],
+467 silly audit   encodeurl: [ '2.0.0', '1.0.2' ],
+467 silly audit   'enhanced-resolve': [ '5.18.3' ],
+467 silly audit   'env-paths': [ '3.0.0' ],
+467 silly audit   'es-define-property': [ '1.0.1' ],
+467 silly audit   'es-errors': [ '1.3.0' ],
+467 silly audit   'es-object-atoms': [ '1.1.1' ],
+467 silly audit   'esbuild-register': [ '3.6.0' ],
+467 silly audit   escalade: [ '3.2.0' ],
+467 silly audit   'escape-html': [ '1.0.3' ],
+467 silly audit   etag: [ '1.8.1' ],
+467 silly audit   eventemitter3: [ '4.0.7' ],
+467 silly audit   express: [ '4.21.2' ],
+467 silly audit   'express-session': [ '1.18.2' ],
+467 silly audit   'fast-equals': [ '5.2.2' ],
+467 silly audit   'fast-glob': [ '3.3.3' ],
+467 silly audit   fastq: [ '1.19.1' ],
+467 silly audit   'fill-range': [ '7.1.1' ],
+467 silly audit   finalhandler: [ '1.3.1' ],
+467 silly audit   'foreground-child': [ '3.3.1' ],
+467 silly audit   forwarded: [ '0.2.0' ],
+467 silly audit   'fraction.js': [ '4.3.7' ],
+467 silly audit   'framer-motion': [ '11.18.2' ],
+467 silly audit   fresh: [ '0.5.2' ],
+467 silly audit   fsevents: [ '2.3.3' ],
+467 silly audit   'function-bind': [ '1.1.2' ],
+467 silly audit   gel: [ '2.1.1' ],
+467 silly audit   semver: [ '7.7.2', '6.3.1' ],
+467 silly audit   gensync: [ '1.0.0-beta.2' ],
+467 silly audit   'get-intrinsic': [ '1.3.0' ],
+467 silly audit   'get-nonce': [ '1.0.1' ],
+467 silly audit   'get-proto': [ '1.0.1' ],
+467 silly audit   'get-tsconfig': [ '4.10.1' ],
+467 silly audit   glob: [ '10.4.5' ],
+467 silly audit   gopd: [ '1.2.0' ],
+467 silly audit   'graceful-fs': [ '4.2.11' ],
+467 silly audit   'has-symbols': [ '1.1.0' ],
+467 silly audit   hasown: [ '2.0.2' ],
+467 silly audit   'http-errors': [ '2.0.0' ],
+467 silly audit   'iconv-lite': [ '0.4.24' ],
+467 silly audit   inherits: [ '2.0.4' ],
+467 silly audit   'input-otp': [ '1.4.2' ],
+467 silly audit   internmap: [ '2.0.3' ],
+467 silly audit   'ipaddr.js': [ '1.9.1' ],
+467 silly audit   'is-binary-path': [ '2.1.0' ],
+467 silly audit   'is-core-module': [ '2.16.1' ],
+467 silly audit   'is-extglob': [ '2.1.1' ],
+467 silly audit   'is-fullwidth-code-point': [ '3.0.0' ],
+467 silly audit   'is-glob': [ '4.0.3' ],
+467 silly audit   'is-number': [ '7.0.0' ],
+467 silly audit   jackspeak: [ '3.4.3' ],
+467 silly audit   jiti: [ '2.5.1', '1.21.7' ],
+467 silly audit   'js-tokens': [ '4.0.0' ],
+467 silly audit   jsesc: [ '3.1.0' ],
+467 silly audit   json5: [ '2.2.3' ],
+467 silly audit   lightningcss: [ '1.30.1' ],
+467 silly audit   'lightningcss-darwin-arm64': [ '1.30.1' ],
+467 silly audit   'lightningcss-darwin-x64': [ '1.30.1' ],
+467 silly audit   'lightningcss-freebsd-x64': [ '1.30.1' ],
+467 silly audit   'lightningcss-linux-arm-gnueabihf': [ '1.30.1' ],
+467 silly audit   'lightningcss-linux-arm64-gnu': [ '1.30.1' ],
+467 silly audit   'lightningcss-linux-arm64-musl': [ '1.30.1' ],
+467 silly audit   'lightningcss-linux-x64-gnu': [ '1.30.1' ],
+467 silly audit   'lightningcss-linux-x64-musl': [ '1.30.1' ],
+467 silly audit   'lightningcss-win32-arm64-msvc': [ '1.30.1' ],
+467 silly audit   'lightningcss-win32-x64-msvc': [ '1.30.1' ],
+467 silly audit   lilconfig: [ '3.1.3' ],
+467 silly audit   'lines-and-columns': [ '1.2.4' ],
+467 silly audit   lodash: [ '4.17.21' ],
+467 silly audit   'lodash.castarray': [ '4.4.0' ],
+467 silly audit   'lodash.isplainobject': [ '4.0.6' ],
+467 silly audit   'lodash.merge': [ '4.6.2' ],
+467 silly audit   'loose-envify': [ '1.4.0' ],
+467 silly audit   'lru-cache': [ '5.1.1', '4.1.5', '10.4.3' ],
+467 silly audit   'lucide-react': [ '0.453.0' ],
+467 silly audit   'magic-string': [ '0.30.17' ],
+467 silly audit   'math-intrinsics': [ '1.1.0' ],
+467 silly audit   'media-typer': [ '0.3.0' ],
+467 silly audit   memorystore: [ '1.6.7' ],
+467 silly audit   yallist: [ '2.1.2', '5.0.0', '3.1.1' ],
+467 silly audit   'merge-descriptors': [ '1.0.3' ],
+467 silly audit   merge2: [ '1.4.1' ],
+467 silly audit   methods: [ '1.1.2' ],
+467 silly audit   micromatch: [ '4.0.8' ],
+467 silly audit   mime: [ '1.6.0' ],
+467 silly audit   'mime-db': [ '1.52.0' ],
+467 silly audit   'mime-types': [ '2.1.35' ],
+467 silly audit   minimatch: [ '9.0.5' ],
+467 silly audit   minimist: [ '1.2.8' ],
+467 silly audit   minipass: [ '7.1.2' ],
+467 silly audit   minizlib: [ '3.0.2' ],
+467 silly audit   mitt: [ '3.0.1' ],
+467 silly audit   mkdirp: [ '0.5.6', '3.0.1' ],
+467 silly audit   'modern-screenshot': [ '4.6.5' ],
+467 silly audit   'motion-dom': [ '11.18.1' ],
+467 silly audit   'motion-utils': [ '11.18.1' ],
+467 silly audit   multer: [ '2.0.2' ],
+467 silly audit   mz: [ '2.7.0' ],
+467 silly audit   nanoid: [ '3.3.11' ],
+467 silly audit   negotiator: [ '0.6.3' ],
+467 silly audit   'next-themes': [ '0.4.6' ],
+467 silly audit   'node-gyp-build': [ '4.8.4' ],
+467 silly audit   'node-releases': [ '2.0.19' ],
+467 silly audit   'normalize-path': [ '3.0.0' ],
+467 silly audit   'normalize-range': [ '0.1.2' ],
+467 silly audit   'object-assign': [ '4.1.1' ],
+467 silly audit   'object-hash': [ '3.0.0' ],
+467 silly audit   'object-inspect': [ '1.13.4' ],
+467 silly audit   obuf: [ '1.1.2' ],
+467 silly audit   'on-finished': [ '2.4.1' ],
+467 silly audit   'on-headers': [ '1.1.0' ],
+467 silly audit   'package-json-from-dist': [ '1.0.1' ],
+467 silly audit   parseurl: [ '1.3.3' ],
+467 silly audit   passport: [ '0.7.0' ],
+467 silly audit   'passport-local': [ '1.0.0' ],
+467 silly audit   'passport-strategy': [ '1.0.0' ],
+467 silly audit   'path-key': [ '3.1.1' ],
+467 silly audit   'path-parse': [ '1.0.7' ],
+467 silly audit   'path-scurry': [ '1.11.1' ],
+467 silly audit   'path-to-regexp': [ '0.1.12' ],
+467 silly audit   pause: [ '0.0.1' ],
+467 silly audit   pg: [ '8.16.3' ],
+467 silly audit   'pg-cloudflare': [ '1.2.7' ],
+467 silly audit   'pg-connection-string': [ '2.9.1' ],
+467 silly audit   'pg-int8': [ '1.0.1' ],
+467 silly audit   'pg-numeric': [ '1.0.2' ],
+467 silly audit   'pg-pool': [ '3.10.1' ],
+467 silly audit   'pg-protocol': [ '1.10.3' ],
+467 silly audit   'pg-types': [ '4.1.0', '2.2.0' ],
+467 silly audit   'postgres-array': [ '2.0.0', '3.0.4' ],
+467 silly audit   'postgres-bytea': [ '1.0.0', '3.0.0' ],
+467 silly audit   'postgres-date': [ '1.0.7', '2.1.0' ],
+467 silly audit   'postgres-interval': [ '1.2.0', '3.0.0' ],
+467 silly audit   pgpass: [ '1.0.5' ],
+467 silly audit   picocolors: [ '1.1.1' ],
+467 silly audit   picomatch: [ '2.3.1' ],
+467 silly audit   pify: [ '2.3.0' ],
+467 silly audit   pirates: [ '4.0.7' ],
+467 silly audit   postcss: [ '8.5.6' ],
+467 silly audit   'postcss-import': [ '15.1.0' ],
+467 silly audit   'postcss-js': [ '4.0.1' ],
+467 silly audit   'postcss-load-config': [ '4.0.2' ],
+467 silly audit   'postcss-nested': [ '6.2.0' ],
+467 silly audit   'postcss-selector-parser': [ '6.1.2', '6.0.10' ],
+467 silly audit   'postcss-value-parser': [ '4.2.0' ],
+467 silly audit   postgres: [ '3.4.7' ],
+467 silly audit   'postgres-range': [ '1.1.4' ],
+467 silly audit   'prop-types': [ '15.8.1' ],
+467 silly audit   'react-is': [ '16.13.1', '18.3.1' ],
+467 silly audit   'proxy-addr': [ '2.0.7' ],
+467 silly audit   pseudomap: [ '1.0.2' ],
+467 silly audit   qs: [ '6.13.0' ],
+467 silly audit   'queue-microtask': [ '1.2.3' ],
+467 silly audit   'random-bytes': [ '1.0.0' ],
+467 silly audit   'range-parser': [ '1.2.1' ],
+467 silly audit   'raw-body': [ '2.5.2' ],
+467 silly audit   react: [ '18.3.1' ],
+467 silly audit   'react-day-picker': [ '8.10.1' ],
+467 silly audit   'react-dom': [ '18.3.1' ],
+467 silly audit   'react-hook-form': [ '7.62.0' ],
+467 silly audit   'react-icons': [ '5.5.0' ],
+467 silly audit   'react-refresh': [ '0.17.0' ],
+467 silly audit   'react-remove-scroll': [ '2.7.1' ],
+467 silly audit   'react-remove-scroll-bar': [ '2.3.8' ],
+467 silly audit   'react-resizable-panels': [ '2.1.9' ],
+467 silly audit   'react-smooth': [ '4.0.4' ],
+467 silly audit   'react-style-singleton': [ '2.2.3' ],
+467 silly audit   'react-transition-group': [ '4.4.5' ],
+467 silly audit   'read-cache': [ '1.0.0' ],
+467 silly audit   'readable-stream': [ '3.6.2' ],
+467 silly audit   readdirp: [ '3.6.0' ],
+467 silly audit   recharts: [ '2.15.4' ],
+467 silly audit   'recharts-scale': [ '0.4.5' ],
+467 silly audit   regexparam: [ '3.0.0' ],
+467 silly audit   resolve: [ '1.22.10' ],
+467 silly audit   'resolve-pkg-maps': [ '1.0.0' ],
+467 silly audit   reusify: [ '1.1.0' ],
+467 silly audit   rollup: [ '4.46.3' ],
+467 silly audit   'run-parallel': [ '1.2.0' ],
+467 silly audit   'safe-buffer': [ '5.2.1' ],
+467 silly audit   'safer-buffer': [ '2.1.2' ],
+467 silly audit   scheduler: [ '0.23.2' ],
+467 silly audit   send: [ '0.19.0' ],
+467 silly audit   'serve-static': [ '1.16.2' ],
+467 silly audit   setprototypeof: [ '1.2.0' ],
+467 silly audit   'shebang-command': [ '2.0.0' ],
+467 silly audit   'shebang-regex': [ '3.0.0' ],
+467 silly audit   'shell-quote': [ '1.8.3' ],
+467 silly audit   'side-channel': [ '1.1.0' ],
+467 silly audit   'side-channel-list': [ '1.0.0' ],
+467 silly audit   'side-channel-map': [ '1.0.1' ],
+467 silly audit   'side-channel-weakmap': [ '1.0.2' ],
+467 silly audit   'signal-exit': [ '4.1.0' ],
+467 silly audit   'source-map': [ '0.6.1' ],
+467 silly audit   'source-map-js': [ '1.2.1' ],
+467 silly audit   'source-map-support': [ '0.5.21' ],
+467 silly audit   split2: [ '4.2.0' ],
+467 silly audit   statuses: [ '2.0.1' ],
+467 silly audit   streamsearch: [ '1.1.0' ],
+467 silly audit   string_decoder: [ '1.3.0' ],
+467 silly audit   'string-width': [ '5.1.2', '4.2.3' ],
+467 silly audit   'strip-ansi': [ '6.0.1', '7.1.0' ],
+467 silly audit   sucrase: [ '3.35.0' ],
+467 silly audit   'supports-preserve-symlinks-flag': [ '1.0.0' ],
+467 silly audit   'tailwind-merge': [ '2.6.0' ],
+467 silly audit   'tailwindcss-animate': [ '1.0.7' ],
+467 silly audit   tapable: [ '2.2.2' ],
+467 silly audit   tar: [ '7.4.3' ],
+467 silly audit   thenify: [ '3.3.1' ],
+467 silly audit   'thenify-all': [ '1.6.0' ],
+467 silly audit   'tiny-invariant': [ '1.3.3' ],
+467 silly audit   'to-regex-range': [ '5.0.1' ],
+467 silly audit   toidentifier: [ '1.0.1' ],
+467 silly audit   tr46: [ '0.0.3' ],
+467 silly audit   'ts-interface-checker': [ '0.1.13' ],
+467 silly audit   tslib: [ '2.8.1' ],
+467 silly audit   tsx: [ '4.20.4' ],
+467 silly audit   'tw-animate-css': [ '1.3.7' ],
+467 silly audit   'type-is': [ '1.6.18' ],
+467 silly audit   typedarray: [ '0.0.6' ],
+467 silly audit   typescript: [ '5.6.3' ],
+467 silly audit   'uid-safe': [ '2.1.5' ],
+467 silly audit   'undici-types': [ '6.19.8' ],
+467 silly audit   unpipe: [ '1.0.0' ],
+467 silly audit   'update-browserslist-db': [ '1.1.3' ],
+467 silly audit   'use-callback-ref': [ '1.3.3' ],
+467 silly audit   'use-sidecar': [ '1.1.3' ],
+467 silly audit   'use-sync-external-store': [ '1.5.0' ],
+467 silly audit   'util-deprecate': [ '1.0.2' ],
+467 silly audit   'utils-merge': [ '1.0.1' ],
+467 silly audit   vary: [ '1.1.2' ],
+467 silly audit   vaul: [ '1.1.2' ],
+467 silly audit   'victory-vendor': [ '36.9.2' ],
+467 silly audit   vite: [ '5.4.19' ],
+467 silly audit   'webidl-conversions': [ '3.0.1' ],
+467 silly audit   'whatwg-url': [ '5.0.0' ],
+467 silly audit   wouter: [ '3.7.1' ],
+467 silly audit   'wrap-ansi': [ '8.1.0', '7.0.0' ],
+467 silly audit   ws: [ '8.18.3' ],
+467 silly audit   xtend: [ '4.0.2' ],
+467 silly audit   yaml: [ '2.8.1' ],
+467 silly audit   zod: [ '3.25.76' ],
+467 silly audit   'zod-validation-error': [ '3.5.3' ],
+467 silly audit   '@types/nodemailer': [ '7.0.1' ],
+467 silly audit   nodemailer: [ '7.0.5' ],
+467 silly audit   '@aws-sdk/client-sesv2': [ '3.876.0' ],
+467 silly audit   '@aws-crypto/sha256-browser': [ '5.2.0' ],
+467 silly audit   '@aws-crypto/sha256-js': [ '5.2.0' ],
+467 silly audit   '@aws-sdk/core': [ '3.876.0' ],
+467 silly audit   '@aws-sdk/credential-provider-node': [ '3.876.0' ],
+467 silly audit   '@aws-sdk/middleware-host-header': [ '3.873.0' ],
+467 silly audit   '@aws-sdk/middleware-logger': [ '3.876.0' ],
+467 silly audit   '@aws-sdk/middleware-recursion-detection': [ '3.873.0' ],
+467 silly audit   '@aws-sdk/middleware-user-agent': [ '3.876.0' ],
+467 silly audit   '@aws-sdk/region-config-resolver': [ '3.873.0' ],
+467 silly audit   '@aws-sdk/signature-v4-multi-region': [ '3.876.0' ],
+467 silly audit   '@aws-sdk/types': [ '3.862.0' ],
+467 silly audit   '@aws-sdk/util-endpoints': [ '3.873.0' ],
+467 silly audit   '@aws-sdk/util-user-agent-browser': [ '3.873.0' ],
+467 silly audit   '@aws-sdk/util-user-agent-node': [ '3.876.0' ],
+467 silly audit   '@smithy/config-resolver': [ '4.1.5' ],
+467 silly audit   '@smithy/core': [ '3.9.0' ],
+467 silly audit   '@smithy/fetch-http-handler': [ '5.1.1' ],
+467 silly audit   '@smithy/hash-node': [ '4.0.5' ],
+467 silly audit   '@smithy/invalid-dependency': [ '4.0.5' ],
+467 silly audit   '@smithy/middleware-content-length': [ '4.0.5' ],
+467 silly audit   '@smithy/middleware-endpoint': [ '4.1.19' ],
+467 silly audit   '@smithy/middleware-retry': [ '4.1.20' ],
+467 silly audit   '@smithy/middleware-serde': [ '4.0.9' ],
+467 silly audit   '@smithy/middleware-stack': [ '4.0.5' ],
+467 silly audit   '@smithy/node-config-provider': [ '4.1.4' ],
+467 silly audit   '@smithy/node-http-handler': [ '4.1.1' ],
+467 silly audit   '@smithy/protocol-http': [ '5.1.3' ],
+467 silly audit   '@smithy/smithy-client': [ '4.5.0' ],
+467 silly audit   '@smithy/types': [ '4.3.2' ],
+467 silly audit   '@smithy/url-parser': [ '4.0.5' ],
+467 silly audit   '@smithy/util-base64': [ '4.0.0' ],
+467 silly audit   '@smithy/util-body-length-browser': [ '4.0.0' ],
+467 silly audit   '@smithy/util-body-length-node': [ '4.0.0' ],
+467 silly audit   '@smithy/util-defaults-mode-browser': [ '4.0.27' ],
+467 silly audit   '@smithy/util-defaults-mode-node': [ '4.0.27' ],
+467 silly audit   '@smithy/util-endpoints': [ '3.0.7' ],
+467 silly audit   '@smithy/util-middleware': [ '4.0.5' ],
+467 silly audit   '@smithy/util-retry': [ '4.0.7' ],
+467 silly audit   '@smithy/util-utf8': [ '4.0.0', '2.3.0' ],
+467 silly audit   '@aws-crypto/supports-web-crypto': [ '5.2.0' ],
+467 silly audit   '@aws-crypto/util': [ '5.2.0' ],
+467 silly audit   '@aws-sdk/util-locate-window': [ '3.873.0' ],
+467 silly audit   '@aws-sdk/xml-builder': [ '3.873.0' ],
+467 silly audit   '@smithy/property-provider': [ '4.0.5' ],
+467 silly audit   '@smithy/signature-v4': [ '5.1.3' ],
+467 silly audit   'fast-xml-parser': [ '5.2.5' ],
+467 silly audit   '@aws-sdk/credential-provider-env': [ '3.876.0' ],
+467 silly audit   '@aws-sdk/credential-provider-http': [ '3.876.0' ],
+467 silly audit   '@aws-sdk/credential-provider-ini': [ '3.876.0' ],
+467 silly audit   '@aws-sdk/credential-provider-process': [ '3.876.0' ],
+467 silly audit   '@aws-sdk/credential-provider-sso': [ '3.876.0' ],
+467 silly audit   '@aws-sdk/credential-provider-web-identity': [ '3.876.0' ],
+467 silly audit   '@smithy/credential-provider-imds': [ '4.0.7' ],
+467 silly audit   '@smithy/shared-ini-file-loader': [ '4.0.5' ],
+467 silly audit   '@smithy/util-stream': [ '4.2.4' ],
+467 silly audit   '@aws-sdk/nested-clients': [ '3.876.0' ],
+467 silly audit   '@aws-sdk/client-sso': [ '3.876.0' ],
+467 silly audit   '@aws-sdk/token-providers': [ '3.876.0' ],
+467 silly audit   '@smithy/util-config-provider': [ '4.0.0' ],
+467 silly audit   '@aws-sdk/middleware-sdk-s3': [ '3.876.0' ],
+467 silly audit   '@aws-sdk/util-arn-parser': [ '3.873.0' ],
+467 silly audit   bowser: [ '2.12.1' ],
+467 silly audit   '@types/uuid': [ '9.0.8' ],
+467 silly audit   uuid: [ '9.0.1' ],
+467 silly audit   '@smithy/querystring-builder': [ '4.0.5' ],
+467 silly audit   '@smithy/util-buffer-from': [ '4.0.0', '2.2.0' ],
+467 silly audit   '@smithy/service-error-classification': [ '4.0.7' ],
+467 silly audit   '@smithy/abort-controller': [ '4.0.5' ],
+467 silly audit   '@smithy/util-uri-escape': [ '4.0.0' ],
+467 silly audit   '@smithy/is-array-buffer': [ '4.0.0', '2.2.0' ],
+467 silly audit   '@smithy/util-hex-encoding': [ '4.0.0' ],
+467 silly audit   '@smithy/querystring-parser': [ '4.0.5' ],
+467 silly audit   strnum: [ '2.1.1' ],
+467 silly audit   '@tailwindcss/oxide-wasm32-wasi': [ '4.1.12' ]
+467 silly audit }
+468 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-win32-x64-msvc
+469 silly reify mark deleted [
+469 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-win32-x64-msvc'
+469 silly reify ]
+470 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-win32-arm64-msvc
+471 silly reify mark deleted [
+471 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-win32-arm64-msvc'
+471 silly reify ]
+472 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-x64-musl
+473 silly reify mark deleted [
+473 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-x64-musl'
+473 silly reify ]
+474 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-x64-gnu
+475 silly reify mark deleted [
+475 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-x64-gnu'
+475 silly reify ]
+476 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-arm64-musl
+477 silly reify mark deleted [
+477 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-arm64-musl'
+477 silly reify ]
+478 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-arm64-gnu
+479 silly reify mark deleted [
+479 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-arm64-gnu'
+479 silly reify ]
+480 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-arm-gnueabihf
+481 silly reify mark deleted [
+481 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-linux-arm-gnueabihf'
+481 silly reify ]
+482 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-freebsd-x64
+483 silly reify mark deleted [
+483 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/lightningcss-freebsd-x64'
+483 silly reify ]
+484 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-win32-x64-msvc
+485 silly reify mark deleted [
+485 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-win32-x64-msvc'
+485 silly reify ]
+486 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-win32-arm64-msvc
+487 silly reify mark deleted [
+487 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-win32-arm64-msvc'
+487 silly reify ]
+488 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-x64-musl
+489 silly reify mark deleted [
+489 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-x64-musl'
+489 silly reify ]
+490 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-x64-gnu
+491 silly reify mark deleted [
+491 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-x64-gnu'
+491 silly reify ]
+492 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-arm64-musl
+493 silly reify mark deleted [
+493 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-arm64-musl'
+493 silly reify ]
+494 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-arm64-gnu
+495 silly reify mark deleted [
+495 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-arm64-gnu'
+495 silly reify ]
+496 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-arm-gnueabihf
+497 silly reify mark deleted [
+497 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-linux-arm-gnueabihf'
+497 silly reify ]
+498 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-freebsd-x64
+499 silly reify mark deleted [
+499 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-freebsd-x64'
+499 silly reify ]
+500 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-android-arm64
+501 silly reify mark deleted [
+501 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@tailwindcss/oxide-android-arm64'
+501 silly reify ]
+502 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-win32-x64-msvc
+503 silly reify mark deleted [
+503 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-win32-x64-msvc'
+503 silly reify ]
+504 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-win32-ia32-msvc
+505 silly reify mark deleted [
+505 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-win32-ia32-msvc'
+505 silly reify ]
+506 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-win32-arm64-msvc
+507 silly reify mark deleted [
+507 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-win32-arm64-msvc'
+507 silly reify ]
+508 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-x64-musl
+509 silly reify mark deleted [
+509 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-x64-musl'
+509 silly reify ]
+510 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-x64-gnu
+511 silly reify mark deleted [
+511 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-x64-gnu'
+511 silly reify ]
+512 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-s390x-gnu
+513 silly reify mark deleted [
+513 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-s390x-gnu'
+513 silly reify ]
+514 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-riscv64-musl
+515 silly reify mark deleted [
+515 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-riscv64-musl'
+515 silly reify ]
+516 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-riscv64-gnu
+517 silly reify mark deleted [
+517 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-riscv64-gnu'
+517 silly reify ]
+518 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-ppc64-gnu
+519 silly reify mark deleted [
+519 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-ppc64-gnu'
+519 silly reify ]
+520 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-loongarch64-gnu
+521 silly reify mark deleted [
+521 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-loongarch64-gnu'
+521 silly reify ]
+522 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm64-musl
+523 silly reify mark deleted [
+523 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm64-musl'
+523 silly reify ]
+524 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm64-gnu
+525 silly reify mark deleted [
+525 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm64-gnu'
+525 silly reify ]
+526 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm-musleabihf
+527 silly reify mark deleted [
+527 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm-musleabihf'
+527 silly reify ]
+528 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm-gnueabihf
+529 silly reify mark deleted [
+529 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-linux-arm-gnueabihf'
+529 silly reify ]
+530 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-freebsd-x64
+531 silly reify mark deleted [
+531 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-freebsd-x64'
+531 silly reify ]
+532 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-freebsd-arm64
+533 silly reify mark deleted [
+533 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-freebsd-arm64'
+533 silly reify ]
+534 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-android-arm64
+535 silly reify mark deleted [
+535 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-android-arm64'
+535 silly reify ]
+536 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-android-arm-eabi
+537 silly reify mark deleted [
+537 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@rollup/rollup-android-arm-eabi'
+537 silly reify ]
+538 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/win32-x64
+539 silly reify mark deleted [
+539 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/win32-x64'
+539 silly reify ]
+540 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/win32-ia32
+541 silly reify mark deleted [
+541 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/win32-ia32'
+541 silly reify ]
+542 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/win32-arm64
+543 silly reify mark deleted [
+543 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/win32-arm64'
+543 silly reify ]
+544 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/sunos-x64
+545 silly reify mark deleted [
+545 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/sunos-x64'
+545 silly reify ]
+546 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/openharmony-arm64
+547 silly reify mark deleted [
+547 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/openharmony-arm64'
+547 silly reify ]
+548 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/openbsd-x64
+549 silly reify mark deleted [
+549 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/openbsd-x64'
+549 silly reify ]
+550 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/openbsd-arm64
+551 silly reify mark deleted [
+551 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/openbsd-arm64'
+551 silly reify ]
+552 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/netbsd-x64
+553 silly reify mark deleted [
+553 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/netbsd-x64'
+553 silly reify ]
+554 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/netbsd-arm64
+555 silly reify mark deleted [
+555 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/netbsd-arm64'
+555 silly reify ]
+556 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-x64
+557 silly reify mark deleted [
+557 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-x64'
+557 silly reify ]
+558 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-s390x
+559 silly reify mark deleted [
+559 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-s390x'
+559 silly reify ]
+560 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-riscv64
+561 silly reify mark deleted [
+561 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-riscv64'
+561 silly reify ]
+562 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-ppc64
+563 silly reify mark deleted [
+563 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-ppc64'
+563 silly reify ]
+564 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-mips64el
+565 silly reify mark deleted [
+565 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-mips64el'
+565 silly reify ]
+566 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-loong64
+567 silly reify mark deleted [
+567 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-loong64'
+567 silly reify ]
+568 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-ia32
+569 silly reify mark deleted [
+569 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-ia32'
+569 silly reify ]
+570 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-arm64
+571 silly reify mark deleted [
+571 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-arm64'
+571 silly reify ]
+572 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-arm
+573 silly reify mark deleted [
+573 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/linux-arm'
+573 silly reify ]
+574 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/freebsd-x64
+575 silly reify mark deleted [
+575 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/freebsd-x64'
+575 silly reify ]
+576 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/freebsd-arm64
+577 silly reify mark deleted [
+577 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/freebsd-arm64'
+577 silly reify ]
+578 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/android-x64
+579 silly reify mark deleted [
+579 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/android-x64'
+579 silly reify ]
+580 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/android-arm64
+581 silly reify mark deleted [
+581 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/android-arm64'
+581 silly reify ]
+582 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/android-arm
+583 silly reify mark deleted [
+583 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/android-arm'
+583 silly reify ]
+584 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/aix-ppc64
+585 silly reify mark deleted [
+585 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild/aix-ppc64'
+585 silly reify ]
+586 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-x64
+587 silly reify mark deleted [
+587 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-x64'
+587 silly reify ]
+588 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-ia32
+589 silly reify mark deleted [
+589 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-ia32'
+589 silly reify ]
+590 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-arm64
+591 silly reify mark deleted [
+591 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-arm64'
+591 silly reify ]
+592 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/sunos-x64
+593 silly reify mark deleted [
+593 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/sunos-x64'
+593 silly reify ]
+594 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/openbsd-x64
+595 silly reify mark deleted [
+595 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/openbsd-x64'
+595 silly reify ]
+596 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/netbsd-x64
+597 silly reify mark deleted [
+597 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/netbsd-x64'
+597 silly reify ]
+598 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-x64
+599 silly reify mark deleted [
+599 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-x64'
+599 silly reify ]
+600 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-s390x
+601 silly reify mark deleted [
+601 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-s390x'
+601 silly reify ]
+602 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-riscv64
+603 silly reify mark deleted [
+603 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-riscv64'
+603 silly reify ]
+604 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-ppc64
+605 silly reify mark deleted [
+605 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-ppc64'
+605 silly reify ]
+606 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-mips64el
+607 silly reify mark deleted [
+607 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-mips64el'
+607 silly reify ]
+608 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-loong64
+609 silly reify mark deleted [
+609 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-loong64'
+609 silly reify ]
+610 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-ia32
+611 silly reify mark deleted [
+611 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-ia32'
+611 silly reify ]
+612 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-arm64
+613 silly reify mark deleted [
+613 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-arm64'
+613 silly reify ]
+614 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-arm
+615 silly reify mark deleted [
+615 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-arm'
+615 silly reify ]
+616 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/freebsd-x64
+617 silly reify mark deleted [
+617 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/freebsd-x64'
+617 silly reify ]
+618 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/freebsd-arm64
+619 silly reify mark deleted [
+619 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/freebsd-arm64'
+619 silly reify ]
+620 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-x64
+621 silly reify mark deleted [
+621 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-x64'
+621 silly reify ]
+622 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-arm64
+623 silly reify mark deleted [
+623 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-arm64'
+623 silly reify ]
+624 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-arm
+625 silly reify mark deleted [
+625 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-arm'
+625 silly reify ]
+626 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/win32-x64
+627 silly reify mark deleted [
+627 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/win32-x64'
+627 silly reify ]
+628 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/win32-ia32
+629 silly reify mark deleted [
+629 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/win32-ia32'
+629 silly reify ]
+630 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/win32-arm64
+631 silly reify mark deleted [
+631 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/win32-arm64'
+631 silly reify ]
+632 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/sunos-x64
+633 silly reify mark deleted [
+633 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/sunos-x64'
+633 silly reify ]
+634 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/openbsd-x64
+635 silly reify mark deleted [
+635 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/openbsd-x64'
+635 silly reify ]
+636 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/netbsd-x64
+637 silly reify mark deleted [
+637 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/netbsd-x64'
+637 silly reify ]
+638 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-x64
+639 silly reify mark deleted [
+639 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-x64'
+639 silly reify ]
+640 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-s390x
+641 silly reify mark deleted [
+641 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-s390x'
+641 silly reify ]
+642 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-riscv64
+643 silly reify mark deleted [
+643 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-riscv64'
+643 silly reify ]
+644 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-ppc64
+645 silly reify mark deleted [
+645 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-ppc64'
+645 silly reify ]
+646 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-mips64el
+647 silly reify mark deleted [
+647 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-mips64el'
+647 silly reify ]
+648 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-loong64
+649 silly reify mark deleted [
+649 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-loong64'
+649 silly reify ]
+650 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-ia32
+651 silly reify mark deleted [
+651 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-ia32'
+651 silly reify ]
+652 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-arm64
+653 silly reify mark deleted [
+653 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-arm64'
+653 silly reify ]
+654 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-arm
+655 silly reify mark deleted [
+655 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/linux-arm'
+655 silly reify ]
+656 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/freebsd-x64
+657 silly reify mark deleted [
+657 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/freebsd-x64'
+657 silly reify ]
+658 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/freebsd-arm64
+659 silly reify mark deleted [
+659 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/freebsd-arm64'
+659 silly reify ]
+660 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/android-x64
+661 silly reify mark deleted [
+661 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/android-x64'
+661 silly reify ]
+662 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/android-arm64
+663 silly reify mark deleted [
+663 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/android-arm64'
+663 silly reify ]
+664 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/android-arm
+665 silly reify mark deleted [
+665 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/android-arm'
+665 silly reify ]
+666 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/aix-ppc64
+667 silly reify mark deleted [
+667 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/vite/node_modules/@esbuild/aix-ppc64'
+667 silly reify ]
+668 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/win32-x64
+669 silly reify mark deleted [
+669 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/win32-x64'
+669 silly reify ]
+670 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/win32-ia32
+671 silly reify mark deleted [
+671 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/win32-ia32'
+671 silly reify ]
+672 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/win32-arm64
+673 silly reify mark deleted [
+673 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/win32-arm64'
+673 silly reify ]
+674 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/sunos-x64
+675 silly reify mark deleted [
+675 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/sunos-x64'
+675 silly reify ]
+676 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/openbsd-x64
+677 silly reify mark deleted [
+677 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/openbsd-x64'
+677 silly reify ]
+678 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/netbsd-x64
+679 silly reify mark deleted [
+679 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/netbsd-x64'
+679 silly reify ]
+680 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-x64
+681 silly reify mark deleted [
+681 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-x64'
+681 silly reify ]
+682 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-s390x
+683 silly reify mark deleted [
+683 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-s390x'
+683 silly reify ]
+684 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-riscv64
+685 silly reify mark deleted [
+685 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-riscv64'
+685 silly reify ]
+686 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-ppc64
+687 silly reify mark deleted [
+687 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-ppc64'
+687 silly reify ]
+688 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-mips64el
+689 silly reify mark deleted [
+689 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-mips64el'
+689 silly reify ]
+690 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-loong64
+691 silly reify mark deleted [
+691 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-loong64'
+691 silly reify ]
+692 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-ia32
+693 silly reify mark deleted [
+693 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-ia32'
+693 silly reify ]
+694 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-arm64
+695 silly reify mark deleted [
+695 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-arm64'
+695 silly reify ]
+696 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-arm
+697 silly reify mark deleted [
+697 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/linux-arm'
+697 silly reify ]
+698 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/freebsd-x64
+699 silly reify mark deleted [
+699 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/freebsd-x64'
+699 silly reify ]
+700 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/freebsd-arm64
+701 silly reify mark deleted [
+701 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/freebsd-arm64'
+701 silly reify ]
+702 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/android-x64
+703 silly reify mark deleted [
+703 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/android-x64'
+703 silly reify ]
+704 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/android-arm64
+705 silly reify mark deleted [
+705 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/android-arm64'
+705 silly reify ]
+706 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/android-arm
+707 silly reify mark deleted [
+707 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/android-arm'
+707 silly reify ]
+708 verbose reify failed optional dependency /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/aix-ppc64
+709 silly reify mark deleted [
+709 silly reify   '/Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/node_modules/drizzle-kit/node_modules/@esbuild/aix-ppc64'
+709 silly reify ]
+710 http cache strnum@https://registry.npmjs.org/strnum/-/strnum-2.1.1.tgz 0ms (cache hit)
+711 http cache @smithy/querystring-parser@https://registry.npmjs.org/@smithy/querystring-parser/-/querystring-parser-4.0.5.tgz 0ms (cache hit)
+712 http cache @smithy/util-hex-encoding@https://registry.npmjs.org/@smithy/util-hex-encoding/-/util-hex-encoding-4.0.0.tgz 0ms (cache hit)
+713 http cache @smithy/util-uri-escape@https://registry.npmjs.org/@smithy/util-uri-escape/-/util-uri-escape-4.0.0.tgz 0ms (cache hit)
+714 http cache @smithy/service-error-classification@https://registry.npmjs.org/@smithy/service-error-classification/-/service-error-classification-4.0.7.tgz 0ms (cache hit)
+715 http cache @smithy/is-array-buffer@https://registry.npmjs.org/@smithy/is-array-buffer/-/is-array-buffer-4.0.0.tgz 0ms (cache hit)
+716 http cache uuid@https://registry.npmjs.org/uuid/-/uuid-9.0.1.tgz 0ms (cache hit)
+717 http cache @smithy/abort-controller@https://registry.npmjs.org/@smithy/abort-controller/-/abort-controller-4.0.5.tgz 0ms (cache hit)
+718 http cache @smithy/util-buffer-from@https://registry.npmjs.org/@smithy/util-buffer-from/-/util-buffer-from-4.0.0.tgz 0ms (cache hit)
+719 http cache @smithy/querystring-builder@https://registry.npmjs.org/@smithy/querystring-builder/-/querystring-builder-4.0.5.tgz 0ms (cache hit)
+720 http cache bowser@https://registry.npmjs.org/bowser/-/bowser-2.12.1.tgz 0ms (cache hit)
+721 http cache @types/uuid@https://registry.npmjs.org/@types/uuid/-/uuid-9.0.8.tgz 0ms (cache hit)
+722 http cache @aws-sdk/util-arn-parser@https://registry.npmjs.org/@aws-sdk/util-arn-parser/-/util-arn-parser-3.873.0.tgz 0ms (cache hit)
+723 http cache @smithy/util-config-provider@https://registry.npmjs.org/@smithy/util-config-provider/-/util-config-provider-4.0.0.tgz 0ms (cache hit)
+724 http cache @aws-sdk/middleware-sdk-s3@https://registry.npmjs.org/@aws-sdk/middleware-sdk-s3/-/middleware-sdk-s3-3.876.0.tgz 0ms (cache hit)
+725 http cache @aws-sdk/token-providers@https://registry.npmjs.org/@aws-sdk/token-providers/-/token-providers-3.876.0.tgz 0ms (cache hit)
+726 http cache @aws-sdk/nested-clients@https://registry.npmjs.org/@aws-sdk/nested-clients/-/nested-clients-3.876.0.tgz 0ms (cache hit)
+727 http cache @aws-sdk/client-sso@https://registry.npmjs.org/@aws-sdk/client-sso/-/client-sso-3.876.0.tgz 0ms (cache hit)
+728 http cache @smithy/util-stream@https://registry.npmjs.org/@smithy/util-stream/-/util-stream-4.2.4.tgz 0ms (cache hit)
+729 http cache @smithy/shared-ini-file-loader@https://registry.npmjs.org/@smithy/shared-ini-file-loader/-/shared-ini-file-loader-4.0.5.tgz 0ms (cache hit)
+730 http cache @aws-sdk/credential-provider-web-identity@https://registry.npmjs.org/@aws-sdk/credential-provider-web-identity/-/credential-provider-web-identity-3.876.0.tgz 0ms (cache hit)
+731 http cache @aws-sdk/credential-provider-ini@https://registry.npmjs.org/@aws-sdk/credential-provider-ini/-/credential-provider-ini-3.876.0.tgz 0ms (cache hit)
+732 http cache @smithy/credential-provider-imds@https://registry.npmjs.org/@smithy/credential-provider-imds/-/credential-provider-imds-4.0.7.tgz 0ms (cache hit)
+733 http cache @aws-sdk/credential-provider-process@https://registry.npmjs.org/@aws-sdk/credential-provider-process/-/credential-provider-process-3.876.0.tgz 0ms (cache hit)
+734 http cache @aws-sdk/credential-provider-sso@https://registry.npmjs.org/@aws-sdk/credential-provider-sso/-/credential-provider-sso-3.876.0.tgz 0ms (cache hit)
+735 http cache @aws-sdk/credential-provider-http@https://registry.npmjs.org/@aws-sdk/credential-provider-http/-/credential-provider-http-3.876.0.tgz 0ms (cache hit)
+736 http cache @aws-sdk/credential-provider-env@https://registry.npmjs.org/@aws-sdk/credential-provider-env/-/credential-provider-env-3.876.0.tgz 0ms (cache hit)
+737 http cache fast-xml-parser@https://registry.npmjs.org/fast-xml-parser/-/fast-xml-parser-5.2.5.tgz 0ms (cache hit)
+738 http cache @aws-sdk/xml-builder@https://registry.npmjs.org/@aws-sdk/xml-builder/-/xml-builder-3.873.0.tgz 0ms (cache hit)
+739 http cache @smithy/signature-v4@https://registry.npmjs.org/@smithy/signature-v4/-/signature-v4-5.1.3.tgz 0ms (cache hit)
+740 http cache @smithy/property-provider@https://registry.npmjs.org/@smithy/property-provider/-/property-provider-4.0.5.tgz 0ms (cache hit)
+741 http cache @aws-crypto/util@https://registry.npmjs.org/@aws-crypto/util/-/util-5.2.0.tgz 0ms (cache hit)
+742 http cache @aws-sdk/util-locate-window@https://registry.npmjs.org/@aws-sdk/util-locate-window/-/util-locate-window-3.873.0.tgz 0ms (cache hit)
+743 http cache @smithy/util-middleware@https://registry.npmjs.org/@smithy/util-middleware/-/util-middleware-4.0.5.tgz 0ms (cache hit)
+744 http cache @aws-crypto/supports-web-crypto@https://registry.npmjs.org/@aws-crypto/supports-web-crypto/-/supports-web-crypto-5.2.0.tgz 0ms (cache hit)
+745 http cache @smithy/util-retry@https://registry.npmjs.org/@smithy/util-retry/-/util-retry-4.0.7.tgz 0ms (cache hit)
+746 http cache @smithy/util-endpoints@https://registry.npmjs.org/@smithy/util-endpoints/-/util-endpoints-3.0.7.tgz 0ms (cache hit)
+747 http cache @smithy/util-utf8@https://registry.npmjs.org/@smithy/util-utf8/-/util-utf8-4.0.0.tgz 0ms (cache hit)
+748 http cache @smithy/util-defaults-mode-browser@https://registry.npmjs.org/@smithy/util-defaults-mode-browser/-/util-defaults-mode-browser-4.0.27.tgz 0ms (cache hit)
+749 http cache @smithy/util-defaults-mode-node@https://registry.npmjs.org/@smithy/util-defaults-mode-node/-/util-defaults-mode-node-4.0.27.tgz 0ms (cache hit)
+750 http cache @smithy/url-parser@https://registry.npmjs.org/@smithy/url-parser/-/url-parser-4.0.5.tgz 0ms (cache hit)
+751 http cache @smithy/util-base64@https://registry.npmjs.org/@smithy/util-base64/-/util-base64-4.0.0.tgz 0ms (cache hit)
+752 http cache @smithy/types@https://registry.npmjs.org/@smithy/types/-/types-4.3.2.tgz 0ms (cache hit)
+753 http cache @smithy/util-body-length-browser@https://registry.npmjs.org/@smithy/util-body-length-browser/-/util-body-length-browser-4.0.0.tgz 0ms (cache hit)
+754 http cache @smithy/smithy-client@https://registry.npmjs.org/@smithy/smithy-client/-/smithy-client-4.5.0.tgz 0ms (cache hit)
+755 http cache @smithy/protocol-http@https://registry.npmjs.org/@smithy/protocol-http/-/protocol-http-5.1.3.tgz 0ms (cache hit)
+756 http cache @smithy/util-body-length-node@https://registry.npmjs.org/@smithy/util-body-length-node/-/util-body-length-node-4.0.0.tgz 0ms (cache hit)
+757 http cache @smithy/node-http-handler@https://registry.npmjs.org/@smithy/node-http-handler/-/node-http-handler-4.1.1.tgz 0ms (cache hit)
+758 http cache @smithy/middleware-retry@https://registry.npmjs.org/@smithy/middleware-retry/-/middleware-retry-4.1.20.tgz 0ms (cache hit)
+759 http cache @smithy/node-config-provider@https://registry.npmjs.org/@smithy/node-config-provider/-/node-config-provider-4.1.4.tgz 0ms (cache hit)
+760 http cache @smithy/middleware-serde@https://registry.npmjs.org/@smithy/middleware-serde/-/middleware-serde-4.0.9.tgz 0ms (cache hit)
+761 http cache @smithy/middleware-stack@https://registry.npmjs.org/@smithy/middleware-stack/-/middleware-stack-4.0.5.tgz 0ms (cache hit)
+762 http cache @smithy/middleware-endpoint@https://registry.npmjs.org/@smithy/middleware-endpoint/-/middleware-endpoint-4.1.19.tgz 0ms (cache hit)
+763 http cache @smithy/hash-node@https://registry.npmjs.org/@smithy/hash-node/-/hash-node-4.0.5.tgz 0ms (cache hit)
+764 http cache @smithy/invalid-dependency@https://registry.npmjs.org/@smithy/invalid-dependency/-/invalid-dependency-4.0.5.tgz 0ms (cache hit)
+765 http cache @smithy/middleware-content-length@https://registry.npmjs.org/@smithy/middleware-content-length/-/middleware-content-length-4.0.5.tgz 0ms (cache hit)
+766 http cache @smithy/fetch-http-handler@https://registry.npmjs.org/@smithy/fetch-http-handler/-/fetch-http-handler-5.1.1.tgz 0ms (cache hit)
+767 http cache @smithy/core@https://registry.npmjs.org/@smithy/core/-/core-3.9.0.tgz 0ms (cache hit)
+768 http cache @aws-sdk/util-user-agent-node@https://registry.npmjs.org/@aws-sdk/util-user-agent-node/-/util-user-agent-node-3.876.0.tgz 0ms (cache hit)
+769 http cache @aws-sdk/util-user-agent-browser@https://registry.npmjs.org/@aws-sdk/util-user-agent-browser/-/util-user-agent-browser-3.873.0.tgz 0ms (cache hit)
+770 http cache @aws-sdk/middleware-user-agent@https://registry.npmjs.org/@aws-sdk/middleware-user-agent/-/middleware-user-agent-3.876.0.tgz 0ms (cache hit)
+771 http cache @aws-sdk/util-endpoints@https://registry.npmjs.org/@aws-sdk/util-endpoints/-/util-endpoints-3.873.0.tgz 0ms (cache hit)
+772 http cache @aws-sdk/signature-v4-multi-region@https://registry.npmjs.org/@aws-sdk/signature-v4-multi-region/-/signature-v4-multi-region-3.876.0.tgz 0ms (cache hit)
+773 http cache @aws-sdk/types@https://registry.npmjs.org/@aws-sdk/types/-/types-3.862.0.tgz 0ms (cache hit)
+774 http cache @aws-sdk/region-config-resolver@https://registry.npmjs.org/@aws-sdk/region-config-resolver/-/region-config-resolver-3.873.0.tgz 0ms (cache hit)
+775 http cache @aws-sdk/middleware-logger@https://registry.npmjs.org/@aws-sdk/middleware-logger/-/middleware-logger-3.876.0.tgz 0ms (cache hit)
+776 http cache @smithy/config-resolver@https://registry.npmjs.org/@smithy/config-resolver/-/config-resolver-4.1.5.tgz 0ms (cache hit)
+777 http cache @aws-sdk/middleware-recursion-detection@https://registry.npmjs.org/@aws-sdk/middleware-recursion-detection/-/middleware-recursion-detection-3.873.0.tgz 0ms (cache hit)
+778 http cache @aws-sdk/middleware-host-header@https://registry.npmjs.org/@aws-sdk/middleware-host-header/-/middleware-host-header-3.873.0.tgz 0ms (cache hit)
+779 http cache @aws-sdk/credential-provider-node@https://registry.npmjs.org/@aws-sdk/credential-provider-node/-/credential-provider-node-3.876.0.tgz 0ms (cache hit)
+780 http cache @aws-sdk/core@https://registry.npmjs.org/@aws-sdk/core/-/core-3.876.0.tgz 0ms (cache hit)
+781 http cache @aws-crypto/sha256-js@https://registry.npmjs.org/@aws-crypto/sha256-js/-/sha256-js-5.2.0.tgz 0ms (cache hit)
+782 http cache @types/nodemailer@https://registry.npmjs.org/@types/nodemailer/-/nodemailer-7.0.1.tgz 0ms (cache hit)
+783 http cache @aws-crypto/sha256-browser@https://registry.npmjs.org/@aws-crypto/sha256-browser/-/sha256-browser-5.2.0.tgz 0ms (cache hit)
+784 http cache @aws-sdk/client-sesv2@https://registry.npmjs.org/@aws-sdk/client-sesv2/-/client-sesv2-3.876.0.tgz 0ms (cache hit)
+785 http cache fsevents@https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz 0ms (cache hit)
+786 http cache lightningcss-darwin-arm64@https://registry.npmjs.org/lightningcss-darwin-arm64/-/lightningcss-darwin-arm64-1.30.1.tgz 0ms (cache hit)
+787 http cache @rollup/rollup-darwin-arm64@https://registry.npmjs.org/@rollup/rollup-darwin-arm64/-/rollup-darwin-arm64-4.46.3.tgz 0ms (cache hit)
+788 http cache @tailwindcss/oxide-darwin-arm64@https://registry.npmjs.org/@tailwindcss/oxide-darwin-arm64/-/oxide-darwin-arm64-4.1.12.tgz 0ms (cache hit)
+789 http cache @esbuild/darwin-arm64@https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.25.9.tgz 0ms (cache hit)
+790 http cache nodemailer@https://registry.npmjs.org/nodemailer/-/nodemailer-7.0.5.tgz 0ms (cache hit)
+791 http cache @smithy/util-buffer-from@https://registry.npmjs.org/@smithy/util-buffer-from/-/util-buffer-from-2.2.0.tgz 0ms (cache hit)
+792 http cache @smithy/is-array-buffer@https://registry.npmjs.org/@smithy/is-array-buffer/-/is-array-buffer-2.2.0.tgz 0ms (cache hit)
+793 http cache @smithy/util-utf8@https://registry.npmjs.org/@smithy/util-utf8/-/util-utf8-2.3.0.tgz 0ms (cache hit)
+794 http cache @smithy/util-utf8@https://registry.npmjs.org/@smithy/util-utf8/-/util-utf8-2.3.0.tgz 0ms (cache hit)
+795 http cache @smithy/is-array-buffer@https://registry.npmjs.org/@smithy/is-array-buffer/-/is-array-buffer-2.2.0.tgz 0ms (cache hit)
+796 http cache @smithy/util-buffer-from@https://registry.npmjs.org/@smithy/util-buffer-from/-/util-buffer-from-2.2.0.tgz 0ms (cache hit)
+797 http cache @esbuild/darwin-arm64@https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.21.5.tgz 0ms (cache hit)
+798 http cache @esbuild/darwin-arm64@https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.18.20.tgz 0ms (cache hit)
+799 silly tarball no local data for strnum@https://registry.npmjs.org/strnum/-/strnum-2.1.1.tgz. Extracting by manifest.
+800 http cache @esbuild/darwin-arm64@https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.19.12.tgz 0ms (cache hit)
+801 silly tarball no local data for @smithy/querystring-parser@https://registry.npmjs.org/@smithy/querystring-parser/-/querystring-parser-4.0.5.tgz. Extracting by manifest.
+802 silly tarball no local data for @smithy/util-hex-encoding@https://registry.npmjs.org/@smithy/util-hex-encoding/-/util-hex-encoding-4.0.0.tgz. Extracting by manifest.
+803 silly tarball no local data for @smithy/util-uri-escape@https://registry.npmjs.org/@smithy/util-uri-escape/-/util-uri-escape-4.0.0.tgz. Extracting by manifest.
+804 silly tarball no local data for @smithy/service-error-classification@https://registry.npmjs.org/@smithy/service-error-classification/-/service-error-classification-4.0.7.tgz. Extracting by manifest.
+805 silly tarball no local data for @smithy/is-array-buffer@https://registry.npmjs.org/@smithy/is-array-buffer/-/is-array-buffer-4.0.0.tgz. Extracting by manifest.
+806 silly tarball no local data for uuid@https://registry.npmjs.org/uuid/-/uuid-9.0.1.tgz. Extracting by manifest.
+807 silly tarball no local data for @smithy/abort-controller@https://registry.npmjs.org/@smithy/abort-controller/-/abort-controller-4.0.5.tgz. Extracting by manifest.
+808 silly tarball no local data for @smithy/util-buffer-from@https://registry.npmjs.org/@smithy/util-buffer-from/-/util-buffer-from-4.0.0.tgz. Extracting by manifest.
+809 silly tarball no local data for @smithy/querystring-builder@https://registry.npmjs.org/@smithy/querystring-builder/-/querystring-builder-4.0.5.tgz. Extracting by manifest.
+810 silly tarball no local data for bowser@https://registry.npmjs.org/bowser/-/bowser-2.12.1.tgz. Extracting by manifest.
+811 silly tarball no local data for @types/uuid@https://registry.npmjs.org/@types/uuid/-/uuid-9.0.8.tgz. Extracting by manifest.
+812 silly tarball no local data for @aws-sdk/util-arn-parser@https://registry.npmjs.org/@aws-sdk/util-arn-parser/-/util-arn-parser-3.873.0.tgz. Extracting by manifest.
+813 silly tarball no local data for @smithy/util-config-provider@https://registry.npmjs.org/@smithy/util-config-provider/-/util-config-provider-4.0.0.tgz. Extracting by manifest.
+814 silly tarball no local data for @aws-sdk/middleware-sdk-s3@https://registry.npmjs.org/@aws-sdk/middleware-sdk-s3/-/middleware-sdk-s3-3.876.0.tgz. Extracting by manifest.
+815 silly tarball no local data for @aws-sdk/token-providers@https://registry.npmjs.org/@aws-sdk/token-providers/-/token-providers-3.876.0.tgz. Extracting by manifest.
+816 silly tarball no local data for @aws-sdk/nested-clients@https://registry.npmjs.org/@aws-sdk/nested-clients/-/nested-clients-3.876.0.tgz. Extracting by manifest.
+817 silly tarball no local data for @aws-sdk/client-sso@https://registry.npmjs.org/@aws-sdk/client-sso/-/client-sso-3.876.0.tgz. Extracting by manifest.
+818 silly tarball no local data for @smithy/util-stream@https://registry.npmjs.org/@smithy/util-stream/-/util-stream-4.2.4.tgz. Extracting by manifest.
+819 silly tarball no local data for @smithy/shared-ini-file-loader@https://registry.npmjs.org/@smithy/shared-ini-file-loader/-/shared-ini-file-loader-4.0.5.tgz. Extracting by manifest.
+820 silly tarball no local data for @aws-sdk/credential-provider-ini@https://registry.npmjs.org/@aws-sdk/credential-provider-ini/-/credential-provider-ini-3.876.0.tgz. Extracting by manifest.
+821 silly tarball no local data for @aws-sdk/credential-provider-web-identity@https://registry.npmjs.org/@aws-sdk/credential-provider-web-identity/-/credential-provider-web-identity-3.876.0.tgz. Extracting by manifest.
+822 silly tarball no local data for @smithy/credential-provider-imds@https://registry.npmjs.org/@smithy/credential-provider-imds/-/credential-provider-imds-4.0.7.tgz. Extracting by manifest.
+823 silly tarball no local data for @aws-sdk/credential-provider-process@https://registry.npmjs.org/@aws-sdk/credential-provider-process/-/credential-provider-process-3.876.0.tgz. Extracting by manifest.
+824 silly tarball no local data for @aws-sdk/credential-provider-sso@https://registry.npmjs.org/@aws-sdk/credential-provider-sso/-/credential-provider-sso-3.876.0.tgz. Extracting by manifest.
+825 silly tarball no local data for @aws-sdk/credential-provider-env@https://registry.npmjs.org/@aws-sdk/credential-provider-env/-/credential-provider-env-3.876.0.tgz. Extracting by manifest.
+826 silly tarball no local data for fast-xml-parser@https://registry.npmjs.org/fast-xml-parser/-/fast-xml-parser-5.2.5.tgz. Extracting by manifest.
+827 silly tarball no local data for @aws-sdk/credential-provider-http@https://registry.npmjs.org/@aws-sdk/credential-provider-http/-/credential-provider-http-3.876.0.tgz. Extracting by manifest.
+828 silly tarball no local data for @aws-sdk/xml-builder@https://registry.npmjs.org/@aws-sdk/xml-builder/-/xml-builder-3.873.0.tgz. Extracting by manifest.
+829 silly tarball no local data for @smithy/signature-v4@https://registry.npmjs.org/@smithy/signature-v4/-/signature-v4-5.1.3.tgz. Extracting by manifest.
+830 silly tarball no local data for @smithy/property-provider@https://registry.npmjs.org/@smithy/property-provider/-/property-provider-4.0.5.tgz. Extracting by manifest.
+831 silly tarball no local data for @aws-crypto/util@https://registry.npmjs.org/@aws-crypto/util/-/util-5.2.0.tgz. Extracting by manifest.
+832 silly tarball no local data for @aws-sdk/util-locate-window@https://registry.npmjs.org/@aws-sdk/util-locate-window/-/util-locate-window-3.873.0.tgz. Extracting by manifest.
+833 silly tarball no local data for @aws-crypto/supports-web-crypto@https://registry.npmjs.org/@aws-crypto/supports-web-crypto/-/supports-web-crypto-5.2.0.tgz. Extracting by manifest.
+834 silly tarball no local data for @smithy/util-middleware@https://registry.npmjs.org/@smithy/util-middleware/-/util-middleware-4.0.5.tgz. Extracting by manifest.
+835 silly tarball no local data for @smithy/util-retry@https://registry.npmjs.org/@smithy/util-retry/-/util-retry-4.0.7.tgz. Extracting by manifest.
+836 silly tarball no local data for @smithy/util-endpoints@https://registry.npmjs.org/@smithy/util-endpoints/-/util-endpoints-3.0.7.tgz. Extracting by manifest.
+837 silly tarball no local data for @smithy/util-utf8@https://registry.npmjs.org/@smithy/util-utf8/-/util-utf8-4.0.0.tgz. Extracting by manifest.
+838 silly tarball no local data for @smithy/util-defaults-mode-browser@https://registry.npmjs.org/@smithy/util-defaults-mode-browser/-/util-defaults-mode-browser-4.0.27.tgz. Extracting by manifest.
+839 silly tarball no local data for @smithy/util-defaults-mode-node@https://registry.npmjs.org/@smithy/util-defaults-mode-node/-/util-defaults-mode-node-4.0.27.tgz. Extracting by manifest.
+840 silly tarball no local data for @smithy/url-parser@https://registry.npmjs.org/@smithy/url-parser/-/url-parser-4.0.5.tgz. Extracting by manifest.
+841 silly tarball no local data for @smithy/util-base64@https://registry.npmjs.org/@smithy/util-base64/-/util-base64-4.0.0.tgz. Extracting by manifest.
+842 silly tarball no local data for @smithy/types@https://registry.npmjs.org/@smithy/types/-/types-4.3.2.tgz. Extracting by manifest.
+843 silly tarball no local data for @smithy/smithy-client@https://registry.npmjs.org/@smithy/smithy-client/-/smithy-client-4.5.0.tgz. Extracting by manifest.
+844 silly tarball no local data for @smithy/util-body-length-browser@https://registry.npmjs.org/@smithy/util-body-length-browser/-/util-body-length-browser-4.0.0.tgz. Extracting by manifest.
+845 silly tarball no local data for @smithy/protocol-http@https://registry.npmjs.org/@smithy/protocol-http/-/protocol-http-5.1.3.tgz. Extracting by manifest.
+846 silly tarball no local data for @smithy/util-body-length-node@https://registry.npmjs.org/@smithy/util-body-length-node/-/util-body-length-node-4.0.0.tgz. Extracting by manifest.
+847 silly tarball no local data for @smithy/node-http-handler@https://registry.npmjs.org/@smithy/node-http-handler/-/node-http-handler-4.1.1.tgz. Extracting by manifest.
+848 silly tarball no local data for @smithy/middleware-retry@https://registry.npmjs.org/@smithy/middleware-retry/-/middleware-retry-4.1.20.tgz. Extracting by manifest.
+849 silly tarball no local data for @smithy/node-config-provider@https://registry.npmjs.org/@smithy/node-config-provider/-/node-config-provider-4.1.4.tgz. Extracting by manifest.
+850 silly tarball no local data for @smithy/middleware-serde@https://registry.npmjs.org/@smithy/middleware-serde/-/middleware-serde-4.0.9.tgz. Extracting by manifest.
+851 silly tarball no local data for @smithy/middleware-stack@https://registry.npmjs.org/@smithy/middleware-stack/-/middleware-stack-4.0.5.tgz. Extracting by manifest.
+852 silly tarball no local data for @smithy/middleware-endpoint@https://registry.npmjs.org/@smithy/middleware-endpoint/-/middleware-endpoint-4.1.19.tgz. Extracting by manifest.
+853 silly tarball no local data for @smithy/hash-node@https://registry.npmjs.org/@smithy/hash-node/-/hash-node-4.0.5.tgz. Extracting by manifest.
+854 silly tarball no local data for @smithy/invalid-dependency@https://registry.npmjs.org/@smithy/invalid-dependency/-/invalid-dependency-4.0.5.tgz. Extracting by manifest.
+855 silly tarball no local data for @smithy/fetch-http-handler@https://registry.npmjs.org/@smithy/fetch-http-handler/-/fetch-http-handler-5.1.1.tgz. Extracting by manifest.
+856 silly tarball no local data for @smithy/middleware-content-length@https://registry.npmjs.org/@smithy/middleware-content-length/-/middleware-content-length-4.0.5.tgz. Extracting by manifest.
+857 silly tarball no local data for @smithy/core@https://registry.npmjs.org/@smithy/core/-/core-3.9.0.tgz. Extracting by manifest.
+858 silly tarball no local data for @aws-sdk/util-user-agent-node@https://registry.npmjs.org/@aws-sdk/util-user-agent-node/-/util-user-agent-node-3.876.0.tgz. Extracting by manifest.
+859 silly tarball no local data for @aws-sdk/util-user-agent-browser@https://registry.npmjs.org/@aws-sdk/util-user-agent-browser/-/util-user-agent-browser-3.873.0.tgz. Extracting by manifest.
+860 silly tarball no local data for @aws-sdk/middleware-user-agent@https://registry.npmjs.org/@aws-sdk/middleware-user-agent/-/middleware-user-agent-3.876.0.tgz. Extracting by manifest.
+861 silly tarball no local data for @aws-sdk/util-endpoints@https://registry.npmjs.org/@aws-sdk/util-endpoints/-/util-endpoints-3.873.0.tgz. Extracting by manifest.
+862 silly tarball no local data for @aws-sdk/signature-v4-multi-region@https://registry.npmjs.org/@aws-sdk/signature-v4-multi-region/-/signature-v4-multi-region-3.876.0.tgz. Extracting by manifest.
+863 silly tarball no local data for @aws-sdk/types@https://registry.npmjs.org/@aws-sdk/types/-/types-3.862.0.tgz. Extracting by manifest.
+864 silly tarball no local data for @aws-sdk/region-config-resolver@https://registry.npmjs.org/@aws-sdk/region-config-resolver/-/region-config-resolver-3.873.0.tgz. Extracting by manifest.
+865 silly tarball no local data for @aws-sdk/middleware-logger@https://registry.npmjs.org/@aws-sdk/middleware-logger/-/middleware-logger-3.876.0.tgz. Extracting by manifest.
+866 silly tarball no local data for @smithy/config-resolver@https://registry.npmjs.org/@smithy/config-resolver/-/config-resolver-4.1.5.tgz. Extracting by manifest.
+867 silly tarball no local data for @aws-sdk/middleware-recursion-detection@https://registry.npmjs.org/@aws-sdk/middleware-recursion-detection/-/middleware-recursion-detection-3.873.0.tgz. Extracting by manifest.
+868 silly tarball no local data for @aws-sdk/middleware-host-header@https://registry.npmjs.org/@aws-sdk/middleware-host-header/-/middleware-host-header-3.873.0.tgz. Extracting by manifest.
+869 silly tarball no local data for @aws-sdk/credential-provider-node@https://registry.npmjs.org/@aws-sdk/credential-provider-node/-/credential-provider-node-3.876.0.tgz. Extracting by manifest.
+870 silly tarball no local data for @aws-sdk/core@https://registry.npmjs.org/@aws-sdk/core/-/core-3.876.0.tgz. Extracting by manifest.
+871 silly tarball no local data for @aws-crypto/sha256-js@https://registry.npmjs.org/@aws-crypto/sha256-js/-/sha256-js-5.2.0.tgz. Extracting by manifest.
+872 silly tarball no local data for @types/nodemailer@https://registry.npmjs.org/@types/nodemailer/-/nodemailer-7.0.1.tgz. Extracting by manifest.
+873 silly tarball no local data for @aws-crypto/sha256-browser@https://registry.npmjs.org/@aws-crypto/sha256-browser/-/sha256-browser-5.2.0.tgz. Extracting by manifest.
+874 silly tarball no local data for @aws-sdk/client-sesv2@https://registry.npmjs.org/@aws-sdk/client-sesv2/-/client-sesv2-3.876.0.tgz. Extracting by manifest.
+875 silly tarball no local data for lightningcss-darwin-arm64@https://registry.npmjs.org/lightningcss-darwin-arm64/-/lightningcss-darwin-arm64-1.30.1.tgz. Extracting by manifest.
+876 silly tarball no local data for @rollup/rollup-darwin-arm64@https://registry.npmjs.org/@rollup/rollup-darwin-arm64/-/rollup-darwin-arm64-4.46.3.tgz. Extracting by manifest.
+877 silly tarball no local data for @tailwindcss/oxide-darwin-arm64@https://registry.npmjs.org/@tailwindcss/oxide-darwin-arm64/-/oxide-darwin-arm64-4.1.12.tgz. Extracting by manifest.
+878 silly tarball no local data for nodemailer@https://registry.npmjs.org/nodemailer/-/nodemailer-7.0.5.tgz. Extracting by manifest.
+879 silly tarball no local data for @smithy/util-buffer-from@https://registry.npmjs.org/@smithy/util-buffer-from/-/util-buffer-from-2.2.0.tgz. Extracting by manifest.
+880 silly tarball no local data for @smithy/is-array-buffer@https://registry.npmjs.org/@smithy/is-array-buffer/-/is-array-buffer-2.2.0.tgz. Extracting by manifest.
+881 silly tarball no local data for @smithy/util-utf8@https://registry.npmjs.org/@smithy/util-utf8/-/util-utf8-2.3.0.tgz. Extracting by manifest.
+882 silly tarball no local data for @smithy/util-utf8@https://registry.npmjs.org/@smithy/util-utf8/-/util-utf8-2.3.0.tgz. Extracting by manifest.
+883 silly tarball no local data for @smithy/is-array-buffer@https://registry.npmjs.org/@smithy/is-array-buffer/-/is-array-buffer-2.2.0.tgz. Extracting by manifest.
+884 silly tarball no local data for @smithy/util-buffer-from@https://registry.npmjs.org/@smithy/util-buffer-from/-/util-buffer-from-2.2.0.tgz. Extracting by manifest.
+885 http fetch GET 200 https://registry.npmjs.org/strnum/-/strnum-2.1.1.tgz 222ms (cache miss)
+886 http fetch GET 200 https://registry.npmjs.org/@smithy/util-hex-encoding/-/util-hex-encoding-4.0.0.tgz 225ms (cache miss)
+887 http fetch GET 200 https://registry.npmjs.org/@smithy/querystring-parser/-/querystring-parser-4.0.5.tgz 264ms (cache miss)
+888 http fetch GET 200 https://registry.npmjs.org/@smithy/util-uri-escape/-/util-uri-escape-4.0.0.tgz 283ms (cache miss)
+889 http fetch GET 200 https://registry.npmjs.org/@smithy/service-error-classification/-/service-error-classification-4.0.7.tgz 288ms (cache miss)
+890 http fetch GET 200 https://registry.npmjs.org/@smithy/is-array-buffer/-/is-array-buffer-4.0.0.tgz 338ms (cache miss)
+891 http fetch GET 200 https://registry.npmjs.org/bowser/-/bowser-2.12.1.tgz 358ms (cache miss)
+892 http fetch GET 200 https://registry.npmjs.org/uuid/-/uuid-9.0.1.tgz 418ms (cache miss)
+893 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/middleware-sdk-s3/-/middleware-sdk-s3-3.876.0.tgz 418ms (cache miss)
+894 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/token-providers/-/token-providers-3.876.0.tgz 448ms (cache miss)
+895 http fetch GET 200 https://registry.npmjs.org/@smithy/util-buffer-from/-/util-buffer-from-4.0.0.tgz 483ms (cache miss)
+896 http fetch GET 200 https://registry.npmjs.org/@smithy/abort-controller/-/abort-controller-4.0.5.tgz 495ms (cache miss)
+897 http fetch GET 200 https://registry.npmjs.org/@smithy/querystring-builder/-/querystring-builder-4.0.5.tgz 496ms (cache miss)
+898 http fetch GET 200 https://registry.npmjs.org/@types/uuid/-/uuid-9.0.8.tgz 499ms (cache miss)
+899 http fetch GET 200 https://registry.npmjs.org/@smithy/util-config-provider/-/util-config-provider-4.0.0.tgz 501ms (cache miss)
+900 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/credential-provider-ini/-/credential-provider-ini-3.876.0.tgz 504ms (cache miss)
+901 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/util-arn-parser/-/util-arn-parser-3.873.0.tgz 509ms (cache miss)
+902 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/credential-provider-web-identity/-/credential-provider-web-identity-3.876.0.tgz 570ms (cache miss)
+903 http fetch GET 200 https://registry.npmjs.org/@smithy/credential-provider-imds/-/credential-provider-imds-4.0.7.tgz 572ms (cache miss)
+904 http fetch GET 200 https://registry.npmjs.org/@smithy/util-stream/-/util-stream-4.2.4.tgz 730ms (cache miss)
+905 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/credential-provider-process/-/credential-provider-process-3.876.0.tgz 818ms (cache miss)
+906 http fetch GET 200 https://registry.npmjs.org/@smithy/util-middleware/-/util-middleware-4.0.5.tgz 835ms (cache miss)
+907 http fetch GET 200 https://registry.npmjs.org/@aws-crypto/util/-/util-5.2.0.tgz 837ms (cache miss)
+908 http fetch GET 200 https://registry.npmjs.org/@aws-crypto/supports-web-crypto/-/supports-web-crypto-5.2.0.tgz 854ms (cache miss)
+909 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/credential-provider-env/-/credential-provider-env-3.876.0.tgz 861ms (cache miss)
+910 http fetch GET 200 https://registry.npmjs.org/@smithy/util-retry/-/util-retry-4.0.7.tgz 877ms (cache miss)
+911 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/xml-builder/-/xml-builder-3.873.0.tgz 892ms (cache miss)
+912 http fetch GET 200 https://registry.npmjs.org/@smithy/property-provider/-/property-provider-4.0.5.tgz 950ms (cache miss)
+913 http fetch GET 200 https://registry.npmjs.org/@smithy/util-utf8/-/util-utf8-4.0.0.tgz 1048ms (cache miss)
+914 http fetch GET 200 https://registry.npmjs.org/@smithy/url-parser/-/url-parser-4.0.5.tgz 1076ms (cache miss)
+915 http fetch GET 200 https://registry.npmjs.org/@smithy/util-body-length-browser/-/util-body-length-browser-4.0.0.tgz 1075ms (cache miss)
+916 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/credential-provider-http/-/credential-provider-http-3.876.0.tgz 1084ms (cache miss)
+917 http fetch GET 200 https://registry.npmjs.org/@smithy/util-defaults-mode-browser/-/util-defaults-mode-browser-4.0.27.tgz 1088ms (cache miss)
+918 http fetch GET 200 https://registry.npmjs.org/@smithy/protocol-http/-/protocol-http-5.1.3.tgz 1086ms (cache miss)
+919 http fetch GET 200 https://registry.npmjs.org/@smithy/util-body-length-node/-/util-body-length-node-4.0.0.tgz 1086ms (cache miss)
+920 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/client-sso/-/client-sso-3.876.0.tgz 1093ms (cache miss)
+921 http fetch GET 200 https://registry.npmjs.org/fast-xml-parser/-/fast-xml-parser-5.2.5.tgz 1092ms (cache miss)
+922 http fetch GET 200 https://registry.npmjs.org/@smithy/util-defaults-mode-node/-/util-defaults-mode-node-4.0.27.tgz 1095ms (cache miss)
+923 http fetch GET 200 https://registry.npmjs.org/@smithy/util-base64/-/util-base64-4.0.0.tgz 1096ms (cache miss)
+924 http fetch GET 200 https://registry.npmjs.org/@smithy/shared-ini-file-loader/-/shared-ini-file-loader-4.0.5.tgz 1256ms (cache miss)
+925 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/util-locate-window/-/util-locate-window-3.873.0.tgz 1288ms (cache miss)
+926 http fetch GET 200 https://registry.npmjs.org/@smithy/fetch-http-handler/-/fetch-http-handler-5.1.1.tgz 1286ms (cache miss)
+927 http fetch GET 200 https://registry.npmjs.org/@smithy/middleware-endpoint/-/middleware-endpoint-4.1.19.tgz 1288ms (cache miss)
+928 http fetch GET 200 https://registry.npmjs.org/@smithy/middleware-stack/-/middleware-stack-4.0.5.tgz 1288ms (cache miss)
+929 http fetch GET 200 https://registry.npmjs.org/@smithy/hash-node/-/hash-node-4.0.5.tgz 1299ms (cache miss)
+930 http fetch GET 200 https://registry.npmjs.org/@smithy/middleware-content-length/-/middleware-content-length-4.0.5.tgz 1299ms (cache miss)
+931 http fetch GET 200 https://registry.npmjs.org/@smithy/invalid-dependency/-/invalid-dependency-4.0.5.tgz 1302ms (cache miss)
+932 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/util-user-agent-browser/-/util-user-agent-browser-3.873.0.tgz 1308ms (cache miss)
+933 http fetch GET 200 https://registry.npmjs.org/@smithy/middleware-serde/-/middleware-serde-4.0.9.tgz 1372ms (cache miss)
+934 http fetch POST 200 https://registry.npmjs.org/-/npm/v1/security/advisories/bulk 1460ms
+935 silly audit report {
+935 silly audit report   esbuild: [
+935 silly audit report     {
+935 silly audit report       id: 1102341,
+935 silly audit report       url: 'https://github.com/advisories/GHSA-67mh-4wv8-2f99',
+935 silly audit report       title: 'esbuild enables any website to send any requests to the development server and read the response',
+935 silly audit report       severity: 'moderate',
+935 silly audit report       vulnerable_versions: '<=0.24.2',
+935 silly audit report       cwe: [Array],
+935 silly audit report       cvss: [Object]
+935 silly audit report     }
+935 silly audit report   ]
+935 silly audit report }
+936 silly packumentCache corgi:https://registry.npmjs.org/esbuild cache-miss
+937 http fetch GET 200 https://registry.npmjs.org/@smithy/signature-v4/-/signature-v4-5.1.3.tgz 1450ms (cache miss)
+938 http fetch GET 200 https://registry.npmjs.org/@smithy/node-config-provider/-/node-config-provider-4.1.4.tgz 1451ms (cache miss)
+939 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/credential-provider-sso/-/credential-provider-sso-3.876.0.tgz 1473ms (cache miss)
+940 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/middleware-host-header/-/middleware-host-header-3.873.0.tgz 1513ms (cache miss)
+941 http fetch GET 200 https://registry.npmjs.org/@smithy/config-resolver/-/config-resolver-4.1.5.tgz 1514ms (cache miss)
+942 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/middleware-logger/-/middleware-logger-3.876.0.tgz 1550ms (cache miss)
+943 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/middleware-user-agent/-/middleware-user-agent-3.876.0.tgz 1551ms (cache miss)
+944 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/signature-v4-multi-region/-/signature-v4-multi-region-3.876.0.tgz 1569ms (cache miss)
+945 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/credential-provider-node/-/credential-provider-node-3.876.0.tgz 1569ms (cache miss)
+946 http fetch GET 200 https://registry.npmjs.org/@smithy/node-http-handler/-/node-http-handler-4.1.1.tgz 1581ms (cache miss)
+947 http fetch GET 200 https://registry.npmjs.org/@smithy/middleware-retry/-/middleware-retry-4.1.20.tgz 1693ms (cache miss)
+948 http fetch GET 200 https://registry.npmjs.org/esbuild 271ms (cache revalidated)
+949 silly packumentCache corgi:https://registry.npmjs.org/esbuild set size:866881 disposed:false
+950 silly packumentCache corgi:https://registry.npmjs.org/@esbuild-kit%2fcore-utils cache-miss
+951 silly packumentCache corgi:https://registry.npmjs.org/drizzle-kit cache-miss
+952 silly packumentCache corgi:https://registry.npmjs.org/vite cache-miss
+953 http fetch GET 200 https://registry.npmjs.org/@smithy/is-array-buffer/-/is-array-buffer-2.2.0.tgz 1768ms (cache miss)
+954 http fetch GET 200 https://registry.npmjs.org/@smithy/smithy-client/-/smithy-client-4.5.0.tgz 1831ms (cache miss)
+955 http fetch GET 200 https://registry.npmjs.org/@smithy/util-buffer-from/-/util-buffer-from-2.2.0.tgz 1828ms (cache miss)
+956 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/region-config-resolver/-/region-config-resolver-3.873.0.tgz 1830ms (cache miss)
+957 http fetch GET 200 https://registry.npmjs.org/@smithy/is-array-buffer/-/is-array-buffer-2.2.0.tgz 1980ms (cache miss)
+958 http fetch GET 200 https://registry.npmjs.org/@smithy/util-buffer-from/-/util-buffer-from-2.2.0.tgz 1980ms (cache miss)
+959 http fetch GET 200 https://registry.npmjs.org/@aws-crypto/sha256-js/-/sha256-js-5.2.0.tgz 2027ms (cache miss)
+960 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/util-endpoints/-/util-endpoints-3.873.0.tgz 2051ms (cache miss)
+961 http fetch GET 200 https://registry.npmjs.org/@smithy/util-utf8/-/util-utf8-2.3.0.tgz 2059ms (cache miss)
+962 http fetch GET 200 https://registry.npmjs.org/@smithy/util-utf8/-/util-utf8-2.3.0.tgz 2066ms (cache miss)
+963 http fetch GET 200 https://registry.npmjs.org/@aws-crypto/sha256-browser/-/sha256-browser-5.2.0.tgz 2070ms (cache miss)
+964 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/middleware-recursion-detection/-/middleware-recursion-detection-3.873.0.tgz 2156ms (cache miss)
+965 http fetch GET 200 https://registry.npmjs.org/@types/nodemailer/-/nodemailer-7.0.1.tgz 2191ms (cache miss)
+966 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/util-user-agent-node/-/util-user-agent-node-3.876.0.tgz 2280ms (cache miss)
+967 http fetch GET 200 https://registry.npmjs.org/@smithy/util-endpoints/-/util-endpoints-3.0.7.tgz 2337ms (cache miss)
+968 http fetch GET 200 https://registry.npmjs.org/nodemailer/-/nodemailer-7.0.5.tgz 2386ms (cache miss)
+969 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/types/-/types-3.862.0.tgz 2421ms (cache miss)
+970 http fetch GET 200 https://registry.npmjs.org/vite 839ms (cache updated)
+971 silly packumentCache corgi:https://registry.npmjs.org/vite set size:undefined disposed:false
+972 http fetch GET 200 https://registry.npmjs.org/@rollup/rollup-darwin-arm64/-/rollup-darwin-arm64-4.46.3.tgz 2600ms (cache miss)
+973 http fetch GET 200 https://registry.npmjs.org/@esbuild-kit%2fcore-utils 909ms (cache revalidated)
+974 silly packumentCache corgi:https://registry.npmjs.org/@esbuild-kit%2fcore-utils set size:50014 disposed:false
+975 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/nested-clients/-/nested-clients-3.876.0.tgz 2647ms (cache miss)
+976 http fetch GET 200 https://registry.npmjs.org/drizzle-kit 925ms (cache updated)
+977 silly packumentCache corgi:https://registry.npmjs.org/drizzle-kit set size:undefined disposed:false
+978 silly packumentCache corgi:https://registry.npmjs.org/@esbuild-kit%2fesm-loader cache-miss
+979 http fetch GET 200 https://registry.npmjs.org/@smithy/types/-/types-4.3.2.tgz 2722ms (cache miss)
+980 http fetch GET 200 https://registry.npmjs.org/@tailwindcss/oxide-darwin-arm64/-/oxide-darwin-arm64-4.1.12.tgz 2718ms (cache miss)
+981 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/core/-/core-3.876.0.tgz 2738ms (cache miss)
+982 http fetch GET 200 https://registry.npmjs.org/@smithy/core/-/core-3.9.0.tgz 2894ms (cache miss)
+983 http fetch GET 200 https://registry.npmjs.org/lightningcss-darwin-arm64/-/lightningcss-darwin-arm64-1.30.1.tgz 2925ms (cache miss)
+984 http fetch GET 200 https://registry.npmjs.org/@aws-sdk/client-sesv2/-/client-sesv2-3.876.0.tgz 2940ms (cache miss)
+985 http fetch GET 200 https://registry.npmjs.org/@esbuild-kit%2fesm-loader 681ms (cache revalidated)
+986 silly packumentCache corgi:https://registry.npmjs.org/@esbuild-kit%2fesm-loader set size:48202 disposed:false
+987 silly packumentCache corgi:https://registry.npmjs.org/@tailwindcss%2fvite cache-miss
+988 silly packumentCache corgi:https://registry.npmjs.org/@vitejs%2fplugin-react cache-miss
+989 http fetch GET 200 https://registry.npmjs.org/@vitejs%2fplugin-react 277ms (cache updated)
+990 silly packumentCache corgi:https://registry.npmjs.org/@vitejs%2fplugin-react set size:undefined disposed:false
+991 http fetch GET 200 https://registry.npmjs.org/@tailwindcss%2fvite 659ms (cache updated)
+992 silly packumentCache corgi:https://registry.npmjs.org/@tailwindcss%2fvite set size:undefined disposed:false
+993 silly ADD node_modules/strnum
+994 silly ADD node_modules/@smithy/querystring-parser
+995 silly ADD node_modules/@smithy/util-hex-encoding
+996 silly ADD node_modules/@smithy/is-array-buffer
+997 silly ADD node_modules/@smithy/util-uri-escape
+998 silly ADD node_modules/@smithy/abort-controller
+999 silly ADD node_modules/@smithy/service-error-classification
+1000 silly ADD node_modules/@smithy/util-buffer-from
+1001 silly ADD node_modules/@smithy/querystring-builder
+1002 silly ADD node_modules/uuid
+1003 silly ADD node_modules/@types/uuid
+1004 silly ADD node_modules/bowser
+1005 silly ADD node_modules/@aws-sdk/util-arn-parser
+1006 silly ADD node_modules/@aws-sdk/middleware-sdk-s3
+1007 silly ADD node_modules/@smithy/util-config-provider
+1008 silly ADD node_modules/@aws-sdk/token-providers
+1009 silly ADD node_modules/@aws-sdk/client-sso
+1010 silly ADD node_modules/@aws-sdk/nested-clients
+1011 silly ADD node_modules/@smithy/util-stream
+1012 silly ADD node_modules/@smithy/shared-ini-file-loader
+1013 silly ADD node_modules/@smithy/credential-provider-imds
+1014 silly ADD node_modules/@aws-sdk/credential-provider-web-identity
+1015 silly ADD node_modules/@aws-sdk/credential-provider-sso
+1016 silly ADD node_modules/@aws-sdk/credential-provider-process
+1017 silly ADD node_modules/@aws-sdk/credential-provider-ini
+1018 silly ADD node_modules/@aws-sdk/credential-provider-http
+1019 silly ADD node_modules/@aws-sdk/credential-provider-env
+1020 silly ADD node_modules/fast-xml-parser
+1021 silly ADD node_modules/@smithy/signature-v4
+1022 silly ADD node_modules/@smithy/property-provider
+1023 silly ADD node_modules/@aws-sdk/xml-builder
+1024 silly ADD node_modules/@aws-sdk/util-locate-window
+1025 silly ADD node_modules/@aws-crypto/util
+1026 silly ADD node_modules/@aws-crypto/util/node_modules/@smithy/is-array-buffer
+1027 silly ADD node_modules/@aws-crypto/util/node_modules/@smithy/util-buffer-from
+1028 silly ADD node_modules/@aws-crypto/util/node_modules/@smithy/util-utf8
+1029 silly ADD node_modules/@aws-crypto/supports-web-crypto
+1030 silly ADD node_modules/@smithy/util-utf8
+1031 silly ADD node_modules/@smithy/util-retry
+1032 silly ADD node_modules/@smithy/util-middleware
+1033 silly ADD node_modules/@smithy/util-endpoints
+1034 silly ADD node_modules/@smithy/util-defaults-mode-node
+1035 silly ADD node_modules/@smithy/util-defaults-mode-browser
+1036 silly ADD node_modules/@smithy/util-body-length-node
+1037 silly ADD node_modules/@smithy/util-body-length-browser
+1038 silly ADD node_modules/@smithy/util-base64
+1039 silly ADD node_modules/@smithy/url-parser
+1040 silly ADD node_modules/@smithy/types
+1041 silly ADD node_modules/@smithy/smithy-client
+1042 silly ADD node_modules/@smithy/protocol-http
+1043 silly ADD node_modules/@smithy/node-http-handler
+1044 silly ADD node_modules/@smithy/node-config-provider
+1045 silly ADD node_modules/@smithy/middleware-stack
+1046 silly ADD node_modules/@smithy/middleware-serde
+1047 silly ADD node_modules/@smithy/middleware-retry
+1048 silly ADD node_modules/@smithy/middleware-endpoint
+1049 silly ADD node_modules/@smithy/middleware-content-length
+1050 silly ADD node_modules/@smithy/invalid-dependency
+1051 silly ADD node_modules/@smithy/hash-node
+1052 silly ADD node_modules/@smithy/fetch-http-handler
+1053 silly ADD node_modules/@smithy/core
+1054 silly ADD node_modules/@smithy/config-resolver
+1055 silly ADD node_modules/@aws-sdk/util-user-agent-node
+1056 silly ADD node_modules/@aws-sdk/util-user-agent-browser
+1057 silly ADD node_modules/@aws-sdk/util-endpoints
+1058 silly ADD node_modules/@aws-sdk/types
+1059 silly ADD node_modules/@aws-sdk/signature-v4-multi-region
+1060 silly ADD node_modules/@aws-sdk/region-config-resolver
+1061 silly ADD node_modules/@aws-sdk/middleware-user-agent
+1062 silly ADD node_modules/@aws-sdk/middleware-recursion-detection
+1063 silly ADD node_modules/@aws-sdk/middleware-logger
+1064 silly ADD node_modules/@aws-sdk/middleware-host-header
+1065 silly ADD node_modules/@aws-sdk/credential-provider-node
+1066 silly ADD node_modules/@aws-sdk/core
+1067 silly ADD node_modules/@aws-crypto/sha256-js
+1068 silly ADD node_modules/@aws-crypto/sha256-browser
+1069 silly ADD node_modules/@aws-crypto/sha256-browser/node_modules/@smithy/is-array-buffer
+1070 silly ADD node_modules/@aws-crypto/sha256-browser/node_modules/@smithy/util-buffer-from
+1071 silly ADD node_modules/@aws-crypto/sha256-browser/node_modules/@smithy/util-utf8
+1072 silly ADD node_modules/@aws-sdk/client-sesv2
+1073 silly ADD node_modules/nodemailer
+1074 silly ADD node_modules/@types/nodemailer
+1075 silly ADD
+1076 silly ADD
+1077 silly ADD
+1078 silly ADD
+1079 silly ADD
+1080 silly ADD
+1081 silly ADD
+1082 silly ADD
+1083 silly ADD node_modules/lightningcss-darwin-arm64
+1084 silly ADD node_modules/fsevents
+1085 silly ADD
+1086 silly ADD
+1087 silly ADD
+1088 silly ADD
+1089 silly ADD
+1090 silly ADD
+1091 silly ADD
+1092 silly ADD
+1093 silly ADD
+1094 silly ADD node_modules/@tailwindcss/oxide-darwin-arm64
+1095 silly ADD
+1096 silly ADD
+1097 silly ADD
+1098 silly ADD
+1099 silly ADD
+1100 silly ADD
+1101 silly ADD
+1102 silly ADD
+1103 silly ADD
+1104 silly ADD
+1105 silly ADD
+1106 silly ADD
+1107 silly ADD
+1108 silly ADD
+1109 silly ADD
+1110 silly ADD
+1111 silly ADD
+1112 silly ADD node_modules/@rollup/rollup-darwin-arm64
+1113 silly ADD
+1114 silly ADD
+1115 silly ADD
+1116 silly ADD
+1117 silly ADD
+1118 silly ADD
+1119 silly ADD
+1120 silly ADD
+1121 silly ADD
+1122 silly ADD
+1123 silly ADD
+1124 silly ADD
+1125 silly ADD
+1126 silly ADD
+1127 silly ADD
+1128 silly ADD
+1129 silly ADD
+1130 silly ADD
+1131 silly ADD
+1132 silly ADD
+1133 silly ADD
+1134 silly ADD
+1135 silly ADD node_modules/@esbuild/darwin-arm64
+1136 silly ADD
+1137 silly ADD
+1138 silly ADD
+1139 silly ADD
+1140 silly ADD
+1141 silly ADD
+1142 silly ADD
+1143 silly ADD
+1144 silly ADD
+1145 silly ADD
+1146 silly ADD
+1147 silly ADD
+1148 silly ADD
+1149 silly ADD
+1150 silly ADD
+1151 silly ADD
+1152 silly ADD
+1153 silly ADD
+1154 silly ADD
+1155 silly ADD
+1156 silly ADD
+1157 silly ADD node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/darwin-arm64
+1158 silly ADD
+1159 silly ADD
+1160 silly ADD
+1161 silly ADD
+1162 silly ADD
+1163 silly ADD
+1164 silly ADD
+1165 silly ADD
+1166 silly ADD
+1167 silly ADD
+1168 silly ADD
+1169 silly ADD
+1170 silly ADD
+1171 silly ADD
+1172 silly ADD
+1173 silly ADD
+1174 silly ADD
+1175 silly ADD
+1176 silly ADD
+1177 silly ADD
+1178 silly ADD node_modules/vite/node_modules/@esbuild/darwin-arm64
+1179 silly ADD
+1180 silly ADD
+1181 silly ADD
+1182 silly ADD
+1183 silly ADD
+1184 silly ADD
+1185 silly ADD
+1186 silly ADD
+1187 silly ADD
+1188 silly ADD
+1189 silly ADD
+1190 silly ADD
+1191 silly ADD
+1192 silly ADD
+1193 silly ADD
+1194 silly ADD
+1195 silly ADD
+1196 silly ADD
+1197 silly ADD
+1198 silly ADD
+1199 silly ADD
+1200 silly ADD node_modules/drizzle-kit/node_modules/@esbuild/darwin-arm64
+1201 silly ADD
+1202 silly ADD
+1203 silly ADD
+1204 silly ADD
+1205 verbose cwd /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb
+1206 verbose os Darwin 24.6.0
+1207 verbose node v22.18.0
+1208 verbose npm  v10.9.3
+1209 notice
+1209 notice New major version of npm available! 10.9.3 -> 11.5.2
+1209 notice Changelog: https://github.com/npm/cli/releases/tag/v11.5.2
+1209 notice To update run: npm install -g npm@11.5.2
+1209 notice  { force: true, [Symbol(proc-log.meta)]: true }
+1210 verbose exit 0
+1211 info ok
