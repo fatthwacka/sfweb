@@ -1,5 +1,5 @@
 import { useParams } from "wouter";
-import { useEffect } from "react";
+// import { useEffect } from "react"; // Commented out - no longer needed for anchor scrolling
 import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
@@ -15,18 +15,19 @@ export default function PhotographyCategory() {
   
   const { config, isLoading } = useSiteConfig();
   
-  // Handle hash navigation on page load
-  useEffect(() => {
-    if (window.location.hash === '#pricing') {
-      // Small delay to ensure page is rendered
-      setTimeout(() => {
-        const element = document.getElementById('pricing');
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 100);
-    }
-  }, []);
+  // Commented out anchor scrolling functionality - no longer needed
+  // const [location] = useLocation();
+  // useEffect(() => {
+  //   const currentHash = window.location.hash;
+  //   if (currentHash === '#pricing') {
+  //     setTimeout(() => {
+  //       const element = document.getElementById('pricing');
+  //       if (element) {
+  //         element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  //       }
+  //     }, 100);
+  //   }
+  // }, [location]);
   
   // Get category configuration from unified site config
   const categoryConfig = config?.categoryPages?.photography?.[category || 'weddings'] || {
@@ -181,7 +182,8 @@ export default function PhotographyCategory() {
       </section>
 
       {/* Packages Section */}
-      <section id="pricing" className="py-20 relative scroll-mt-20" style={{
+      <section id="pricing" className="py-20 relative" style={{
+        /* Removed scroll-mt-20 - no longer needed for anchor scrolling */
         background: categoryConfig.packages.gradients ? 
           `linear-gradient(${categoryConfig.packages.gradients.direction}, ${categoryConfig.packages.gradients.startColor} 0%, ${categoryConfig.packages.gradients.middleColor} 50%, ${categoryConfig.packages.gradients.endColor} 100%)` :
           'linear-gradient(135deg, #1e293b 0%, #334155 50%, #0f172a 100%)',

@@ -320,7 +320,7 @@
 
   /* Universal Button Classes - replace all inline button styling */
   .btn-salmon {
-    @apply px-8 py-4 rounded-full font-barlow font-semibold text-lg transition-all duration-300;
+    @apply px-8 py-4 rounded-lg font-barlow font-semibold text-lg transition-all duration-300;
     background: linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(16, 80%, 65%) 100%);
     color: white;
     border: none;
@@ -333,7 +333,7 @@
   }
 
   .btn-cyan {
-    @apply px-8 py-4 rounded-full font-barlow font-semibold text-lg transition-all duration-300;
+    @apply px-8 py-4 rounded-lg font-barlow font-semibold text-lg transition-all duration-300;
     background: linear-gradient(135deg, hsl(180, 100%, 50%) 0%, hsl(180, 80%, 45%) 100%);
     color: white;
     border: none;

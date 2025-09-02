@@ -256,11 +256,11 @@ export function GalleryDemo() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/contact">
-                  <Button className="btn-salmon px-8 py-3 text-lg">
+                  <button className="btn-salmon px-8 py-3 text-lg">
                     Book Your Session
-                  </Button>
+                  </button>
                 </Link>
-                <Link href="/photography/portraits#pricing">
+                <Link href="/photography">
                   <button className="btn-cyan px-8 py-3 text-lg">
                     View Packages
                   </button>
