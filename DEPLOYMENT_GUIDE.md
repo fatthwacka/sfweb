@@ -86,6 +86,58 @@ curl -s https://slyfox.co.za/api/site-config | jq '.about.team.members | length'
 # Expected: Should match development count
 ```
 
+### **🚨 CRITICAL: Docker Volume Sync Issues (TESTED 2025-09-01)**
+
+**⚠️ IMPORTANT**: The above API-based sync method may fail due to Docker volume persistence issues. If configuration changes don't appear after the API sync, use this **MANDATORY fallback process**:
+
+#### **The Container Restart Sync Process (GUARANTEED METHOD)**
+
+**When API sync fails or Docker volumes don't update:**
+
+```bash
+# Step 1: Safe container stop (prevents file locking)
+ssh slyfox-vps "cd /opt/sfweb && docker compose down"
+
+# Step 2: Update host filesystem config
+scp /tmp/dev-config-sync.json slyfox-vps:/tmp/new-config.json
+ssh slyfox-vps "cp /tmp/new-config.json /opt/sfweb/server/data/site-config-overrides.json"
+
+# Step 3: Restart containers
+ssh slyfox-vps "cd /opt/sfweb && docker compose up -d"
+
+# Step 4: CRITICAL - Force container file sync (MOST IMPORTANT STEP)
+ssh slyfox-vps "docker cp /opt/sfweb/server/data/site-config-overrides.json sfweb-app:/app/server/data/site-config-overrides.json"
+
+# Step 5: Final container restart to reload config
+ssh slyfox-vps "cd /opt/sfweb && docker compose restart app"
+
+# Step 6: Cache purge wait
+echo "Waiting 60 seconds for production cache purge..." && sleep 60
+
+# Step 7: Verify success
+curl -s https://slyfox.co.za/api/site-config | jq -r '.about.team.members[] | select(.name=="Kyle Wiesner") | .description'
+curl -s -o /dev/null -w '%{http_code}' https://slyfox.co.za && echo " ✅ Site operational"
+```
+
+#### **Why This Process is Required**
+
+**Root Cause**: Docker volumes preserve container internal files even when host filesystem files are updated. The container doesn't automatically reload config from host mounts.
+
+**Symptoms of Volume Sync Issues**:
+- Host file updated: `/opt/sfweb/server/data/site-config-overrides.json` (new timestamp)
+- Container file unchanged: `/app/server/data/site-config-overrides.json` (old timestamp)  
+- API serves cached/old data despite "successful" file updates
+- Admin dashboard shows outdated content
+
+**Debug Commands**:
+```bash
+# Compare file timestamps (should be identical after successful sync)
+echo "HOST:" && ssh slyfox-vps "ls -la /opt/sfweb/server/data/site-config-overrides.json"
+echo "CONTAINER:" && ssh slyfox-vps "docker exec sfweb-app ls -la /app/server/data/site-config-overrides.json"
+```
+
+**📋 Complete documentation**: See `SITE-CONFIG-JSON-VPS-RULES.md` for detailed troubleshooting.
+
 ### **🗂️ ALL Configuration Files That Must Be Synced**
 
 #### **PRIMARY CONFIGURATION (API-Based)**
@@ -585,6 +637,34 @@ curl -s http://168.231.86.89:3000/api/site-config | jq '.contact.business.name'
 ```
 
 ## 🚨 If Deployment Fails (FIRST AID)
+
+### **Image Loading Issues (TESTED 2025-09-01)**
+
+**⚠️ COMMON ISSUE**: Images appear broken/missing on live site after deployment
+
+**Symptoms**:
+- Site loads but images show as broken/dark placeholders
+- Service cards, logos, or hero images not displaying
+- Browser returns HTTP 500 for image URLs
+- Application logs show: `Error: EACCES: permission denied, open '/app/public/images/...`
+
+**Quick Fix (30 seconds)**:
+```bash
+# Fix file permissions on all public assets
+ssh slyfox-vps "chmod -R 755 /opt/sfweb/public/"
+
+# Verify fix worked
+curl -s -o /dev/null -w '%{http_code}' https://slyfox.co.za/images/logos/slyfox-logo-black.png
+# Expected: 200
+```
+
+**Root Cause**: Files deployed with restrictive permissions (600) that Docker container cannot read, even though files exist in mounted volume.
+
+**Prevention**: Always verify public assets have correct permissions after deployment.
+
+---
+
+### **Module Import Errors**
 
 **Most Common Issue**: ERR_MODULE_NOT_FOUND (Node modules corruption)
 

@@ -69,6 +69,7 @@ import Contact from "@/pages/contact";
 import SocialMedia from "@/pages/social-media";
 import WebApps from "@/pages/web-apps";
 import ClientGallery from "@/pages/client-gallery";
+import { GalleryDemo } from "@/pages/gallery-demo";
 import Dashboard from "@/pages/dashboard";
 import ClientDashboard from "@/pages/client-dashboard";
 import Login from "@/pages/login";
@@ -99,6 +100,7 @@ function Router() {
       <Route path="/about" component={About} />
       <Route path="/pricing" component={Pricing} />
       <Route path="/contact" component={Contact} />
+      <Route path="/gallery-demo" component={GalleryDemo} />
       <Route path="/gallery/:slug">
         {(params) => <ClientGallery shootId={params.slug} />}
       </Route>

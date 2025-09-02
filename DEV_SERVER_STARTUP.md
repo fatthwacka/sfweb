@@ -14,6 +14,13 @@ npm run docker:dev
 docker-compose --profile dev up adminer -d
 ```
 
+**🔧 Development Environment Details:**
+- Runs with `NODE_ENV=development` for hot reloading
+- Uses Vite dev server for frontend with HMR (Hot Module Replacement)
+- TypeScript files are executed directly with `tsx`
+- Changes to code are reflected immediately without rebuilding
+- Configuration saves persist across restarts via Docker volumes
+
 **Access URLs:**
 - **Application**: http://localhost:3000
 - **Admin Panel**: http://localhost:3000/admin

@@ -853,6 +853,8 @@ export function GalleryAppearanceSection({
                       <SelectItem value="top-center">Top Center</SelectItem>
                       <SelectItem value="top-right">Top Right</SelectItem>
                       <SelectItem value="center">Center</SelectItem>
+                      <SelectItem value="bottom-left">Bottom Left</SelectItem>
+                      <SelectItem value="bottom-right">Bottom Right</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

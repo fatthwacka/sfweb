@@ -407,21 +407,51 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     }
   };
 
-  // Get navbar positioning classes based on gallery settings
-  const getNavbarPositionClasses = () => {
+  // Get navbar positioning classes and styles based on gallery settings
+  const getNavbarPositioning = () => {
     const position = shoot?.gallerySettings?.navbarPosition || 'top-left';
+    const coverSize = shoot?.gallerySettings?.coverPicSize || 80;
     
     switch (position) {
       case 'top-left':
-        return 'top-4 left-4';
+        return { 
+          classes: 'top-4 left-4',
+          styles: {}
+        };
       case 'top-center':
-        return 'top-4 left-1/2 -translate-x-1/2';
+        return { 
+          classes: 'top-4 left-1/2 -translate-x-1/2',
+          styles: {}
+        };
       case 'top-right':
-        return 'top-4 right-4';
+        return { 
+          classes: 'top-4 right-4',
+          styles: {}
+        };
       case 'center':
-        return 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2';
+        return { 
+          classes: 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
+          styles: {}
+        };
+      case 'bottom-left':
+        return { 
+          classes: 'left-4',
+          styles: {
+            bottom: `calc(100vh - ${coverSize}vh + 1rem)`
+          }
+        };
+      case 'bottom-right':
+        return { 
+          classes: 'right-4',
+          styles: {
+            bottom: `calc(100vh - ${coverSize}vh + 1rem)`
+          }
+        };
       default:
-        return 'top-4 left-4';
+        return { 
+          classes: 'top-4 left-4',
+          styles: {}
+        };
     }
   };
 
@@ -474,10 +504,11 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
       {/* Custom Navigation Bar for Gallery */}
       <nav
-        className={`fixed ${getNavbarPositionClasses()} z-50 transition-all duration-300 ${navbarVisible ? "" : "opacity-0"}`}
+        className={`fixed ${getNavbarPositioning().classes} z-50 transition-all duration-300 ${navbarVisible ? "" : "opacity-0"}`}
         style={{ 
           margin: "30px",
-          opacity: navbarVisible ? 1.0 : 0
+          opacity: navbarVisible ? 1.0 : 0,
+          ...getNavbarPositioning().styles
         }}
       >
         <div className="bg-black/05 backdrop-blur-md border border-white/10 rounded-2xl px-8 py-6 shadow-lg">

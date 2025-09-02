@@ -7,6 +7,7 @@ const photographyServices = [
   { name: "Events", href: "/photography/events" },
   { name: "Products", href: "/photography/products" },
   { name: "Graduation", href: "/photography/graduation" },
+  { name: "Gallery Demo", href: "/gallery-demo" },
 ];
 
 const videographyServices = [

@@ -83,7 +83,7 @@ export function ClientGalleryAccess() {
                 buttonText={primaryButton.text}
                 className="bg-salmon text-black px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:bg-salmon-muted transition-all duration-300 transform hover:scale-105"
               />
-              <Link href="/gallery/classic-car">
+              <Link href="/gallery-demo">
                 <Button 
                   variant="outline"
                   className="border-2 border-border text-muted-foreground px-8 py-4 rounded-full font-barlow font-semibold text-lg hover:border-gold hover:text-gold transition-all duration-300"

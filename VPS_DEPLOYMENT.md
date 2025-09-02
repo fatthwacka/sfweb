@@ -418,6 +418,35 @@ ssh slyfox-vps "cd /opt/sfweb && docker compose up -d --build"
 ssh slyfox-vps "cd /opt/sfweb && docker compose logs -f"
 ```
 
+### 🐳 Production Docker Configuration
+
+#### Critical Docker Setup for Production
+
+**IMPORTANT**: Production requires a separate docker-compose.prod.yml file that overlays the base configuration with production-specific settings, including Traefik integration for domain routing.
+
+**Production Docker Files:**
+- `docker-compose.yml` - Base configuration (shared with development)
+- `docker-compose.prod.yml` - Production overrides (Traefik labels, networks, etc.)
+
+**Key Production Differences:**
+1. **Build Target**: Uses `runner` stage (optimized production build)
+2. **Environment**: `NODE_ENV=production`
+3. **Networks**: Connects to both `sfweb-network` AND `root_default` (Traefik)
+4. **Traefik Labels**: Routes traffic from slyfox.co.za domain
+5. **Volumes**: Minimal mounts (only config persistence)
+
+**Production Startup Command:**
+```bash
+# Production MUST use both compose files
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+**Traefik Integration Requirements:**
+- External network `root_default` must exist
+- Traefik labels define routing rules
+- Container MUST bind to 0.0.0.0:5000 (not localhost)
+- DOCKER_ENV=true forces correct binding
+
 ### 4. Verify Configuration Persistence
 
 ```bash

@@ -1,15 +1,48 @@
 # Production overrides for docker-compose.yml
+# This file contains production-specific settings including Traefik integration
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+
 services:
   app:
     build:
       target: runner
     environment:
       NODE_ENV: production
-    volumes: []  # Remove all development volume mounts
+    volumes: 
+      # Production uses minimal volume mounts
+      - config_data:/app/server/data  # Persistent configuration only
     command: npm start
     profiles: []  # Remove dev profile restriction
+    networks:
+      - sfweb-network
+      - root_default  # Connect to Traefik network for reverse proxy
+    labels:
+      # Traefik configuration for production domain routing
+      - "traefik.enable=true"
+      - "traefik.docker.network=root_default"
+      
+      # HTTP to HTTPS redirect
+      - "traefik.http.routers.slyfox-http.rule=Host(`slyfox.co.za`)"
+      - "traefik.http.routers.slyfox-http.entrypoints=web"
+      - "traefik.http.routers.slyfox-http.middlewares=slyfox-redirect"
+      - "traefik.http.middlewares.slyfox-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.slyfox-redirect.redirectscheme.permanent=true"
+      
+      # HTTPS configuration
+      - "traefik.http.routers.slyfox-https.rule=Host(`slyfox.co.za`)"
+      - "traefik.http.routers.slyfox-https.entrypoints=websecure"
+      - "traefik.http.routers.slyfox-https.tls=true"
+      - "traefik.http.routers.slyfox-https.tls.certresolver=mytlschallenge"
+      
+      # Service configuration
+      - "traefik.http.services.slyfox.loadbalancer.server.port=5000"
 
   # Remove adminer from production
   adminer:
     profiles:
       - never  # Effectively disables adminer in production
+
+# Production requires the external Traefik network
+networks:
+  root_default:
+    external: true
