@@ -1,50 +1,12 @@
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
 import { GradientBackground } from "@/components/common/gradient-background";
 import { Button } from "@/components/ui/button";
 import { useSiteConfig } from "@/hooks/use-site-config";
-import { Shield, Download, Share2, Eye, Smartphone, Clock, Star, Lock, Camera, Users, Zap, Heart } from "lucide-react";
-
-// Hardcoded gallery data for demo page
-const demoGalleries = [
-  {
-    slug: "dipsy",
-    title: "Dipsy Picnic",
-    description: "Outdoor lifestyle session",
-    coverImage: "/api/placeholder/400/400"
-  },
-  {
-    slug: "gab",
-    title: "Gab's Portrait Session",
-    description: "Professional portraits",
-    coverImage: "/api/placeholder/400/400"
-  },
-  {
-    slug: "bayanda",
-    title: "Bayanda's Session",
-    description: "Creative photography",
-    coverImage: "/api/placeholder/400/400"
-  },
-  {
-    slug: "products",
-    title: "Product Photography",
-    description: "Commercial showcase",
-    coverImage: "/api/placeholder/400/400"
-  },
-  {
-    slug: "dibetso",
-    title: "Dibetso's Session",
-    description: "Professional portraits",
-    coverImage: "/api/placeholder/400/400"
-  },
-  {
-    slug: "classic-car",
-    title: "Classic Car Photography",
-    description: "Automotive artistry",
-    coverImage: "/api/placeholder/400/400"
-  }
-];
+import { Shield, Download, Share2, Eye, HardDrive, Clock, Star, Lock } from "lucide-react";
+import { ImageUrl } from "@/lib/image-utils";
 
 const features = [
   {
@@ -63,9 +25,9 @@ const features = [
     description: "Share your gallery link with family and friends via email, WhatsApp, or social media"
   },
   {
-    icon: Smartphone,
-    title: "Mobile Optimized",
-    description: "Perfect viewing experience on any device - phones, tablets, laptops, or desktops"
+    icon: HardDrive,
+    title: "Safe & Backed Up",
+    description: "Your photos are securely stored in the cloud - never worry about losing memories if devices fail"
   },
   {
     icon: Eye,
@@ -79,31 +41,109 @@ const features = [
   }
 ];
 
-const benefits = [
-  {
-    icon: Camera,
-    title: "Professional Quality",
-    description: "Every image is professionally edited and optimized for both web viewing and print"
-  },
-  {
-    icon: Users,
-    title: "Family Friendly",
-    description: "Share with unlimited family members and friends - no restrictions on viewers"
-  },
-  {
-    icon: Zap,
-    title: "Lightning Fast",
-    description: "Optimized loading speeds ensure smooth browsing even on slower connections"
-  },
-  {
-    icon: Heart,
-    title: "Client Favorites",
-    description: "Mark your favorite images for easy reference when ordering prints or albums"
-  }
-];
+// Define the type for gallery data
+interface GalleryData {
+  slug: string;
+  title: string;
+  description: string;
+  coverImage?: string;
+}
 
 export function GalleryDemo() {
   const { config } = useSiteConfig();
+  
+  // Helper function to fetch gallery with images
+  const fetchGalleryWithImages = async (slug: string) => {
+    const galleryResponse = await fetch(`/api/gallery/${slug}`);
+    if (!galleryResponse.ok) throw new Error('Failed to fetch gallery');
+    const gallery = await galleryResponse.json();
+    
+    // Fetch images for the gallery
+    const imagesResponse = await fetch(`/api/shoots/${gallery.id}/images`);
+    if (!imagesResponse.ok) return { ...gallery, coverImage: null };
+    const images = await imagesResponse.json();
+    
+    // Find the banner image or use the first image
+    const bannerImage = gallery.bannerImageId 
+      ? images.find((img: any) => img.id === gallery.bannerImageId)
+      : images[0];
+    
+    return {
+      ...gallery,
+      coverImage: bannerImage?.storagePath || null
+    };
+  };
+
+  // Fetch gallery data for each demo gallery
+  const dipsyQuery = useQuery({
+    queryKey: ['gallery-with-images', 'dipsy'],
+    queryFn: () => fetchGalleryWithImages('dipsy')
+  });
+
+  const gabQuery = useQuery({
+    queryKey: ['gallery-with-images', 'gab'],
+    queryFn: () => fetchGalleryWithImages('gab')
+  });
+
+  const bayandaQuery = useQuery({
+    queryKey: ['gallery-with-images', 'bayanda'],
+    queryFn: () => fetchGalleryWithImages('bayanda')
+  });
+
+  const productsQuery = useQuery({
+    queryKey: ['gallery-with-images', 'products'],
+    queryFn: () => fetchGalleryWithImages('products')
+  });
+
+  const dibetsoQuery = useQuery({
+    queryKey: ['gallery-with-images', 'dibetso'],
+    queryFn: () => fetchGalleryWithImages('dibetso')
+  });
+
+  const classicCarQuery = useQuery({
+    queryKey: ['gallery-with-images', 'classic-car'],
+    queryFn: () => fetchGalleryWithImages('classic-car')
+  });
+
+  // Build gallery data with real cover images
+  const galleries: GalleryData[] = [
+    {
+      slug: "dipsy",
+      title: "Dipsy Picnic",
+      description: "Outdoor lifestyle session",
+      coverImage: dipsyQuery.data?.coverImage ? ImageUrl.forViewing(dipsyQuery.data.coverImage) : undefined
+    },
+    {
+      slug: "gab",
+      title: "Gab's Portrait Session",
+      description: "Professional portraits",
+      coverImage: gabQuery.data?.coverImage ? ImageUrl.forViewing(gabQuery.data.coverImage) : undefined
+    },
+    {
+      slug: "bayanda",
+      title: "Bayanda's Session",
+      description: "Creative photography",
+      coverImage: bayandaQuery.data?.coverImage ? ImageUrl.forViewing(bayandaQuery.data.coverImage) : undefined
+    },
+    {
+      slug: "products",
+      title: "Product Photography",
+      description: "Commercial showcase",
+      coverImage: productsQuery.data?.coverImage ? ImageUrl.forViewing(productsQuery.data.coverImage) : undefined
+    },
+    {
+      slug: "dibetso",
+      title: "Dibetso's Session",
+      description: "Professional portraits",
+      coverImage: dibetsoQuery.data?.coverImage ? ImageUrl.forViewing(dibetsoQuery.data.coverImage) : undefined
+    },
+    {
+      slug: "classic-car",
+      title: "Classic Car Photography",
+      description: "Automotive artistry",
+      coverImage: classicCarQuery.data?.coverImage ? ImageUrl.forViewing(classicCarQuery.data.coverImage) : undefined
+    }
+  ];
 
   return (
     <div className="min-h-screen">
@@ -115,7 +155,7 @@ export function GalleryDemo() {
           <div className="max-w-6xl mx-auto">
             {/* Main Title */}
             <div className="text-center mb-12">
-              <h1 className="text-salmon text-5xl lg:text-7xl mb-6 font-bold">
+              <h1 className="text-salmon text-5xl lg:text-7xl mb-6">
                 Your Personal <span className="text-cyan">Gallery</span>
               </h1>
               <p className="text-muted-foreground text-xl lg:text-2xl max-w-3xl mx-auto leading-relaxed">
@@ -150,43 +190,6 @@ export function GalleryDemo() {
         </div>
       </GradientBackground>
 
-      {/* Additional Benefits Section */}
-      <GradientBackground section="testimonials" className="py-16 border-t border-white/10">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-center text-3xl lg:text-4xl mb-12 text-cyan">
-              Why Choose <span className="text-salmon">Our Galleries?</span>
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-              {benefits.map((benefit, index) => (
-                <div key={index} className="flex gap-4">
-                  <div className="flex-shrink-0">
-                    <div className="w-12 h-12 bg-salmon/20 rounded-full flex items-center justify-center">
-                      <benefit.icon className="w-6 h-6 text-salmon" />
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-white font-semibold text-lg mb-1">{benefit.title}</h3>
-                    <p className="text-muted-foreground">{benefit.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Security Badge */}
-            <div className="text-center bg-black/30 backdrop-blur-sm border border-white/10 rounded-xl p-6 max-w-2xl mx-auto">
-              <Lock className="w-12 h-12 text-cyan mx-auto mb-4" />
-              <h3 className="text-white font-semibold text-xl mb-2">Bank-Level Security</h3>
-              <p className="text-muted-foreground">
-                Your galleries are protected with enterprise-grade encryption and secure cloud storage. 
-                Only you control who sees your photos, with unique access codes for each gallery.
-              </p>
-            </div>
-          </div>
-        </div>
-      </GradientBackground>
-
       {/* Demo Galleries Section */}
       <GradientBackground section="portfolio" className="py-20">
         <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -203,19 +206,21 @@ export function GalleryDemo() {
           <div className="max-w-6xl mx-auto">
             {/* Gallery Grid with Permanent Hover Text */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-              {demoGalleries.map((gallery) => (
+              {galleries.map((gallery) => (
                 <Link key={gallery.slug} href={`/gallery/${gallery.slug}`}>
                   <div className="group cursor-pointer">
                     <div className="relative overflow-hidden aspect-square shadow-lg hover:shadow-2xl transition-all duration-300 rounded-lg">
-                      <img 
-                        src={gallery.coverImage}
-                        alt={gallery.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = `https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=400&h=400&fit=crop&crop=faces`;
-                        }}
-                      />
+                      {gallery.coverImage ? (
+                        <img 
+                          src={gallery.coverImage}
+                          alt={gallery.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                          <span className="text-gray-500">Loading...</span>
+                        </div>
+                      )}
                       
                       {/* Overlay - Always visible but darker on hover */}
                       <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-300"></div>
