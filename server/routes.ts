@@ -1373,6 +1373,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // SEO-optimized upload endpoint for category hero images
+  app.post("/api/upload/category-hero", upload.single('file'), async (req, res) => {
+    try {
+      const file = req.file;
+      const { category, type } = req.body; // e.g., category="weddings", type="photography"
+      
+      if (!file) {
+        return res.status(400).json({ message: 'No file provided' });
+      }
+      
+      if (!category || !type) {
+        return res.status(400).json({ message: 'Category and type are required for SEO optimization' });
+      }
+      
+      console.log(`🔍 SEO Upload: ${category} ${type} - ${file.originalname}`);
+      
+      // Create uploads directory if it doesn't exist
+      const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      
+      // Generate SEO-optimized filename
+      const fileExtension = path.extname(file.originalname).toLowerCase();
+      const baseName = `slyfox-${category.toLowerCase()}-${type.toLowerCase()}-durban-hero`;
+      const optimalName = `${baseName}${fileExtension}`;
+      
+      // Get list of existing files
+      const existingFiles = fs.readdirSync(uploadsDir);
+      
+      // Check if optimal name exists
+      const optimalPath = path.join(uploadsDir, optimalName);
+      if (fs.existsSync(optimalPath)) {
+        // Archive the current optimal file
+        const archivedName = `${baseName}-archived-${Date.now()}${fileExtension}`;
+        const archivedPath = path.join(uploadsDir, archivedName);
+        fs.renameSync(optimalPath, archivedPath);
+        console.log(`📦 Archived existing hero: ${optimalName} -> ${archivedName}`);
+      }
+      
+      // Write new file with optimal SEO name
+      fs.writeFileSync(optimalPath, file.buffer);
+      
+      // Generate intelligent alt text
+      const categoryDescriptions: { [key: string]: string } = {
+        weddings: "elegant wedding ceremony with bride and groom",
+        wedding: "elegant wedding ceremony with bride and groom",
+        portraits: "professional portrait session with studio lighting",
+        portrait: "professional portrait session with studio lighting",
+        corporate: "executive headshot in modern office setting",
+        events: "dynamic event photography capturing special moments",
+        event: "dynamic event photography capturing special moments",
+        products: "commercial product showcase with professional lighting",
+        product: "commercial product showcase with professional lighting",
+        graduation: "graduation ceremony photography with academic regalia"
+      };
+      
+      const categoryKey = category.toLowerCase().replace(/s$/, ''); // Remove plural 's' if present
+      const description = categoryDescriptions[categoryKey] || categoryDescriptions[category.toLowerCase()] || "professional photography session";
+      const autoAltText = `Professional ${category} ${type} by SlyFox Studios in Durban - ${description}`;
+      
+      const relativePath = `/uploads/${optimalName}`;
+      
+      console.log(`✅ SEO Optimized Upload: ${optimalName}`);
+      console.log(`🏷️ Generated Alt Text: ${autoAltText}`);
+      
+      res.json({
+        success: true,
+        path: relativePath,
+        filename: optimalName,
+        originalName: file.originalname,
+        generatedAltText: autoAltText,
+        seoOptimized: true,
+        size: file.size,
+        mimetype: file.mimetype
+      });
+      
+    } catch (error) {
+      console.error('SEO upload error:', error);
+      res.status(500).json({ message: 'Failed to upload with SEO optimization' });
+    }
+  });
+
   // Browse all site images endpoint
   app.get("/api/browse-images", async (req, res) => {
     try {

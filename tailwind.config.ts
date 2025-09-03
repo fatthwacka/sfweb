@@ -10,6 +10,7 @@ export default {
       'lg': '1024px',
       'xl': '1280px',
       '2xl': '1405px', // Custom breakpoint for 5-column gallery layout (125px wider than xl)
+      'portrait': {'raw': '(orientation: portrait)'},
     },
     extend: {
       borderRadius: {

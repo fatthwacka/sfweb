@@ -9,6 +9,30 @@ import { useSiteConfig } from "@/hooks/use-site-config";
 import { GradientBackground } from "@/components/common/gradient-background";
 import type { Image } from "@shared/schema";
 
+// Fixed photography categories for portfolio filtering
+const PHOTOGRAPHY_CATEGORIES = [
+  { key: 'wedding', label: 'Wedding', terms: ['wedding', 'bride', 'engagement', 'maternity', 'newborn', 'baby', 'reception', 'ceremony'] },
+  { key: 'portrait', label: 'Portrait', terms: ['portrait', 'family', 'headshot', 'studio'] },
+  { key: 'product', label: 'Product', terms: ['product', 'brand', 'commercial'] },
+  { key: 'corporate', label: 'Corporate', terms: ['corporate', 'business', 'office', 'executive', 'offsite', 'team-building'] },
+  { key: 'event', label: 'Event', terms: ['event', 'festival', 'function', 'birthday', 'christmas', 'conference', 'music', 'party'] },
+  { key: 'graduation', label: 'Graduation', terms: ['matric-dance', 'graduation', 'university'] }
+];
+
+// Map database classification to fixed category
+const mapClassificationToCategory = (classification: string): string => {
+  const lowerClass = classification.toLowerCase().replace(/[^a-z0-9]/g, '');
+  
+  for (const category of PHOTOGRAPHY_CATEGORIES) {
+    if (category.terms.some(term => lowerClass.includes(term.replace(/[^a-z0-9]/g, '')))) {
+      return category.key;
+    }
+  }
+  
+  // Default fallback to portrait if no match
+  return 'portrait';
+};
+
 // Helper function to format classification for display
 const formatClassificationLabel = (classification: string) => {
   return classification
@@ -36,24 +60,25 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 const getBalancedRandomSelection = (images: Image[], count: number = 9): Image[] => {
   if (images.length <= count) return images;
   
-  // Group images by classification
+  // Group images by mapped category
   const groups = images.reduce((acc, image) => {
-    if (!acc[image.classification]) {
-      acc[image.classification] = [];
+    const mappedCategory = mapClassificationToCategory(image.classification);
+    if (!acc[mappedCategory]) {
+      acc[mappedCategory] = [];
     }
-    acc[image.classification].push(image);
+    acc[mappedCategory].push(image);
     return acc;
   }, {} as Record<string, Image[]>);
   
-  // Get classification types and shuffle them
-  const classifications = shuffleArray(Object.keys(groups));
+  // Get category types and shuffle them
+  const categories = shuffleArray(Object.keys(groups));
   const result: Image[] = [];
   
-  // Take images round-robin from each classification
+  // Take images round-robin from each category
   let currentIndex = 0;
   while (result.length < count && result.length < images.length) {
-    const classification = classifications[currentIndex % classifications.length];
-    const groupImages = groups[classification];
+    const category = categories[currentIndex % categories.length];
+    const groupImages = groups[category];
     
     if (groupImages && groupImages.length > 0) {
       // Remove and add a random image from this group
@@ -64,8 +89,8 @@ const getBalancedRandomSelection = (images: Image[], count: number = 9): Image[]
     
     currentIndex++;
     
-    // If we've gone through all classifications, break to avoid infinite loop
-    if (currentIndex >= classifications.length * count) break;
+    // If we've gone through all categories, break to avoid infinite loop
+    if (currentIndex >= categories.length * count) break;
   }
   
   return result;
@@ -73,7 +98,6 @@ const getBalancedRandomSelection = (images: Image[], count: number = 9): Image[]
 
 export function PortfolioShowcase() {
   const [activeFilter, setActiveFilter] = useState("all");
-  const [filterOptions, setFilterOptions] = useState([{ label: "Random", value: "all" }]);
   const [modalOpen, setModalOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -89,25 +113,14 @@ export function PortfolioShowcase() {
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
-  // Fetch available classifications for filter buttons
-  const { data: classifications, isLoading: classificationsLoading } = useQuery<string[]>({
-    queryKey: ['/api/images/featured/classifications'],
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-  });
-
-  // Update filter options when classifications are loaded
-  useEffect(() => {
-    if (classifications && classifications.length > 0) {
-      const options = [
-        { label: "Random", value: "all" },
-        ...classifications.map(classification => ({
-          label: formatClassificationLabel(classification),
-          value: classification
-        }))
-      ];
-      setFilterOptions(options);
-    }
-  }, [classifications]);
+  // Fixed filter options based on photography categories
+  const filterOptions = useMemo(() => [
+    { label: "", value: "all" },
+    ...PHOTOGRAPHY_CATEGORIES.map(category => ({
+      label: category.label,
+      value: category.key
+    }))
+  ], []);
 
   // Filter and limit featured images based on active filter and settings
   const filteredItems = useMemo(() => {
@@ -120,8 +133,10 @@ export function PortfolioShowcase() {
       // randomSeed dependency ensures re-shuffle on refresh
       return getBalancedRandomSelection(featuredImages, MAX_DISPLAY_IMAGES);
     } else {
-      // For specific category filters, show up to configured number of images from that category
-      const categoryImages = featuredImages.filter(image => image.classification === activeFilter);
+      // For specific category filters, bundle images by mapped categories
+      const categoryImages = featuredImages.filter(image => 
+        mapClassificationToCategory(image.classification) === activeFilter
+      );
       return categoryImages.length > MAX_DISPLAY_IMAGES 
         ? shuffleArray(categoryImages).slice(0, MAX_DISPLAY_IMAGES)
         : categoryImages;
@@ -166,16 +181,16 @@ export function PortfolioShowcase() {
 
   const currentImage = filteredItems[currentImageIndex];
 
-  // Handle Random button refresh functionality
-  const handleRandomRefresh = useCallback(() => {
-    if (activeFilter === "all") {
-      // Already on random - refresh with new images
+  // Handle filter button click functionality
+  const handleFilterClick = useCallback((filterValue: string) => {
+    if (activeFilter === filterValue) {
+      // Already on this filter - refresh with new images
       setIsRefreshing(true);
       setRandomSeed(Date.now());
       setTimeout(() => setIsRefreshing(false), 500);
     } else {
-      // Switch to random filter
-      setActiveFilter("all");
+      // Switch to this filter
+      setActiveFilter(filterValue);
     }
   }, [activeFilter]);
 
@@ -233,25 +248,27 @@ export function PortfolioShowcase() {
           </p>
 
           {/* Filter buttons */}
-          <div className="flex flex-wrap justify-center gap-4 mb-12">
+          <div className="flex flex-wrap justify-center gap-4 mb-12 portrait:max-sm:grid portrait:max-sm:grid-cols-6 portrait:max-sm:gap-2 portrait:max-sm:max-w-sm portrait:max-sm:mx-auto [&>*:nth-child(5)]:portrait:max-sm:col-start-2 [&>*:nth-child(6)]:portrait:max-sm:col-start-4 [&>*:nth-child(7)]:portrait:max-sm:col-start-6">
             {filterOptions.map(option => (
               <Button
                 key={option.value}
-                onClick={option.value === "all" ? handleRandomRefresh : () => setActiveFilter(option.value)}
+                onClick={() => handleFilterClick(option.value)}
                 variant="outline"
-                className={`px-6 py-3 font-barlow font-semibold rounded-full transition-all duration-300 ${
+                className={`px-6 py-3 font-barlow font-semibold rounded-full transition-all duration-300 portrait:max-sm:px-3 portrait:max-sm:py-2 portrait:max-sm:text-sm ${
                   activeFilter === option.value
                     ? "border-gray-400 bg-gradient-to-r from-gray-600 to-gray-500 text-white hover:from-gray-500 hover:to-gray-400"
                     : "border-gray-500 bg-gradient-to-r from-gray-700/30 to-gray-600/10 text-gray-300 hover:border-gray-400 hover:from-gray-600/20 hover:to-gray-500/10 hover:text-gray-200"
                 }`}
               >
                 {option.value === "all" ? (
-                  <>
-                    <RefreshCw className={`w-4 h-4 mr-2 transition-transform duration-500 ${isRefreshing ? 'animate-spin' : ''}`} />
-                    {option.label}
-                  </>
+                  <RefreshCw className={`w-4 h-4 transition-transform duration-500 ${isRefreshing ? 'animate-spin' : ''}`} />
                 ) : (
-                  option.label
+                  <>
+                    {option.label}
+                    {activeFilter === option.value && (
+                      <RefreshCw className={`w-4 h-4 ml-2 transition-transform duration-500 ${isRefreshing ? 'animate-spin' : ''}`} />
+                    )}
+                  </>
                 )}
               </Button>
             ))}
@@ -303,7 +320,7 @@ export function PortfolioShowcase() {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center">
                           <div className="text-center pb-4">
                             <p className="text-sm lg:text-base font-light text-gray-200">
-                              {formatClassificationLabel(image.classification)} Photography
+                              {PHOTOGRAPHY_CATEGORIES.find(cat => cat.key === mapClassificationToCategory(image.classification))?.label || 'Portrait'} Photography
                             </p>
                           </div>
                         </div>
@@ -324,7 +341,7 @@ export function PortfolioShowcase() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center">
                         <div className="text-center pb-4">
                           <p className="text-sm lg:text-base font-light text-gray-200">
-                            {formatClassificationLabel(image.classification)} Photography
+                            {PHOTOGRAPHY_CATEGORIES.find(cat => cat.key === mapClassificationToCategory(image.classification))?.label || 'Portrait'} Photography
                           </p>
                         </div>
                       </div>
@@ -337,7 +354,7 @@ export function PortfolioShowcase() {
                 <p className="text-gray-400 text-xl">
                   {activeFilter === "all" 
                     ? "No featured images available" 
-                    : `No featured images in ${formatClassificationLabel(activeFilter)} category`}
+                    : `No featured images in ${PHOTOGRAPHY_CATEGORIES.find(cat => cat.key === activeFilter)?.label || activeFilter} category`}
                 </p>
               </div>
             )}
@@ -348,7 +365,7 @@ export function PortfolioShowcase() {
       {/* Image Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogTitle className="sr-only">
-          {currentImage ? `Viewing ${formatClassificationLabel(currentImage.classification)} - ${currentImage.filename}` : 'Image Gallery'}
+          {currentImage ? `Viewing ${PHOTOGRAPHY_CATEGORIES.find(cat => cat.key === mapClassificationToCategory(currentImage.classification))?.label || 'Portrait'} - ${currentImage.filename}` : 'Image Gallery'}
         </DialogTitle>
         <DialogContent className="max-w-6xl w-full h-[90vh] p-0 border-none bg-black/95" aria-describedby="image-modal-description">
           <div className="relative h-full flex items-center justify-center">
@@ -400,10 +417,10 @@ export function PortfolioShowcase() {
                 {/* Image Info Overlay */}
                 <div id="image-modal-description" className="absolute bottom-8 left-8 right-8 bg-black/70 text-white p-4 rounded-lg">
                   <h3 className="text-xl font-bold text-salmon mb-2">
-                    {formatClassificationLabel(currentImage.classification)}
+                    {PHOTOGRAPHY_CATEGORIES.find(cat => cat.key === mapClassificationToCategory(currentImage.classification))?.label || 'Portrait'}
                   </h3>
                   <p className="text-gray-300">
-                    {formatClassificationLabel(currentImage.classification)} Photography
+                    {PHOTOGRAPHY_CATEGORIES.find(cat => cat.key === mapClassificationToCategory(currentImage.classification))?.label || 'Portrait'} Photography
                   </p>
                   {filteredItems.length > 1 && (
                     <p className="text-sm text-gray-400 mt-2">

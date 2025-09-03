@@ -24,7 +24,7 @@ export default function SocialMedia() {
           />
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-block bg-black/50 border border-cyan rounded-2xl p-8 md:p-12">
+          <div className="inline-block bg-black/70 border border-cyan rounded-2xl p-8 md:p-12">
             <h1 className="mb-6">
               Social Media Excellence
             </h1>

@@ -34,10 +34,12 @@ export default function PhotographyPortraits() {
       
       {/* Hero Section */}
       <section className="relative h-screen overflow-hidden flex items-center justify-center">
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('${portraitConfig.hero.image}')` }}
-        >
+        <div className="absolute inset-0">
+          <img 
+            src={portraitConfig.hero.image}
+            alt={portraitConfig.hero.alt || `Professional Portrait Photography by SlyFox Studios in Durban - studio portrait session with professional lighting`}
+            className="w-full h-full object-cover"
+          />
           <div className="absolute inset-0 hero-gradient"></div>
         </div>
         

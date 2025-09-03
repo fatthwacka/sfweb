@@ -95,12 +95,27 @@ export function ClientGalleryAccess() {
           </div>
 
           <div className="relative">
-            <img 
-              src={`${mainImage}?t=${Date.now()}`} 
-              alt="Client gallery interface mockup" 
-              className="w-full rounded-2xl shadow-2xl"
-              onError={() => console.log('Image failed to load:', mainImage)}
-            />
+            {/* Gallery Frame Container */}
+            <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-3 lg:p-4">
+              {/* Gallery Title Bar */}
+              <div className="flex items-center justify-between mb-3 pb-3 border-b border-white/10">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                  <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                </div>
+                <span className="text-xs text-muted-foreground">Gallery Preview</span>
+              </div>
+              
+              {/* Main Gallery Image */}
+              <div className="rounded-lg overflow-hidden">
+                <img 
+                  src="/images/hero/demo-gallery-studio.jpg" 
+                  alt="Client gallery interface mockup" 
+                  className="w-full h-auto object-cover shadow-2xl"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

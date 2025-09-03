@@ -34,10 +34,12 @@ export default function PhotographyEvents() {
       
       {/* Hero Section */}
       <section className="relative h-screen overflow-hidden flex items-center justify-center">
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('${eventsConfig.hero.image}')` }}
-        >
+        <div className="absolute inset-0">
+          <img 
+            src={eventsConfig.hero.image}
+            alt={eventsConfig.hero.alt || `Professional Event Photography by SlyFox Studios in Durban - dynamic event photography capturing special moments`}
+            className="w-full h-full object-cover"
+          />
           <div className="absolute inset-0 hero-gradient"></div>
         </div>
         

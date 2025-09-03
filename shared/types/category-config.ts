@@ -41,6 +41,7 @@ export interface CategoryPageConfig {
   // Hero section - full-screen image with overlays
   hero: {
     image: string;
+    alt?: string;  // SEO-optimized alt text for hero image
     title: string;
     subtitle: string;
     ctaText: string;

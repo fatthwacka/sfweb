@@ -136,16 +136,87 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
 
   const handleHeroImageUpload = async (file: File) => {
     try {
-      const imagePath = await handleImageUpload(file);
-      updateHeroConfig({ image: imagePath });
-      toast({
-        title: "Hero image uploaded",
-        description: "Hero image updated successfully"
+      console.log('Starting SEO upload for:', file.name, 'Category:', category, 'Type:', type);
+      
+      // Try SEO-optimized upload endpoint first
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('category', category);
+      formData.append('type', type);
+      
+      let response = await fetch('/api/upload/category-hero', {
+        method: 'POST',
+        body: formData
       });
+      
+      // If SEO endpoint doesn't exist (404 or returns HTML), fall back to regular upload
+      if (!response.ok || response.headers.get('content-type')?.includes('text/html')) {
+        console.log('SEO endpoint not available, falling back to regular upload');
+        
+        // Use regular upload endpoint as fallback
+        const regularFormData = new FormData();
+        regularFormData.append('file', file);
+        
+        response = await fetch('/api/upload', {
+          method: 'POST',
+          body: regularFormData
+        });
+        
+        if (!response.ok) {
+          throw new Error('Both upload methods failed');
+        }
+        
+        const data = await response.json();
+        
+        // Generate alt text client-side for fallback
+        const categoryDescriptions: { [key: string]: string } = {
+          weddings: "elegant wedding ceremony with bride and groom",
+          wedding: "elegant wedding ceremony with bride and groom",
+          portraits: "professional portrait session with studio lighting",
+          portrait: "professional portrait session with studio lighting",
+          corporate: "executive headshot in modern office setting",
+          events: "dynamic event photography capturing special moments",
+          event: "dynamic event photography capturing special moments",
+          products: "commercial product showcase with professional lighting",
+          product: "commercial product showcase with professional lighting",
+          graduation: "graduation ceremony photography with academic regalia"
+        };
+        
+        const categoryKey = category.toLowerCase().replace(/s$/, '');
+        const description = categoryDescriptions[categoryKey] || categoryDescriptions[category.toLowerCase()] || "professional photography session";
+        const generatedAltText = `Professional ${category} ${type} by SlyFox Studios in Durban - ${description}`;
+        
+        // Update with regular upload path and client-generated alt text
+        updateHeroConfig({ 
+          image: data.path,
+          alt: generatedAltText 
+        });
+        
+        toast({
+          title: "Hero image uploaded",
+          description: "Using standard upload (SEO endpoint will be available after server restart)"
+        });
+      } else {
+        // SEO endpoint worked!
+        const data = await response.json();
+        const { path, generatedAltText, filename } = data;
+        
+        // Update both image path and auto-generated alt text
+        updateHeroConfig({ 
+          image: path,
+          alt: generatedAltText 
+        });
+        
+        toast({
+          title: "Hero image uploaded",
+          description: `SEO-optimized upload: ${filename}`
+        });
+      }
     } catch (error) {
+      console.error('Upload error:', error);
       toast({
         title: "Upload failed",
-        description: "Failed to upload hero image",
+        description: error instanceof Error ? error.message : "Failed to upload hero image",
         variant: "destructive"
       });
     }
@@ -356,6 +427,30 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
                 />
                 <p className="text-xs text-muted-foreground">
                   Choose from existing images or upload a new high-resolution hero background
+                </p>
+              </div>
+
+              {/* Hero Alt Text - SEO Section */}
+              <div className="space-y-4 p-4 bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-lg border border-purple-500/30">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="hero-alt" className="text-purple-200 font-semibold">
+                    🔍 SEO Image Alt Text
+                  </Label>
+                  {categoryConfig.hero.alt && (
+                    <span className="text-xs px-2 py-1 bg-purple-800/30 text-purple-300 rounded-full border border-purple-500/20">
+                      Auto-generated
+                    </span>
+                  )}
+                </div>
+                <Textarea
+                  id="hero-alt"
+                  value={categoryConfig.hero.alt || ''}
+                  onChange={(e) => updateHeroConfig({ alt: e.target.value })}
+                  placeholder="Descriptive alt text for SEO and accessibility"
+                  className="min-h-[80px] bg-slate-900/50 border-slate-700 text-gray-200 placeholder:text-gray-500"
+                />
+                <p className="text-xs text-purple-300/70">
+                  Alt text is auto-generated on upload but can be customized here for better SEO
                 </p>
               </div>
 

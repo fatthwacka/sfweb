@@ -34,10 +34,12 @@ export default function PhotographyWeddings() {
       
       {/* Hero Section */}
       <section className="relative h-screen overflow-hidden flex items-center justify-center">
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('${weddingConfig.hero.image}')` }}
-        >
+        <div className="absolute inset-0">
+          <img 
+            src={weddingConfig.hero.image}
+            alt={weddingConfig.hero.alt || `Professional Wedding Photography by SlyFox Studios in Durban - elegant wedding ceremony with bride and groom`}
+            className="w-full h-full object-cover"
+          />
           <div className="absolute inset-0 hero-gradient"></div>
         </div>
         

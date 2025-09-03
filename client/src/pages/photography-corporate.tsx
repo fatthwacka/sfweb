@@ -34,10 +34,12 @@ export default function PhotographyCorporate() {
       
       {/* Hero Section */}
       <section className="relative h-screen overflow-hidden flex items-center justify-center">
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('${corporateConfig.hero.image}')` }}
-        >
+        <div className="absolute inset-0">
+          <img 
+            src={corporateConfig.hero.image}
+            alt={corporateConfig.hero.alt || `Professional Corporate Photography by SlyFox Studios in Durban - executive headshot in modern office setting`}
+            className="w-full h-full object-cover"
+          />
           <div className="absolute inset-0 hero-gradient"></div>
         </div>
         

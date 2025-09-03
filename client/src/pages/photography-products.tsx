@@ -34,10 +34,12 @@ export default function PhotographyProducts() {
       
       {/* Hero Section */}
       <section className="relative h-screen overflow-hidden flex items-center justify-center">
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('${productsConfig.hero.image}')` }}
-        >
+        <div className="absolute inset-0">
+          <img 
+            src={productsConfig.hero.image}
+            alt={productsConfig.hero.alt || `Professional Product Photography by SlyFox Studios in Durban - commercial product showcase with professional lighting`}
+            className="w-full h-full object-cover"
+          />
           <div className="absolute inset-0 hero-gradient"></div>
         </div>
         
