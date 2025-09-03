@@ -247,7 +247,45 @@ After successful deployment, verify these endpoints:
 
 ---
 
-**🏆 Last Successful Deployment: 2025-09-01 15:35 UTC**  
+**🏆 Last Successful Deployment: 2025-09-03 17:53 SAST**  
 **📈 Deployment Success Rate: 100% (using this process)**
 
 This process has been tested and validated. Follow it exactly for reliable deployments.
+
+---
+
+## 🚨 CRITICAL UPDATE: 2025-09-03 Deployment Lessons
+
+### Issue Discovered: Missing Traefik Configuration
+**Problem**: Docker-compose.yml was missing critical Traefik integration causing HTTP 404 on live domain
+**Impact**: Direct IP worked but domain routing failed
+**Resolution**: Added complete Traefik configuration to docker-compose.yml
+
+### Updated Required Docker Configuration
+```yaml
+services:
+  app:
+    networks:
+      - sfweb-network
+      - root_default  # CRITICAL: Added for Traefik communication
+    labels:
+      # CRITICAL: Complete Traefik routing labels (see current docker-compose.yml)
+      - "traefik.enable=true"
+      - "traefik.docker.network=root_default"
+      # ... [complete Traefik configuration] ...
+
+networks:
+  root_default:
+    external: true  # CRITICAL: Added to connect to Traefik
+```
+
+### Enhanced Deployment Script
+- **Fixed**: Traefik verification now checks `/opt/sfweb/` instead of `/root/`
+- **Added**: Network connectivity verification after container startup
+- **Added**: Better error handling and container build failure detection
+
+### Prevention Measures
+- ✅ Docker-compose.yml now includes complete Traefik configuration
+- ✅ Deployment script verifies network connectivity
+- ✅ All documentation updated with critical requirements
+- ✅ Local and production configurations synchronized

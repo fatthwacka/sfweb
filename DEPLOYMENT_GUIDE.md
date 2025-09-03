@@ -285,6 +285,33 @@ npm run check                   # TypeScript checking
 docker exec -it sfweb-app sh    # Container shell access
 ```
 
+### ⚠️ CRITICAL: Docker-Compose Configuration Requirements (UPDATED 2025-09-03)
+
+**MANDATORY for Production Deployment:**
+The docker-compose.yml MUST include complete Traefik configuration to prevent 404 errors:
+
+```yaml
+services:
+  app:
+    # ... other configuration ...
+    networks:
+      - sfweb-network
+      - root_default  # CRITICAL: Required for Traefik communication
+    labels:
+      # Complete Traefik routing configuration (see docker-compose.yml)
+      - "traefik.enable=true"
+      - "traefik.docker.network=root_default"
+      # ... (full Traefik labels) ...
+
+networks:
+  sfweb-network:
+    driver: bridge
+  root_default:
+    external: true  # CRITICAL: Connects to Traefik network
+```
+
+**Failure to include this configuration will result in HTTP 404 on live domain.**
+
 ### Cross-Platform Support
 
 **File Synchronization:**

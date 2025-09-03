@@ -70,7 +70,8 @@ if run_on_vps "docker ps | grep -q traefik"; then
     echo "✅ Traefik container is running"
     
     # Check if SlyFox service is configured in Traefik
-    if run_on_vps "cd /root && docker compose config | grep -q slyfox"; then
+    # NOTE: Traefik infrastructure runs from /root/, but SlyFox app config is in /opt/sfweb/
+    if run_on_vps "cd /opt/sfweb && docker compose config | grep -q slyfox.co.za"; then
         echo "✅ SlyFox service is configured in Traefik"
     else
         echo "⚠️  SlyFox service NOT found in Traefik configuration"
@@ -178,7 +179,11 @@ echo "🏗️  Step 6: Build and Start Production Services"
 echo "==============================================="
 
 # Build and start containers
-run_on_vps "cd $VPS_APP_DIR && docker compose up -d --build"
+if ! run_on_vps "cd $VPS_APP_DIR && docker compose up -d --build"; then
+    echo "❌ Container build/start failed - checking logs..."
+    run_on_vps "cd $VPS_APP_DIR && docker compose logs --tail=20"
+    exit 1
+fi
 
 echo "⏳ Waiting for services to start..."
 sleep 30
@@ -186,6 +191,17 @@ sleep 30
 # Check if containers are running
 if run_on_vps "docker ps | grep -q sfweb"; then
     echo "✅ Production containers started successfully"
+    
+    # CRITICAL: Verify Traefik network connectivity
+    echo "🔗 Verifying Traefik network connectivity..."
+    if run_on_vps "docker inspect sfweb-app | grep -q 'root_default'"; then
+        echo "✅ SlyFox app connected to root_default network"
+    else
+        echo "❌ SlyFox app NOT connected to root_default network"
+        echo "   This will cause domain routing to fail"
+        echo "   Check docker-compose.yml networks configuration"
+        exit 1
+    fi
 else
     echo "❌ Containers failed to start - checking logs..."
     run_on_vps "cd $VPS_APP_DIR && docker compose logs --tail=20"

@@ -506,6 +506,18 @@ Docker Volume: config_data
 
 **Location**: `/root/docker-compose.yml` (separate from SlyFox app)
 
+**🚨 CRITICAL INFRASTRUCTURE NOTE**: 
+- **Traefik infrastructure**: Runs from `/root/docker-compose.yml` (N8N + Traefik stack)
+- **SlyFox configuration**: Verified from `/opt/sfweb/docker-compose.yml` (app with Traefik labels)
+- **Deployment verification**: Must check SlyFox labels in `/opt/sfweb/`, NOT `/root/`
+
+**⚠️ DEPLOYMENT-BREAKING ISSUE RESOLVED (2025-09-03)**:
+The docker-compose.yml was missing critical Traefik configuration causing 404 errors on live domain:
+- **Missing**: `root_default` external network declaration
+- **Missing**: Complete Traefik labels for domain routing
+- **Missing**: Multi-network connectivity (app needs both `sfweb-network` AND `root_default`)
+- **Resolution**: Updated docker-compose.yml with complete Traefik integration
+
 ```yaml
 version: '3.7'
 services:
@@ -851,6 +863,55 @@ ssh slyfox-vps "cd /opt/sfweb && docker compose restart app"
 - **Application Health**: API endpoint health checks
 - **Configuration Changes**: Tracked via admin panel activity
 - **Automated Backups**: Configuration backed up on each deployment
+
+---
+
+## 🚨 Critical Deployment Issues & Solutions
+
+### Issue: Live Domain Returns 404 (RESOLVED 2025-09-03)
+
+**Symptoms:**
+- Direct IP access works: `curl http://168.231.86.89:3000` → HTTP 200 ✅
+- Live domain fails: `curl https://slyfox.co.za` → HTTP 404 ❌
+- Containers running but Traefik can't route traffic
+
+**Root Cause:**
+SlyFox app missing connection to `root_default` network (required for Traefik communication)
+
+**Diagnosis Commands:**
+```bash
+# Check if app is connected to root_default network
+ssh slyfox-vps "docker inspect sfweb-app | grep -q 'root_default' && echo 'CONNECTED' || echo 'MISSING'"
+
+# Verify Traefik labels exist
+ssh slyfox-vps "cd /opt/sfweb && docker compose config | grep -c 'traefik.http'"
+```
+
+**IMMEDIATE FIX:**
+```bash
+# 1. Stop containers
+ssh slyfox-vps "cd /opt/sfweb && docker compose down"
+
+# 2. Add missing network and labels to docker-compose.yml:
+#    networks: [sfweb-network, root_default]
+#    labels: [complete Traefik configuration]
+
+# 3. Add external network declaration:
+#    networks:
+#      root_default:
+#        external: true
+
+# 4. Restart with fixed configuration
+ssh slyfox-vps "cd /opt/sfweb && docker compose up -d"
+
+# 5. Test fix
+curl -s -o /dev/null -w "%{http_code}" https://slyfox.co.za  # Must return 200
+```
+
+**Prevention:**
+- Always verify `root_default` network connectivity after deployment
+- Ensure docker-compose.yml includes complete Traefik configuration
+- Updated deployment script now includes network connectivity verification
 
 ---
 
