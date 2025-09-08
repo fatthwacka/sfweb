@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Loading Test</title>
+</head>
+<body>
+    <h1>Direct Image Loading Test</h1>
+    
+    <h2>Test 1: Direct IMG tag</h2>
+    <img src="https://dwkjfuhykdjtzvrzdnrr.supabase.co/storage/v1/object/public/gallery-images/previews/1daaa38b-35bf-434b-b078-4c8f0ed32847/1757270286820-DSC08743.jpg" 
+         alt="Test image" 
+         style="max-width: 300px; border: 2px solid red;"
+         onload="console.log('IMG tag loaded successfully')"
+         onerror="console.error('IMG tag failed to load')">
+    
+    <h2>Test 2: JavaScript Image()</h2>
+    <div id="js-test">Loading...</div>
+    
+    <h2>Test 3: Fetch API</h2>
+    <div id="fetch-test">Testing...</div>
+    
+    <script>
+        // Test 2: JavaScript Image object
+        const img = new Image();
+        img.onload = function() {
+            console.log('JS Image() loaded successfully');
+            document.getElementById('js-test').innerHTML = 'JS Image() ✅ Success';
+        };
+        img.onerror = function() {
+            console.error('JS Image() failed to load');
+            document.getElementById('js-test').innerHTML = 'JS Image() ❌ Failed';
+        };
+        img.src = 'https://dwkjfuhykdjtzvrzdnrr.supabase.co/storage/v1/object/public/gallery-images/previews/1daaa38b-35bf-434b-b078-4c8f0ed32847/1757270286820-DSC08743.jpg';
+        
+        // Test 3: Fetch API
+        fetch('https://dwkjfuhykdjtzvrzdnrr.supabase.co/storage/v1/object/public/gallery-images/previews/1daaa38b-35bf-434b-b078-4c8f0ed32847/1757270286820-DSC08743.jpg')
+            .then(response => {
+                console.log('Fetch response:', response.status, response.statusText);
+                document.getElementById('fetch-test').innerHTML = `Fetch API: ${response.status} ${response.statusText} ${response.ok ? '✅' : '❌'}`;
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                document.getElementById('fetch-test').innerHTML = 'Fetch API: ❌ Error - ' + error.message;
+            });
+    </script>
+</body>
+</html>

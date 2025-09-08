@@ -1,5 +1,6 @@
 import { 
   profiles, users, clients, shoots, images, packages, analytics, favorites, bookings, localSiteAssets,
+  shootPreviews, clientSelections, selectionPackages, previewImages,
   type Profile, type InsertProfile,
   type User, type InsertUser, 
   type Client, type InsertClient,
@@ -11,7 +12,11 @@ import {
   type Booking, type InsertBooking,
   type LocalSiteAsset, type InsertLocalSiteAsset,
   type ImageClassification,
-  type UpdateShootCustomization
+  type UpdateShootCustomization,
+  type ShootPreview, type InsertShootPreview,
+  type ClientSelection, type InsertClientSelection,
+  type SelectionPackage, type InsertSelectionPackage,
+  type PreviewImage, type InsertPreviewImage
 } from "@shared/schema";
 
 export interface IStorage {
@@ -94,6 +99,19 @@ export interface IStorage {
   updateImageClassification(imageId: string, classification: ImageClassification): Promise<Image | undefined>;
   updateShootImagesClassification(shootId: string, classification: ImageClassification): Promise<Image[]>;
   bulkUpdateImageClassification(imageIds: string[], classification: ImageClassification): Promise<Image[]>;
+  
+  // Preview Selection System
+  getShootPreviewSettings(shootId: string): Promise<ShootPreview | undefined>;
+  createShootPreviewSettings(settings: InsertShootPreview): Promise<ShootPreview>;
+  updateShootPreviewSettings(id: string, updates: Partial<InsertShootPreview>): Promise<ShootPreview | undefined>;
+  getPreviewImages(shootId: string): Promise<any[]>;
+  
+  getClientSelections(shootId: string): Promise<ClientSelection[]>;
+  upsertClientSelection(selection: Partial<InsertClientSelection>): Promise<ClientSelection>;
+  
+  getSelectionPackage(shootId: string, clientId: string): Promise<SelectionPackage | undefined>;
+  createSelectionPackage(packageData: InsertSelectionPackage): Promise<SelectionPackage>;
+  upgradeSelectionPackage(shootId: string, clientId: string, additionalImages: number, purchaseInfo: any): Promise<SelectionPackage>;
 }
 
 export class MemStorage implements IStorage {
@@ -106,6 +124,10 @@ export class MemStorage implements IStorage {
   private favorites: Map<string, Favorite> = new Map();
   private bookings: Map<string, Booking> = new Map();
   private localSiteAssets: Map<string, LocalSiteAsset> = new Map();
+  private shootPreviewSettings: Map<string, ShootPreview> = new Map();
+  private clientSelections: Map<string, ClientSelection> = new Map();
+  private selectionPackages: Map<string, SelectionPackage> = new Map();
+  private previewImages: Map<string, PreviewImage> = new Map();
   
   private currentUserId = 1;
   private currentClientId = 1;
@@ -993,6 +1015,127 @@ export class MemStorage implements IStorage {
     }
     
     return updatedImages;
+  }
+
+  // Preview Selection System Methods
+  async getShootPreviewSettings(shootId: string): Promise<ShootPreview | undefined> {
+    return Array.from(this.shootPreviewSettings.values()).find(s => s.shootId === shootId);
+  }
+
+  async createShootPreviewSettings(settings: InsertShootPreview): Promise<ShootPreview> {
+    const id = crypto.randomUUID();
+    const now = new Date();
+    const newSettings: ShootPreview = {
+      id,
+      ...settings,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.shootPreviewSettings.set(id, newSettings);
+    return newSettings;
+  }
+
+  async updateShootPreviewSettings(id: string, updates: Partial<InsertShootPreview>): Promise<ShootPreview | undefined> {
+    const existing = this.shootPreviewSettings.get(id);
+    if (!existing) return undefined;
+
+    const updated = { ...existing, ...updates, updatedAt: new Date() };
+    this.shootPreviewSettings.set(id, updated);
+    return updated;
+  }
+
+  async getPreviewImages(shootId: string): Promise<PreviewImage[]> {
+    return Array.from(this.previewImages.values()).filter(img => img.shootId === shootId);
+  }
+
+  async getClientSelections(shootId: string): Promise<ClientSelection[]> {
+    return Array.from(this.clientSelections.values()).filter(s => s.shootId === shootId);
+  }
+
+  async upsertClientSelection(selection: Partial<InsertClientSelection>): Promise<ClientSelection> {
+    // Find existing selection by shootId + clientId + imageFilename
+    const existing = Array.from(this.clientSelections.values()).find(
+      s => s.shootId === selection.shootId && 
+           s.clientId === selection.clientId && 
+           s.imageFilename === selection.imageFilename
+    );
+
+    const now = new Date();
+    
+    if (existing) {
+      const updated = {
+        ...existing,
+        ...selection,
+        updatedAt: now,
+      };
+      this.clientSelections.set(existing.id, updated);
+      return updated;
+    } else {
+      const id = crypto.randomUUID();
+      const newSelection: ClientSelection = {
+        id,
+        shootId: selection.shootId!,
+        clientId: selection.clientId!,
+        imageFilename: selection.imageFilename!,
+        dropboxPath: selection.dropboxPath || null,
+        thumbnailUrl: selection.thumbnailUrl || null,
+        selectionStatus: selection.selectionStatus || 'none',
+        isFinalSelection: selection.isFinalSelection || false,
+        selectionOrder: selection.selectionOrder || null,
+        selectedAt: selection.selectedAt || null,
+        metadata: selection.metadata || null,
+        createdAt: now,
+        updatedAt: now,
+      };
+      this.clientSelections.set(id, newSelection);
+      return newSelection;
+    }
+  }
+
+  async getSelectionPackage(shootId: string, clientId: string): Promise<SelectionPackage | undefined> {
+    return Array.from(this.selectionPackages.values()).find(
+      p => p.shootId === shootId && p.clientId === clientId
+    );
+  }
+
+  async createSelectionPackage(packageData: InsertSelectionPackage): Promise<SelectionPackage> {
+    const id = crypto.randomUUID();
+    const now = new Date();
+    const newPackage: SelectionPackage = {
+      id,
+      ...packageData,
+      totalAllowed: packageData.baseLimit + packageData.purchasedAdditional,
+      purchaseHistory: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.selectionPackages.set(id, newPackage);
+    return newPackage;
+  }
+
+  async upgradeSelectionPackage(shootId: string, clientId: string, additionalImages: number, purchaseInfo: any): Promise<SelectionPackage> {
+    const existing = await this.getSelectionPackage(shootId, clientId);
+    if (!existing) {
+      throw new Error('Selection package not found');
+    }
+
+    const newPurchasedAdditional = existing.purchasedAdditional + additionalImages;
+    const newTotalAllowed = existing.baseLimit + newPurchasedAdditional;
+    const now = new Date();
+
+    const updatedPackage: SelectionPackage = {
+      ...existing,
+      purchasedAdditional: newPurchasedAdditional,
+      totalAllowed: newTotalAllowed,
+      purchaseHistory: [
+        ...(existing.purchaseHistory ? JSON.parse(existing.purchaseHistory as any) : []),
+        purchaseInfo
+      ],
+      updatedAt: now,
+    };
+
+    this.selectionPackages.set(existing.id, updatedPackage);
+    return updatedPackage;
   }
 }
 

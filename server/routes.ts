@@ -1979,10 +1979,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { shootId } = req.params;
       const { imageFilename, selectionStatus, userEmail, isFinalSelection = false } = req.body;
       
-      // Get client profile by email to get the proper UUID
-      const client = await storage.getProfileByEmail(userEmail);
+      console.log('🔥 CLIENT SELECTION REQUEST DATA:', JSON.stringify({
+        shootId,
+        imageFilename,
+        selectionStatus,
+        userEmail,
+        isFinalSelection
+      }, null, 2));
+      
+      // Get or create client profile by email to get the proper UUID
+      console.log('🔥 LOOKING UP CLIENT PROFILE FOR EMAIL:', userEmail);
+      let client = await storage.getProfileByEmail(userEmail);
+      console.log('🔥 CLIENT PROFILE FOUND:', client ? 'YES' : 'NO', client ? client.id : 'N/A');
+      
       if (!client) {
-        return res.status(404).json({ message: 'Client profile not found' });
+        console.log('🔥 CLIENT PROFILE NOT FOUND - CREATING NEW PROFILE FOR EMAIL:', userEmail);
+        // Create a new client profile with minimal information
+        client = await storage.createProfile({
+          email: userEmail,
+          firstName: userEmail.split('@')[0], // Use email prefix as temporary first name
+          lastName: '',
+          role: 'client',
+          isActive: true,
+          supabaseUserId: null // Will be set when they actually register with Supabase
+        });
+        console.log('🔥 CREATED NEW CLIENT PROFILE:', client.id);
       }
       
       const clientId = client.id; // Use the UUID from the profile

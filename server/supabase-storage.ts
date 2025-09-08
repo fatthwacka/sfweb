@@ -1,6 +1,7 @@
 import { db } from "./db";
 import { 
   profiles, users, clients, shoots, images, packages, analytics, favorites, bookings,
+  shootPreviews, clientSelections, selectionPackages, previewImages,
   type Profile, type InsertProfile,
   type User, type InsertUser, 
   type Client, type InsertClient,
@@ -10,7 +11,11 @@ import {
   type Analytics, type InsertAnalytics,
   type Favorite, type InsertFavorite,
   type Booking, type InsertBooking,
-  type UpdateShootCustomization
+  type UpdateShootCustomization,
+  type ShootPreview, type InsertShootPreview,
+  type ClientSelection, type InsertClientSelection,
+  type SelectionPackage, type InsertSelectionPackage,
+  type PreviewImage, type InsertPreviewImage
 } from "@shared/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import type { IStorage } from "./storage";
@@ -410,8 +415,17 @@ export class SupabaseStorage implements IStorage {
   }
 
   async deleteShoot(id: string): Promise<boolean> {
+    console.log('🗑️ SupabaseStorage.deleteShoot: Starting delete for ID:', id);
     const result = await db.delete(shoots).where(eq(shoots.id, id));
-    return result.rowCount > 0;
+    console.log('🗑️ SupabaseStorage.deleteShoot: Delete result:', result);
+    
+    // For Drizzle with Supabase, the result might not have rowCount
+    // Let's check if the operation was successful by querying the shoot again
+    const shootStillExists = await this.getShoot(id);
+    const success = !shootStillExists;
+    console.log(`🗑️ SupabaseStorage.deleteShoot: Shoot still exists after delete: ${!!shootStillExists}, Success: ${success}`);
+    
+    return success;
   }
 
   async updateShootCustomization(id: string, customization: UpdateShootCustomization): Promise<Shoot | undefined> {
@@ -503,4 +517,111 @@ export class SupabaseStorage implements IStorage {
 
   // Local site assets - removed to avoid confusion with Supabase functionality
   // These methods are no longer used - local assets are handled directly by filesystem
+
+  // Preview Selection System Methods
+  async getShootPreviewSettings(shootId: string): Promise<ShootPreview | undefined> {
+    const result = await db.select().from(shootPreviews).where(eq(shootPreviews.shootId, shootId)).limit(1);
+    return result[0];
+  }
+
+  async createShootPreviewSettings(settings: InsertShootPreview): Promise<ShootPreview> {
+    const result = await db.insert(shootPreviews).values(settings).returning();
+    return result[0];
+  }
+
+  async updateShootPreviewSettings(id: string, updates: Partial<InsertShootPreview>): Promise<ShootPreview | undefined> {
+    const result = await db.update(shootPreviews).set(updates).where(eq(shootPreviews.id, id)).returning();
+    return result[0];
+  }
+
+  async getClientSelections(shootId: string): Promise<ClientSelection[]> {
+    return await db.select().from(clientSelections).where(eq(clientSelections.shootId, shootId));
+  }
+
+  async upsertClientSelection(selection: Partial<InsertClientSelection>): Promise<ClientSelection> {
+    // For upsert functionality, we'll implement a find-or-create pattern
+    const existing = await db.select()
+      .from(clientSelections)
+      .where(
+        and(
+          eq(clientSelections.shootId, selection.shootId!),
+          eq(clientSelections.clientId, selection.clientId!),
+          eq(clientSelections.imageFilename, selection.imageFilename!)
+        )
+      )
+      .limit(1);
+
+    if (existing.length > 0) {
+      // Update existing
+      const result = await db.update(clientSelections)
+        .set(selection)
+        .where(eq(clientSelections.id, existing[0].id))
+        .returning();
+      return result[0];
+    } else {
+      // Create new
+      const result = await db.insert(clientSelections).values(selection as InsertClientSelection).returning();
+      return result[0];
+    }
+  }
+
+  async deleteClientSelection(id: string): Promise<boolean> {
+    const result = await db.delete(clientSelections).where(eq(clientSelections.id, id));
+    return result.rowCount > 0;
+  }
+
+  async getSelectionPackages(): Promise<SelectionPackage[]> {
+    return await db.select().from(selectionPackages).orderBy(selectionPackages.additionalImages);
+  }
+
+  async createSelectionPackage(packageData: InsertSelectionPackage): Promise<SelectionPackage> {
+    const result = await db.insert(selectionPackages).values(packageData).returning();
+    return result[0];
+  }
+
+  async updateSelectionPackage(id: string, updates: Partial<InsertSelectionPackage>): Promise<SelectionPackage | undefined> {
+    const result = await db.update(selectionPackages).set(updates).where(eq(selectionPackages.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteSelectionPackage(id: string): Promise<boolean> {
+    const result = await db.delete(selectionPackages).where(eq(selectionPackages.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Preview Images methods
+  async getPreviewImages(shootId: string): Promise<PreviewImage[]> {
+    return await db.select().from(previewImages).where(eq(previewImages.shootId, shootId)).orderBy(previewImages.createdAt);
+  }
+
+  // Selection Package methods for client upselling
+  async getSelectionPackage(shootId: string, clientId: string): Promise<SelectionPackage | undefined> {
+    const result = await db.select()
+      .from(selectionPackages)
+      .where(
+        and(
+          eq(selectionPackages.shootId, shootId),
+          eq(selectionPackages.clientId, clientId)
+        )
+      )
+      .limit(1);
+    return result[0];
+  }
+
+  async upgradeSelectionPackage(shootId: string, clientId: string, additionalImages: number, purchaseInfo: any): Promise<SelectionPackage> {
+    const existing = await this.getSelectionPackage(shootId, clientId);
+    if (!existing) {
+      throw new Error('No selection package found to upgrade');
+    }
+    
+    // Update with additional images and purchase info
+    const result = await db.update(selectionPackages)
+      .set({
+        purchasedAdditional: existing.purchasedAdditional + additionalImages,
+        purchaseHistory: sql`COALESCE(purchase_history, '[]'::jsonb) || ${JSON.stringify([purchaseInfo])}::jsonb`
+      })
+      .where(eq(selectionPackages.id, existing.id))
+      .returning();
+    return result[0];
+  }
 }

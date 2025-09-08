@@ -63,6 +63,7 @@ export function ImagePicker({ shootId, previewSettings, userEmail }: ImagePicker
     isPending,
   } = useOptimisticSelections({
     shootId,
+    userEmail,
     onError: (imageId, error) => {
       toast({
         title: 'Selection Failed',
@@ -229,7 +230,7 @@ export function ImagePicker({ shootId, previewSettings, userEmail }: ImagePicker
             {currentPageImages.map((image) => (
               <div key={image.filename} className="relative group w-full max-w-full min-w-0 box-border">
                 {/* Image Container */}
-                <div className="relative aspect-square bg-gray-800 rounded-lg overflow-hidden border-2 border-border hover:border-cyan transition-colors w-full max-w-full">
+                <div className="relative aspect-square bg-gray-600 rounded-lg overflow-hidden border-2 border-border hover:border-cyan transition-colors w-full max-w-full">
                   <img
                     src={image.thumbnailUrl || '/images/logos/slyfox-logo-white.png'}
                     alt={image.filename}
@@ -266,7 +267,7 @@ export function ImagePicker({ shootId, previewSettings, userEmail }: ImagePicker
                     className={`relative mobile-touch-button rounded-full flex items-center justify-center transition-all ${
                       getIconStatus(image.filename, 'favorite')
                         ? 'bg-red-500 shadow-lg shadow-red-500/50'
-                        : 'bg-gray-700 hover:bg-red-500'
+                        : 'bg-gray-500 hover:bg-red-500'
                     }`}
                     title="Top 20 Selected Image"
                   >
@@ -284,7 +285,7 @@ export function ImagePicker({ shootId, previewSettings, userEmail }: ImagePicker
                     className={`mobile-touch-button rounded-full flex items-center justify-center transition-all ${
                       getIconStatus(image.filename, 'like')
                         ? 'bg-green-500 shadow-lg shadow-green-500/50'
-                        : 'bg-gray-700 hover:bg-green-500'
+                        : 'bg-gray-500 hover:bg-green-500'
                     }`}
                     title="Liked Image"
                   >
@@ -297,7 +298,7 @@ export function ImagePicker({ shootId, previewSettings, userEmail }: ImagePicker
                     className={`mobile-touch-button rounded-full flex items-center justify-center transition-all ${
                       getIconStatus(image.filename, 'dislike')
                         ? 'bg-yellow-500 shadow-lg shadow-yellow-500/50'
-                        : 'bg-gray-700 hover:bg-yellow-500'
+                        : 'bg-gray-500 hover:bg-yellow-500'
                     }`}
                     title="Dislike Image"
                   >
@@ -310,7 +311,7 @@ export function ImagePicker({ shootId, previewSettings, userEmail }: ImagePicker
                     className={`mobile-touch-button rounded-full flex items-center justify-center transition-all ${
                       getIconStatus(image.filename, 'trash')
                         ? 'bg-gray-500 shadow-lg shadow-gray-500/50'
-                        : 'bg-gray-700 hover:bg-gray-500'
+                        : 'bg-gray-500 hover:bg-gray-400'
                     }`}
                     title="Remove Image"
                   >
@@ -327,7 +328,7 @@ export function ImagePicker({ shootId, previewSettings, userEmail }: ImagePicker
             <button
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className="mobile-touch-button px-4 py-2 bg-gray-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
+              className="mobile-touch-button px-4 py-2 bg-gray-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400"
             >
               ← Previous
             </button>
@@ -344,7 +345,7 @@ export function ImagePicker({ shootId, previewSettings, userEmail }: ImagePicker
             <button
               onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
-              className="mobile-touch-button px-4 py-2 bg-gray-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
+              className="mobile-touch-button px-4 py-2 bg-gray-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400"
             >
               Next →
             </button>

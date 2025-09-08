@@ -315,3 +315,106 @@ export const updateShootDetailsSchema = z.object({
 export type UpdateImageSequence = z.infer<typeof updateImageSequenceSchema>;
 export type UpdateAlbumCover = z.infer<typeof updateAlbumCoverSchema>;
 export type UpdateShootDetails = z.infer<typeof updateShootDetailsSchema>;
+
+// Preview Selection System Tables
+export const shootPreviews = pgTable("shoot_previews", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  shootId: uuid("shoot_id").references(() => shoots.id).notNull(),
+  dropboxFolderPath: text("dropbox_folder_path"), // e.g., "/Client Shoots/Smith Wedding/Previews"
+  dropboxShareLink: text("dropbox_share_link"), // Optional: if using shared link method
+  selectionLimit: integer("selection_limit").default(20).notNull(),
+  additionalBundle5Price: decimal("additional_bundle_5_price").default("150.00"),
+  additionalBundle10Price: decimal("additional_bundle_10_price").default("250.00"),
+  unlimitedBundlePrice: decimal("unlimited_bundle_price").default("500.00"),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
+});
+
+export const clientSelections = pgTable("client_selections", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  shootId: uuid("shoot_id").references(() => shoots.id).notNull(),
+  clientId: uuid("client_id").references(() => profiles.id).notNull(),
+  imageFilename: text("image_filename").notNull(), // e.g., "DSC_0234.jpg"
+  dropboxPath: text("dropbox_path"), // Full path in Dropbox
+  thumbnailUrl: text("thumbnail_url"), // Cached thumbnail URL
+  selectionStatus: text("selection_status").default("none").notNull(), // 'favorite', 'like', 'dislike', 'none'
+  isFinalSelection: boolean("is_final_selection").default(false).notNull(),
+  selectionOrder: integer("selection_order"), // For final 20 images ordering
+  selectedAt: timestamp("selected_at", { withTimezone: true }),
+  metadata: jsonb("metadata"), // Store any extra info like dimensions, file size, etc.
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
+});
+
+export const selectionPackages = pgTable("selection_packages", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  shootId: uuid("shoot_id").references(() => shoots.id).notNull(),
+  clientId: uuid("client_id").references(() => profiles.id).notNull(),
+  baseLimit: integer("base_limit").default(20).notNull(),
+  purchasedAdditional: integer("purchased_additional").default(0).notNull(),
+  totalAllowed: integer("total_allowed").generatedAlwaysAs(sql`base_limit + purchased_additional`),
+  purchaseHistory: jsonb("purchase_history"), // Array of purchase events
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
+});
+
+// Dedicated table for preview images migrated from Dropbox - completely separate from main images
+export const previewImages = pgTable("preview_images", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  shootId: uuid("shoot_id").references(() => shoots.id).notNull(),
+  filename: text("filename").notNull(), // Original Dropbox filename
+  supabaseUrl: text("supabase_url").notNull(), // Public URL in Supabase Storage
+  supabaseStoragePath: text("supabase_storage_path").notNull(), // Storage key: previews/shootId/filename
+  originalDropboxPath: text("original_dropbox_path"), // Original path in Dropbox for reference
+  fileSize: integer("file_size"),
+  contentType: text("content_type").default("image/jpeg").notNull(),
+  uploadedBy: uuid("uploaded_by").references(() => profiles.id).notNull(),
+  migrationBatchId: uuid("migration_batch_id"), // Group images from same migration run
+  metadata: jsonb("metadata"), // Store any extra Dropbox metadata
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
+});
+
+// Insert schemas for new tables
+export const insertShootPreviewSchema = createInsertSchema(shootPreviews).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertClientSelectionSchema = createInsertSchema(clientSelections).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSelectionPackageSchema = createInsertSchema(selectionPackages).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  totalAllowed: true,
+});
+
+export const insertPreviewImageSchema = createInsertSchema(previewImages).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Types for new tables
+export type ShootPreview = typeof shootPreviews.$inferSelect;
+export type InsertShootPreview = z.infer<typeof insertShootPreviewSchema>;
+
+export type ClientSelection = typeof clientSelections.$inferSelect;
+export type InsertClientSelection = z.infer<typeof insertClientSelectionSchema>;
+
+export type SelectionPackage = typeof selectionPackages.$inferSelect;
+export type InsertSelectionPackage = z.infer<typeof insertSelectionPackageSchema>;
+
+export type PreviewImage = typeof previewImages.$inferSelect;
+export type InsertPreviewImage = z.infer<typeof insertPreviewImageSchema>;
+
+// Selection status constants
+export const SELECTION_STATUS = ['none', 'favorite', 'like', 'dislike'] as const;
+export type SelectionStatus = typeof SELECTION_STATUS[number];
+
+export type UpdateShootDetails = z.infer<typeof updateShootDetailsSchema>;

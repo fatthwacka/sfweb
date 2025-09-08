@@ -317,7 +317,7 @@ export function GalleryDemo() {
       </GradientBackground>
 
       {/* Demo Galleries Section - Custom gradient styling */}
-      <div className="py-20" style={{ background: 'linear-gradient(to bottom, #475569 0%, #1e293b 50%, #020617 100%)' }}>
+      <div className="py-20" style={{ background: 'linear-gradient(to bottom, #64748b 0%, #334155 50%, #1e293b 100%)' }}>
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-white text-4xl lg:text-5xl mb-6">

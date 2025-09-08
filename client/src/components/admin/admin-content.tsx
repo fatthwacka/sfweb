@@ -14,6 +14,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { ImageUrl } from "@/lib/image-utils";
 import { SHOOT_TYPES } from "@shared/schema";
 import { EnhancedGalleryEditor } from "./enhanced-gallery-editor";
+import { PreviewSettingsCard } from "./preview-settings-card";
 import { StaffManagement } from "./staff-management";
 import { SimpleAssetsPanel } from "./simple-assets-panel";
 import { ContactSettings } from "./page-settings/contact-settings";
@@ -42,7 +43,8 @@ import {
   UserPlus,
   Check,
   Download,
-  Star
+  Star,
+  FolderPlus
 } from "lucide-react";
 
 interface Client {
@@ -153,6 +155,15 @@ export function AdminContent({ userRole }: AdminContentProps) {
   // Bulk selection state for images
   const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
   const [bulkActionOpen, setBulkActionOpen] = useState(false);
+  
+  // Bulk assignment modal state
+  const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
+  const [selectedClientEmail, setSelectedClientEmail] = useState<string>('');
+  const [selectedShootId, setSelectedShootId] = useState<string>('');
+  const [newClientMode, setNewClientMode] = useState(false);
+  const [newShootMode, setNewShootMode] = useState(false);
+  const [newClientData, setNewClientData] = useState({ name: '', email: '' });
+  const [newShootData, setNewShootData] = useState({ title: '', shootType: 'portrait', location: 'Durban' });
   
   // Image filters
   const [selectedClientFilter, setSelectedClientFilter] = useState<string>('__all__');
@@ -329,6 +340,40 @@ export function AdminContent({ userRole }: AdminContentProps) {
     onError: (error: any) => {
       console.error('Delete client error:', error);
       const errorMessage = error?.response?.data?.message || error?.message || "Failed to delete client";
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const deleteShootMutation = useMutation({
+    mutationFn: async (shootId: string) => {
+      console.log('🚨 MUTATION STARTING for shootId:', shootId);
+      const url = `/api/shoots/${encodeURIComponent(shootId)}`;
+      console.log('🚨 MUTATION URL:', url);
+      const result = await apiRequest("DELETE", url);
+      console.log('🚨 MUTATION RESULT:', result);
+      return result;
+    },
+    onSuccess: (data, shootId) => {
+      console.log('🚨 MUTATION SUCCESS CALLBACK - data:', data, 'shootId:', shootId);
+      // Force refresh the shoots list
+      queryClient.invalidateQueries({ queryKey: ["/api/shoots"] });
+      queryClient.refetchQueries({ queryKey: ["/api/shoots"] });
+      
+      // Close edit dialog if this shoot was being edited
+      setEditingShoot(null);
+      
+      toast({
+        title: "Success",
+        description: `Shoot deleted successfully`
+      });
+    },
+    onError: (error: any) => {
+      console.error('Delete shoot error:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || "Failed to delete shoot";
       toast({
         title: "Error",
         description: errorMessage,
@@ -684,6 +729,166 @@ export function AdminContent({ userRole }: AdminContentProps) {
       });
     }
   });
+
+  // Bulk assignment mutation
+  const bulkAssignmentMutation = useMutation({
+    mutationFn: async ({ imageIds, shootId }: { imageIds: string[], shootId: string }) => {
+      const response = await apiRequest("PATCH", "/api/images/bulk-assignment", { imageIds, shootId });
+      return await response.json();
+    },
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/images"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/shoots"] });
+      setSelectedImages(new Set());
+      setAssignmentModalOpen(false);
+      setSelectedClientEmail('');
+      setSelectedShootId('');
+      setNewClientMode(false);
+      setNewShootMode(false);
+      
+      toast({
+        title: "Images Assigned Successfully",
+        description: response.message
+      });
+    },
+    onError: (error) => {
+      console.error('Bulk assignment error:', error);
+      toast({
+        title: "Assignment Failed",
+        description: "Failed to assign images to album",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Helper functions for bulk assignment
+  const availableShoots = selectedClientEmail && selectedClientEmail !== '__new__'
+    ? shoots.filter(s => s.clientId === selectedClientEmail)
+    : [];
+
+  const resetAssignmentModal = () => {
+    setSelectedClientEmail('');
+    setSelectedShootId('');
+    setNewClientMode(false);
+    setNewShootMode(false);
+    setNewClientData({ name: '', email: '' });
+    setNewShootData({ title: '', shootType: 'portrait', location: 'Durban' });
+  };
+
+  // Handle assignment submission
+  const handleAssignImages = async () => {
+    try {
+      let targetShootId = selectedShootId;
+      let targetClientEmail = selectedClientEmail;
+
+      // Create new client if needed
+      if (newClientMode && selectedClientEmail === '__new__') {
+        if (!newClientData.name.trim() || !newClientData.email.trim()) {
+          toast({
+            title: "Missing Information",
+            description: "Please provide both client name and email",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        // Check if client already exists
+        const existingClient = clients.find(c => c.email === newClientData.email.trim());
+        if (existingClient) {
+          // Client exists, use existing client
+          targetClientEmail = existingClient.email;
+          toast({
+            title: "Client Already Exists",
+            description: `Using existing client: ${existingClient.name}`,
+          });
+        } else {
+          // Create new client
+          const clientResponseRaw = await apiRequest("POST", "/api/clients", {
+            name: newClientData.name.trim(),
+            slug: newClientData.name.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-'),
+            email: newClientData.email.trim(),
+            phone: null,
+            address: null,
+            secondaryEmail: null,
+            password: null
+          });
+
+          const clientResponse = await clientResponseRaw.json();
+          console.log('🎯 CLIENT CREATION RESPONSE:', clientResponse);
+          targetClientEmail = newClientData.email.trim();
+        }
+      }
+
+      // Create new shoot if needed
+      if (selectedShootId === '__new__' || (newClientMode && selectedClientEmail === '__new__')) {
+        if (!newShootData.title.trim()) {
+          toast({
+            title: "Missing Information",
+            description: "Please provide an album title",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        // Generate slug
+        const autoSlug = newShootData.title
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-')
+          .trim();
+
+        // Create shoot
+        const shootResponseRaw = await apiRequest("POST", "/api/shoots", {
+          clientId: targetClientEmail,
+          title: newShootData.title.trim(),
+          description: `${newShootData.title} photography by SlyFox Studios. Professional ${newShootData.shootType} photographer in ${newShootData.location}.`,
+          shootType: newShootData.shootType,
+          shootDate: new Date().toISOString().split('T')[0],
+          location: newShootData.location.trim(),
+          notes: `Bulk assignment of ${selectedImages.size} images`,
+          customSlug: `${autoSlug}-slyfox-${new Date().getFullYear()}`,
+          customTitle: newShootData.title.trim(),
+          seoTags: `${newShootData.shootType} photography, professional photographer, ${newShootData.location.toLowerCase()} photographer`,
+          isPrivate: false,
+          albumCoverId: null,
+          bannerImageId: null,
+          viewCount: 0
+        });
+
+        const shootResponse = await shootResponseRaw.json();
+        console.log('🎯 SHOOT CREATION RESPONSE:', shootResponse);
+        targetShootId = shootResponse.id;
+      }
+
+      if (!targetShootId) {
+        console.error('❌ No targetShootId after processing!');
+        toast({
+          title: "No Album Selected",
+          description: "Please select an album to assign images to",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Perform bulk assignment
+      const assignmentData = {
+        imageIds: Array.from(selectedImages),
+        shootId: targetShootId
+      };
+      console.log('🟡 CLIENT: Final targetShootId:', targetShootId);
+      console.log('🟡 CLIENT: Sending bulk assignment data:', assignmentData);
+      bulkAssignmentMutation.mutate(assignmentData);
+
+    } catch (error) {
+      console.error('Assignment preparation error:', error);
+      toast({
+        title: "Assignment Failed",
+        description: "Failed to prepare assignment. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
 
   const handleUpdateUser = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -1519,6 +1724,18 @@ export function AdminContent({ userRole }: AdminContentProps) {
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="border-border hover:border-red-500 text-white"
+                              onClick={() => {
+                                if (confirm(`Are you sure you want to delete shoot "${shoot.title}"?\n\nThis will permanently delete the shoot record and all associated images from the database. This action cannot be undone.`)) {
+                                  deleteShootMutation.mutate(shoot.id);
+                                }
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                           </div>
                         </div>
                       </CardContent>
@@ -1795,6 +2012,15 @@ export function AdminContent({ userRole }: AdminContentProps) {
                           
                           <Button
                             size="sm"
+                            className="bg-purple-600 text-white hover:bg-purple-700 text-xs"
+                            onClick={() => setAssignmentModalOpen(true)}
+                          >
+                            <FolderPlus className="w-3 h-3 mr-1" />
+                            Assign to Album ({selectedImages.size})
+                          </Button>
+                          
+                          <Button
+                            size="sm"
                             className="bg-cyan text-white hover:bg-cyan-muted text-xs"
                             onClick={() => {
                               toast({
@@ -1983,6 +2209,9 @@ export function AdminContent({ userRole }: AdminContentProps) {
                   </Select>
                 </CardContent>
               </Card>
+
+              {/* Preview Selection Settings */}
+              {selectedShoot && <PreviewSettingsCard shootId={selectedShoot} />}
 
               {/* Gallery Editor */}
               {selectedShoot && <EnhancedGalleryEditor shootId={selectedShoot} />}
@@ -2713,6 +2942,174 @@ export function AdminContent({ userRole }: AdminContentProps) {
               </div>
             </form>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Assignment Modal */}
+      <Dialog open={assignmentModalOpen} onOpenChange={(open) => {
+        setAssignmentModalOpen(open);
+        if (!open) resetAssignmentModal();
+      }}>
+        <DialogContent className="admin-gradient-card max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-salmon">Assign {selectedImages.size} Images to Album</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Select a client and album to assign the selected images to, or create new ones.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            {/* Client Selection */}
+            <div className="space-y-2">
+              <Label>Select Client</Label>
+              <Select 
+                value={selectedClientEmail} 
+                onValueChange={(value) => {
+                  setSelectedClientEmail(value);
+                  setSelectedShootId(''); // Reset shoot selection
+                  if (value === '__new__') {
+                    setNewClientMode(true);
+                  } else {
+                    setNewClientMode(false);
+                  }
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Choose a client..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {clients.map(client => (
+                    <SelectItem key={client.id} value={client.email}>
+                      {client.name} ({client.email})
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="__new__">+ Create New Client</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* New Client Form */}
+            {newClientMode && (
+              <div className="space-y-4 p-4 bg-background/50 rounded-lg border border-border">
+                <h4 className="font-medium text-salmon">New Client Details</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Client Name *</Label>
+                    <Input
+                      value={newClientData.name}
+                      onChange={(e) => setNewClientData(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="Client name"
+                    />
+                  </div>
+                  <div>
+                    <Label>Client Email *</Label>
+                    <Input
+                      type="email"
+                      value={newClientData.email}
+                      onChange={(e) => setNewClientData(prev => ({ ...prev, email: e.target.value }))}
+                      placeholder="client@example.com"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Album Selection */}
+            {selectedClientEmail && selectedClientEmail !== '__new__' && (
+              <div className="space-y-2">
+                <Label>Select Album</Label>
+                <Select 
+                  value={selectedShootId} 
+                  onValueChange={(value) => {
+                    setSelectedShootId(value);
+                    if (value === '__new__') {
+                      setNewShootMode(true);
+                    } else {
+                      setNewShootMode(false);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Choose an album..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableShoots.map(shoot => (
+                      <SelectItem key={shoot.id} value={shoot.id}>
+                        {shoot.title} - {shoot.location}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="__new__">+ Create New Album</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* New Album Form */}
+            {(newShootMode || (newClientMode && selectedClientEmail === '__new__')) && (
+              <div className="space-y-4 p-4 bg-background/50 rounded-lg border border-border">
+                <h4 className="font-medium text-salmon">New Album Details</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Album Title *</Label>
+                    <Input
+                      value={newShootData.title}
+                      onChange={(e) => setNewShootData(prev => ({ ...prev, title: e.target.value }))}
+                      placeholder="Wedding Photography"
+                    />
+                  </div>
+                  <div>
+                    <Label>Shoot Type</Label>
+                    <Select 
+                      value={newShootData.shootType}
+                      onValueChange={(value) => setNewShootData(prev => ({ ...prev, shootType: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="wedding">Wedding</SelectItem>
+                        <SelectItem value="portrait">Portrait</SelectItem>
+                        <SelectItem value="corporate">Corporate</SelectItem>
+                        <SelectItem value="event">Event</SelectItem>
+                        <SelectItem value="family">Family</SelectItem>
+                        <SelectItem value="maternity">Maternity</SelectItem>
+                        <SelectItem value="engagement">Engagement</SelectItem>
+                        <SelectItem value="graduation">Graduation</SelectItem>
+                        <SelectItem value="newborn">Newborn</SelectItem>
+                        <SelectItem value="product">Product</SelectItem>
+                        <SelectItem value="matric dance">Matric Dance</SelectItem>
+                        <SelectItem value="lifestyle">Lifestyle</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label>Location</Label>
+                  <Input
+                    value={newShootData.location}
+                    onChange={(e) => setNewShootData(prev => ({ ...prev, location: e.target.value }))}
+                    placeholder="Durban"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
+            <Button
+              variant="outline"
+              onClick={() => setAssignmentModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-purple-600 hover:bg-purple-700"
+              onClick={handleAssignImages}
+              disabled={bulkAssignmentMutation.isPending || (!selectedShootId && !newShootMode && !newClientMode)}
+            >
+              {bulkAssignmentMutation.isPending ? 'Assigning...' : `Assign ${selectedImages.size} Images`}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </>

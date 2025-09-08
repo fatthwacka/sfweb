@@ -156,6 +156,17 @@ All dynamic colors MUST follow this exact pattern (NO EXCEPTIONS):
 - ✅ Consistent across all sections
 - ✅ No inline style maintenance
 
+**🚨 CRITICAL DEPLOYMENT BUG DISCOVERED (2025-09-03): Production container running in development mode!**
+
+**Root Cause**: `deploy-production.sh` script not using production Docker Compose override file  
+**Impact**: Mobile users receiving Vite dev server responses instead of production build  
+**Status**: Live site compromised - mobile experience broken  
+**Fix Required**: Update Line 182 in deployment script to include `-f docker-compose.yml -f docker-compose.prod.yml`
+
+**Quick Test**: `curl -s https://slyfox.co.za/photography/corporate | head -20 | grep -i vite` - should return NO output if fixed.
+
+**Complete details**: See [`VPS_DEPLOYMENT.md`](./VPS_DEPLOYMENT.md) section "03 SEPTEMBER 2025 - CRITICAL DEPLOYMENT SCRIPT BUG DISCOVERED"
+
 **⚠️ MANDATORY: ALWAYS consult [`DEV_SERVER_STARTUP.md`](./DEV_SERVER_STARTUP.md) BEFORE attempting to start the development server or troubleshoot startup issues.**
 
 This project uses Docker for development. Do NOT use `npm run dev` directly - it will fail.

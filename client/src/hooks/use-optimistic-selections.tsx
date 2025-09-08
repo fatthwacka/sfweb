@@ -14,6 +14,7 @@ interface OptimisticState {
 
 interface UseOptimisticSelectionsOptions {
   shootId: string;
+  userEmail: string;
   maxRetries?: number;
   debounceMs?: number;
   onError?: (imageId: string, error: any) => void;
@@ -21,6 +22,7 @@ interface UseOptimisticSelectionsOptions {
 
 export function useOptimisticSelections({
   shootId,
+  userEmail,
   maxRetries = 3,
   debounceMs = 300,
   onError,
@@ -42,14 +44,11 @@ export function useOptimisticSelections({
       status: 'none' | 'favorite' | 'like' | 'dislike';
       filename: string;
     }) => {
-      return apiRequest(`/api/client-selections/${shootId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          imageFilename: filename,
-          selectionStatus: status,
-          isFinalSelection: status === 'favorite',
-        }),
+      return apiRequest('POST', `/api/client-selections/${shootId}`, {
+        imageFilename: filename,
+        selectionStatus: status,
+        userEmail: userEmail,
+        isFinalSelection: status === 'favorite',
       });
     },
   });

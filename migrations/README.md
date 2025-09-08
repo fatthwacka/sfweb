@@ -1,17 +1,23 @@
-# RLS Migration Instructions
+# Database Migration Instructions
 
 ## Overview
-This migration enables Row Level Security (RLS) on all database tables and creates comprehensive policies based on the SlyFox Studios role hierarchy: `client` → `staff` → `super_admin`.
+These migrations set up the complete SlyFox Studios database with security policies and preview selection functionality:
+
+1. **001_enable_rls.sql** - Enables Row Level Security (RLS) and creates helper functions
+2. **002_rls_policies.sql** - Creates comprehensive security policies based on role hierarchy: `client` → `staff` → `super_admin`
+3. **003_add_preview_tables.sql** - Adds client image preview selection system
 
 ## Deployment Options
 
 ### Option 1: Supabase Dashboard (Recommended)
 1. Open your Supabase project dashboard
 2. Go to **SQL Editor**
-3. Copy and paste the contents of `001_enable_rls.sql`
-4. Click **Run** to execute
-5. Copy and paste the contents of `002_rls_policies.sql`
-6. Click **Run** to execute
+3. Run migrations in order:
+   - Copy and paste the contents of `001_enable_rls.sql` → Click **Run**
+   - Copy and paste the contents of `002_rls_policies.sql` → Click **Run**
+   - Copy and paste the contents of `003_add_preview_tables.sql` → Click **Run**
+
+**Note**: If migrations 001 and 002 are already applied, you can run only migration 003.
 
 ### Option 2: Supabase CLI
 ```bash
@@ -19,9 +25,10 @@ This migration enables Row Level Security (RLS) on all database tables and creat
 supabase db reset  # Optional: reset to clean state
 supabase db push   # Push schema changes
 
-# Run migrations
+# Run migrations in order
 psql "your-database-connection-string" -f migrations/001_enable_rls.sql
 psql "your-database-connection-string" -f migrations/002_rls_policies.sql
+psql "your-database-connection-string" -f migrations/003_add_preview_tables.sql
 ```
 
 ### Option 3: Direct PostgreSQL Connection
@@ -29,9 +36,10 @@ psql "your-database-connection-string" -f migrations/002_rls_policies.sql
 # Connect to your Supabase PostgreSQL instance
 psql "postgresql://postgres:your-password@db.your-project.supabase.co:5432/postgres"
 
-# Run migrations
+# Run migrations in order
 \i migrations/001_enable_rls.sql
 \i migrations/002_rls_policies.sql
+\i migrations/003_add_preview_tables.sql
 ```
 
 ## Policy Summary

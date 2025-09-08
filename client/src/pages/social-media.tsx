@@ -58,7 +58,7 @@ export default function SocialMedia() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Service Card 1 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 18%) 0%, hsl(220, 13%, 16%) 50%, hsl(220, 13%, 14%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
               <Camera className="w-12 h-12 text-cyan mb-4" />
               <h3 className="mb-3">Content Creation</h3>
               <p className="text-muted-foreground mb-4">
@@ -73,7 +73,7 @@ export default function SocialMedia() {
             </div>
 
             {/* Service Card 2 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 18%) 0%, hsl(220, 13%, 16%) 50%, hsl(220, 13%, 14%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
               <TrendingUp className="w-12 h-12 text-salmon mb-4" />
               <h3 className="mb-3">Business Analysis</h3>
               <p className="text-muted-foreground mb-4">
@@ -88,7 +88,7 @@ export default function SocialMedia() {
             </div>
 
             {/* Service Card 3 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 18%) 0%, hsl(220, 13%, 16%) 50%, hsl(220, 13%, 14%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
               <Users className="w-12 h-12 text-cyan mb-4" />
               <h3 className="mb-3">Inbox Management</h3>
               <p className="text-muted-foreground mb-4">
@@ -103,7 +103,7 @@ export default function SocialMedia() {
             </div>
 
             {/* Service Card 4 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 18%) 0%, hsl(220, 13%, 16%) 50%, hsl(220, 13%, 14%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
               <Video className="w-12 h-12 text-salmon mb-4" />
               <h3 className="mb-3">Video Production</h3>
               <p className="text-muted-foreground mb-4">
@@ -118,7 +118,7 @@ export default function SocialMedia() {
             </div>
 
             {/* Service Card 5 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 18%) 0%, hsl(220, 13%, 16%) 50%, hsl(220, 13%, 14%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
               <Smartphone className="w-12 h-12 text-cyan mb-4" />
               <h3 className="mb-3">AI Automation</h3>
               <p className="text-muted-foreground mb-4">
@@ -133,7 +133,7 @@ export default function SocialMedia() {
             </div>
 
             {/* Service Card 6 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 18%) 0%, hsl(220, 13%, 16%) 50%, hsl(220, 13%, 14%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
               <Hash className="w-12 h-12 text-salmon mb-4" />
               <h3 className="mb-3">Advert Campaigns</h3>
               <p className="text-muted-foreground mb-4">

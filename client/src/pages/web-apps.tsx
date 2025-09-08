@@ -56,7 +56,7 @@ export default function WebApps() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Service Card 1 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 18%) 0%, hsl(220, 13%, 16%) 50%, hsl(220, 13%, 14%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
               <Globe className="w-12 h-12 text-salmon mb-4" />
               <h3 className="mb-3">Web Development</h3>
               <p className="text-muted-foreground mb-4">
@@ -71,7 +71,7 @@ export default function WebApps() {
             </div>
 
             {/* Service Card 2 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 18%) 0%, hsl(220, 13%, 16%) 50%, hsl(220, 13%, 14%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
               <Smartphone className="w-12 h-12 text-cyan mb-4" />
               <h3 className="mb-3">Mobile Apps</h3>
               <p className="text-muted-foreground mb-4">
@@ -86,7 +86,7 @@ export default function WebApps() {
             </div>
 
             {/* Service Card 3 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 18%) 0%, hsl(220, 13%, 16%) 50%, hsl(220, 13%, 14%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
               <Code className="w-12 h-12 text-salmon mb-4" />
               <h3 className="mb-3">Custom Software</h3>
               <p className="text-muted-foreground mb-4">
@@ -101,7 +101,7 @@ export default function WebApps() {
             </div>
 
             {/* Service Card 4 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 18%) 0%, hsl(220, 13%, 16%) 50%, hsl(220, 13%, 14%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
               <Palette className="w-12 h-12 text-cyan mb-4" />
               <h3 className="mb-3">UI/UX Design</h3>
               <p className="text-muted-foreground mb-4">
@@ -116,7 +116,7 @@ export default function WebApps() {
             </div>
 
             {/* Service Card 5 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 18%) 0%, hsl(220, 13%, 16%) 50%, hsl(220, 13%, 14%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
               <Zap className="w-12 h-12 text-salmon mb-4" />
               <h3 className="mb-3">Performance</h3>
               <p className="text-muted-foreground mb-4">
@@ -131,7 +131,7 @@ export default function WebApps() {
             </div>
 
             {/* Service Card 6 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 18%) 0%, hsl(220, 13%, 16%) 50%, hsl(220, 13%, 14%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
               <Shield className="w-12 h-12 text-cyan mb-4" />
               <h3 className="mb-3">Maintenance</h3>
               <p className="text-muted-foreground mb-4">
@@ -162,7 +162,7 @@ export default function WebApps() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="rounded-lg p-6 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 18%) 0%, hsl(220, 13%, 16%) 50%, hsl(220, 13%, 14%) 100%)'}}>
+              <div className="rounded-lg p-6 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
                 <h3>Frontend</h3>
                 <p className="text-sm text-muted-foreground mt-2">
                   React, Vue, Angular, Next.js
@@ -171,7 +171,7 @@ export default function WebApps() {
             </div>
 
             <div className="text-center">
-              <div className="rounded-lg p-6 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 18%) 0%, hsl(220, 13%, 16%) 50%, hsl(220, 13%, 14%) 100%)'}}>
+              <div className="rounded-lg p-6 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
                 <h3>Backend</h3>
                 <p className="text-sm text-muted-foreground mt-2">
                   Node.js, Python, PHP, .NET, Java
@@ -180,7 +180,7 @@ export default function WebApps() {
             </div>
 
             <div className="text-center">
-              <div className="rounded-lg p-6 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 18%) 0%, hsl(220, 13%, 16%) 50%, hsl(220, 13%, 14%) 100%)'}}>
+              <div className="rounded-lg p-6 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
                 <h3>Mobile</h3>
                 <p className="text-sm text-muted-foreground mt-2">
                   React Native, Flutter, Swift, Kotlin
@@ -189,7 +189,7 @@ export default function WebApps() {
             </div>
 
             <div className="text-center">
-              <div className="rounded-lg p-6 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 18%) 0%, hsl(220, 13%, 16%) 50%, hsl(220, 13%, 14%) 100%)'}}>
+              <div className="rounded-lg p-6 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
                 <h3>Cloud</h3>
                 <p className="text-sm text-muted-foreground mt-2">
                   AWS, Google Cloud, Azure, Vercel
