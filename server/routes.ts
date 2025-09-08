@@ -17,8 +17,10 @@ import {
   insertUserSchema, insertClientSchema, insertShootSchema, 
   insertImageSchema, insertBookingSchema, insertAnalyticsSchema,
   updateImageSequenceSchema, updateAlbumCoverSchema, updateShootDetailsSchema,
-  updateShootCustomizationSchema
+  updateShootCustomizationSchema, insertShootPreviewSchema, insertClientSelectionSchema,
+  insertSelectionPackageSchema
 } from "@shared/schema";
+import { dropboxService } from './services/dropbox-service';
 import { z } from "zod";
 
 // Configure multer for file uploads
@@ -37,8 +39,10 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  console.log('🚀 REGISTER ROUTES START');
   
   // Authentication endpoints
+  console.log('📝 Registering auth endpoints...');
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { email, password } = req.body;
@@ -513,6 +517,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Shoot endpoints
+  console.log('📝 Registering shoot endpoints...');
   app.get("/api/shoots", async (req, res) => {
     try {
       // For admin panel, return all shoots (both public and private)
@@ -634,6 +639,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  console.log('🔥 ABOUT TO REGISTER DELETE SHOOTS ROUTE');
+  app.delete("/api/shoots/:identifier", async (req, res) => {
+    console.log('🚨🚨🚨 DELETE SHOOTS ROUTE HIT - THIS SHOULD SHOW UP!', req.params.identifier);
+    try {
+      const shootId = req.params.identifier;
+      console.log('Deleting shoot by ID:', shootId);
+      
+      console.log('🔍 CALLING storage.deleteShoot...');
+      const success = await storage.deleteShoot(shootId);
+      console.log('🔍 storage.deleteShoot result:', success);
+      
+      if (success) {
+        console.log('✅ Delete successful, sending success response');
+        res.json({ message: "Shoot deleted successfully", shootId });
+      } else {
+        console.log('❌ Delete failed (returned false)');
+        res.status(500).json({ message: "Failed to delete shoot" });
+      }
+    } catch (error: any) {
+      console.error("❌ Delete shoot error:", error);
+      res.status(500).json({ message: "Failed to delete shoot", error: error.message });
+    }
+  });
+
   app.patch("/api/shoots/:id/customization", async (req, res) => {
     try {
       const shootId = req.params.id; // Use string ID for UUID
@@ -671,6 +700,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Create image error:", error);
       res.status(400).json({ message: "Invalid image data" });
+    }
+  });
+
+  // PATCH /api/images/bulk-assignment - Bulk assign images to shoots (MUST come before :id route)
+  app.patch("/api/images/bulk-assignment", async (req, res) => {
+    console.log('🚨 BULK ASSIGNMENT API HIT - Request Body:', JSON.stringify(req.body, null, 2));
+    try {
+      const { imageIds, shootId } = req.body;
+      
+      if (!Array.isArray(imageIds) || !shootId) {
+        console.error('❌ Invalid request body validation failed:', { imageIds: Array.isArray(imageIds), shootId: !!shootId });
+        return res.status(400).json({ message: 'Invalid request body: imageIds array and shootId required' });
+      }
+      
+      console.log(`🔄 Bulk assigning ${imageIds.length} images to shoot ${shootId}`);
+      
+      const results = [];
+      for (const imageId of imageIds) {
+        try {
+          console.log(`Attempting to update image ${imageId} with shootId: ${shootId}`);
+          const updatedImage = await storage.updateImage(imageId, { shootId });
+          console.log(`Successfully updated image ${imageId}:`, updatedImage?.id);
+          results.push({ id: imageId, success: true });
+        } catch (error) {
+          console.error(`Failed to assign image ${imageId} to shoot ${shootId}:`, error);
+          results.push({ id: imageId, success: false, error: error.message });
+        }
+      }
+      
+      const successCount = results.filter(r => r.success).length;
+      
+      res.json({ 
+        success: true,
+        message: `${successCount} of ${imageIds.length} images assigned to shoot`,
+        results
+      });
+    } catch (error) {
+      console.error('❌❌❌ CRITICAL ERROR in bulk assignment:', error);
+      console.error('Error stack:', error.stack);
+      res.status(500).json({ message: 'Failed to assign images', error: error.message });
     }
   });
 
@@ -1546,6 +1615,469 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error updating featured status:', error);
       res.status(500).json({ message: 'Failed to update featured status' });
+    }
+  });
+
+  // ===================================
+  // PREVIEW SELECTION SYSTEM API ROUTES
+  // ===================================
+
+  // GET /api/shoots/:shootId/preview-settings - Get preview settings for a shoot
+  app.get("/api/shoots/:shootId/preview-settings", async (req, res) => {
+    try {
+      const { shootId } = req.params;
+      const settings = await storage.getShootPreviewSettings(shootId);
+      res.json(settings);
+    } catch (error) {
+      console.error('Error fetching preview settings:', error);
+      res.status(500).json({ message: 'Failed to fetch preview settings' });
+    }
+  });
+
+  // POST /api/preview-settings - Create preview settings
+  app.post("/api/preview-settings", async (req, res) => {
+    try {
+      const validatedData = insertShootPreviewSchema.parse(req.body);
+      const settings = await storage.createShootPreviewSettings(validatedData);
+      
+      // Trigger image migration if Dropbox share link is provided
+      console.log(`🔍 DEBUG: Checking migration conditions...`);
+      console.log(`🔍 DEBUG: dropboxShareLink: ${settings.dropboxShareLink}`);
+      console.log(`🔍 DEBUG: dropboxService.isConfigured(): ${dropboxService.isConfigured()}`);
+      
+      if (settings.dropboxShareLink && dropboxService.isConfigured()) {
+        console.log(`🚀 Triggering image migration for shoot ${settings.shootId}`);
+        
+        try {
+          const { ImageMigrationService } = await import('./services/image-migration-service.js');
+          const migrationService = new ImageMigrationService(process.env.DROPBOX_ACCESS_TOKEN!);
+          
+          // Get system user for migration tracking
+          const systemUserId = '00000000-0000-0000-0000-000000000000'; // System user
+          
+          // Start migration synchronously for better user feedback
+          try {
+            const migrationResult = await migrationService.migrateDropboxToSupabase(
+              settings.shootId, 
+              settings.dropboxShareLink, 
+              systemUserId
+            );
+            
+            console.log(`✅ Migration completed: ${migrationResult.migratedCount} images migrated (batch: ${migrationResult.batchId})`);
+            if (migrationResult.errors.length > 0) {
+              console.error('⚠️  Migration errors:', migrationResult.errors);
+            }
+          } catch (migrationError) {
+            console.error('💥 Migration failed:', migrationError);
+            // Don't fail the request - settings were saved successfully
+          }
+          
+        } catch (migrationError) {
+          console.error('⚠️  Failed to start migration:', migrationError);
+          // Don't fail the request - settings were saved successfully
+        }
+      }
+      
+      res.status(201).json(settings);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: 'Invalid data', errors: error.errors });
+      }
+      console.error('Error creating preview settings:', error);
+      res.status(500).json({ message: 'Failed to create preview settings' });
+    }
+  });
+
+  // PATCH /api/preview-settings/:id - Update preview settings
+  app.patch("/api/preview-settings/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = insertShootPreviewSchema.parse(req.body);
+      const settings = await storage.updateShootPreviewSettings(id, validatedData);
+      
+      // Trigger image migration if Dropbox share link is updated
+      console.log(`🔍 DEBUG: Checking re-migration conditions...`);
+      console.log(`🔍 DEBUG: dropboxShareLink: ${settings.dropboxShareLink}`);
+      console.log(`🔍 DEBUG: dropboxService.isConfigured(): ${dropboxService.isConfigured()}`);
+      
+      if (settings.dropboxShareLink && dropboxService.isConfigured()) {
+        console.log(`🔄 Triggering image re-migration for shoot ${settings.shootId}`);
+        
+        try {
+          const { ImageMigrationService } = await import('./services/image-migration-service.js');
+          const migrationService = new ImageMigrationService(process.env.DROPBOX_ACCESS_TOKEN!);
+          
+          // Get system user for migration tracking
+          const systemUserId = '00000000-0000-0000-0000-000000000000'; // System user
+          
+          // Start re-migration synchronously for better user feedback
+          const migrationResult = await migrationService.migrateDropboxToSupabase(
+            settings.shootId, 
+            settings.dropboxShareLink, 
+            systemUserId
+          );
+          
+          console.log(`✅ Re-migration completed: ${migrationResult.migratedCount} images migrated (batch: ${migrationResult.batchId})`);
+          if (migrationResult.errors.length > 0) {
+            console.error('⚠️  Migration errors:', migrationResult.errors);
+          }
+        } catch (migrationError) {
+          console.error('💥 Re-migration failed:', migrationError);
+          // Don't fail the request - settings were saved successfully
+        }
+      }
+      
+      res.json(settings);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: 'Invalid data', errors: error.errors });
+      }
+      console.error('Error updating preview settings:', error);
+      res.status(500).json({ message: 'Failed to update preview settings' });
+    }
+  });
+
+  // GET /api/preview-images/:shootId - Get preview images from Supabase for client selection
+  app.get("/api/preview-images/:shootId", async (req, res) => {
+    try {
+      const { shootId } = req.params;
+      
+      const previewImages = await storage.getPreviewImages(shootId);
+      
+      // Transform to match expected interface with optimized thumbnails
+      const images = previewImages.map((img: any) => {
+        // Generate optimized thumbnail URL using Supabase image transformation
+        // Add resize parameters for fast loading: width=400, quality=80, format=webp
+        const thumbnailUrl = `${img.supabaseUrl}?width=400&height=400&resize=cover&quality=80&format=webp`;
+        
+        return {
+          filename: img.filename,
+          fullImageUrl: img.supabaseUrl, // Keep original for modal view
+          thumbnailUrl: thumbnailUrl,    // Optimized for grid display
+          metadata: {
+            size: img.fileSize || 0,
+            modified: img.createdAt,
+          },
+        };
+      });
+
+      res.json({ images });
+    } catch (error) {
+      console.error('Error fetching preview images:', error);
+      res.status(500).json({ message: 'Failed to fetch preview images' });
+    }
+  });
+
+  // DELETE /api/preview-images/:shootId - Cleanup preview images after final gallery is created
+  app.delete("/api/preview-images/:shootId", async (req, res) => {
+    try {
+      const { shootId } = req.params;
+      
+      console.log(`🧹 Admin cleanup requested for shoot ${shootId}`);
+
+      if (!dropboxService.isConfigured()) {
+        return res.status(503).json({ message: 'Dropbox service not configured for cleanup' });
+      }
+
+      const { ImageMigrationService } = await import('./services/image-migration-service.js');
+      const migrationService = new ImageMigrationService(process.env.DROPBOX_ACCESS_TOKEN!);
+
+      const result = await migrationService.cleanupPreviewImages(shootId);
+      
+      if (result.success) {
+        console.log(`✅ Cleanup completed: ${result.deletedCount} preview images removed`);
+        res.json({ 
+          success: true, 
+          message: `Successfully cleaned up ${result.deletedCount} preview images`,
+          deletedCount: result.deletedCount 
+        });
+      } else {
+        console.error('💥 Cleanup failed');
+        res.status(500).json({ message: 'Failed to cleanup preview images' });
+      }
+
+    } catch (error) {
+      console.error('Error during preview cleanup:', error);
+      res.status(500).json({ message: 'Failed to cleanup preview images' });
+    }
+  });
+
+  // POST /api/migrate-dropbox-images - Migrate images from Dropbox to Supabase
+  app.post("/api/migrate-dropbox-images", async (req, res) => {
+    try {
+      const { shootId, sharedLink, userId } = req.body;
+      
+      if (!shootId || !sharedLink) {
+        return res.status(400).json({ message: 'shootId and sharedLink are required' });
+      }
+      
+      if (!dropboxService.isConfigured()) {
+        return res.status(503).json({ message: 'Dropbox service not configured' });
+      }
+
+      console.log(`🚀 Starting migration for shoot ${shootId} from shared link`);
+
+      const { ImageMigrationService } = await import('./services/image-migration-service.js');
+      const migrationService = new ImageMigrationService(process.env.DROPBOX_ACCESS_TOKEN!);
+      
+      // Use provided userId or default to system user
+      const systemUserId = userId || '00000000-0000-0000-0000-000000000000';
+      
+      const result = await migrationService.migrateDropboxToSupabase(
+        shootId,
+        sharedLink,
+        systemUserId
+      );
+      
+      console.log(`✅ Migration completed: ${result.migratedCount} images (batch: ${result.batchId})`);
+      
+      res.json({
+        success: result.success,
+        migratedCount: result.migratedCount,
+        batchId: result.batchId,
+        errors: result.errors
+      });
+
+    } catch (error) {
+      console.error('Error during image migration:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to migrate images',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // POST /api/dropbox/test-connection - Test Dropbox connection
+  app.post("/api/dropbox/test-connection", async (req, res) => {
+    try {
+      const { folderPath, shareLink } = req.body;
+      
+      if (!dropboxService.isConfigured()) {
+        return res.status(503).json({ message: 'Dropbox service not configured' });
+      }
+
+      let files;
+      if (folderPath) {
+        files = await dropboxService.listFiles(folderPath);
+      } else if (shareLink) {
+        files = await dropboxService.listFilesFromSharedLink(shareLink);
+      } else {
+        return res.status(400).json({ message: 'Either folderPath or shareLink required' });
+      }
+
+      res.json({ 
+        success: true, 
+        imageCount: files.length,
+        message: `Successfully connected to folder with ${files.length} images` 
+      });
+    } catch (error) {
+      console.error('Error testing Dropbox connection:', error);
+      res.status(400).json({ 
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to connect to Dropbox folder' 
+      });
+    }
+  });
+
+  // GET /api/dropbox/preview-images/:shootId - Get preview images from Dropbox
+  app.get("/api/dropbox/preview-images/:shootId", async (req, res) => {
+    try {
+      const { shootId } = req.params;
+      
+      if (!dropboxService.isConfigured()) {
+        return res.status(503).json({ message: 'Dropbox service not configured' });
+      }
+
+      const settings = await storage.getShootPreviewSettings(shootId);
+      if (!settings || !settings.isActive) {
+        return res.status(404).json({ message: 'Preview settings not found or inactive' });
+      }
+
+      let files;
+      if (settings.dropboxFolderPath && settings.dropboxFolderPath.trim()) {
+        files = await dropboxService.listFiles(settings.dropboxFolderPath.trim());
+      } else if (settings.dropboxShareLink && settings.dropboxShareLink.trim()) {
+        files = await dropboxService.listFilesFromSharedLink(settings.dropboxShareLink.trim());
+      } else {
+        return res.status(400).json({ message: 'No Dropbox folder or shared link configured' });
+      }
+
+      // Get temporary links for all files
+      const imagePromises = files.map(async (file) => {
+        try {
+          // For shared links, we need to handle the path differently
+          const filePath = file.path_display || file.path_lower || `/${file.name}`;
+          
+          // If we're using a shared link, we need to pass it to the methods
+          const isSharedLink = !!settings.dropboxShareLink;
+          
+          let thumbnailUrl, fullImageUrl;
+          
+          if (isSharedLink && settings.dropboxShareLink) {
+            // For shared links, use the shared link in the API calls
+            const [thumbnail, fullImage] = await Promise.all([
+              dropboxService.getThumbnailFromSharedLink(settings.dropboxShareLink, filePath, 'w256h256'),
+              dropboxService.getTemporaryLinkFromSharedLink(settings.dropboxShareLink, filePath)
+            ]);
+            thumbnailUrl = thumbnail;
+            fullImageUrl = fullImage;
+          } else {
+            // For regular paths, use the standard methods
+            const [thumbnail, fullImage] = await Promise.all([
+              dropboxService.getThumbnail(filePath, 'w256h256'),
+              dropboxService.getTemporaryLink(filePath)
+            ]);
+            thumbnailUrl = thumbnail;
+            fullImageUrl = fullImage;
+          }
+
+          return {
+            filename: file.name,
+            thumbnailUrl,
+            fullImageUrl,
+            metadata: {
+              size: file.size || 0,
+              modified: file.server_modified || file.client_modified || new Date().toISOString()
+            }
+          };
+        } catch (error) {
+          console.error(`Error processing file ${file.name}:`, error);
+          return null;
+        }
+      });
+
+      const images = (await Promise.all(imagePromises)).filter(img => img !== null);
+
+      res.json({
+        shootId,
+        images,
+        totalCount: images.length
+      });
+    } catch (error) {
+      console.error('Error fetching preview images:', error);
+      res.status(500).json({ message: 'Failed to fetch preview images' });
+    }
+  });
+
+  // GET /api/client-selections/:shootId - Get client selections for a shoot
+  app.get("/api/client-selections/:shootId", async (req, res) => {
+    try {
+      const { shootId } = req.params;
+      const selections = await storage.getClientSelections(shootId);
+      res.json(selections);
+    } catch (error) {
+      console.error('Error fetching client selections:', error);
+      res.status(500).json({ message: 'Failed to fetch client selections' });
+    }
+  });
+
+  // POST /api/client-selections/:shootId - Create or update client selection
+  app.post("/api/client-selections/:shootId", async (req, res) => {
+    let selectionData: any = null;
+    try {
+      const { shootId } = req.params;
+      const { imageFilename, selectionStatus, userEmail, isFinalSelection = false } = req.body;
+      
+      // Get client profile by email to get the proper UUID
+      const client = await storage.getProfileByEmail(userEmail);
+      if (!client) {
+        return res.status(404).json({ message: 'Client profile not found' });
+      }
+      
+      const clientId = client.id; // Use the UUID from the profile
+      
+      selectionData = {
+        shootId,
+        clientId,
+        imageFilename,
+        selectionStatus,
+        isFinalSelection,
+        selectedAt: selectionStatus !== 'none' ? new Date() : null  // Use Date object, not string
+      };
+
+      console.log('🔥 SELECTION DATA TO SAVE:', JSON.stringify(selectionData, null, 2));
+      const selection = await storage.upsertClientSelection(selectionData);
+      console.log('🔥 SELECTION SAVED SUCCESSFULLY:', JSON.stringify(selection, null, 2));
+      res.json(selection);
+    } catch (error) {
+      console.error('🔥 ERROR SAVING CLIENT SELECTION:', error);
+      if (selectionData) {
+        console.error('🔥 SELECTION DATA THAT FAILED:', JSON.stringify(selectionData, null, 2));
+      }
+      res.status(500).json({ message: 'Failed to update client selection' });
+    }
+  });
+
+  // GET /api/selection-packages/:shootId/:clientId - Get selection package for client
+  app.get("/api/selection-packages/:shootId/:clientId", async (req, res) => {
+    try {
+      const { shootId, clientId } = req.params;
+      
+      let selectionPackage = await storage.getSelectionPackage(shootId, clientId);
+      
+      // If no package exists, create default one
+      if (!selectionPackage) {
+        const previewSettings = await storage.getShootPreviewSettings(shootId);
+        const baseLimit = previewSettings?.selectionLimit || 20;
+        
+        selectionPackage = await storage.createSelectionPackage({
+          shootId,
+          clientId,
+          baseLimit,
+          purchasedAdditional: 0
+        });
+      }
+      
+      res.json(selectionPackage);
+    } catch (error) {
+      console.error('Error fetching selection package:', error);
+      res.status(500).json({ message: 'Failed to fetch selection package' });
+    }
+  });
+
+  // POST /api/selection-packages/:shootId/:clientId/upgrade - Upgrade selection package
+  app.post("/api/selection-packages/:shootId/:clientId/upgrade", async (req, res) => {
+    try {
+      const { shootId, clientId } = req.params;
+      const { upgradeType } = req.body; // '5', '10', or 'unlimited'
+      
+      const previewSettings = await storage.getShootPreviewSettings(shootId);
+      if (!previewSettings) {
+        return res.status(404).json({ message: 'Preview settings not found' });
+      }
+
+      let additionalImages = 0;
+      let price = '0.00';
+      
+      switch (upgradeType) {
+        case '5':
+          additionalImages = 5;
+          price = previewSettings.additionalBundle5Price;
+          break;
+        case '10':
+          additionalImages = 10;
+          price = previewSettings.additionalBundle10Price;
+          break;
+        case 'unlimited':
+          additionalImages = 9999; // Large number for "unlimited"
+          price = previewSettings.unlimitedBundlePrice;
+          break;
+        default:
+          return res.status(400).json({ message: 'Invalid upgrade type' });
+      }
+
+      const updatedPackage = await storage.upgradeSelectionPackage(
+        shootId, 
+        clientId, 
+        additionalImages, 
+        { type: upgradeType, price, timestamp: new Date().toISOString() }
+      );
+      
+      res.json(updatedPackage);
+    } catch (error) {
+      console.error('Error upgrading selection package:', error);
+      res.status(500).json({ message: 'Failed to upgrade selection package' });
     }
   });
 

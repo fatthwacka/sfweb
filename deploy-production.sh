@@ -71,7 +71,7 @@ if run_on_vps "docker ps | grep -q traefik"; then
     
     # Check if SlyFox service is configured in Traefik
     # NOTE: Traefik infrastructure runs from /root/, but SlyFox app config is in /opt/sfweb/
-    if run_on_vps "cd /opt/sfweb && docker compose config | grep -q slyfox.co.za"; then
+    if run_on_vps "cd /opt/sfweb && docker compose -f docker-compose.yml -f docker-compose.prod.yml config | grep -q slyfox.co.za"; then
         echo "✅ SlyFox service is configured in Traefik"
     else
         echo "⚠️  SlyFox service NOT found in Traefik configuration"
@@ -179,7 +179,7 @@ echo "🏗️  Step 6: Build and Start Production Services"
 echo "==============================================="
 
 # Build and start containers
-if ! run_on_vps "cd $VPS_APP_DIR && docker compose up -d --build"; then
+if ! run_on_vps "cd $VPS_APP_DIR && docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build"; then
     echo "❌ Container build/start failed - checking logs..."
     run_on_vps "cd $VPS_APP_DIR && docker compose logs --tail=20"
     exit 1
