@@ -72,7 +72,6 @@ import ClientGallery from "@/pages/client-gallery";
 import { GalleryDemo } from "@/pages/gallery-demo";
 import Dashboard from "@/pages/dashboard";
 import ClientDashboard from "@/pages/client-dashboard";
-import ClientSelection from "@/pages/client-selection";
 import Login from "@/pages/login";
 import Admin from "@/pages/admin";
 // Removed old demo MyGallery - clients use /client-portal
@@ -108,9 +107,6 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/client-portal" component={ClientDashboard} />
-      <Route path="/client-selection/:shootId">
-        {(params) => <ClientSelection shootId={params.shootId} />}
-      </Route>
       <Route path="/admin" component={Admin} />
       {/* Removed old demo galleries - use /client-portal for client access */}
       <Route component={NotFound} />

@@ -2167,12 +2167,12 @@ html, body {
 .mobile-image-grid {
   display: grid !important;
   grid-template-columns: repeat(2, 1fr) !important;
-  gap: 0.75rem !important;
+  gap: 0.5rem !important;
   width: 100% !important;
   max-width: 100% !important;
   box-sizing: border-box !important;
-  overflow-x: hidden !important;
-  padding: 0 0.5rem !important;
+  overflow: hidden !important;
+  padding: 0 1rem !important;
   margin: 0 !important;
 }
 
@@ -2180,8 +2180,82 @@ html, body {
 .mobile-image-grid > * {
   min-width: 0 !important;
   max-width: 100% !important;
+  width: 100% !important;
   box-sizing: border-box !important;
   overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Mobile image item container */
+.mobile-image-item {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+/* Mobile image container with proper aspect ratio */
+.mobile-image-container {
+  position: relative !important;
+  width: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+  background-color: rgb(75 85 99) !important;
+  border-radius: 0.5rem !important;
+  overflow: hidden !important;
+  border: 2px solid hsl(var(--border)) !important;
+  transition: border-color 0.2s ease !important;
+}
+
+.mobile-image-container:hover {
+  border-color: hsl(var(--cyan)) !important;
+}
+
+/* Mobile image styling */
+.mobile-image {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  max-width: 100% !important;
+}
+
+/* Mobile image filename overlay */
+.mobile-image-filename {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background-color: rgb(0 0 0 / 0.7) !important;
+  color: white !important;
+  font-size: 0.75rem !important;
+  padding: 0.5rem !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Mobile image view button */
+.mobile-image-view-btn {
+  position: absolute !important;
+  top: 0.5rem !important;
+  right: 0.5rem !important;
+  width: 2rem !important;
+  height: 2rem !important;
+  background-color: rgb(0 0 0 / 0.5) !important;
+  border-radius: 9999px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+  opacity: 0 !important;
+  border: none !important;
+  cursor: pointer !important;
+}
+
+.mobile-image-container:hover .mobile-image-view-btn {
+  opacity: 1 !important;
+  background-color: rgb(0 0 0 / 0.7) !important;
 }
 
 /* Ensure proper containment when grid is in safe area */
@@ -2210,12 +2284,12 @@ html, body {
   }
 }
 
-/* Touch-friendly button sizing */
+/* Touch-friendly button sizing - made smaller to prevent cropping */
 .mobile-touch-button {
-  min-height: 44px;
-  min-width: 44px;
-  padding: 0.75rem;
-  font-size: 1rem;
+  min-height: 36px;
+  min-width: 36px;
+  padding: 0.5rem;
+  font-size: 0.875rem;
   touch-action: manipulation;
   transition: transform 0.15s ease;
   -webkit-tap-highlight-color: transparent; /* Remove iOS tap highlight */

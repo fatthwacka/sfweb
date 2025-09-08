@@ -35,7 +35,7 @@ import {
   ChevronDown,
   ExternalLink
 } from "lucide-react";
-import { ImagePicker } from "./image-picker";
+import { ImagePickerFast } from "./image-picker-fast";
 
 interface Shoot {
   id: string;
@@ -814,7 +814,7 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
             })()}
 
             {/* Image Picker Interface */}
-            <ImagePicker 
+            <ImagePickerFast 
               shootId={selectedShoot}
               previewSettings={previewSettings[selectedShoot]}
               userEmail={userEmail}

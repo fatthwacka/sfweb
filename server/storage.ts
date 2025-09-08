@@ -108,6 +108,8 @@ export interface IStorage {
   
   getClientSelections(shootId: string): Promise<ClientSelection[]>;
   upsertClientSelection(selection: Partial<InsertClientSelection>): Promise<ClientSelection>;
+  batchUpsertClientSelections(selections: Partial<InsertClientSelection>[]): Promise<ClientSelection[]>;
+  clearAllClientSelections(shootId: string, clientId: string): Promise<number>;
   
   getSelectionPackage(shootId: string, clientId: string): Promise<SelectionPackage | undefined>;
   createSelectionPackage(packageData: InsertSelectionPackage): Promise<SelectionPackage>;
@@ -1090,6 +1092,41 @@ export class MemStorage implements IStorage {
       this.clientSelections.set(id, newSelection);
       return newSelection;
     }
+  }
+
+  async batchUpsertClientSelections(selections: Partial<InsertClientSelection>[]): Promise<ClientSelection[]> {
+    const results: ClientSelection[] = [];
+    
+    for (const selection of selections) {
+      const result = await this.upsertClientSelection(selection);
+      results.push(result);
+    }
+    
+    return results;
+  }
+
+  async clearAllClientSelections(shootId: string, clientId: string): Promise<number> {
+    const existingSelections = Array.from(this.clientSelections.values()).filter(
+      selection => selection.shootId === shootId && selection.clientId === clientId
+    );
+    
+    let clearedCount = 0;
+    for (const selection of existingSelections) {
+      if (selection.selectionStatus !== 'unselected') {
+        // Update to 'unselected' status
+        const updated: ClientSelection = {
+          ...selection,
+          selectionStatus: 'unselected',
+          isFinalSelection: false,
+          selectedAt: null,
+          updatedAt: new Date()
+        };
+        this.clientSelections.set(selection.id, updated);
+        clearedCount++;
+      }
+    }
+    
+    return clearedCount;
   }
 
   async getSelectionPackage(shootId: string, clientId: string): Promise<SelectionPackage | undefined> {

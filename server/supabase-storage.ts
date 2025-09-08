@@ -1,4 +1,5 @@
 import { db } from "./db";
+import crypto from 'crypto';
 import { 
   profiles, users, clients, shoots, images, packages, analytics, favorites, bookings,
   shootPreviews, clientSelections, selectionPackages, previewImages,
@@ -17,7 +18,7 @@ import {
   type SelectionPackage, type InsertSelectionPackage,
   type PreviewImage, type InsertPreviewImage
 } from "@shared/schema";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, not } from "drizzle-orm";
 import type { IStorage } from "./storage";
 
 export class SupabaseStorage implements IStorage {
@@ -38,7 +39,20 @@ export class SupabaseStorage implements IStorage {
   }
 
   async createProfile(insertProfile: InsertProfile): Promise<Profile> {
-    const result = await db.insert(profiles).values([insertProfile]).returning();
+    // Create profile data with explicit UUID since InsertProfile omits id
+    const profileData = {
+      id: crypto.randomUUID(),
+      email: insertProfile.email,
+      fullName: insertProfile.fullName || null,
+      role: insertProfile.role,
+      profileImageUrl: insertProfile.profileImageUrl || null,
+      bannerImageUrl: insertProfile.bannerImageUrl || null,
+      themePreference: insertProfile.themePreference || 'light',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    console.log('📝 Creating profile with data:', profileData);
+    const result = await db.insert(profiles).values(profileData).returning();
     return result[0];
   }
 
@@ -565,9 +579,185 @@ export class SupabaseStorage implements IStorage {
     }
   }
 
+  async batchUpsertClientSelections(selections: Partial<InsertClientSelection>[]): Promise<ClientSelection[]> {
+    if (selections.length === 0) return [];
+    
+    // Build bulk upsert using PostgreSQL CTE for maximum performance
+    // This reduces 40-60 queries to just 2 queries total
+    
+    // Step 1: Prepare data for bulk operations
+    const now = new Date();
+    const selectionsWithIds = selections.map(selection => ({
+      id: crypto.randomUUID(),
+      shootId: selection.shootId!,
+      clientId: selection.clientId!,
+      imageFilename: selection.imageFilename!,
+      dropboxPath: selection.dropboxPath || null,
+      thumbnailUrl: selection.thumbnailUrl || null,
+      selectionStatus: selection.selectionStatus || 'none',
+      isFinalSelection: selection.isFinalSelection || false,
+      selectionOrder: selection.selectionOrder || null,
+      selectedAt: selection.selectedAt || null,
+      metadata: selection.metadata || null,
+      createdAt: now,
+      updatedAt: now,
+    }));
+
+    try {
+      // Step 2: First, get all existing records in bulk
+      const existingQuery = `
+        SELECT id, shoot_id, client_id, image_filename 
+        FROM client_selections 
+        WHERE (shoot_id, client_id, image_filename) IN (${selectionsWithIds.map((_, index) => 
+          `($${index * 3 + 1}, $${index * 3 + 2}, $${index * 3 + 3})`
+        ).join(', ')})
+      `;
+      
+      const existingParams: any[] = [];
+      selectionsWithIds.forEach(selection => {
+        existingParams.push(selection.shootId, selection.clientId, selection.imageFilename);
+      });
+
+      const existingRecords = await db.execute(sql.raw(existingQuery, existingParams));
+      const existingMap = new Map(
+        existingRecords.map((record: any) => [
+          `${record.shoot_id}:${record.client_id}:${record.image_filename}`,
+          record.id
+        ])
+      );
+
+      // Step 3: Separate updates and inserts
+      const toUpdate: any[] = [];
+      const toInsert: any[] = [];
+
+      selectionsWithIds.forEach(selection => {
+        const key = `${selection.shootId}:${selection.clientId}:${selection.imageFilename}`;
+        if (existingMap.has(key)) {
+          toUpdate.push({ ...selection, existingId: existingMap.get(key) });
+        } else {
+          toInsert.push(selection);
+        }
+      });
+
+      const results: ClientSelection[] = [];
+
+      // Step 4: Bulk update existing records
+      if (toUpdate.length > 0) {
+        const updateQuery = `
+          UPDATE client_selections 
+          SET selection_status = data.selection_status,
+              is_final_selection = data.is_final_selection,
+              selection_order = data.selection_order,
+              selected_at = data.selected_at,
+              metadata = data.metadata,
+              updated_at = data.updated_at
+          FROM (VALUES ${toUpdate.map((_, index) => 
+            `($${index * 7 + 1}::uuid, $${index * 7 + 2}, $${index * 7 + 3}, $${index * 7 + 4}, $${index * 7 + 5}, $${index * 7 + 6}, $${index * 7 + 7})`
+          ).join(', ')}) AS data(id, selection_status, is_final_selection, selection_order, selected_at, metadata, updated_at)
+          WHERE client_selections.id = data.id
+          RETURNING client_selections.*;
+        `;
+
+        const updateParams: any[] = [];
+        toUpdate.forEach(selection => {
+          updateParams.push(
+            selection.existingId,
+            selection.selectionStatus,
+            selection.isFinalSelection,
+            selection.selectionOrder,
+            selection.selectedAt,
+            selection.metadata ? JSON.stringify(selection.metadata) : null,
+            selection.updatedAt
+          );
+        });
+
+        const updateResult = await db.execute(sql.raw(updateQuery, updateParams));
+        results.push(...(updateResult as ClientSelection[]));
+      }
+
+      // Step 5: Bulk insert new records
+      if (toInsert.length > 0) {
+        const insertQuery = `
+          INSERT INTO client_selections (id, shoot_id, client_id, image_filename, dropbox_path, thumbnail_url,
+                                       selection_status, is_final_selection, selection_order, selected_at, 
+                                       metadata, created_at, updated_at)
+          VALUES ${toInsert.map((_, index) => 
+            `($${index * 13 + 1}, $${index * 13 + 2}, $${index * 13 + 3}, $${index * 13 + 4}, 
+             $${index * 13 + 5}, $${index * 13 + 6}, $${index * 13 + 7}, $${index * 13 + 8}, 
+             $${index * 13 + 9}, $${index * 13 + 10}, $${index * 13 + 11}, $${index * 13 + 12}, $${index * 13 + 13})`
+          ).join(', ')}
+          RETURNING *;
+        `;
+
+        const insertParams: any[] = [];
+        toInsert.forEach(selection => {
+          insertParams.push(
+            selection.id,
+            selection.shootId,
+            selection.clientId,
+            selection.imageFilename,
+            selection.dropboxPath,
+            selection.thumbnailUrl,
+            selection.selectionStatus,
+            selection.isFinalSelection,
+            selection.selectionOrder,
+            selection.selectedAt,
+            selection.metadata ? JSON.stringify(selection.metadata) : null,
+            selection.createdAt,
+            selection.updatedAt
+          );
+        });
+
+        const insertResult = await db.execute(sql.raw(insertQuery, insertParams));
+        results.push(...(insertResult as ClientSelection[]));
+      }
+
+      return results;
+      
+    } catch (error) {
+      console.error('Bulk upsert failed, falling back to individual operations:', error);
+      
+      // Step 5: Fallback to individual operations if bulk fails
+      const results: ClientSelection[] = [];
+      
+      for (const selection of selections) {
+        try {
+          const result = await this.upsertClientSelection(selection);
+          results.push(result);
+        } catch (individualError) {
+          console.error(`Failed to upsert selection for ${selection.imageFilename}:`, individualError);
+          // Continue with other selections rather than failing completely
+        }
+      }
+      
+      return results;
+    }
+  }
+
   async deleteClientSelection(id: string): Promise<boolean> {
     const result = await db.delete(clientSelections).where(eq(clientSelections.id, id));
     return result.rowCount > 0;
+  }
+
+  async clearAllClientSelections(shootId: string, clientId: string): Promise<number> {
+    // Update all existing selections for this shoot/client to 'none' status
+    const result = await db.update(clientSelections)
+      .set({
+        selectionStatus: 'none',
+        isFinalSelection: false,
+        selectedAt: null,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(clientSelections.shootId, shootId),
+          eq(clientSelections.clientId, clientId),
+          not(eq(clientSelections.selectionStatus, 'none'))
+        )
+      )
+      .returning();
+
+    return result.length;
   }
 
   async getSelectionPackages(): Promise<SelectionPackage[]> {

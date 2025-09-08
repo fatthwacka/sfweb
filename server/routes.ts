@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { storage } from './storage';
 import { seedCompleteDatabase } from './seed-database.js';
 import { createSupabaseUser, type CreateUserData } from './supabase-auth.js';
@@ -1996,12 +1997,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('🔥 CLIENT PROFILE NOT FOUND - CREATING NEW PROFILE FOR EMAIL:', userEmail);
         // Create a new client profile with minimal information
         client = await storage.createProfile({
+          id: crypto.randomUUID(), // Explicitly generate UUID
           email: userEmail,
-          firstName: userEmail.split('@')[0], // Use email prefix as temporary first name
-          lastName: '',
+          fullName: userEmail.split('@')[0], // Use fullName instead of firstName/lastName
           role: 'client',
-          isActive: true,
-          supabaseUserId: null // Will be set when they actually register with Supabase
+          profileImageUrl: null,
+          bannerImageUrl: null,
+          themePreference: 'light'
         });
         console.log('🔥 CREATED NEW CLIENT PROFILE:', client.id);
       }
@@ -2027,6 +2029,158 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('🔥 SELECTION DATA THAT FAILED:', JSON.stringify(selectionData, null, 2));
       }
       res.status(500).json({ message: 'Failed to update client selection' });
+    }
+  });
+
+
+  // POST /api/client-selections/:shootId/clear-all - Clear all selections for a shoot
+  app.post("/api/client-selections/:shootId/clear-all", async (req, res) => {
+    try {
+      const { shootId } = req.params;
+      const { userEmail, timestamp } = req.body;
+      
+      console.log('🗑️ CLEAR ALL SELECTIONS REQUEST:', JSON.stringify({
+        shootId,
+        userEmail,
+        timestamp
+      }, null, 2));
+      
+      // Get or create client profile by email
+      let client = await storage.getProfileByEmail(userEmail);
+      if (!client) {
+        client = await storage.createProfile({
+          id: crypto.randomUUID(),
+          email: userEmail,
+          fullName: userEmail.split('@')[0],
+          role: 'client',
+          profileImageUrl: null,
+          bannerImageUrl: null,
+          themePreference: 'light'
+        });
+      }
+      
+      const clientId = client.id;
+      
+      // Clear all selections by setting status to 'unselected'
+      const clearedCount = await storage.clearAllClientSelections(shootId, clientId);
+      
+      console.log('🗑️ CLEAR ALL COMPLETED:', clearedCount, 'selections cleared');
+      
+      res.json({
+        message: `Successfully cleared ${clearedCount} selections`,
+        clearedCount,
+        shootId,
+        clientId,
+        timestamp
+      });
+      
+    } catch (error) {
+      console.error('🗑️ ERROR CLEARING ALL SELECTIONS:', error);
+      res.status(500).json({ message: 'Failed to clear all selections' });
+    }
+  });
+
+  // ===================================
+  // SIMPLE REST API FOR SELECTIONS (FAST VERSION)
+  // ===================================
+  
+  // PUT /api/selections/:shootId/:imageFilename - Update single selection (FAST)
+  app.put("/api/selections/:shootId/:imageFilename", async (req, res) => {
+    try {
+      const { shootId, imageFilename } = req.params;
+      const { action, userEmail } = req.body;
+      
+      // Get or create client profile
+      let client = await storage.getProfileByEmail(userEmail);
+      if (!client) {
+        client = await storage.createProfile({
+          id: crypto.randomUUID(),
+          email: userEmail,
+          fullName: userEmail.split('@')[0],
+          role: 'client',
+          profileImageUrl: null,
+          bannerImageUrl: null,
+          themePreference: 'light'
+        });
+      }
+      
+      // Simple upsert - single operation
+      const selection = await storage.upsertClientSelection({
+        shootId,
+        clientId: client.id,
+        imageFilename,
+        selectionStatus: action === 'favorite' ? 'favorite' : action,
+        isFinalSelection: action === 'favorite',
+        selectedAt: action !== 'none' ? new Date() : null
+      });
+      
+      res.json({ 
+        success: true, 
+        selection: {
+          imageFilename: selection.imageFilename,
+          action: selection.selectionStatus,
+          isFavorite: selection.isFinalSelection
+        }
+      });
+      
+    } catch (error) {
+      console.error('ERROR updating selection:', error);
+      res.status(500).json({ error: 'Selection update failed' });
+    }
+  });
+  
+  // GET /api/selections/:shootId - Get all selections for a shoot (FAST)
+  app.get("/api/selections/:shootId", async (req, res) => {
+    try {
+      const { shootId } = req.params;
+      const userEmail = req.headers['x-user-email'] as string || req.query.userEmail as string;
+      
+      // Get client
+      const client = await storage.getProfileByEmail(userEmail);
+      if (!client) {
+        return res.json({ selections: [] });
+      }
+      
+      // Get selections
+      const selections = await storage.getClientSelections(shootId);
+      const clientSelections = selections
+        .filter(s => s.clientId === client.id)
+        .map(s => ({
+          imageFilename: s.imageFilename,
+          action: s.selectionStatus,
+          isFavorite: s.isFinalSelection
+        }));
+      
+      res.json({ selections: clientSelections });
+      
+    } catch (error) {
+      console.error('ERROR fetching selections:', error);
+      res.status(500).json({ error: 'Failed to fetch selections' });
+    }
+  });
+  
+  // DELETE /api/selections/:shootId - Clear all selections (FAST)
+  app.delete("/api/selections/:shootId", async (req, res) => {
+    try {
+      const { shootId } = req.params;
+      const userEmail = req.headers['x-user-email'] as string || req.body.userEmail;
+      
+      // Get client
+      const client = await storage.getProfileByEmail(userEmail);
+      if (!client) {
+        return res.json({ success: true, cleared: 0 });
+      }
+      
+      const clearedCount = await storage.clearAllClientSelections(shootId, client.id);
+      
+      res.json({ 
+        success: true, 
+        cleared: clearedCount 
+      });
+      
+    } catch (error) {
+      console.error('ERROR clearing selections:', error);
+      res.status(500).json({ error: 'Failed to clear selections' });
     }
   });
 
@@ -2100,6 +2254,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Error upgrading selection package:', error);
       res.status(500).json({ message: 'Failed to upgrade selection package' });
     }
+  });
+
+  // API ping endpoint for connection testing
+  app.head("/api/ping", (req, res) => {
+    res.status(200).send();
+  });
+
+  app.get("/api/ping", (req, res) => {
+    res.json({ status: 'ok', timestamp: Date.now() });
   });
 
   const httpServer = createServer(app);
