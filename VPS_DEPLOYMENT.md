@@ -57,6 +57,11 @@ services:
 
 **If deployment script fails, follow manual process below.**
 
+## Known Script Issues (September 2025)
+- **Temporary directory cleanup failure**: Script may fail with "Directory not empty" - this is non-critical, code sync still succeeds
+- **Container startup interruption**: If script fails after code sync, manually restart with production overrides
+- **Recovery command**: `ssh slyfox-vps "cd /opt/sfweb && docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build"`
+
 ---
 
 # 🔧 MANDATORY PRE-DEPLOYMENT CHECKS
@@ -226,11 +231,25 @@ curl -X PATCH https://slyfox.co.za/api/site-config/bulk \
 
 ## Mandatory Checks
 - [ ] `curl -I https://slyfox.co.za` returns HTTP/2 200
-- [ ] `ssh slyfox-vps "docker compose ps"` shows both containers Up
+- [ ] `ssh slyfox-vps "cd /opt/sfweb && docker compose ps"` shows both containers Up
 - [ ] Admin panel loads: https://slyfox.co.za/admin
-- [ ] API responds: `curl https://slyfox.co.za/api/site-config | jq`
-- [ ] Mobile test: iPhone user-agent gets proper HTML
-- [ ] Production mode: Container env shows NODE_ENV=production
+- [ ] API responds: `curl -s https://slyfox.co.za/api/site-config | head -5`
+- [ ] Mobile test: iPhone user-agent gets proper HTML (not Vite dev assets)
+- [ ] Production mode: `ssh slyfox-vps "docker exec sfweb-app env | grep NODE_ENV"` shows production
+- [ ] Client portal accessible: `curl -I https://slyfox.co.za/client-portal`
+
+## Mobile Deployment Verification (September 2025)
+After deploying mobile optimizations, verify these specific endpoints:
+```bash
+# Ensure no Vite development references (should return no results)
+curl -s https://slyfox.co.za | grep -i "vite" || echo "✅ Production build confirmed"
+
+# Test mobile user-agent gets production assets
+curl -s -H "User-Agent: Mozilla/5.0 (iPhone)" https://slyfox.co.za | head -10
+
+# Verify mobile image picker endpoints are working
+curl -I https://slyfox.co.za/client-portal
+```
 
 ## Performance Checks
 ```bash
