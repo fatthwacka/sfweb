@@ -29,9 +29,8 @@ services:
       context: .
       dockerfile: Dockerfile
       target: development
-      platforms:
-        - linux/amd64
-        - linux/arm64
+      # platforms removed - Docker will auto-detect platform
+      # Production override specifies linux/amd64 explicitly
     container_name: sfweb-app
     environment:
       NODE_ENV: development
@@ -46,6 +45,9 @@ services:
       RECAPTCHA_SECRET_KEY: ${RECAPTCHA_SECRET_KEY}
       SMTP_EMAIL: ${SMTP_EMAIL}
       SMTP_PASSWORD: ${SMTP_PASSWORD}
+      DROPBOX_ACCESS_TOKEN: ${DROPBOX_ACCESS_TOKEN}
+      DROPBOX_APP_KEY: ${DROPBOX_APP_KEY}
+      DROPBOX_APP_SECRET: ${DROPBOX_APP_SECRET}
     volumes:
       # Mount source code for development hot reload
       - .:/app

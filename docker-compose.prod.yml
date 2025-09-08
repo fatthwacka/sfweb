@@ -5,9 +5,11 @@
 services:
   app:
     build:
+      context: .
+      dockerfile: Dockerfile
       target: runner
       platforms:
-        - linux/amd64  # Override multi-platform build for VPS compatibility
+        - linux/amd64  # Single platform for VPS compatibility (replaces multi-platform from base)
     environment:
       NODE_ENV: production
     volumes: 
