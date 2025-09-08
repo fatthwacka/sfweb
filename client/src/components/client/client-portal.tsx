@@ -35,6 +35,7 @@ import {
   ChevronDown,
   ExternalLink
 } from "lucide-react";
+import { ImagePicker } from "./image-picker";
 
 interface Shoot {
   id: string;
@@ -115,6 +116,32 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
       console.log('API Response status:', res.status);
       return res.json();
     }),
+  });
+
+  // Fetch preview settings for all shoots to determine which are preview albums
+  const { data: previewSettings = {} } = useQuery({
+    queryKey: ["/api/preview-settings/by-shoots", shoots.map(s => s.id)],
+    queryFn: async () => {
+      const settingsMap: Record<string, any> = {};
+      
+      // Fetch preview settings for each shoot
+      await Promise.all(
+        shoots.map(async (shoot) => {
+          try {
+            const response = await apiRequest('GET', `/api/shoots/${shoot.id}/preview-settings`);
+            const settings = await response.json();
+            if (settings && (settings.dropboxFolderPath || settings.dropboxShareLink)) {
+              settingsMap[shoot.id] = settings;
+            }
+          } catch (error) {
+            // Shoot has no preview settings - that's fine
+          }
+        })
+      );
+      
+      return settingsMap;
+    },
+    enabled: shoots.length > 0,
   });
 
   // Debug logging
@@ -200,6 +227,11 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
   });
 
   const uniqueShootTypes = Array.from(new Set(shoots.map(shoot => shoot.shootType)));
+
+  // Helper function to determine if a shoot is a preview album
+  const isPreviewAlbum = (shootId: string) => {
+    return !!previewSettings[shootId];
+  };
 
   const handleDownloadImage = async (image: Image) => {
     try {
@@ -287,36 +319,17 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
         
         {/* Header with User Menu */}
         <div className="mb-8">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h1 className="text-3xl font-saira font-bold text-salmon mb-2">
-                Welcome back{userName ? `, ${userName}` : ''}
-              </h1>
-              <p className="text-muted-foreground">
-                Access your private galleries and download your photos
-              </p>
-            </div>
-            
-            {/* User Menu */}
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 px-3 py-2 bg-background/50 rounded-lg border border-border">
-                <User className="w-4 h-4 text-cyan" />
-                <span className="text-sm">{userEmail}</span>
-              </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={logout}
-                className="border-border hover:border-salmon"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
-            </div>
+          <div className="mb-4">
+            <h1 className="text-3xl font-saira font-bold text-salmon mb-2">
+              Welcome back{userName ? `, ${userName}` : ''}
+            </h1>
+            <p className="text-muted-foreground">
+              Access your private galleries and download your photos
+            </p>
           </div>
           
           {/* Quick Stats */}
-          <div className="flex gap-4 text-sm">
+          <div className="flex gap-4 text-sm mt-4">
             <div className="flex items-center gap-2">
               <Camera className="w-4 h-4 text-cyan" />
               <span>{shoots.length} galleries available</span>
@@ -396,7 +409,7 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-start">
                         <div className="space-y-1">
-                          <CardTitle className="text-salmon text-lg">
+                          <CardTitle className={`${isPreviewAlbum(shoot.id) ? 'text-cyan' : 'text-salmon'} text-lg`}>
                             {shoot.customTitle || shoot.title}
                           </CardTitle>
                           <div className="flex items-center gap-2">
@@ -410,6 +423,11 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                             )}
                           </div>
                         </div>
+                        {isPreviewAlbum(shoot.id) && (
+                          <div className="text-xs text-cyan font-medium">
+                            image picker
+                          </div>
+                        )}
                       </div>
                     </CardHeader>
                     
@@ -436,13 +454,17 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                       </div>
                       
                       <Button 
-                        className="w-full bg-salmon text-white hover:bg-salmon-muted"
+                        className={`w-full text-white ${
+                          isPreviewAlbum(shoot.id) 
+                            ? 'bg-cyan hover:bg-cyan/90' 
+                            : 'bg-salmon hover:bg-salmon-muted'
+                        }`}
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedShoot(shoot.id);
                         }}
                       >
-                        View Gallery
+                        {isPreviewAlbum(shoot.id) ? 'Select Images' : 'View Gallery'}
                       </Button>
                     </CardContent>
                   </Card>
@@ -453,7 +475,7 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
         )}
 
         {/* Image Gallery View */}
-        {selectedShoot && (
+        {selectedShoot && !isPreviewAlbum(selectedShoot) && (
           <div className="space-y-6">
             {/* Gallery Header */}
             <div className="flex justify-between items-center">
@@ -744,7 +766,59 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
 
             </div>
 
+          </div>
+        )}
 
+        {/* Preview Album Image Picker */}
+        {selectedShoot && isPreviewAlbum(selectedShoot) && (
+          <div className="space-y-6">
+            {/* Preview Header */}
+            <div className="flex justify-between items-center">
+              <Button 
+                variant="outline"
+                onClick={() => setSelectedShoot(null)}
+                className="border-border hover:border-cyan"
+              >
+                ← Back to Galleries
+              </Button>
+              
+            </div>
+
+            {/* Current Preview Album Info */}
+            {(() => {
+              const currentShoot = shoots.find(s => s.id === selectedShoot);
+              const currentPreviewSettings = previewSettings[selectedShoot];
+              return currentShoot ? (
+                <Card className="admin-gradient-card">
+                  <CardContent className="p-6">
+                    <h2 className="text-2xl font-saira font-bold text-cyan mb-2">
+                      {currentShoot.customTitle || currentShoot.title}
+                    </h2>
+                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 icon-cyan" />
+                        {formatDate(currentShoot.shootDate)}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 icon-salmon" />
+                        {currentShoot.location}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Heart className="w-4 h-4 icon-cyan" />
+                        Select up to {currentPreviewSettings?.selectionLimit || 20} images
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : null;
+            })()}
+
+            {/* Image Picker Interface */}
+            <ImagePicker 
+              shootId={selectedShoot}
+              previewSettings={previewSettings[selectedShoot]}
+              userEmail={userEmail}
+            />
           </div>
         )}
       </div>

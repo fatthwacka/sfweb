@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import { useOptimisticSelections } from '@/hooks/use-optimistic-selections';
 import { 
   Heart,
   ThumbsUp,
@@ -50,6 +51,26 @@ export function ImagePicker({ shootId, previewSettings, userEmail }: ImagePicker
   const [selectedImage, setSelectedImage] = useState<PreviewImage | null>(null);
   const [selections, setSelections] = useState<Record<string, ImageSelection>>({});
   const [showUpsellModal, setShowUpsellModal] = useState(false);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
+  // Add optimistic updates hook
+  const {
+    updateSelection: optimisticUpdateSelection,
+    getSelectionStatus,
+    isPending,
+  } = useOptimisticSelections({
+    shootId,
+    onError: (imageId, error) => {
+      toast({
+        title: 'Selection Failed',
+        description: 'Your selection couldn\'t be saved. Please try again.',
+        variant: 'destructive',
+      });
+    },
+  });
 
   // Fetch preview images from Supabase
   const { data: previewResponse, isLoading: imagesLoading, error } = useQuery({
@@ -62,6 +83,12 @@ export function ImagePicker({ shootId, previewSettings, userEmail }: ImagePicker
   });
 
   const previewImages = previewResponse?.images || [];
+
+  // Pagination logic
+  const totalPages = Math.ceil(previewImages.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentPageImages = previewImages.slice(startIndex, endIndex);
 
   // Fetch existing selections from database
   const { data: existingSelections = [] } = useQuery({
@@ -88,30 +115,6 @@ export function ImagePicker({ shootId, previewSettings, userEmail }: ImagePicker
     }
   }, [existingSelections.length]); // Only depend on length
 
-  // Save selection mutation
-  const saveSelectionMutation = useMutation({
-    mutationFn: async ({ filename, status }: { filename: string; status: string }) => {
-      const response = await apiRequest('POST', `/api/client-selections/${shootId}`, {
-        imageFilename: filename,
-        selectionStatus: status,
-        userEmail: userEmail,
-      });
-      return await response.json();
-    },
-    onSuccess: () => {
-      // Don't invalidate queries - use optimistic updates only to prevent state conflicts
-      // queryClient.invalidateQueries({ queryKey: ['/api/client-selections', shootId] });
-    },
-    onError: (error) => {
-      toast({
-        title: 'Error',
-        description: 'Failed to save selection',
-        variant: 'destructive',
-      });
-      // On error, we could refetch to restore correct state
-      queryClient.invalidateQueries({ queryKey: ['/api/client-selections', shootId] });
-    },
-  });
 
   // Calculate counts
   const favoriteCount = Object.values(selections).filter(s => s.isFavorite).length;
@@ -122,18 +125,13 @@ export function ImagePicker({ shootId, previewSettings, userEmail }: ImagePicker
   const handleSelection = (filename: string, selectionType: 'favorite' | 'like' | 'dislike' | 'trash') => {
     const currentSelection = selections[filename];
     
-    console.log('Selection Debug:', {
-      filename,
-      selectionType,
-      currentSelection,
-      beforeSelections: Object.keys(selections).length
-    });
-    
     if (selectionType === 'favorite') {
       // Handle favorite toggle independently
       const wasFavorite = currentSelection?.isFavorite || false;
       const newIsFavorite = !wasFavorite;
+      const newStatus = newIsFavorite ? 'favorite' : 'none';
       
+      // Update local state immediately for instant feedback
       setSelections(prev => ({
         ...prev,
         [filename]: {
@@ -143,8 +141,8 @@ export function ImagePicker({ shootId, previewSettings, userEmail }: ImagePicker
         }
       }));
       
-      // Save favorite status to database
-      saveSelectionMutation.mutate({ filename, status: newIsFavorite ? 'favorite' : 'none' });
+      // Use optimistic update for API call - provides instant response with retry logic
+      optimisticUpdateSelection(filename, newStatus, filename);
       
       // Check for upsell popup (only for new favorites)
       if (newIsFavorite) {
@@ -159,6 +157,7 @@ export function ImagePicker({ shootId, previewSettings, userEmail }: ImagePicker
       const currentStatus = currentSelection?.status || 'none';
       const finalStatus = currentStatus === selectionType ? 'none' : selectionType;
       
+      // Update local state immediately for instant feedback
       setSelections(prev => ({
         ...prev,
         [filename]: {
@@ -168,8 +167,8 @@ export function ImagePicker({ shootId, previewSettings, userEmail }: ImagePicker
         }
       }));
       
-      // Save to database
-      saveSelectionMutation.mutate({ filename, status: finalStatus });
+      // Use optimistic update for API call - provides instant response with retry logic
+      optimisticUpdateSelection(filename, finalStatus, filename);
     }
   };
 
@@ -182,14 +181,6 @@ export function ImagePicker({ shootId, previewSettings, userEmail }: ImagePicker
     return selection.status === iconType;
   };
 
-  // Debug logging
-  console.log('ImagePicker Debug:', {
-    imagesLoading,
-    error: error?.message,
-    previewImagesCount: previewImages.length,
-    firstImageUrl: previewImages[0]?.thumbnailUrl,
-    selections: Object.keys(selections).length
-  });
 
   if (imagesLoading) {
     return (
@@ -217,68 +208,39 @@ export function ImagePicker({ shootId, previewSettings, userEmail }: ImagePicker
   }
 
   return (
-    <>
-      {/* Selection Summary */}
-      <Card className="admin-gradient-card">
-        <CardContent className="p-4">
-          <div className="flex flex-wrap gap-4 items-center justify-between">
-            <div className="flex gap-4">
-              <Badge className="bg-red-500 text-white flex items-center gap-1">
-                <Heart className="w-4 h-4" />
-                Top 20: {favoriteCount}
-              </Badge>
-              <Badge className="bg-green-500 text-white flex items-center gap-1">
-                <ThumbsUp className="w-4 h-4" />
-                Liked: {likeCount}
-              </Badge>
-              <Badge className="bg-yellow-500 text-white flex items-center gap-1">
-                <ThumbsDown className="w-4 h-4" />
-                Disliked: {dislikeCount}
-              </Badge>
-              <Badge className="bg-gray-500 text-white flex items-center gap-1">
-                <Trash2 className="w-4 h-4" />
-                Removed: {trashCount}
-              </Badge>
-            </div>
+    <div className="mobile-container">
+      {/* Mobile-Optimized Header */}
+      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b">
+        <div className="mobile-safe-area py-3">
+          <div className="text-center">
+            <h1 className="font-semibold text-lg">Select Your Images</h1>
             <div className="text-sm text-muted-foreground">
-              {previewImages.length} images total
+              ❤️ {favoriteCount}/{previewSettings.selectionLimit} selected
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* Debug Info */}
-      <Card className="admin-gradient-card mb-4">
-        <CardContent className="p-4">
-          <div className="text-sm text-white">
-            <p>Debug: {previewImages.length} images loaded</p>
-            {previewImages.length > 0 && (
-              <p>First image URL: {previewImages[0].thumbnailUrl}</p>
-            )}
-            <p>Selections count: {Object.keys(selections).length}</p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="mobile-safe-area py-6 space-y-6">
 
-      {/* Image Grid */}
-      <Card className="admin-gradient-card">
-        <CardContent className="p-6">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-            {previewImages.map((image) => (
-              <div key={image.filename} className="relative group">
+
+        {/* Mobile-Optimized Image Grid - Paginated */}
+        <div className="mobile-image-grid">
+            {currentPageImages.map((image) => (
+              <div key={image.filename} className="relative group w-full max-w-full min-w-0 box-border">
                 {/* Image Container */}
-                <div className="relative aspect-square bg-gray-800 rounded-lg overflow-hidden border-2 border-border hover:border-cyan transition-colors">
+                <div className="relative aspect-square bg-gray-800 rounded-lg overflow-hidden border-2 border-border hover:border-cyan transition-colors w-full max-w-full">
                   <img
                     src={image.thumbnailUrl || '/images/logos/slyfox-logo-white.png'}
                     alt={image.filename}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover max-w-full"
                     loading="lazy"
                     onError={(e) => {
                       console.error('Image failed to load:', image.filename, image.thumbnailUrl);
                       console.error('Error details:', e);
                     }}
                     onLoad={() => {
-                      console.log('Image loaded successfully:', image.filename);
+                      // Image loaded successfully
                     }}
                   />
                   
@@ -296,70 +258,99 @@ export function ImagePicker({ shootId, previewSettings, userEmail }: ImagePicker
                   </button>
                 </div>
 
-                {/* Action Icons */}
-                <div className="flex justify-center gap-1 mt-2">
-                  {/* Heart (Favorite) */}
+                {/* Mobile-Optimized Action Buttons */}
+                <div className="flex justify-center gap-2 mt-3">
+                  {/* Heart (Favorite) - Mobile Touch Friendly */}
                   <button
                     onClick={() => handleSelection(image.filename, 'favorite')}
-                    className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                    className={`relative mobile-touch-button rounded-full flex items-center justify-center transition-all ${
                       getIconStatus(image.filename, 'favorite')
                         ? 'bg-red-500 shadow-lg shadow-red-500/50'
                         : 'bg-gray-700 hover:bg-red-500'
                     }`}
                     title="Top 20 Selected Image"
                   >
-                    <Heart className={`w-4 h-4 ${getIconStatus(image.filename, 'favorite') ? 'text-white fill-white' : 'text-gray-300'}`} />
+                    <Heart className={`w-5 h-5 ${getIconStatus(image.filename, 'favorite') ? 'text-white fill-white' : 'text-gray-300'}`} />
                     {getIconStatus(image.filename, 'favorite') && (
-                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-white text-red-500 text-xs rounded-full flex items-center justify-center font-bold">
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-white text-red-500 text-xs rounded-full flex items-center justify-center font-bold">
                         {favoriteCount}
                       </span>
                     )}
                   </button>
 
-                  {/* Thumbs Up (Like) */}
+                  {/* Thumbs Up (Like) - Mobile Touch Friendly */}
                   <button
                     onClick={() => handleSelection(image.filename, 'like')}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                    className={`mobile-touch-button rounded-full flex items-center justify-center transition-all ${
                       getIconStatus(image.filename, 'like')
                         ? 'bg-green-500 shadow-lg shadow-green-500/50'
                         : 'bg-gray-700 hover:bg-green-500'
                     }`}
                     title="Liked Image"
                   >
-                    <ThumbsUp className={`w-4 h-4 ${getIconStatus(image.filename, 'like') ? 'text-white' : 'text-gray-300'}`} />
+                    <ThumbsUp className={`w-5 h-5 ${getIconStatus(image.filename, 'like') ? 'text-white' : 'text-gray-300'}`} />
                   </button>
 
-                  {/* Thumbs Down (Dislike) */}
+                  {/* Thumbs Down (Dislike) - Mobile Touch Friendly */}
                   <button
                     onClick={() => handleSelection(image.filename, 'dislike')}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                    className={`mobile-touch-button rounded-full flex items-center justify-center transition-all ${
                       getIconStatus(image.filename, 'dislike')
                         ? 'bg-yellow-500 shadow-lg shadow-yellow-500/50'
                         : 'bg-gray-700 hover:bg-yellow-500'
                     }`}
                     title="Dislike Image"
                   >
-                    <ThumbsDown className={`w-4 h-4 ${getIconStatus(image.filename, 'dislike') ? 'text-white' : 'text-gray-300'}`} />
+                    <ThumbsDown className={`w-5 h-5 ${getIconStatus(image.filename, 'dislike') ? 'text-white' : 'text-gray-300'}`} />
                   </button>
 
-                  {/* Trash (Remove) */}
+                  {/* Trash (Remove) - Mobile Touch Friendly */}
                   <button
                     onClick={() => handleSelection(image.filename, 'trash')}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                    className={`mobile-touch-button rounded-full flex items-center justify-center transition-all ${
                       getIconStatus(image.filename, 'trash')
                         ? 'bg-gray-500 shadow-lg shadow-gray-500/50'
                         : 'bg-gray-700 hover:bg-gray-500'
                     }`}
                     title="Remove Image"
                   >
-                    <Trash2 className={`w-4 h-4 ${getIconStatus(image.filename, 'trash') ? 'text-white' : 'text-gray-300'}`} />
+                    <Trash2 className={`w-5 h-5 ${getIconStatus(image.filename, 'trash') ? 'text-white' : 'text-gray-300'}`} />
                   </button>
                 </div>
               </div>
             ))}
+        </div>
+
+        {/* Mobile Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between py-4">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="mobile-touch-button px-4 py-2 bg-gray-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
+            >
+              ← Previous
+            </button>
+            
+            <div className="text-center">
+              <div className="text-sm font-medium">
+                Page {currentPage} of {totalPages}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Showing {startIndex + 1}-{Math.min(endIndex, previewImages.length)} of {previewImages.length} images
+              </div>
+            </div>
+            
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className="mobile-touch-button px-4 py-2 bg-gray-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
+            >
+              Next →
+            </button>
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
 
       {/* Image Modal */}
       {selectedImage && (
@@ -412,6 +403,6 @@ export function ImagePicker({ shootId, previewSettings, userEmail }: ImagePicker
           </Card>
         </div>
       )}
-    </>
+    </div>
   );
 }
