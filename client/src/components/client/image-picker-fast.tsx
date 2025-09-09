@@ -400,10 +400,10 @@ export function ImagePickerFast({ shootId, previewSettings, userEmail }: ImagePi
               </div>
             )}
             
-            {/* Close Button - Top Right, Enhanced visibility */}
+            {/* Close Button - Safely positioned below navigation */}
             <button
               onClick={() => setSelectedImage(null)}
-              className="absolute top-4 right-4 w-10 h-10 bg-gray-700/90 hover:bg-gray-600 rounded-full flex items-center justify-center shadow-xl transition-all z-50 border border-white/30"
+              className="absolute top-24 right-4 w-10 h-10 bg-gray-700/90 hover:bg-gray-600 rounded-full flex items-center justify-center shadow-xl transition-all z-50 border border-white/30"
               aria-label="Close modal"
             >
               <X className="w-5 h-5 text-white font-bold" strokeWidth={2.5} />
