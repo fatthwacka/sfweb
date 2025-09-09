@@ -2,7 +2,7 @@ import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
 import { ContactSection } from "@/components/sections/contact-section";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, Mail, Clock, MessageCircle } from "lucide-react";
+import { MapPin, Phone, Mail, Clock, MessageCircle, Instagram, Facebook } from "lucide-react";
 import { useSiteConfig } from "@/hooks/use-site-config";
 
 // Map icon strings to Lucide components
@@ -10,7 +10,9 @@ const iconMap = {
   Phone,
   Mail, 
   MessageCircle,
-  MapPin
+  MapPin,
+  Instagram,
+  Facebook
 };
 
 export default function Contact() {
@@ -59,6 +61,18 @@ export default function Contact() {
       title: "Visit Us",
       details: [config?.contact?.business?.address?.displayText || "Durban, South Africa", config?.contact?.hours?.sundayTime || "By appointment"],
       action: "https://www.google.com/maps/search/?api=1&query=-29.7522499,31.052583"
+    },
+    {
+      icon: iconMap.Instagram,
+      title: "Instagram",
+      details: ["@slyfoxstudiogroup", "Contact us on Instagram"],
+      action: "https://instagram.com/slyfoxstudiogroup"
+    },
+    {
+      icon: iconMap.Facebook,
+      title: "Facebook",
+      details: ["facebook.com/slyfoxstudiogroup", "Message us on Facebook"],
+      action: "https://facebook.com/slyfoxstudiogroup"
     }
   ];
   return (
@@ -83,20 +97,24 @@ export default function Contact() {
           </div>
 
           {/* Quick Contact Methods */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
             {contactMethods.map((method, index) => {
               const Icon = method.icon;
               const cardClasses = [
-                'contact-info-card-phone',  // Phone - red/orange
-                'contact-info-card-email',  // Email - cyan (no change)
-                'contact-info-card-whatsapp', // WhatsApp - green
-                'contact-info-card-location'  // Visit Us - pink/purple
+                'contact-info-card-phone',     // Phone - red/orange
+                'contact-info-card-email',     // Email - cyan (no change)
+                'contact-info-card-whatsapp',  // WhatsApp - green
+                'contact-info-card-location',  // Visit Us - pink/purple
+                'contact-info-card-instagram', // Instagram - fuschia gradient
+                'contact-info-card-facebook'   // Facebook - dark blue
               ];
               const iconClasses = [
-                'contact-info-icon-phone',   // Phone - red/orange
-                'contact-info-icon-email',   // Email - cyan (no change)
-                'contact-info-icon-whatsapp', // WhatsApp - green
-                'contact-info-icon-location'  // Visit Us - pink/purple
+                'contact-info-icon-phone',     // Phone - red/orange
+                'contact-info-icon-email',     // Email - cyan (no change)
+                'contact-info-icon-whatsapp',  // WhatsApp - green
+                'contact-info-icon-location',  // Visit Us - pink/purple
+                'contact-info-icon-instagram', // Instagram - fuschia
+                'contact-info-icon-facebook'   // Facebook - blue
               ];
               
               return (

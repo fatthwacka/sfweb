@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSiteConfig } from "@/hooks/use-site-config";
 import { ImageUrl } from "@/lib/image-utils";
-import { Camera, ChevronLeft, ChevronRight, X, ArrowRight } from "lucide-react";
+import { Camera, ChevronLeft, ChevronRight, X, ArrowRight, RefreshCw } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { getImagesByCategory, getNextImageBatch, formatClassification, type CategoryKey } from "@/lib/classification-utils";
@@ -200,13 +200,13 @@ export function CategoryFeaturedGrid({
           <Button
             onClick={loadMoreImages}
             disabled={isLoadingMore}
-            className="absolute -top-12 right-0 z-10 w-8 h-8 p-0 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all duration-300 hover:scale-110"
+            className="absolute -top-12 right-6 z-10 w-8 h-8 p-0 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-full transition-all duration-300 hover:scale-110 opacity-50"
             title="Load more images"
           >
             {isLoadingMore ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              <div className="w-4 h-4 border-2 border-gray-600/30 border-t-gray-600 rounded-full animate-spin"></div>
             ) : (
-              <ArrowRight className="w-4 h-4" />
+              <RefreshCw className="w-4 h-4" />
             )}
           </Button>
         )}

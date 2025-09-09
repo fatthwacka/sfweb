@@ -327,6 +327,17 @@ export default function PhotographyCategory() {
         </div>
       </section>
 
+      {/* Photography Navigation Section */}
+      <section className="py-16 bg-red-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl mb-4 text-white">
+              TEST - Photography Navigation
+            </h2>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

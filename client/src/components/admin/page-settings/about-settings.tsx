@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Upload, Save, AlertCircle, X, Plus, ChevronUp, ChevronDown } from 'lucide-react';
+import { Upload, Save, AlertCircle, X, Plus, ChevronUp, ChevronDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -364,6 +364,52 @@ export default function AboutSettings() {
         }
       }
     });
+  };
+
+  // Move team member up in the list
+  const moveTeamMemberUp = (memberId: string) => {
+    if (!config.about) return;
+    const members = [...config.about.team.members];
+    const index = members.findIndex(m => m.id === memberId);
+    
+    if (index > 0) {
+      // Swap with previous item
+      [members[index - 1], members[index]] = [members[index], members[index - 1]];
+      
+      handleConfigChange({
+        ...config,
+        about: {
+          ...config.about,
+          team: {
+            ...config.about.team,
+            members
+          }
+        }
+      });
+    }
+  };
+
+  // Move team member down in the list
+  const moveTeamMemberDown = (memberId: string) => {
+    if (!config.about) return;
+    const members = [...config.about.team.members];
+    const index = members.findIndex(m => m.id === memberId);
+    
+    if (index < members.length - 1) {
+      // Swap with next item
+      [members[index], members[index + 1]] = [members[index + 1], members[index]];
+      
+      handleConfigChange({
+        ...config,
+        about: {
+          ...config.about,
+          team: {
+            ...config.about.team,
+            members
+          }
+        }
+      });
+    }
   };
 
   // Statistics management
@@ -859,18 +905,41 @@ export default function AboutSettings() {
               </div>
               
               <div className="space-y-4">
-                {config.about.team.members.map((member) => (
+                {config.about.team.members.map((member, index) => (
                   <div key={member.id} className="bg-slate-800/50 rounded-lg p-4 border border-slate-600">
                     <div className="flex items-center justify-between mb-3">
-                      <Label className="text-gray-300">Team Member</Label>
-                      <Button
-                        onClick={() => removeTeamMember(member.id)}
-                        size="sm"
-                        variant="ghost"
-                        className="text-red-400 hover:text-red-300 hover:bg-red-900/30"
-                      >
-                        <X size={16} />
-                      </Button>
+                      <Label className="text-gray-300">Team Member {index + 1}</Label>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          onClick={() => moveTeamMemberUp(member.id)}
+                          size="sm"
+                          variant="ghost"
+                          disabled={index === 0}
+                          className="text-gray-400 hover:text-white hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Move Up"
+                        >
+                          <ArrowUp size={16} />
+                        </Button>
+                        <Button
+                          onClick={() => moveTeamMemberDown(member.id)}
+                          size="sm"
+                          variant="ghost"
+                          disabled={index === config.about.team.members.length - 1}
+                          className="text-gray-400 hover:text-white hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Move Down"
+                        >
+                          <ArrowDown size={16} />
+                        </Button>
+                        <div className="w-px h-6 bg-slate-600 mx-1" />
+                        <Button
+                          onClick={() => removeTeamMember(member.id)}
+                          size="sm"
+                          variant="ghost"
+                          className="text-red-400 hover:text-red-300 hover:bg-red-900/30"
+                        >
+                          <X size={16} />
+                        </Button>
+                      </div>
                     </div>
                     
                     <div className="grid grid-cols-2 gap-3 mb-3">
