@@ -167,11 +167,11 @@ const NavigationComponent = memo(function Navigation() {
                 Contact
               </Link>
               <Link
-                href="/my-gallery"
+                href="/client-portal"
                 className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                My Gallery
+                My Dashboard
               </Link>
             </div>
           </div>
