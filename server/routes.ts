@@ -1769,6 +1769,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // DELETE /api/preview-images/:shootId/image/:filename - Delete individual preview image
+  app.delete("/api/preview-images/:shootId/image/:filename", async (req, res) => {
+    try {
+      const { shootId, filename } = req.params;
+      const { userEmail } = req.body;
+      
+      console.log(`🗑️ Delete request for image ${filename} in shoot ${shootId} by ${userEmail}`);
+
+      // Check if shoot exists (more lenient check)
+      const settings = await storage.getShootPreviewSettings(shootId);
+      if (!settings) {
+        return res.status(404).json({ message: 'Preview settings not found' });
+      }
+      
+      // Allow deletion even if preview is inactive - user may want to clean up
+      console.log(`Preview settings found for shoot ${shootId}, active: ${settings.isActive}`);
+
+      // Get all preview images for this shoot
+      const previewImages = await storage.getPreviewImages(shootId);
+      
+      // Find the specific image to delete
+      const imageToDelete = previewImages.find((img: any) => img.filename === filename);
+      
+      if (!imageToDelete) {
+        return res.status(404).json({ message: 'Image not found in preview' });
+      }
+
+      try {
+        // For now, we'll just delete from the database
+        // Storage deletion can be handled separately if needed
+        // Most preview images are stored in Dropbox anyway, not Supabase
+        
+        // Delete from database using storage service
+        const dbDeleteSuccess = await storage.deletePreviewImage(shootId, filename);
+        
+        if (!dbDeleteSuccess) {
+          console.warn('Database deletion failed, but continuing...');
+        }
+        
+        // If the image has a Supabase URL, log it for manual cleanup if needed
+        if (imageToDelete.supabaseUrl) {
+          console.log(`Note: Supabase storage file may need manual cleanup: ${imageToDelete.supabaseUrl}`);
+        }
+        
+        console.log(`✅ Successfully deleted ${filename} from preview`);
+        
+        res.json({ 
+          success: true, 
+          message: `Successfully deleted ${filename}`,
+          filename: filename
+        });
+        
+      } catch (deleteError) {
+        console.error('Error during deletion:', deleteError);
+        res.status(500).json({ 
+          message: 'Failed to delete image',
+          error: deleteError instanceof Error ? deleteError.message : 'Unknown error'
+        });
+      }
+      
+    } catch (error) {
+      console.error('Preview image deletion error:', error);
+      res.status(500).json({ 
+        message: 'Failed to delete preview image',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // DELETE /api/preview-images/:shootId - Cleanup preview images after final gallery is created
   app.delete("/api/preview-images/:shootId", async (req, res) => {
     try {

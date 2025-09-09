@@ -784,6 +784,33 @@ export class SupabaseStorage implements IStorage {
     return await db.select().from(previewImages).where(eq(previewImages.shootId, shootId)).orderBy(previewImages.createdAt);
   }
 
+  async deletePreviewImage(shootId: string, filename: string): Promise<boolean> {
+    try {
+      // Delete the preview image record
+      await db.delete(previewImages)
+        .where(
+          and(
+            eq(previewImages.shootId, shootId),
+            eq(previewImages.filename, filename)
+          )
+        );
+      
+      // Also delete any client selections for this image
+      await db.delete(clientSelections)
+        .where(
+          and(
+            eq(clientSelections.shootId, shootId),
+            eq(clientSelections.imageFilename, filename)
+          )
+        );
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting preview image:', error);
+      return false;
+    }
+  }
+
   // Selection Package methods for client upselling
   async getSelectionPackage(shootId: string, clientId: string): Promise<SelectionPackage | undefined> {
     const result = await db.select()

@@ -33,6 +33,8 @@ export function ImagePickerFast({ shootId, previewSettings, userEmail }: ImagePi
   const [selectedImage, setSelectedImage] = useState<any>(null);
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [deletingImage, setDeletingImage] = useState<string | null>(null);
+  const [deletedImages, setDeletedImages] = useState<Set<string>>(new Set());
   
   const IMAGES_PER_PAGE = 40;
   
@@ -46,7 +48,10 @@ export function ImagePickerFast({ shootId, previewSettings, userEmail }: ImagePi
     enabled: !!shootId,
   });
 
-  const previewImages = previewResponse?.images || [];
+  const allPreviewImages = previewResponse?.images || [];
+  
+  // Filter out deleted images
+  const previewImages = allPreviewImages.filter((img: any) => !deletedImages.has(img.filename));
   
   // Pagination calculations
   const totalPages = Math.ceil(previewImages.length / IMAGES_PER_PAGE);
@@ -92,6 +97,49 @@ export function ImagePickerFast({ shootId, previewSettings, userEmail }: ImagePi
     if (confirm('Clear all selections? This cannot be undone.')) {
       await clearAllSelections();
       setShowClearDialog(false);
+    }
+  };
+
+  const handleDeleteImage = async (imageFilename: string) => {
+    if (!confirm(`Are you sure you want to remove "${imageFilename}" from this preview?\n\nThis action cannot be undone.`)) {
+      return;
+    }
+    
+    setDeletingImage(imageFilename);
+    
+    try {
+      const response = await apiRequest('DELETE', `/api/preview-images/${shootId}/image/${encodeURIComponent(imageFilename)}`, {
+        userEmail
+      });
+      
+      if (response.ok) {
+        // Add to deleted images set (optimistic UI update)
+        setDeletedImages(prev => new Set(prev).add(imageFilename));
+        
+        // Close modal if this was the deleted image
+        if (selectedImage?.filename === imageFilename) {
+          setSelectedImage(null);
+        }
+        
+        // Check if current page will be empty after deletion
+        const remainingImagesOnPage = currentPageImages.filter(img => img.filename !== imageFilename);
+        if (remainingImagesOnPage.length === 0 && currentPage > 1) {
+          // Go to previous page if current page becomes empty
+          setTimeout(() => goToPage(currentPage - 1), 100);
+        }
+        
+        // Optional: Show success message
+        console.log(`✅ Successfully removed ${imageFilename} from preview`);
+        
+      } else {
+        const error = await response.json();
+        alert(`Failed to delete image: ${error.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Delete failed:', error);
+      alert('Failed to delete image. Please try again.');
+    } finally {
+      setDeletingImage(null);
     }
   };
 
@@ -158,23 +206,23 @@ export function ImagePickerFast({ shootId, previewSettings, userEmail }: ImagePi
       <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b">
         <div className="mobile-safe-area py-3">
           <div className="text-center">
-            <h1 className="font-semibold text-lg">Select Your Images</h1>
-            <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground mt-2">
+            <h1 className="font-semibold text-xl">Select Your Images</h1>
+            <div className="flex items-center justify-center gap-4 text-base text-muted-foreground mt-2">
               <span className="flex items-center gap-1">
-                <Camera className="w-4 h-4 text-blue-500" />
-                {previewImages.length}
+                <Camera className="w-5 h-5 text-blue-500" />
+                <span className="font-medium">{previewImages.length}</span>
               </span>
               <span className="flex items-center gap-1">
-                <Heart className="w-4 h-4 text-red-500" />
-                {favoriteCount}/{previewSettings.selectionLimit}
+                <Heart className="w-5 h-5 text-red-500" />
+                <span className="font-medium">{favoriteCount}/{previewSettings.selectionLimit}</span>
               </span>
               <span className="flex items-center gap-1">
-                <ThumbsUp className="w-4 h-4 text-green-500" />
-                {likeCount}
+                <ThumbsUp className="w-5 h-5 text-green-500" />
+                <span className="font-medium">{likeCount}</span>
               </span>
               <span className="flex items-center gap-1">
-                <ThumbsDown className="w-4 h-4 text-yellow-500" />
-                {dislikeCount}
+                <ThumbsDown className="w-5 h-5 text-yellow-500" />
+                <span className="font-medium">{dislikeCount}</span>
               </span>
               <button
                 onClick={handleClearAll}
@@ -202,8 +250,11 @@ export function ImagePickerFast({ shootId, previewSettings, userEmail }: ImagePi
             
             return (
               <div key={image.filename} className="mobile-image-item">
-                {/* Image Container */}
-                <div className="mobile-image-container relative">
+                {/* Image Container - Click anywhere to open modal */}
+                <div 
+                  className="mobile-image-container relative cursor-pointer"
+                  onClick={() => setSelectedImage(image)}
+                >
                   <img
                     src={image.thumbnailUrl || '/images/logos/slyfox-logo-white.png'}
                     alt={image.filename}
@@ -216,9 +267,12 @@ export function ImagePickerFast({ shootId, previewSettings, userEmail }: ImagePi
                     {image.filename}
                   </div>
                   
-                  {/* Eye icon for modal */}
+                  {/* Eye icon for modal - stopPropagation to prevent double trigger */}
                   <button
-                    onClick={() => setSelectedImage(image)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedImage(image);
+                    }}
                     className="mobile-image-view-btn"
                   >
                     <Eye className="w-4 h-4 text-white" />
@@ -285,32 +339,175 @@ export function ImagePickerFast({ shootId, previewSettings, userEmail }: ImagePi
         {totalPages > 1 && <PaginationControls />}
       </div>
 
-      {/* Image Modal */}
-      {selectedImage && (
-        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
-          <div className="relative max-w-4xl max-h-full">
-            <button
-              onClick={() => setSelectedImage(null)}
-              className="absolute -top-4 -right-4 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center"
-            >
-              <X className="w-6 h-6 text-white" />
-            </button>
-            <img
-              src={selectedImage.fullImageUrl || selectedImage.thumbnailUrl || '/images/logos/slyfox-logo-white.png'}
-              alt={selectedImage.filename}
-              className="max-w-full max-h-full object-contain rounded-lg"
-            />
-            <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-4 rounded-b-lg">
-              <h3 className="font-semibold">{selectedImage.filename}</h3>
-              {selectedImage.metadata && (
-                <p className="text-sm text-gray-300">
-                  Size: {(selectedImage.metadata.size / 1024 / 1024).toFixed(1)}MB
-                </p>
-              )}
+      {/* Enhanced Image Modal with Navigation */}
+      {selectedImage && (() => {
+        const currentIndex = currentPageImages.findIndex((img: any) => img.filename === selectedImage.filename);
+        const hasNext = currentIndex < currentPageImages.length - 1 || currentPage < totalPages;
+        const hasPrev = currentIndex > 0 || currentPage > 1;
+        
+        const goToImage = (direction: 'next' | 'prev') => {
+          if (direction === 'next') {
+            if (currentIndex < currentPageImages.length - 1) {
+              setSelectedImage(currentPageImages[currentIndex + 1]);
+            } else if (currentPage < totalPages) {
+              goToPage(currentPage + 1);
+              setTimeout(() => {
+                setSelectedImage(previewImages[currentPage * IMAGES_PER_PAGE]);
+              }, 100);
+            }
+          } else {
+            if (currentIndex > 0) {
+              setSelectedImage(currentPageImages[currentIndex - 1]);
+            } else if (currentPage > 1) {
+              goToPage(currentPage - 1);
+              setTimeout(() => {
+                const prevPageLastIndex = (currentPage - 2) * IMAGES_PER_PAGE + IMAGES_PER_PAGE - 1;
+                setSelectedImage(previewImages[prevPageLastIndex]);
+              }, 100);
+            }
+          }
+        };
+        
+        const selection = isSelected(selectedImage.filename, 'favorite') ? 'favorite' :
+                        isSelected(selectedImage.filename, 'like') ? 'like' :
+                        isSelected(selectedImage.filename, 'dislike') ? 'dislike' : 'none';
+        
+        return (
+          <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center">
+            {/* Left Navigation Button */}
+            {hasPrev && (
+              <button
+                onClick={() => goToImage('prev')}
+                className="absolute left-0 top-0 bottom-0 w-1/3 flex items-center justify-start pl-4 group"
+                aria-label="Previous image"
+              >
+                <div className="bg-white/10 group-hover:bg-white/20 rounded-full p-3 transition-all">
+                  <ChevronLeft className="w-8 h-8 text-white" />
+                </div>
+              </button>
+            )}
+            
+            {/* Right Navigation Button */}
+            {hasNext && (
+              <button
+                onClick={() => goToImage('next')}
+                className="absolute right-0 top-0 bottom-0 w-1/3 flex items-center justify-end pr-4 group"
+                aria-label="Next image"
+              >
+                <div className="bg-white/10 group-hover:bg-white/20 rounded-full p-3 transition-all">
+                  <ChevronRight className="w-8 h-8 text-white" />
+                </div>
+              </button>
+            )}
+            
+            <div className="relative max-w-4xl max-h-full p-4">
+              {/* Improved Close Button - Solid grey with white X */}
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="absolute -top-2 -right-2 w-12 h-12 bg-gray-600 hover:bg-gray-500 rounded-full flex items-center justify-center shadow-lg transition-all z-10"
+                aria-label="Close modal"
+              >
+                <X className="w-7 h-7 text-white font-bold" strokeWidth={3} />
+              </button>
+              <img
+                src={selectedImage.fullImageUrl || selectedImage.thumbnailUrl || '/images/logos/slyfox-logo-white.png'}
+                alt={selectedImage.filename}
+                className="max-w-full max-h-[80vh] object-contain rounded-lg"
+              />
+              
+              {/* Enhanced Bottom Info Bar with Action Buttons */}
+              <div className="absolute bottom-0 left-0 right-0 bg-black/80 text-white p-4 rounded-b-lg">
+                {/* Modal Action Buttons - Moved to top of the info bar */}
+                <div className="flex justify-center gap-3 mb-4">
+                  {/* Heart (Favorite) */}
+                  <button
+                    onClick={() => handleSelection(selectedImage.filename, selection === 'favorite' ? 'none' : 'favorite')}
+                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${
+                      selection === 'favorite'
+                        ? 'bg-red-500 text-white shadow-lg shadow-red-500/50'
+                        : 'bg-gray-700 text-gray-300 hover:bg-red-500 hover:text-white'
+                    }`}
+                    disabled={isUpdating(selectedImage.filename)}
+                  >
+                    <Heart className={`w-5 h-5 ${selection === 'favorite' ? 'fill-white' : ''}`} />
+                    <span className="text-sm font-medium">Favorite</span>
+                  </button>
+
+                  {/* Thumbs Up (Like) */}
+                  <button
+                    onClick={() => handleSelection(selectedImage.filename, selection === 'like' ? 'none' : 'like')}
+                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${
+                      selection === 'like'
+                        ? 'bg-green-500 text-white shadow-lg shadow-green-500/50'
+                        : 'bg-gray-700 text-gray-300 hover:bg-green-500 hover:text-white'
+                    }`}
+                    disabled={isUpdating(selectedImage.filename)}
+                  >
+                    <ThumbsUp className={`w-5 h-5 ${selection === 'like' ? 'fill-white' : ''}`} />
+                    <span className="text-sm font-medium">Like</span>
+                  </button>
+
+                  {/* Thumbs Down (Dislike) */}
+                  <button
+                    onClick={() => handleSelection(selectedImage.filename, selection === 'dislike' ? 'none' : 'dislike')}
+                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${
+                      selection === 'dislike'
+                        ? 'bg-yellow-500 text-white shadow-lg shadow-yellow-500/50'
+                        : 'bg-gray-700 text-gray-300 hover:bg-yellow-500 hover:text-white'
+                    }`}
+                    disabled={isUpdating(selectedImage.filename)}
+                  >
+                    <ThumbsDown className={`w-5 h-5 ${selection === 'dislike' ? 'fill-white' : ''}`} />
+                    <span className="text-sm font-medium">Dislike</span>
+                  </button>
+                  
+                  {/* Trash (Remove) - Now functional! */}
+                  <button
+                    onClick={() => handleDeleteImage(selectedImage.filename)}
+                    disabled={deletingImage === selectedImage.filename}
+                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${
+                      deletingImage === selectedImage.filename
+                        ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                        : 'bg-gray-700 text-gray-300 hover:bg-red-600 hover:text-white'
+                    }`}
+                  >
+                    {deletingImage === selectedImage.filename ? (
+                      <RefreshCw className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-5 h-5" />
+                    )}
+                    <span className="text-sm font-medium">
+                      {deletingImage === selectedImage.filename ? 'Removing...' : 'Remove'}
+                    </span>
+                  </button>
+                </div>
+                
+                {/* File Info - Moved to bottom */}
+                <div className="flex items-center justify-between pt-3 border-t border-white/20">
+                  <div>
+                    <h3 className="font-medium text-sm text-gray-300">{selectedImage.filename}</h3>
+                    {selectedImage.metadata && (
+                      <p className="text-xs text-gray-400">
+                        {(selectedImage.metadata.size / 1024 / 1024).toFixed(1)}MB
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    {currentIndex + 1 + (currentPage - 1) * IMAGES_PER_PAGE} / {previewImages.length}
+                  </div>
+                </div>
+                
+                {/* Updating indicator */}
+                {isUpdating(selectedImage.filename) && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-b-lg">
+                    <RefreshCw className="w-6 h-6 text-white animate-spin" />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

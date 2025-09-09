@@ -57,6 +57,12 @@ services:
 
 **If deployment script fails, follow manual process below.**
 
+## 🚀 Deployment Type Guide
+- **Code Changes Only** → Quick deploy + Quick success checks (2 minutes)
+- **First Time/New Environment** → Full verification process (10 minutes)  
+- **Service Issues/Credentials Changed** → Full verification process
+- **Monthly Maintenance** → Full verification recommended
+
 ## Known Script Issues (September 2025)
 - **Temporary directory cleanup failure**: Script may fail with "Directory not empty" - this is non-critical, code sync still succeeds
 - **Container startup interruption**: If script fails after code sync, manually restart with production overrides
@@ -64,7 +70,37 @@ services:
 
 ---
 
-# 🔧 MANDATORY PRE-DEPLOYMENT CHECKS
+# 🔧 PRE-DEPLOYMENT CHECKS
+
+## Quick Deploy Verification (Every Deployment)
+```bash
+# Essential checks - run before every deployment
+ssh slyfox-vps "echo 'SSH connection verified'"
+ssh slyfox-vps "cd /opt/sfweb && docker compose ps | grep Up"
+```
+
+## Full Environment Verification (When Needed)
+
+**Use full verification when:**
+- First deployment to new server
+- Credential changes (passwords, tokens, keys)
+- Services mysteriously failing (contact form, uploads, etc.)
+- Monthly maintenance checks
+- Onboarding new team members
+
+### Environment Variables Check (CRITICAL for above scenarios)
+```bash
+# Verify .env file exists and has required variables
+ssh slyfox-vps "ls -la /opt/sfweb/.env"
+
+# Check critical environment variables are set (values should NOT be ${VAR})
+ssh slyfox-vps "cd /opt/sfweb && docker compose -f docker-compose.yml -f docker-compose.prod.yml config | grep -E 'SMTP_EMAIL|DATABASE_URL|NODE_ENV'"
+
+# Expected output (with real values, not ${VAR}):
+# SMTP_EMAIL: dax.tucker@gmail.com  
+# DATABASE_URL: postgresql://postgres...
+# NODE_ENV: production
+```
 
 ## Platform Verification (CRITICAL)
 ```bash
@@ -229,14 +265,22 @@ curl -X PATCH https://slyfox.co.za/api/site-config/bulk \
 
 # 📋 SUCCESS VERIFICATION
 
-## Mandatory Checks
+## Quick Success Checks (Every Deployment)
 - [ ] `curl -I https://slyfox.co.za` returns HTTP/2 200
 - [ ] `ssh slyfox-vps "cd /opt/sfweb && docker compose ps"` shows both containers Up
 - [ ] Admin panel loads: https://slyfox.co.za/admin
+- [ ] Client portal accessible: `curl -I https://slyfox.co.za/client-portal`
+
+## Full Success Verification (When Environment Changed)
+
+**Use when:** Credentials rotated, mysterious service failures, monthly checks, new team member deployments
+
+- [ ] All quick success checks above ✅
+- [ ] Environment variables loaded: `ssh slyfox-vps "docker exec sfweb-app env | grep -E 'SMTP_EMAIL|NODE_ENV'"` shows real values  
+- [ ] Contact form functional: Test email sending via https://slyfox.co.za/contact
 - [ ] API responds: `curl -s https://slyfox.co.za/api/site-config | head -5`
 - [ ] Mobile test: iPhone user-agent gets proper HTML (not Vite dev assets)
 - [ ] Production mode: `ssh slyfox-vps "docker exec sfweb-app env | grep NODE_ENV"` shows production
-- [ ] Client portal accessible: `curl -I https://slyfox.co.za/client-portal`
 
 ## Mobile Deployment Verification (September 2025)
 After deploying mobile optimizations, verify these specific endpoints:
