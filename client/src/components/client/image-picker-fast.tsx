@@ -381,9 +381,9 @@ export function ImagePickerFast({ shootId, previewSettings, userEmail }: ImagePi
                 onClick={() => goToImage('prev')}
                 aria-label="Previous image"
               >
-                {/* Visual indicator - only shows on hover/active */}
-                <div className="opacity-0 hover:opacity-100 active:opacity-100 bg-black/60 rounded-full p-4 transition-all duration-200 pointer-events-none shadow-xl">
-                  <ChevronLeft className="w-8 h-8 text-white" strokeWidth={2} />
+                {/* Visual indicator - always visible on mobile, enhanced on interaction */}
+                <div className="opacity-60 hover:opacity-100 active:opacity-100 active:scale-110 bg-black/70 rounded-full p-2 transition-all duration-200 pointer-events-none shadow-xl border border-white/20">
+                  <ChevronLeft className="w-5 h-5 text-white" strokeWidth={2.5} />
                 </div>
               </div>
             )}
@@ -394,19 +394,19 @@ export function ImagePickerFast({ shootId, previewSettings, userEmail }: ImagePi
                 onClick={() => goToImage('next')}
                 aria-label="Next image"
               >
-                <div className="opacity-0 hover:opacity-100 active:opacity-100 bg-black/60 rounded-full p-4 transition-all duration-200 pointer-events-none shadow-xl">
-                  <ChevronRight className="w-8 h-8 text-white" strokeWidth={2} />
+                <div className="opacity-60 hover:opacity-100 active:opacity-100 active:scale-110 bg-black/70 rounded-full p-2 transition-all duration-200 pointer-events-none shadow-xl border border-white/20">
+                  <ChevronRight className="w-5 h-5 text-white" strokeWidth={2.5} />
                 </div>
               </div>
             )}
             
-            {/* Close Button - Top Right, Higher Z-index than nav zones */}
+            {/* Close Button - Top Right, Enhanced visibility */}
             <button
               onClick={() => setSelectedImage(null)}
-              className="absolute top-4 right-4 w-10 h-10 bg-gray-600 hover:bg-gray-500 rounded-full flex items-center justify-center shadow-lg transition-all z-40"
+              className="absolute top-4 right-4 w-10 h-10 bg-gray-700/90 hover:bg-gray-600 rounded-full flex items-center justify-center shadow-xl transition-all z-50 border border-white/30"
               aria-label="Close modal"
             >
-              <X className="w-5 h-5 text-white font-bold" strokeWidth={3} />
+              <X className="w-5 h-5 text-white font-bold" strokeWidth={2.5} />
             </button>
             
             {/* Image Container - Fills remaining space above control bar */}
@@ -423,87 +423,82 @@ export function ImagePickerFast({ shootId, previewSettings, userEmail }: ImagePi
               />
             </div>
             
-            {/* Fixed Control Bar - Always at bottom */}
-            <div className="bg-black/95 text-white p-4 border-t border-white/10">
-              {/* Image Info - Top row */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-sm text-gray-200 truncate">{selectedImage.filename}</h3>
-                  <div className="flex items-center gap-4 text-xs text-gray-400 mt-1">
-                    {selectedImage.metadata && (
-                      <span>{(selectedImage.metadata.size / 1024 / 1024).toFixed(1)}MB</span>
-                    )}
-                    <span>{currentIndex + 1 + (currentPage - 1) * IMAGES_PER_PAGE} / {previewImages.length}</span>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Action Buttons - Bottom row, mobile optimized */}
-              <div className="grid grid-cols-4 gap-2">
+            {/* Fixed Control Bar - Always at bottom with iOS safe area */}
+            <div className="bg-black/95 text-white px-4 pt-3 pb-6 border-t border-white/10" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>              
+              {/* Action Buttons - Top row, mobile optimized with larger icons */}
+              <div className="grid grid-cols-4 gap-3 mb-3">
                 {/* Heart (Favorite) */}
                 <button
                   onClick={() => handleSelection(selectedImage.filename, selection === 'favorite' ? 'none' : 'favorite')}
-                  className={`h-12 rounded-lg flex flex-col items-center justify-center transition-all ${
+                  className={`h-14 rounded-xl flex items-center justify-center transition-all ${
                     selection === 'favorite'
-                      ? 'bg-red-500 text-white shadow-lg'
+                      ? 'bg-red-500 text-white shadow-lg shadow-red-500/30'
                       : 'bg-gray-700 text-gray-300 hover:bg-red-500 hover:text-white'
                   }`}
                   disabled={isUpdating(selectedImage.filename)}
+                  title="Add to favorites"
                 >
-                  <Heart className={`w-4 h-4 ${selection === 'favorite' ? 'fill-white' : ''} mb-1`} />
-                  <span className="text-xs font-medium">Favorite</span>
+                  <Heart className={`w-6 h-6 ${selection === 'favorite' ? 'fill-white' : ''}`} />
                 </button>
 
                 {/* Thumbs Up (Like) */}
                 <button
                   onClick={() => handleSelection(selectedImage.filename, selection === 'like' ? 'none' : 'like')}
-                  className={`h-12 rounded-lg flex flex-col items-center justify-center transition-all ${
+                  className={`h-14 rounded-xl flex items-center justify-center transition-all ${
                     selection === 'like'
-                      ? 'bg-green-500 text-white shadow-lg'
+                      ? 'bg-green-500 text-white shadow-lg shadow-green-500/30'
                       : 'bg-gray-700 text-gray-300 hover:bg-green-500 hover:text-white'
                   }`}
                   disabled={isUpdating(selectedImage.filename)}
+                  title="Like this image"
                 >
-                  <ThumbsUp className={`w-4 h-4 mb-1`} />
-                  <span className="text-xs font-medium">Like</span>
+                  <ThumbsUp className="w-6 h-6" />
                 </button>
 
                 {/* Thumbs Down (Dislike) */}
                 <button
                   onClick={() => handleSelection(selectedImage.filename, selection === 'dislike' ? 'none' : 'dislike')}
-                  className={`h-12 rounded-lg flex flex-col items-center justify-center transition-all ${
+                  className={`h-14 rounded-xl flex items-center justify-center transition-all ${
                     selection === 'dislike'
-                      ? 'bg-yellow-500 text-white shadow-lg'
+                      ? 'bg-yellow-500 text-white shadow-lg shadow-yellow-500/30'
                       : 'bg-gray-700 text-gray-300 hover:bg-yellow-500 hover:text-white'
                   }`}
                   disabled={isUpdating(selectedImage.filename)}
+                  title="Dislike this image"
                 >
-                  <ThumbsDown className={`w-4 h-4 mb-1`} />
-                  <span className="text-xs font-medium">Dislike</span>
+                  <ThumbsDown className="w-6 h-6" />
                 </button>
                 
                 {/* Trash (Remove) */}
                 <button
                   onClick={() => handleDeleteImage(selectedImage.filename)}
                   disabled={deletingImage === selectedImage.filename}
-                  className={`h-12 rounded-lg flex flex-col items-center justify-center transition-all ${
+                  className={`h-14 rounded-xl flex items-center justify-center transition-all ${
                     deletingImage === selectedImage.filename
                       ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
                       : 'bg-gray-700 text-gray-300 hover:bg-red-600 hover:text-white'
                   }`}
+                  title={deletingImage === selectedImage.filename ? 'Removing...' : 'Remove from preview'}
                 >
                   {deletingImage === selectedImage.filename ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin mb-1" />
-                      <span className="text-xs font-medium">Wait...</span>
-                    </>
+                    <RefreshCw className="w-6 h-6 animate-spin" />
                   ) : (
-                    <>
-                      <Trash2 className="w-4 h-4 mb-1" />
-                      <span className="text-xs font-medium">Remove</span>
-                    </>
+                    <Trash2 className="w-6 h-6" />
                   )}
                 </button>
+              </div>
+
+              {/* Image Info - Bottom row (near iOS safe area) */}
+              <div className="flex items-center justify-between border-t border-white/10 pt-2">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium text-xs text-gray-300 truncate">{selectedImage.filename}</h3>
+                  <div className="flex items-center gap-4 text-xs text-gray-500 mt-0.5">
+                    {selectedImage.metadata && (
+                      <span>{(selectedImage.metadata.size / 1024 / 1024).toFixed(1)}MB</span>
+                    )}
+                    <span>{currentIndex + 1 + (currentPage - 1) * IMAGES_PER_PAGE} / {previewImages.length}</span>
+                  </div>
+                </div>
               </div>
               
               {/* Global updating indicator */}
