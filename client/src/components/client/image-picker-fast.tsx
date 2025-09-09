@@ -373,137 +373,148 @@ export function ImagePickerFast({ shootId, previewSettings, userEmail }: ImagePi
                         isSelected(selectedImage.filename, 'dislike') ? 'dislike' : 'none';
         
         return (
-          <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center">
-            {/* Left Navigation Button */}
+          <div className="fixed inset-0 bg-black/90 z-50 flex flex-col">
+            {/* ROBUST NAVIGATION TOUCH ZONES - Full coverage with dead zone in middle */}
             {hasPrev && (
-              <button
+              <div 
+                className="absolute top-[20%] left-0 w-[35%] h-[60%] z-30 flex items-center justify-start pl-6 cursor-pointer"
                 onClick={() => goToImage('prev')}
-                className="absolute left-0 top-0 bottom-0 w-1/3 flex items-center justify-start pl-4 group"
                 aria-label="Previous image"
               >
-                <div className="bg-white/10 group-hover:bg-white/20 rounded-full p-3 transition-all">
-                  <ChevronLeft className="w-8 h-8 text-white" />
+                {/* Visual indicator - only shows on hover/active */}
+                <div className="opacity-0 hover:opacity-100 active:opacity-100 bg-black/60 rounded-full p-4 transition-all duration-200 pointer-events-none shadow-xl">
+                  <ChevronLeft className="w-8 h-8 text-white" strokeWidth={2} />
                 </div>
-              </button>
+              </div>
             )}
             
-            {/* Right Navigation Button */}
             {hasNext && (
-              <button
+              <div 
+                className="absolute top-[20%] right-0 w-[35%] h-[60%] z-30 flex items-center justify-end pr-6 cursor-pointer"
                 onClick={() => goToImage('next')}
-                className="absolute right-0 top-0 bottom-0 w-1/3 flex items-center justify-end pr-4 group"
                 aria-label="Next image"
               >
-                <div className="bg-white/10 group-hover:bg-white/20 rounded-full p-3 transition-all">
-                  <ChevronRight className="w-8 h-8 text-white" />
+                <div className="opacity-0 hover:opacity-100 active:opacity-100 bg-black/60 rounded-full p-4 transition-all duration-200 pointer-events-none shadow-xl">
+                  <ChevronRight className="w-8 h-8 text-white" strokeWidth={2} />
                 </div>
-              </button>
+              </div>
             )}
             
-            <div className="relative max-w-4xl max-h-full p-4">
-              {/* Improved Close Button - Solid grey with white X */}
-              <button
-                onClick={() => setSelectedImage(null)}
-                className="absolute -top-2 -right-2 w-12 h-12 bg-gray-600 hover:bg-gray-500 rounded-full flex items-center justify-center shadow-lg transition-all z-10"
-                aria-label="Close modal"
-              >
-                <X className="w-7 h-7 text-white font-bold" strokeWidth={3} />
-              </button>
+            {/* Close Button - Top Right, Higher Z-index than nav zones */}
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-4 right-4 w-10 h-10 bg-gray-600 hover:bg-gray-500 rounded-full flex items-center justify-center shadow-lg transition-all z-40"
+              aria-label="Close modal"
+            >
+              <X className="w-5 h-5 text-white font-bold" strokeWidth={3} />
+            </button>
+            
+            {/* Image Container - Fills remaining space above control bar */}
+            <div className="flex-1 relative flex items-center justify-center p-4 pb-0">              
+              {/* Image - Fills available space */}
               <img
                 src={selectedImage.fullImageUrl || selectedImage.thumbnailUrl || '/images/logos/slyfox-logo-white.png'}
                 alt={selectedImage.filename}
-                className="max-w-full max-h-[80vh] object-contain rounded-lg"
+                className="max-w-full max-h-full object-contain"
+                style={{
+                  // Ensure image doesn't exceed available height
+                  maxHeight: 'calc(100vh - 200px)' // Reserve 200px for control bar
+                }}
               />
-              
-              {/* Enhanced Bottom Info Bar with Action Buttons */}
-              <div className="absolute bottom-0 left-0 right-0 bg-black/80 text-white p-4 rounded-b-lg">
-                {/* Modal Action Buttons - Moved to top of the info bar */}
-                <div className="flex justify-center gap-3 mb-4">
-                  {/* Heart (Favorite) */}
-                  <button
-                    onClick={() => handleSelection(selectedImage.filename, selection === 'favorite' ? 'none' : 'favorite')}
-                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${
-                      selection === 'favorite'
-                        ? 'bg-red-500 text-white shadow-lg shadow-red-500/50'
-                        : 'bg-gray-700 text-gray-300 hover:bg-red-500 hover:text-white'
-                    }`}
-                    disabled={isUpdating(selectedImage.filename)}
-                  >
-                    <Heart className={`w-5 h-5 ${selection === 'favorite' ? 'fill-white' : ''}`} />
-                    <span className="text-sm font-medium">Favorite</span>
-                  </button>
-
-                  {/* Thumbs Up (Like) */}
-                  <button
-                    onClick={() => handleSelection(selectedImage.filename, selection === 'like' ? 'none' : 'like')}
-                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${
-                      selection === 'like'
-                        ? 'bg-green-500 text-white shadow-lg shadow-green-500/50'
-                        : 'bg-gray-700 text-gray-300 hover:bg-green-500 hover:text-white'
-                    }`}
-                    disabled={isUpdating(selectedImage.filename)}
-                  >
-                    <ThumbsUp className={`w-5 h-5 ${selection === 'like' ? 'fill-white' : ''}`} />
-                    <span className="text-sm font-medium">Like</span>
-                  </button>
-
-                  {/* Thumbs Down (Dislike) */}
-                  <button
-                    onClick={() => handleSelection(selectedImage.filename, selection === 'dislike' ? 'none' : 'dislike')}
-                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${
-                      selection === 'dislike'
-                        ? 'bg-yellow-500 text-white shadow-lg shadow-yellow-500/50'
-                        : 'bg-gray-700 text-gray-300 hover:bg-yellow-500 hover:text-white'
-                    }`}
-                    disabled={isUpdating(selectedImage.filename)}
-                  >
-                    <ThumbsDown className={`w-5 h-5 ${selection === 'dislike' ? 'fill-white' : ''}`} />
-                    <span className="text-sm font-medium">Dislike</span>
-                  </button>
-                  
-                  {/* Trash (Remove) - Now functional! */}
-                  <button
-                    onClick={() => handleDeleteImage(selectedImage.filename)}
-                    disabled={deletingImage === selectedImage.filename}
-                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${
-                      deletingImage === selectedImage.filename
-                        ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                        : 'bg-gray-700 text-gray-300 hover:bg-red-600 hover:text-white'
-                    }`}
-                  >
-                    {deletingImage === selectedImage.filename ? (
-                      <RefreshCw className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-5 h-5" />
-                    )}
-                    <span className="text-sm font-medium">
-                      {deletingImage === selectedImage.filename ? 'Removing...' : 'Remove'}
-                    </span>
-                  </button>
-                </div>
-                
-                {/* File Info - Moved to bottom */}
-                <div className="flex items-center justify-between pt-3 border-t border-white/20">
-                  <div>
-                    <h3 className="font-medium text-sm text-gray-300">{selectedImage.filename}</h3>
+            </div>
+            
+            {/* Fixed Control Bar - Always at bottom */}
+            <div className="bg-black/95 text-white p-4 border-t border-white/10">
+              {/* Image Info - Top row */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium text-sm text-gray-200 truncate">{selectedImage.filename}</h3>
+                  <div className="flex items-center gap-4 text-xs text-gray-400 mt-1">
                     {selectedImage.metadata && (
-                      <p className="text-xs text-gray-400">
-                        {(selectedImage.metadata.size / 1024 / 1024).toFixed(1)}MB
-                      </p>
+                      <span>{(selectedImage.metadata.size / 1024 / 1024).toFixed(1)}MB</span>
                     )}
-                  </div>
-                  <div className="text-xs text-gray-400">
-                    {currentIndex + 1 + (currentPage - 1) * IMAGES_PER_PAGE} / {previewImages.length}
+                    <span>{currentIndex + 1 + (currentPage - 1) * IMAGES_PER_PAGE} / {previewImages.length}</span>
                   </div>
                 </div>
-                
-                {/* Updating indicator */}
-                {isUpdating(selectedImage.filename) && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-b-lg">
-                    <RefreshCw className="w-6 h-6 text-white animate-spin" />
-                  </div>
-                )}
               </div>
+              
+              {/* Action Buttons - Bottom row, mobile optimized */}
+              <div className="grid grid-cols-4 gap-2">
+                {/* Heart (Favorite) */}
+                <button
+                  onClick={() => handleSelection(selectedImage.filename, selection === 'favorite' ? 'none' : 'favorite')}
+                  className={`h-12 rounded-lg flex flex-col items-center justify-center transition-all ${
+                    selection === 'favorite'
+                      ? 'bg-red-500 text-white shadow-lg'
+                      : 'bg-gray-700 text-gray-300 hover:bg-red-500 hover:text-white'
+                  }`}
+                  disabled={isUpdating(selectedImage.filename)}
+                >
+                  <Heart className={`w-4 h-4 ${selection === 'favorite' ? 'fill-white' : ''} mb-1`} />
+                  <span className="text-xs font-medium">Favorite</span>
+                </button>
+
+                {/* Thumbs Up (Like) */}
+                <button
+                  onClick={() => handleSelection(selectedImage.filename, selection === 'like' ? 'none' : 'like')}
+                  className={`h-12 rounded-lg flex flex-col items-center justify-center transition-all ${
+                    selection === 'like'
+                      ? 'bg-green-500 text-white shadow-lg'
+                      : 'bg-gray-700 text-gray-300 hover:bg-green-500 hover:text-white'
+                  }`}
+                  disabled={isUpdating(selectedImage.filename)}
+                >
+                  <ThumbsUp className={`w-4 h-4 mb-1`} />
+                  <span className="text-xs font-medium">Like</span>
+                </button>
+
+                {/* Thumbs Down (Dislike) */}
+                <button
+                  onClick={() => handleSelection(selectedImage.filename, selection === 'dislike' ? 'none' : 'dislike')}
+                  className={`h-12 rounded-lg flex flex-col items-center justify-center transition-all ${
+                    selection === 'dislike'
+                      ? 'bg-yellow-500 text-white shadow-lg'
+                      : 'bg-gray-700 text-gray-300 hover:bg-yellow-500 hover:text-white'
+                  }`}
+                  disabled={isUpdating(selectedImage.filename)}
+                >
+                  <ThumbsDown className={`w-4 h-4 mb-1`} />
+                  <span className="text-xs font-medium">Dislike</span>
+                </button>
+                
+                {/* Trash (Remove) */}
+                <button
+                  onClick={() => handleDeleteImage(selectedImage.filename)}
+                  disabled={deletingImage === selectedImage.filename}
+                  className={`h-12 rounded-lg flex flex-col items-center justify-center transition-all ${
+                    deletingImage === selectedImage.filename
+                      ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                      : 'bg-gray-700 text-gray-300 hover:bg-red-600 hover:text-white'
+                  }`}
+                >
+                  {deletingImage === selectedImage.filename ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin mb-1" />
+                      <span className="text-xs font-medium">Wait...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4 mb-1" />
+                      <span className="text-xs font-medium">Remove</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              
+              {/* Global updating indicator */}
+              {isUpdating(selectedImage.filename) && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <div className="bg-white/10 rounded-lg p-4 flex items-center gap-3">
+                    <RefreshCw className="w-5 h-5 text-white animate-spin" />
+                    <span className="text-white text-sm">Updating selection...</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         );
