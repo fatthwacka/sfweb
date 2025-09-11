@@ -739,6 +739,19 @@ export class SupabaseStorage implements IStorage {
     return result.rowCount > 0;
   }
 
+  async updateClientSelectionEditingStatus(selectionId: string, editingComplete: boolean, editingCompletedAt: Date | null): Promise<ClientSelection | undefined> {
+    const result = await db.update(clientSelections)
+      .set({
+        editingComplete,
+        editingCompletedAt,
+        updatedAt: new Date(),
+      })
+      .where(eq(clientSelections.id, selectionId))
+      .returning();
+    
+    return result[0];
+  }
+
   async clearAllClientSelections(shootId: string, clientId: string): Promise<number> {
     // Update all existing selections for this shoot/client to 'none' status
     const result = await db.update(clientSelections)

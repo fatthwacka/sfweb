@@ -109,6 +109,7 @@ export interface IStorage {
   getClientSelections(shootId: string): Promise<ClientSelection[]>;
   upsertClientSelection(selection: Partial<InsertClientSelection>): Promise<ClientSelection>;
   batchUpsertClientSelections(selections: Partial<InsertClientSelection>[]): Promise<ClientSelection[]>;
+  updateClientSelectionEditingStatus(selectionId: string, editingComplete: boolean, editingCompletedAt: Date | null): Promise<ClientSelection | undefined>;
   clearAllClientSelections(shootId: string, clientId: string): Promise<number>;
   
   getSelectionPackage(shootId: string, clientId: string): Promise<SelectionPackage | undefined>;
@@ -1103,6 +1104,23 @@ export class MemStorage implements IStorage {
     }
     
     return results;
+  }
+
+  async updateClientSelectionEditingStatus(selectionId: string, editingComplete: boolean, editingCompletedAt: Date | null): Promise<ClientSelection | undefined> {
+    const selection = this.clientSelections.get(selectionId);
+    if (!selection) {
+      return undefined;
+    }
+
+    const updated: ClientSelection = {
+      ...selection,
+      editingComplete,
+      editingCompletedAt,
+      updatedAt: new Date()
+    };
+
+    this.clientSelections.set(selectionId, updated);
+    return updated;
   }
 
   async clearAllClientSelections(shootId: string, clientId: string): Promise<number> {

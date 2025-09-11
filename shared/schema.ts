@@ -327,6 +327,9 @@ export const shootPreviews = pgTable("shoot_previews", {
   additionalBundle10Price: decimal("additional_bundle_10_price").default("250.00"),
   unlimitedBundlePrice: decimal("unlimited_bundle_price").default("500.00"),
   isActive: boolean("is_active").default(true).notNull(),
+  submissionCompleted: boolean("submission_completed").default(false),
+  submissionCompletedAt: timestamp("submission_completed_at", { withTimezone: true }),
+  submissionCompletedBy: text("submission_completed_by"),
   createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
 });
@@ -342,6 +345,8 @@ export const clientSelections = pgTable("client_selections", {
   isFinalSelection: boolean("is_final_selection").default(false).notNull(),
   selectionOrder: integer("selection_order"), // For final 20 images ordering
   selectedAt: timestamp("selected_at", { withTimezone: true }),
+  editingComplete: boolean("editing_complete").default(false).notNull(), // Photographer editing status
+  editingCompletedAt: timestamp("editing_completed_at", { withTimezone: true }), // When editing was completed
   metadata: jsonb("metadata"), // Store any extra info like dimensions, file size, etc.
   createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),

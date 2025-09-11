@@ -33,7 +33,8 @@ import {
   MousePointer,
   ChevronUp,
   ChevronDown,
-  ExternalLink
+  ExternalLink,
+  Wand2
 } from "lucide-react";
 import { ImagePickerFast } from "./image-picker-fast";
 
@@ -228,9 +229,13 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
 
   const uniqueShootTypes = Array.from(new Set(shoots.map(shoot => shoot.shootType)));
 
-  // Helper function to determine if a shoot is a preview album
+  // Helper functions to determine album status
   const isPreviewAlbum = (shootId: string) => {
-    return !!previewSettings[shootId];
+    return !!previewSettings[shootId] && !previewSettings[shootId].submissionCompleted;
+  };
+  
+  const isSubmittedAlbum = (shootId: string) => {
+    return !!previewSettings[shootId] && previewSettings[shootId].submissionCompleted;
   };
 
   const handleDownloadImage = async (image: Image) => {
@@ -409,7 +414,11 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-start">
                         <div className="space-y-1">
-                          <CardTitle className={`${isPreviewAlbum(shoot.id) ? 'text-cyan' : 'text-salmon'} text-lg`}>
+                          <CardTitle className={`${
+                            isPreviewAlbum(shoot.id) ? 'text-cyan' : 
+                            isSubmittedAlbum(shoot.id) ? 'text-yellow-400' : 
+                            'text-salmon'
+                          } text-lg`}>
                             {shoot.customTitle || shoot.title}
                           </CardTitle>
                           <div className="flex items-center gap-2">
@@ -426,6 +435,12 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                         {isPreviewAlbum(shoot.id) && (
                           <div className="text-xs text-cyan font-medium">
                             image picker
+                          </div>
+                        )}
+                        {isSubmittedAlbum(shoot.id) && (
+                          <div className="text-xs text-yellow-400 font-medium flex items-center gap-1">
+                            <Wand2 className="w-3 h-3" />
+                            editing in progress
                           </div>
                         )}
                       </div>
@@ -457,6 +472,8 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                         className={`w-full text-white ${
                           isPreviewAlbum(shoot.id) 
                             ? 'bg-cyan hover:bg-cyan/90' 
+                            : isSubmittedAlbum(shoot.id)
+                            ? 'bg-yellow-500 hover:bg-yellow-600'
                             : 'bg-salmon hover:bg-salmon-muted'
                         }`}
                         onClick={(e) => {
@@ -464,7 +481,9 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                           setSelectedShoot(shoot.id);
                         }}
                       >
-                        {isPreviewAlbum(shoot.id) ? 'Select Images' : 'View Gallery'}
+                        {isPreviewAlbum(shoot.id) ? 'Select Images' : 
+                         isSubmittedAlbum(shoot.id) ? 'View Gallery (Processing)' :
+                         'View Gallery'}
                       </Button>
                     </CardContent>
                   </Card>
@@ -507,6 +526,11 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                   <CardContent className="p-6">
                     <h2 className="text-2xl font-saira font-bold text-salmon mb-2">
                       {currentShoot.customTitle || currentShoot.title}
+                      {isSubmittedAlbum(selectedShoot) && (
+                        <span className="ml-3 text-sm text-yellow-400 font-normal">
+                          (Selection submitted - editing in progress)
+                        </span>
+                      )}
                     </h2>
                     <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">

@@ -40,6 +40,7 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  console.log("🔄 Routes registration starting - v3");
   console.log('🚀 REGISTER ROUTES START');
   
   // Authentication endpoints
@@ -1635,6 +1636,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // PATCH /api/shoots/:shootId/preview-settings - Update preview settings for a shoot
+  app.patch("/api/shoots/:shootId/preview-settings", async (req, res) => {
+    try {
+      const { shootId } = req.params;
+      const { submission_completed, submission_completed_at, submission_completed_by } = req.body;
+      
+      // Get existing settings first
+      const existingSettings = await storage.getShootPreviewSettings(shootId);
+      if (!existingSettings) {
+        return res.status(404).json({ message: 'Preview settings not found' });
+      }
+      
+      // Update with submission status
+      const updatedSettings = await storage.updateShootPreviewSettings(existingSettings.id, {
+        submissionCompleted: submission_completed,
+        submissionCompletedAt: submission_completed_at ? new Date(submission_completed_at) : undefined,
+        submissionCompletedBy: submission_completed_by
+      });
+      
+      res.json(updatedSettings);
+    } catch (error) {
+      console.error('Error updating preview submission status:', error);
+      res.status(500).json({ message: 'Failed to update submission status' });
+    }
+  });
+
   // POST /api/preview-settings - Create preview settings
   app.post("/api/preview-settings", async (req, res) => {
     try {
@@ -2042,6 +2069,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // PATCH /api/client-selections/:selectionId/editing-status - Update editing completion status
+  app.patch("/api/client-selections/:selectionId/editing-status", async (req, res) => {
+    try {
+      const { selectionId } = req.params;
+      const { editingComplete } = req.body;
+      
+      if (typeof editingComplete !== 'boolean') {
+        return res.status(400).json({ message: 'editingComplete must be a boolean' });
+      }
+      
+      const updatedSelection = await storage.updateClientSelectionEditingStatus(
+        selectionId, 
+        editingComplete,
+        editingComplete ? new Date() : null
+      );
+      
+      if (!updatedSelection) {
+        return res.status(404).json({ message: 'Selection not found' });
+      }
+      
+      res.json(updatedSelection);
+    } catch (error) {
+      console.error('Error updating editing status:', error);
+      res.status(500).json({ message: 'Failed to update editing status' });
+    }
+  });
+
   // POST /api/client-selections/:shootId - Create or update client selection
   app.post("/api/client-selections/:shootId", async (req, res) => {
     let selectionData: any = null;
@@ -2250,6 +2304,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('ERROR clearing selections:', error);
       res.status(500).json({ error: 'Failed to clear selections' });
+    }
+  });
+
+  // POST /api/selections/:shootId/submit - Submit selections to photographer
+  console.log('🚀 Registering POST /api/selections/:shootId/submit endpoint');
+  app.post("/api/selections/:shootId/submit", async (req, res) => {
+    console.log('📧 Submit selections endpoint called for shoot:', req.params.shootId);
+    try {
+      const { shootId } = req.params;
+      const { userEmail, favorites, likes, dislikes, totalImages } = req.body;
+      
+      // Import email service
+      const { sendSelectionSubmissionEmail, validateEmailConfig } = await import('./email-service');
+      
+      // Get shoot details
+      const shoot = await storage.getShoot(shootId);
+      if (!shoot) {
+        return res.status(404).json({ error: 'Shoot not found' });
+      }
+      
+      // Get client info
+      const client = await storage.getProfileByEmail(userEmail);
+      const clientName = client?.name || undefined;
+      
+      // Prepare email data
+      const emailData = {
+        clientEmail: userEmail,
+        clientName,
+        shootTitle: shoot.customTitle || shoot.title,
+        shootDate: new Date(shoot.shootDate).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }),
+        favorites: favorites || [],
+        likes: likes || [],
+        dislikes: dislikes || [],
+        totalImages: totalImages || 0
+      };
+      
+      // Check if email is configured
+      if (!validateEmailConfig()) {
+        console.warn('Email not configured, skipping email notification');
+        // Still return success - we don't want to block the submission
+        return res.json({ 
+          success: true, 
+          message: 'Selection recorded successfully',
+          emailSent: false 
+        });
+      }
+      
+      // Send email
+      await sendSelectionSubmissionEmail(emailData);
+      
+      res.json({ 
+        success: true, 
+        message: 'Selection submitted successfully',
+        emailSent: true 
+      });
+      
+    } catch (error) {
+      console.error('ERROR submitting selections:', error);
+      res.status(500).json({ error: 'Failed to submit selections' });
     }
   });
 

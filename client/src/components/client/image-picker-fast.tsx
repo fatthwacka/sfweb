@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { apiRequest } from '@/lib/queryClient';
 import { useSimpleSelections } from '@/hooks/use-simple-selections';
 import { 
@@ -17,7 +18,13 @@ import {
   RefreshCw,
   ChevronLeft,
   ChevronRight,
-  Camera
+  Camera,
+  HelpCircle,
+  Send,
+  CheckCircle,
+  RotateCcw,
+  Sparkles,
+  Wand2
 } from 'lucide-react';
 
 interface ImagePickerFastProps {
@@ -35,6 +42,11 @@ export function ImagePickerFast({ shootId, previewSettings, userEmail }: ImagePi
   const [currentPage, setCurrentPage] = useState(1);
   const [deletingImage, setDeletingImage] = useState<string | null>(null);
   const [deletedImages, setDeletedImages] = useState<Set<string>>(new Set());
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   
   const IMAGES_PER_PAGE = 40;
   
@@ -98,6 +110,72 @@ export function ImagePickerFast({ shootId, previewSettings, userEmail }: ImagePi
       await clearAllSelections();
       setShowClearDialog(false);
     }
+  };
+
+  const handleConfirmSubmit = async () => {
+    setShowConfirmDialog(false);
+    setIsSubmitting(true);
+    
+    try {
+      // Get all selections organized by type
+      const favorites: string[] = [];
+      const likes: string[] = [];
+      const dislikes: string[] = [];
+      
+      Object.entries(selections).forEach(([filename, selection]) => {
+        if (selection.action === 'favorite') {
+          favorites.push(filename);
+        } else if (selection.action === 'like') {
+          likes.push(filename);
+        } else if (selection.action === 'dislike') {
+          dislikes.push(filename);
+        }
+      });
+
+      // Send to API
+      const response = await apiRequest('POST', `/api/selections/${shootId}/submit`, {
+        userEmail,
+        favorites,
+        likes,
+        dislikes,
+        totalImages: previewImages.length
+      });
+
+      if (response.ok) {
+        // Mark the preview as submitted in the database
+        await apiRequest('PATCH', `/api/shoots/${shootId}/preview-settings`, {
+          submission_completed: true,
+          submission_completed_at: new Date().toISOString(),
+          submission_completed_by: userEmail
+        });
+        
+        setHasSubmitted(true);
+        setShowSuccessMessage(true);
+        setTimeout(() => {
+          setShowSuccessMessage(false);
+          // Reload the page to update the UI
+          window.location.reload();
+        }, 3000);
+      } else {
+        const error = await response.json();
+        alert(`Failed to submit selection: ${error.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Submit failed:', error);
+      alert('Failed to submit selection. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSubmitSelection = () => {
+    if (favoriteCount === 0 && likeCount === 0 && dislikeCount === 0) {
+      alert('Please select at least one image before submitting');
+      return;
+    }
+    
+    // Show confirmation dialog
+    setShowConfirmDialog(true);
   };
 
   const handleDeleteImage = async (imageFilename: string) => {
@@ -202,12 +280,56 @@ export function ImagePickerFast({ shootId, previewSettings, userEmail }: ImagePi
 
   return (
     <div className="mobile-container">
-      {/* Simple Header */}
-      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b">
+      {/* Enhanced Header with proper mobile spacing */}
+      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b mt-4 md:mt-0">
         <div className="mobile-safe-area py-3">
           <div className="text-center">
-            <h1 className="font-semibold text-xl">Select Your Images</h1>
-            <div className="flex items-center justify-center gap-4 text-base text-muted-foreground mt-2">
+            <h1 className="font-semibold text-xl mb-3">Select Your Images</h1>
+            
+            {/* Buttons Row - Top */}
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <button
+                onClick={handleClearAll}
+                className="flex items-center gap-1 px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded-md transition-colors"
+                title="Clear all selections"
+              >
+                <RotateCcw className="w-3 h-3" />
+                Clear All
+              </button>
+              <button
+                onClick={() => setShowHelpModal(true)}
+                className="flex items-center gap-1 px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-md transition-colors"
+                title="How to use"
+              >
+                <HelpCircle className="w-3 h-3" />
+                Help
+              </button>
+              <button
+                onClick={handleSubmitSelection}
+                disabled={isSubmitting || (favoriteCount === 0 && likeCount === 0 && dislikeCount === 0)}
+                className={`flex items-center gap-1 px-3 py-1 text-white text-xs rounded-md transition-colors ${
+                  isSubmitting || (favoriteCount === 0 && likeCount === 0 && dislikeCount === 0)
+                    ? 'bg-gray-500 cursor-not-allowed'
+                    : 'bg-green-500 hover:bg-green-600'
+                }`}
+                title="Submit your selection to the photographer"
+              >
+                {isSubmitting ? (
+                  <>
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-3 h-3" />
+                    Submit Selection
+                  </>
+                )}
+              </button>
+            </div>
+            
+            {/* Statistics Row - Bottom */}
+            <div className="flex items-center justify-center gap-4 text-base text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Camera className="w-5 h-5 text-blue-500" />
                 <span className="font-medium">{previewImages.length}</span>
@@ -224,14 +346,6 @@ export function ImagePickerFast({ shootId, previewSettings, userEmail }: ImagePi
                 <ThumbsDown className="w-5 h-5 text-yellow-500" />
                 <span className="font-medium">{dislikeCount}</span>
               </span>
-              <button
-                onClick={handleClearAll}
-                className="flex items-center gap-1 px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded-lg transition-colors"
-                title="Clear all selections"
-              >
-                <Trash2 className="w-3 h-3" />
-                Clear All
-              </button>
             </div>
           </div>
         </div>
@@ -514,6 +628,175 @@ export function ImagePickerFast({ shootId, previewSettings, userEmail }: ImagePi
           </div>
         );
       })()}
+
+      {/* Help Modal */}
+      {showHelpModal && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="bg-background rounded-lg max-w-lg w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-salmon flex items-center gap-2">
+                  <HelpCircle className="w-5 h-5" />
+                  How to Guide
+                </h2>
+                <button
+                  onClick={() => setShowHelpModal(false)}
+                  className="p-1 hover:bg-gray-700 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="space-y-4 text-sm">
+                <div>
+                  <h3 className="font-semibold text-cyan mb-2">Buttons</h3>
+                  <ul className="space-y-2 text-muted-foreground">
+                    <li className="flex items-start gap-2">
+                      <RotateCcw className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                      <span><strong>Clear:</strong> Reset all your selections to start over.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Send className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span><strong>Submit:</strong> Finalise and send your choices for editing.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <HelpCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                      <span><strong>Help:</strong> Opens this guide.</span>
+                    </li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h3 className="font-semibold text-cyan mb-2">Selection Options</h3>
+                  <ul className="space-y-2 text-muted-foreground">
+                    <li className="flex items-start gap-2">
+                      <Heart className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                      <span><strong>Heart (Favourite):</strong> Your final picks for professional editing. The number of edits is limited by your package (default: {previewSettings.selectionLimit}). If you want more, select them anyway—your photographer will contact you about upgrading.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <ThumbsUp className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span><strong>Thumbs Up (Like):</strong> Shortlist your favourites before making final Heart selections.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <ThumbsDown className="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" />
+                      <span><strong>Thumbs Down (Dislike):</strong> Mark the ones you don't want. This also helps guide your photographer.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Trash2 className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                      <span><strong>Trash Can (Remove):</strong> Permanently delete an image from your album (only available in full-screen view).</span>
+                    </li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h3 className="font-semibold text-cyan mb-2">The Process</h3>
+                  <ol className="space-y-2 text-muted-foreground list-decimal list-inside">
+                    <li><strong>Select:</strong> Review and mark your choices.</li>
+                    <li><strong>Submit:</strong> Send your final selections to your photographer.</li>
+                    <li><strong>Pro Album:</strong> Your selected images will be professionally edited. You'll get an email when your gallery is ready.</li>
+                  </ol>
+                </div>
+                
+                <div>
+                  <h3 className="font-semibold text-cyan mb-2">How to Browse and Select</h3>
+                  <ol className="space-y-2 text-muted-foreground list-decimal list-inside">
+                    <li>Browse your images in grid view.</li>
+                    <li>Click an image or the eye icon to open full size.</li>
+                    <li>Mark images with Heart, Like, or Dislike.</li>
+                    <li>Change your mind anytime—click a different button or click the same button again to clear.</li>
+                    <li>Use arrows in full-screen view to move between images.</li>
+                  </ol>
+                </div>
+                
+                <div className="bg-cyan/10 p-3 rounded-lg">
+                  <p className="text-cyan text-xs">
+                    <strong>Tip:</strong> You can revisit and adjust your selections as often as you like, until you hit Submit. Once submitted, the preview album closes and pro-editing begins!
+                  </p>
+                </div>
+              </div>
+              
+              <div className="mt-6 flex justify-end">
+                <Button
+                  onClick={() => setShowHelpModal(false)}
+                  className="bg-salmon text-white hover:bg-salmon-muted"
+                >
+                  Got it!
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 border-purple-600 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-cyan flex items-center gap-2">
+              <Sparkles className="w-6 h-6" />
+              Ready to Begin the Magic?
+            </DialogTitle>
+            <DialogDescription className="text-gray-200 space-y-3 pt-4">
+              <p className="text-base">
+                🎨 <strong>Your professional album processing is about to begin!</strong>
+              </p>
+              <p>
+                You've selected <span className="text-cyan font-semibold">{favoriteCount} favorite{favoriteCount !== 1 ? 's' : ''}</span>
+                {likeCount > 0 && <span>, <span className="text-green-400 font-semibold">{likeCount} like{likeCount !== 1 ? 's' : ''}</span></span>}
+                {dislikeCount > 0 && <span>, and <span className="text-yellow-400 font-semibold">{dislikeCount} dislike{dislikeCount !== 1 ? 's' : ''}</span></span>}.
+              </p>
+              <div className="bg-purple-950/50 p-3 rounded-lg border border-purple-600/50">
+                <p className="flex items-start gap-2">
+                  <Wand2 className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">
+                    <strong>Important:</strong> Once submitted, your selection will be final and you won't be able to change it. Your photographer will begin the professional editing process immediately.
+                  </span>
+                </p>
+              </div>
+              <p className="text-sm text-gray-300 italic">
+                The artistic transformation of your memories is about to begin...
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 mt-6">
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmDialog(false)}
+              className="flex-1 bg-transparent border-gray-400 text-gray-200 hover:bg-purple-800/50"
+            >
+              Review Again
+            </Button>
+            <Button
+              onClick={handleConfirmSubmit}
+              disabled={isSubmitting}
+              className="flex-1 bg-gradient-to-r from-cyan-500 to-green-500 text-white hover:from-cyan-600 hover:to-green-600 shadow-lg"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  Submit Selection
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Message */}
+      {showSuccessMessage && (
+        <div className="fixed top-4 right-4 z-50 bg-green-500 text-white p-4 rounded-lg shadow-lg flex items-start gap-3 max-w-md animate-slide-in-right">
+          <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+          <div>
+            <h3 className="font-semibold mb-1">Selection Submitted!</h3>
+            <p className="text-sm">Thank you for confirming your selection. Your photographer will begin professional edits on your images.</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

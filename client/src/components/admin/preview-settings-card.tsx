@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -23,7 +25,12 @@ import {
   Eye,
   EyeOff,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  Wand2,
+  FileText,
+  Heart,
+  ThumbsUp,
+  ThumbsDown
 } from 'lucide-react';
 
 interface PreviewSettingsCardProps {
@@ -40,6 +47,23 @@ interface PreviewSettings {
   additionalBundle10Price: string;
   unlimitedBundlePrice: string;
   isActive: boolean;
+  submissionCompleted?: boolean;
+  submissionCompletedAt?: string;
+  submissionCompletedBy?: string;
+}
+
+interface ClientSelection {
+  id: string;
+  shootId: string;
+  clientId: string;
+  imageFilename: string;
+  selectionStatus: string;
+  isFinalSelection: boolean;
+  selectedAt: string | null;
+  editingComplete: boolean;
+  editingCompletedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
@@ -48,6 +72,7 @@ export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLimitsExpanded, setIsLimitsExpanded] = useState(false);
+  const [showSelectionsModal, setShowSelectionsModal] = useState(false);
   const [settings, setSettings] = useState<PreviewSettings>({
     shootId,
     dropboxFolderPath: '',
@@ -57,7 +82,53 @@ export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
     additionalBundle10Price: '250.00',
     unlimitedBundlePrice: '500.00',
     isActive: false,
+    submissionCompleted: false,
   });
+
+  // Fetch client selections for the modal
+  const { data: clientSelections = [] } = useQuery<ClientSelection[]>({
+    queryKey: ['client-selections', shootId],
+    queryFn: async () => {
+      const response = await apiRequest('GET', `/api/client-selections/${shootId}`);
+      return await response.json();
+    },
+    enabled: !!shootId && showSelectionsModal,
+  });
+
+  // Helper function to check if submitted
+  const isSubmitted = settings.submissionCompleted;
+  const isLocked = isSubmitted && !isEditing;
+
+  // Mutation to update editing status
+  const updateEditingStatusMutation = useMutation({
+    mutationFn: async ({ selectionId, editingComplete }: { selectionId: string; editingComplete: boolean }) => {
+      const response = await apiRequest('PATCH', `/api/client-selections/${selectionId}/editing-status`, {
+        editingComplete
+      });
+      return await response.json();
+    },
+    onSuccess: () => {
+      // Refetch the client selections to update the UI
+      queryClient.invalidateQueries({ queryKey: ['client-selections', shootId] });
+      toast({
+        title: 'Success',
+        description: 'Editing status updated successfully',
+      });
+    },
+    onError: (error) => {
+      console.error('Error updating editing status:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update editing status',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Helper function to handle checkbox change
+  const handleEditingStatusChange = (selectionId: string, checked: boolean) => {
+    updateEditingStatusMutation.mutate({ selectionId, editingComplete: checked });
+  };
 
   // Fetch existing preview settings
   const { data: existingSettings, isLoading } = useQuery({
@@ -191,18 +262,40 @@ export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
             Client Preview Selection Settings
           </CardTitle>
           <div className="flex items-center gap-2">
-            {settings.isActive && (
+            {isSubmitted && (
+              <Badge variant="default" className="bg-yellow-500">
+                <Wand2 className="w-3 h-3 mr-1" />
+                Selection Submitted
+              </Badge>
+            )}
+            {!isSubmitted && settings.isActive && (
               <Badge variant="default" className="bg-green-600">
                 <Eye className="w-3 h-3 mr-1" />
                 Active
               </Badge>
             )}
-            {!settings.isActive && (
+            {!isSubmitted && !settings.isActive && (
               <Badge variant="secondary">
                 <EyeOff className="w-3 h-3 mr-1" />
                 Inactive
               </Badge>
             )}
+            {/* View Selections button - always visible when submitted */}
+            {isSubmitted && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowSelectionsModal(true);
+                }}
+                className="border-yellow-500/30 text-yellow-600 hover:border-yellow-500 hover:bg-yellow-500 hover:text-white"
+              >
+                <FileText className="w-4 h-4 mr-1" />
+                View Selections
+              </Button>
+            )}
+            {/* Expanded state buttons */}
             {isExpanded && !isEditing && (
               <Button
                 size="sm"
@@ -211,7 +304,10 @@ export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
                   e.stopPropagation();
                   setIsEditing(true);
                 }}
-                className="border-salmon/30 text-salmon hover:border-salmon hover:bg-salmon hover:text-white"
+                disabled={isSubmitted}
+                className={`border-salmon/30 text-salmon hover:border-salmon hover:bg-salmon hover:text-white ${
+                  isSubmitted ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
                 <Settings className="w-4 h-4 mr-1" />
                 Configure
@@ -237,17 +333,19 @@ export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
               placeholder="https://www.dropbox.com/sh/..."
               value={settings.dropboxShareLink}
               onChange={(e) => setSettings({ ...settings, dropboxShareLink: e.target.value })}
-              disabled={!isEditing}
-              className="font-mono text-sm min-h-[60px]"
+              disabled={!isEditing || isLocked}
+              className={`font-mono text-sm min-h-[60px] ${
+                isLocked ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             />
           </div>
 
-          {isEditing && (settings.dropboxFolderPath || settings.dropboxShareLink) && (
+          {isEditing && (settings.dropboxFolderPath || settings.dropboxShareLink) && !isLocked && (
             <Button
               variant="outline"
               size="sm"
               onClick={() => testConnectionMutation.mutate()}
-              disabled={testConnectionMutation.isPending}
+              disabled={testConnectionMutation.isPending || isLocked}
               className="w-full"
             >
               {testConnectionMutation.isPending ? (
@@ -283,7 +381,8 @@ export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
                 max="100"
                 value={settings.selectionLimit}
                 onChange={(e) => setSettings({ ...settings, selectionLimit: parseInt(e.target.value) || 20 })}
-                disabled={!isEditing}
+                disabled={!isEditing || isLocked}
+                className={isLocked ? 'opacity-50 cursor-not-allowed' : ''}
               />
               <p className="text-xs text-muted-foreground">
                 Number of images included in base package
@@ -301,8 +400,8 @@ export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
                   min="0"
                   value={settings.additionalBundle5Price}
                   onChange={(e) => setSettings({ ...settings, additionalBundle5Price: e.target.value })}
-                  disabled={!isEditing}
-                  className="pl-9"
+                  disabled={!isEditing || isLocked}
+                  className={`pl-9 ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
                 />
               </div>
             </div>
@@ -318,8 +417,8 @@ export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
                   min="0"
                   value={settings.additionalBundle10Price}
                   onChange={(e) => setSettings({ ...settings, additionalBundle10Price: e.target.value })}
-                  disabled={!isEditing}
-                  className="pl-9"
+                  disabled={!isEditing || isLocked}
+                  className={`pl-9 ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
                 />
               </div>
             </div>
@@ -335,8 +434,8 @@ export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
                   min="0"
                   value={settings.unlimitedBundlePrice}
                   onChange={(e) => setSettings({ ...settings, unlimitedBundlePrice: e.target.value })}
-                  disabled={!isEditing}
-                  className="pl-9"
+                  disabled={!isEditing || isLocked}
+                  className={`pl-9 ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
                 />
               </div>
             </div>
@@ -375,7 +474,22 @@ export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
         )}
 
         {/* Info Section */}
-        {!isEditing && settings.isActive && (
+        {!isEditing && isSubmitted && (
+          <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+            <div className="flex items-start gap-2">
+              <Wand2 className="w-5 h-5 text-yellow-500 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-yellow-600">Client Selection Submitted</p>
+                <p className="text-xs text-muted-foreground">
+                  The client has finalized their image selection. Settings are locked to prevent accidental changes.
+                  Submitted by {settings.submissionCompletedBy} on {settings.submissionCompletedAt ? new Date(settings.submissionCompletedAt).toLocaleDateString() : 'Unknown date'}.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!isEditing && !isSubmitted && settings.isActive && (
           <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
             <div className="flex items-start gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
@@ -405,6 +519,199 @@ export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
         )}
         </CardContent>
       )}
+
+      {/* Client Selections Modal */}
+      <Dialog open={showSelectionsModal} onOpenChange={setShowSelectionsModal}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-yellow-600">
+              <FileText className="w-5 h-5" />
+              Client Image Selections - Editing Checklist
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Overall Progress */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-semibold text-blue-800">Overall Progress</span>
+                <span className="text-blue-600">
+                  {clientSelections.filter(s => s.editingComplete).length} / {clientSelections.length} images edited
+                </span>
+              </div>
+              <div className="w-full bg-blue-200 rounded-full h-2">
+                <div 
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  style={{
+                    width: `${clientSelections.length > 0 ? (clientSelections.filter(s => s.editingComplete).length / clientSelections.length) * 100 : 0}%`
+                  }}
+                ></div>
+              </div>
+            </div>
+            {/* Submission Info */}
+            {isSubmitted && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle className="w-5 h-5 text-yellow-600" />
+                  <h3 className="font-semibold text-yellow-800">Selection Submitted</h3>
+                </div>
+                <div className="text-sm text-yellow-700 space-y-1">
+                  <p><strong>Submitted by:</strong> {settings.submissionCompletedBy}</p>
+                  <p><strong>Submitted at:</strong> {settings.submissionCompletedAt ? new Date(settings.submissionCompletedAt).toLocaleString() : 'Unknown'}</p>
+                  <p className="text-yellow-600">⚠️ Preview settings are now locked to prevent accidental changes.</p>
+                </div>
+              </div>
+            )}
+
+            {/* Selections Summary */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <Heart className="w-4 h-4 text-red-500" />
+                  <span className="font-semibold text-red-700">Favorites</span>
+                </div>
+                <div className="text-2xl font-bold text-red-600">
+                  {clientSelections.filter(s => s.selectionStatus === 'favorite' && s.editingComplete).length} / {clientSelections.filter(s => s.selectionStatus === 'favorite').length}
+                </div>
+                <div className="text-xs text-red-500 mt-1">edited</div>
+              </div>
+              
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <ThumbsUp className="w-4 h-4 text-green-500" />
+                  <span className="font-semibold text-green-700">Likes</span>
+                </div>
+                <div className="text-2xl font-bold text-green-600">
+                  {clientSelections.filter(s => s.selectionStatus === 'like' && s.editingComplete).length} / {clientSelections.filter(s => s.selectionStatus === 'like').length}
+                </div>
+                <div className="text-xs text-green-500 mt-1">edited</div>
+              </div>
+              
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-center">
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <ThumbsDown className="w-4 h-4 text-yellow-500" />
+                  <span className="font-semibold text-yellow-700">Dislikes</span>
+                </div>
+                <div className="text-2xl font-bold text-yellow-600">
+                  {clientSelections.filter(s => s.selectionStatus === 'dislike' && s.editingComplete).length} / {clientSelections.filter(s => s.selectionStatus === 'dislike').length}
+                </div>
+                <div className="text-xs text-yellow-500 mt-1">edited</div>
+              </div>
+            </div>
+
+            {/* Image Lists */}
+            <div className="space-y-6">
+              {/* Favorites */}
+              {clientSelections.filter(s => s.selectionStatus === 'favorite').length > 0 && (
+                <div>
+                  <h3 className="flex items-center gap-2 text-lg font-semibold text-red-600 mb-3">
+                    <Heart className="w-5 h-5" />
+                    Favorite Images ({clientSelections.filter(s => s.selectionStatus === 'favorite').length})
+                  </h3>
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      {clientSelections
+                        .filter(s => s.selectionStatus === 'favorite')
+                        .sort((a, b) => a.imageFilename.localeCompare(b.imageFilename))
+                        .map((selection) => (
+                          <div key={selection.id} className={`flex items-center gap-3 p-3 rounded border transition-all ${
+                            selection.editingComplete 
+                              ? 'bg-green-50 border-green-200 text-green-800' 
+                              : 'bg-white border-red-200 text-red-700'
+                          }`}>
+                            <Checkbox
+                              checked={selection.editingComplete}
+                              onCheckedChange={(checked) => handleEditingStatusChange(selection.id, !!checked)}
+                              disabled={updateEditingStatusMutation.isPending}
+                            />
+                            <span className="font-mono text-xs flex-1">{selection.imageFilename}</span>
+                            {selection.editingComplete && (
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                            )}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Likes */}
+              {clientSelections.filter(s => s.selectionStatus === 'like').length > 0 && (
+                <div>
+                  <h3 className="flex items-center gap-2 text-lg font-semibold text-green-600 mb-3">
+                    <ThumbsUp className="w-5 h-5" />
+                    Liked Images ({clientSelections.filter(s => s.selectionStatus === 'like').length})
+                  </h3>
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      {clientSelections
+                        .filter(s => s.selectionStatus === 'like')
+                        .sort((a, b) => a.imageFilename.localeCompare(b.imageFilename))
+                        .map((selection) => (
+                          <div key={selection.id} className={`flex items-center gap-3 p-3 rounded border transition-all ${
+                            selection.editingComplete 
+                              ? 'bg-green-50 border-green-200 text-green-800' 
+                              : 'bg-white border-green-200 text-green-700'
+                          }`}>
+                            <Checkbox
+                              checked={selection.editingComplete}
+                              onCheckedChange={(checked) => handleEditingStatusChange(selection.id, !!checked)}
+                              disabled={updateEditingStatusMutation.isPending}
+                            />
+                            <span className="font-mono text-xs flex-1">{selection.imageFilename}</span>
+                            {selection.editingComplete && (
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                            )}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Dislikes */}
+              {clientSelections.filter(s => s.selectionStatus === 'dislike').length > 0 && (
+                <div>
+                  <h3 className="flex items-center gap-2 text-lg font-semibold text-yellow-600 mb-3">
+                    <ThumbsDown className="w-5 h-5" />
+                    Disliked Images ({clientSelections.filter(s => s.selectionStatus === 'dislike').length})
+                  </h3>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      {clientSelections
+                        .filter(s => s.selectionStatus === 'dislike')
+                        .map((selection) => (
+                          <div key={selection.id} className={`flex items-center gap-3 p-3 rounded border transition-all ${
+                            selection.editingComplete 
+                              ? 'bg-green-50 border-green-200 text-green-800' 
+                              : 'bg-white border-yellow-200 text-yellow-700'
+                          }`}>
+                            <Checkbox
+                              checked={selection.editingComplete}
+                              onCheckedChange={(checked) => handleEditingStatusChange(selection.id, !!checked)}
+                              disabled={updateEditingStatusMutation.isPending}
+                            />
+                            <span className="font-mono text-xs flex-1">{selection.imageFilename}</span>
+                            {selection.editingComplete && (
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                            )}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {clientSelections.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>No client selections found.</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
