@@ -1994,6 +1994,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Use the site config router for configuration management
   app.use(siteConfigRouter);
+  
 
   // GET /api/images/featured - Get featured images
   app.get("/api/images/featured", async (req, res) => {

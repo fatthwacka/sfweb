@@ -247,31 +247,63 @@ export function PortfolioShowcase() {
             A glimpse into our creative journey - showcasing moments that matter, stories that inspire, and memories that last forever.
           </p>
 
-          {/* Filter buttons */}
-          <div className="flex flex-wrap justify-center gap-4 mb-12 portrait:max-sm:grid portrait:max-sm:grid-cols-6 portrait:max-sm:gap-2 portrait:max-sm:max-w-sm portrait:max-sm:mx-auto [&>*:nth-child(5)]:portrait:max-sm:col-start-2 [&>*:nth-child(6)]:portrait:max-sm:col-start-4 [&>*:nth-child(7)]:portrait:max-sm:col-start-6">
-            {filterOptions.map(option => (
-              <Button
-                key={option.value}
-                onClick={() => handleFilterClick(option.value)}
-                variant="outline"
-                className={`px-6 py-3 font-barlow font-semibold rounded-full transition-all duration-300 portrait:max-sm:px-3 portrait:max-sm:py-2 portrait:max-sm:text-sm ${
-                  activeFilter === option.value
-                    ? "border-gray-400 bg-gradient-to-r from-gray-600 to-gray-500 text-white hover:from-gray-500 hover:to-gray-400"
-                    : "border-gray-500 bg-gradient-to-r from-gray-700/30 to-gray-600/10 text-gray-300 hover:border-gray-400 hover:from-gray-600/20 hover:to-gray-500/10 hover:text-gray-200"
-                }`}
-              >
-                {option.value === "all" ? (
-                  <RefreshCw className={`w-4 h-4 transition-transform duration-500 ${isRefreshing ? 'animate-spin' : ''}`} />
-                ) : (
-                  <>
-                    {option.label}
-                    {activeFilter === option.value && (
-                      <RefreshCw className={`w-4 h-4 ml-2 transition-transform duration-500 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {/* Filter buttons - Desktop: flex wrap, Mobile: horizontal scroll */}
+          <div className="mb-12">
+            {/* Mobile horizontal scroll container */}
+            <div className="sm:hidden overflow-x-auto scrollbar-hide">
+              <div className="flex gap-2 px-4 pb-2" style={{ width: 'max-content' }}>
+                {filterOptions.map(option => (
+                  <Button
+                    key={option.value}
+                    onClick={() => handleFilterClick(option.value)}
+                    variant="outline"
+                    className={`px-4 py-2 font-barlow font-semibold rounded-full transition-all duration-300 text-sm whitespace-nowrap flex-shrink-0 ${
+                      activeFilter === option.value
+                        ? "border-gray-400 bg-gradient-to-r from-gray-600 to-gray-500 text-white hover:from-gray-500 hover:to-gray-400"
+                        : "border-gray-500 bg-gradient-to-r from-gray-700/30 to-gray-600/10 text-gray-300 hover:border-gray-400 hover:from-gray-600/20 hover:to-gray-500/10 hover:text-gray-200"
+                    }`}
+                  >
+                    {option.value === "all" ? (
+                      <RefreshCw className={`w-4 h-4 transition-transform duration-500 ${isRefreshing ? 'animate-spin' : ''}`} />
+                    ) : (
+                      <>
+                        {option.label}
+                        {activeFilter === option.value && (
+                          <RefreshCw className={`w-3 h-3 ml-1.5 transition-transform duration-500 ${isRefreshing ? 'animate-spin' : ''}`} />
+                        )}
+                      </>
                     )}
-                  </>
-                )}
-              </Button>
-            ))}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Desktop flex wrap container */}
+            <div className="hidden sm:flex flex-wrap justify-center gap-4">
+              {filterOptions.map(option => (
+                <Button
+                  key={option.value}
+                  onClick={() => handleFilterClick(option.value)}
+                  variant="outline"
+                  className={`px-6 py-3 font-barlow font-semibold rounded-full transition-all duration-300 ${
+                    activeFilter === option.value
+                      ? "border-gray-400 bg-gradient-to-r from-gray-600 to-gray-500 text-white hover:from-gray-500 hover:to-gray-400"
+                      : "border-gray-500 bg-gradient-to-r from-gray-700/30 to-gray-600/10 text-gray-300 hover:border-gray-400 hover:from-gray-600/20 hover:to-gray-500/10 hover:text-gray-200"
+                  }`}
+                >
+                  {option.value === "all" ? (
+                    <RefreshCw className={`w-4 h-4 transition-transform duration-500 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  ) : (
+                    <>
+                      {option.label}
+                      {activeFilter === option.value && (
+                        <RefreshCw className={`w-4 h-4 ml-2 transition-transform duration-500 ${isRefreshing ? 'animate-spin' : ''}`} />
+                      )}
+                    </>
+                  )}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
 

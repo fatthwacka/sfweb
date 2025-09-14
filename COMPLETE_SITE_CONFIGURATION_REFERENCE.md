@@ -316,4 +316,41 @@ These pages/components do NOT use configuration and remain static:
 - Category pages → `/shared/types/category-config.ts` defaults
 - Empty arrays/objects → Component-level fallbacks
 
+### **⚠️ Configuration Data Merging Behavior**
+
+**CRITICAL DEBUGGING PRINCIPLE**: The API endpoint `/api/site-config` performs a `deepMerge(defaultConfig, configOverrides)` operation that can create unexpected data combinations when debugging configuration issues.
+
+**The Problem**:
+```javascript
+// site-config-api.ts line 1220
+const mergedConfig = deepMerge(defaultConfig, configOverrides);
+```
+
+**What This Means**:
+- **Default config** provides baseline data (e.g., 3 testimonials hardcoded in API)
+- **Config overrides** adds additional data (e.g., 4 testimonials saved via admin panel)
+- **Merge result** combines both sources (e.g., 7 testimonials total in frontend)
+
+**Debugging Confusion**:
+- ❌ **Config files show**: Only saved/override data (partial picture)
+- ❌ **TypeScript defaults show**: Only baseline data (partial picture)
+- ✅ **API response shows**: Complete merged data (actual runtime data)
+
+**Investigation Method**:
+1. **Check API response first**: `curl http://localhost:3000/api/site-config`
+2. **Then check individual sources**: config files vs. TypeScript defaults
+3. **Understand the merge logic**: Arrays concatenate, objects merge deeply
+
+**Common Scenarios**:
+- **Arrays**: Default items + override items = combined array
+- **Objects**: Default properties + override properties = merged object
+- **Replacements**: Override completely replaces default (depends on merge strategy)
+
+**When Data Sources Don't Match Runtime**:
+- Frontend displays X items but config file shows Y items
+- Component works with merged data, not individual file data
+- Admin panel saves incremental changes, not complete replacements
+
+This behavior is architectural - not a bug - but creates debugging confusion when the data source isn't immediately obvious.
+
 This reference provides complete visibility into the entire site configuration system, enabling efficient development, deployment, and troubleshooting.

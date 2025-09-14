@@ -288,7 +288,6 @@ export interface ExtendedSiteConfig {
       effects: string[];
     };
     servicesOverview: any;
-    testimonials: any;
   };
   gradients?: {
     [sectionName: string]: GradientConfig;

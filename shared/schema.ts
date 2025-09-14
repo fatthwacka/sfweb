@@ -42,6 +42,7 @@ export const clients = pgTable("clients", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
 });
 
+
 export const shoots = pgTable("shoots", {
   id: uuid("id").defaultRandom().primaryKey(),
   clientId: text("client_id").notNull(), // Stores client email for email-based matching
@@ -382,6 +383,7 @@ export const previewImages = pgTable("preview_images", {
   createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
 });
 
+
 // Insert schemas for new tables
 export const insertShootPreviewSchema = createInsertSchema(shootPreviews).omit({
   id: true,
@@ -406,6 +408,7 @@ export const insertPreviewImageSchema = createInsertSchema(previewImages).omit({
   id: true,
   createdAt: true,
 });
+
 
 // Types for new tables
 export type ShootPreview = typeof shootPreviews.$inferSelect;

@@ -132,7 +132,7 @@ export function EnhancedHeroSlider() {
       {/* Multiple slides - always slide right-to-left */}
       <div className="absolute inset-0">
         {slides.map((slide, index) => {
-          // Calculate position relative to current slide for proper looping
+          // Enhanced positioning logic for double-split effect on all transitions
           let position;
           const diff = index - currentSlide;
           
@@ -140,8 +140,19 @@ export function EnhancedHeroSlider() {
             position = 'translate-x-0'; // Current slide - visible
           } else if (diff < 0 || (currentSlide === 0 && index === totalSlides - 1)) {
             position = '-translate-x-full'; // Previous slides - hidden left
+          } else if (diff === 1 || (currentSlide === totalSlides - 1 && index === 0)) {
+            // Next slide coming from right - enhanced for wrap-around
+            position = 'translate-x-full';
           } else {
-            position = 'translate-x-full'; // Next slides - waiting right
+            // Create double-split effect: position multiple slides on left for stronger conflicts
+            const wrapAroundPrevious1 = (currentSlide - 2 + totalSlides) % totalSlides;
+            const wrapAroundPrevious2 = (currentSlide - 3 + totalSlides) % totalSlides;
+            
+            if (index === wrapAroundPrevious1 || index === wrapAroundPrevious2) {
+              position = '-translate-x-full'; // Position extra slides on left for conflict
+            } else {
+              position = 'translate-x-full'; // Default right positioning
+            }
           }
           
           return (
