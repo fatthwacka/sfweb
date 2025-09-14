@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 // import { DatePicker } from "@/components/ui/date-picker";
@@ -104,8 +105,10 @@ export function AdminContent({ userRole }: AdminContentProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'shoots' | 'images' | 'galleries' | 'site-management' | 'staff' | 'users'>('overview');
   const [activePageSettings, setActivePageSettings] = useState<'contact' | 'homepage' | 'portfolio' | 'photography' | 'about' | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortOrder, setSortOrder] = useState<'alphabetical' | 'alphabetical-reverse' | 'date-newest' | 'date-oldest'>('date-newest');
   const [newClientOpen, setNewClientOpen] = useState(false);
   const [newShootOpen, setNewShootOpen] = useState(false);
+  const [clientShootDialogOpen, setClientShootDialogOpen] = useState<string | null>(null);
 
   // Generate SEO keywords based on shoot type and location
   const generateSEOKeywords = (shootType: string, location: string, clientName: string) => {
@@ -268,6 +271,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/shoots"] });
       setNewShootOpen(false);
+      setClientShootDialogOpen(null); // Close client-specific dialog
       toast({
         title: "Success",
         description: "Shoot created successfully"
@@ -551,11 +555,40 @@ export function AdminContent({ userRole }: AdminContentProps) {
     createUserMutation.mutate(data);
   };
 
-  // Filter data based on search term
-  const filteredClients = clients.filter(client =>
-    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (client.email && client.email.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  // Enhanced filter that searches through client data and their shoots
+  const filteredClients = clients.filter(client => {
+    // Search in client data
+    const matchesClient = 
+      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (client.email && client.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (client.slug && client.slug.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    // Search in client's shoots
+    const clientShoots = getClientShoots(client.email);
+    const matchesShoot = clientShoots.some(shoot =>
+      shoot.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (shoot.shootType && shoot.shootType.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (shoot.location && shoot.location.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+    
+    return matchesClient || matchesShoot;
+  });
+  
+  // Sort filtered clients based on selected order
+  const sortedClients = [...filteredClients].sort((a, b) => {
+    switch (sortOrder) {
+      case 'alphabetical':
+        return a.name.localeCompare(b.name);
+      case 'alphabetical-reverse':
+        return b.name.localeCompare(a.name);
+      case 'date-newest':
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      case 'date-oldest':
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      default:
+        return 0;
+    }
+  });
 
   const filteredShoots = shoots.filter(shoot =>
     shoot.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -926,7 +959,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
 
 
   return (
-    <>
+    <TooltipProvider>
       {/* Tab Navigation */}
       <div className="mt-8 flex space-x-8 border-b border-border">
         {[
@@ -1297,19 +1330,9 @@ export function AdminContent({ userRole }: AdminContentProps) {
 
           {activeTab === 'clients' && (
             <div className="space-y-6">
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-saira font-bold text-salmon">Clients Management</h2>
-                <div className="flex gap-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <Input
-                      placeholder="Search clients..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                  <Dialog open={newClientOpen} onOpenChange={setNewClientOpen}>
+                <Dialog open={newClientOpen} onOpenChange={setNewClientOpen}>
                     <DialogTrigger asChild>
                       <Button className="bg-salmon text-white hover:bg-salmon-muted">
                         <Plus className="w-4 h-4 mr-2" />
@@ -1362,87 +1385,161 @@ export function AdminContent({ userRole }: AdminContentProps) {
                       </form>
                     </DialogContent>
                   </Dialog>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Input
+                    placeholder="Search clients, shoots, locations..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant={sortOrder === 'alphabetical' || sortOrder === 'alphabetical-reverse' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSortOrder(sortOrder === 'alphabetical' ? 'alphabetical-reverse' : 'alphabetical')}
+                    className={sortOrder === 'alphabetical' || sortOrder === 'alphabetical-reverse' ? 'bg-salmon text-white' : ''}
+                  >
+                    {sortOrder === 'alphabetical-reverse' ? 'Z-A' : 'A-Z'}
+                  </Button>
+                  <Button
+                    variant={sortOrder === 'date-newest' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSortOrder('date-newest')}
+                    className={sortOrder === 'date-newest' ? 'bg-salmon text-white' : ''}
+                  >
+                    Newest
+                  </Button>
+                  <Button
+                    variant={sortOrder === 'date-oldest' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSortOrder('date-oldest')}
+                    className={sortOrder === 'date-oldest' ? 'bg-salmon text-white' : ''}
+                  >
+                    Oldest
+                  </Button>
                 </div>
               </div>
 
               <div className="grid gap-4">
                 {clientsLoading ? (
                   <div className="text-center py-8">Loading clients...</div>
-                ) : filteredClients.length === 0 ? (
+                ) : sortedClients.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     {searchTerm ? 'No clients found matching your search.' : 'No clients yet. Add your first client!'}
                   </div>
                 ) : (
-                  filteredClients.map(client => (
+                  sortedClients.map(client => (
                     <Card key={client.id} className="admin-gradient-card">
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start">
-                          <div className="space-y-2">
+                          <div className="w-full">
                             <h3 className="text-lg font-semibold text-salmon">{client.name}</h3>
                             
-                            {/* Client Shoots */}
-                            <div className="space-y-2">
+                            {/* Client Info Line - closer to title */}
+                            <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mt-1 mb-4">
+                              <a 
+                                href={`mailto:${client.email}`}
+                                className="flex items-center gap-1 hover:text-salmon transition-colors"
+                              >
+                                <Mail className="w-3 h-3" />
+                                {client.email}
+                              </a>
+                              <span className="flex items-center gap-1">
+                                <User className="w-3 h-3" />
+                                /{client.slug}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                Client since: {new Date(client.createdAt).toLocaleDateString('en-GB', { 
+                                  day: '2-digit', 
+                                  month: 'short', 
+                                  year: 'numeric' 
+                                })}
+                              </span>
+                            </div>
+                            
+                            {/* Client Shoots Grid with containers */}
+                            <div className="pr-4">
                               {(() => {
                                 const clientShoots = getClientShoots(client.email);
-                                const displayShoots = clientShoots.slice(0, 3);
-                                const hasMore = clientShoots.length > 3;
+                                
+                                if (clientShoots.length === 0) {
+                                  return (
+                                    <div className="text-sm text-muted-foreground italic">No shoots yet</div>
+                                  );
+                                }
+                                
+                                // Group shoots into columns for better container placement
+                                const columns = 3;
+                                const shootColumns: typeof clientShoots[] = [[], [], []];
+                                clientShoots.forEach((shoot, index) => {
+                                  shootColumns[index % columns].push(shoot);
+                                });
                                 
                                 return (
-                                  <div className="space-y-1">
-                                    {displayShoots.map(shoot => (
-                                      <div key={shoot.id} className="flex items-center justify-between text-sm text-muted-foreground">
-                                        <div className="flex items-center gap-2">
-                                          <Eye 
-                                            className="w-4 h-4 icon-cyan cursor-pointer hover:text-salmon transition-colors" 
-                                            onClick={() => {
-                                              setActiveTab('galleries');
-                                              setSelectedShoot(shoot.id);
-                                            }}
-                                          />
-                                          <span>{shoot.title}</span>
-                                        </div>
-                                        <Button 
-                                          size="sm" 
-                                          variant="outline" 
-                                          className="h-6 px-2 text-xs hover:border-salmon hover:text-salmon"
-                                          onClick={() => {
-                                            setActiveTab('galleries');
-                                            setSelectedShoot(shoot.id);
-                                          }}
+                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    {shootColumns.map((columnShoots, colIndex) => (
+                                      columnShoots.length > 0 && (
+                                        <div 
+                                          key={colIndex}
+                                          className="bg-black/20 border border-gray-600/30 rounded-md p-2 space-y-1"
                                         >
-                                          View
-                                        </Button>
-                                      </div>
+                                          {columnShoots.map(shoot => (
+                                            <div key={shoot.id} className="flex items-center text-sm text-muted-foreground">
+                                              <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                  <Eye 
+                                                    className="w-4 h-4 icon-cyan cursor-pointer hover:text-salmon transition-colors mr-2 flex-shrink-0 relative z-10" 
+                                                    onClick={() => {
+                                                      setActiveTab('galleries');
+                                                      setSelectedShoot(shoot.id);
+                                                    }}
+                                                  />
+                                                </TooltipTrigger>
+                                                <TooltipContent className="bg-gray-800 text-gray-100 border-gray-700">
+                                                  <p>View Gallery</p>
+                                                </TooltipContent>
+                                              </Tooltip>
+                                              <span className="truncate">
+                                                <span className="text-cyan-muted">
+                                                  {shoot.title.length > 22 ? shoot.title.substring(0, 22) + '...' : shoot.title}
+                                                </span>
+                                                {shoot.shootType && (
+                                                  <span className="text-salmon-muted">
+                                                    {'  |  '}{shoot.shootType.charAt(0).toUpperCase() + shoot.shootType.slice(1)}
+                                                  </span>
+                                                )}
+                                                {shoot.shootDate && (
+                                                  <span className="text-xs">
+                                                    {'  '}({new Date(shoot.shootDate).toLocaleDateString('en-GB', { 
+                                                      day: '2-digit', 
+                                                      month: 'short', 
+                                                      year: 'numeric' 
+                                                    })})
+                                                  </span>
+                                                )}
+                                              </span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )
                                     ))}
-                                    {hasMore && (
-                                      <div className="text-xs text-salmon cursor-pointer hover:underline">
-                                        + {clientShoots.length - 3} more shoots...
-                                      </div>
-                                    )}
-                                    {clientShoots.length === 0 && (
-                                      <div className="text-sm text-muted-foreground italic">No shoots yet</div>
-                                    )}
                                   </div>
                                 );
                               })()}
                             </div>
-                            
-                            <div className="space-y-1 text-sm text-muted-foreground">
-                              {client.email && (
-                                <div className="flex items-center gap-2">
-                                  <Mail className="w-4 h-4 icon-cyan" />
-                                  {client.email}
-                                </div>
-                              )}
-                              <div className="flex items-center gap-2">
-                                <User className="w-4 h-4 icon-salmon" />
-                                Slug: /{client.slug}
-                              </div>
-                            </div>
                           </div>
                           <div className="space-y-2">
                             <div className="flex gap-2">
-                              <Dialog>
+                              <Dialog 
+                                open={clientShootDialogOpen === client.id}
+                                onOpenChange={(open) => setClientShootDialogOpen(open ? client.id : null)}
+                              >
                                 <DialogTrigger asChild>
                                   <Button size="sm" className="bg-salmon text-white hover:bg-salmon-muted flex-1">
                                     <Plus className="w-4 h-4 mr-2" />
@@ -1585,35 +1682,49 @@ export function AdminContent({ userRole }: AdminContentProps) {
                               </Dialog>
                             </div>
                             <div className="flex gap-2">
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                className="border-border hover:border-salmon text-white"
-                                onClick={() => {
-                                  setEditingClient(client);
-                                  setEditFormData({
-                                    name: client.name,
-                                    email: client.email || '',
-                                    phone: client.phone || '',
-                                    address: client.address || '',
-                                    secondaryEmail: client.secondaryEmail || ''
-                                  });
-                                }}
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="border-border hover:border-red-500 text-white"
-                              onClick={() => {
-                                if (confirm(`Are you sure you want to delete client ${client.name}?\n\nNote: This will only delete the client record. Any shoots assigned to this client will remain but show as "orphaned" until reassigned to another client.`)) {
-                                  deleteClientMutation.mutate(client.email || '');
-                                }
-                              }}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    className="border-border hover:border-salmon text-white"
+                                    onClick={() => {
+                                      setEditingClient(client);
+                                      setEditFormData({
+                                        name: client.name,
+                                        email: client.email || '',
+                                        phone: client.phone || '',
+                                        address: client.address || '',
+                                        secondaryEmail: client.secondaryEmail || ''
+                                      });
+                                    }}
+                                  >
+                                    <Edit className="w-4 h-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-gray-800 text-gray-100 border-gray-700">
+                                  <p>Edit Client</p>
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="border-border hover:border-red-500 text-white"
+                                  onClick={() => {
+                                    if (confirm(`Are you sure you want to delete client ${client.name}?\n\nNote: This will only delete the client record. Any shoots assigned to this client will remain but show as "orphaned" until reassigned to another client.`)) {
+                                      deleteClientMutation.mutate(client.email || '');
+                                    }
+                                  }}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-gray-800 text-gray-100 border-gray-700">
+                                  <p>Delete Client</p>
+                                </TooltipContent>
+                              </Tooltip>
                             </div>
                           </div>
                         </div>
@@ -2181,7 +2292,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
               {/* Shoot Selection */}
               <Card className="admin-gradient-card">
                 <CardHeader>
-                  <CardTitle className="text-salmon">Select Shoot to Manage</CardTitle>
+                  <CardTitle className="text-salmon">Select Gallery to Manage</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Select 
@@ -3112,6 +3223,6 @@ export function AdminContent({ userRole }: AdminContentProps) {
           </div>
         </DialogContent>
       </Dialog>
-    </>
+    </TooltipProvider>
   );
 }

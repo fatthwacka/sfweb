@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { storage } from './storage';
+import { db } from './db';
 import { seedCompleteDatabase } from './seed-database.js';
 import { createSupabaseUser, type CreateUserData } from './supabase-auth.js';
 import { populateWithExistingAuth } from './populate-with-existing-auth.js';
@@ -12,14 +13,16 @@ import { initializeAdmin } from './init-admin.js';
 import { createClient } from '@supabase/supabase-js';
 import simpleAssetsRouter from './routes/simple-assets';
 import siteConfigRouter from './site-config-api';
-import { sendContactEmail, validateEmailConfig } from './email-service';
+import { sendContactEmail, validateEmailConfig, sendAlbumReadyEmail } from './email-service';
 import { verifyRecaptcha } from './recaptcha-service';
+import { eq, and } from 'drizzle-orm';
 import { 
   insertUserSchema, insertClientSchema, insertShootSchema, 
   insertImageSchema, insertBookingSchema, insertAnalyticsSchema,
   updateImageSequenceSchema, updateAlbumCoverSchema, updateShootDetailsSchema,
   updateShootCustomizationSchema, insertShootPreviewSchema, insertClientSelectionSchema,
-  insertSelectionPackageSchema
+  insertSelectionPackageSchema,
+  clientSelections, selectionPackages, analytics, previewImages, shootPreviews
 } from "@shared/schema";
 import { dropboxService } from './services/dropbox-service';
 import { z } from "zod";
@@ -287,6 +290,158 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Contact form error:", error);
       res.status(400).json({ message: "Invalid form data" });
+    }
+  });
+
+  // Album ready email notification endpoint
+  app.post("/api/client/email-notification", async (req, res) => {
+    try {
+      const emailSchema = z.object({
+        shootId: z.string()
+      });
+
+      const data = emailSchema.parse(req.body);
+      
+      // Get shoot details
+      const shoot = await storage.getShoot(data.shootId);
+      if (!shoot) {
+        return res.status(404).json({ message: "Shoot not found" });
+      }
+
+      // Get client details (handle case where clientId might be email or string)
+      let client = null;
+      let clientEmail = null;
+      let clientName = 'Valued Client';
+
+      try {
+        if (shoot.clientId) {
+          // If it's a number, use getClient, otherwise try to find by email/name
+          if (!isNaN(Number(shoot.clientId))) {
+            client = await storage.getClient(Number(shoot.clientId));
+            if (client) {
+              clientEmail = client.email;
+              // Use the full name from the database, just ensure proper capitalization
+              clientName = client.name
+                ? client.name
+                    .split(' ')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                    .join(' ')
+                : 'Valued Client';
+            }
+          } else {
+            // If clientId is not a number, it might be an email or string identifier
+            console.warn(`Client ID is not numeric: ${shoot.clientId}`);
+            // If it looks like an email, look up the client by email
+            if (shoot.clientId.includes('@')) {
+              clientEmail = shoot.clientId;
+              
+              // Look up the client in the database by email to get their actual name
+              try {
+                console.log(`Looking up client by email: ${shoot.clientId}`);
+                const clientFromDb = await storage.getClientByEmail(shoot.clientId);
+                console.log(`Client lookup result:`, clientFromDb);
+                
+                if (clientFromDb && clientFromDb.name) {
+                  // Use the full name from the database, just ensure proper capitalization
+                  clientName = clientFromDb.name
+                    .split(' ')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                    .join(' ');
+                  console.log(`✅ Found client by email: ${clientName} (original: ${clientFromDb.name})`);
+                } else {
+                  console.log(`❌ No client found with email: ${shoot.clientId}`);
+                  clientName = 'Valued Client';
+                }
+              } catch (dbError) {
+                console.error(`Error looking up client by email: ${dbError}`);
+                clientName = 'Valued Client';
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.warn(`Could not fetch client details: ${error}`);
+      }
+
+      // If we still don't have a client email, we can't send
+      if (!clientEmail) {
+        return res.status(400).json({ message: "No client email found for this shoot" });
+      }
+      
+      // Get statistics for the shoot
+      let professionalRetouchCount = 0;
+      let totalImagesCount = 0;
+      let coverImageUrl = '';
+      let statisticsImageUrl = '';
+      
+      try {
+        // Get selections (hearts = professional retouch)
+        const selections = await storage.getClientSelections(shoot.id);
+        const heartsSelections = selections.filter(s => s.rating === 'heart');
+        professionalRetouchCount = heartsSelections.length;
+        
+        // Get total images in the album
+        const images = await storage.getImagesByShoot(shoot.id);
+        totalImagesCount = images.length;
+        
+        // Get the cover image or first image for main preview (higher quality)
+        const coverImage = images.find(img => img.featuredImage === true) || images[0];
+        console.log(`Cover image found:`, coverImage);
+        
+        if (coverImage && coverImage.storagePath) {
+          // Add transformation for main preview - higher quality
+          coverImageUrl = coverImage.storagePath.includes('supabase') 
+            ? coverImage.storagePath.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=600&height=400&resize=cover&quality=85'
+            : coverImage.storagePath;
+          console.log(`Cover image URL generated:`, coverImageUrl);
+        }
+        
+        // Get a different image for statistics section (not the same as cover image)
+        console.log(`Total images: ${images.length}, Cover image ID: ${coverImage?.id}`);
+        
+        // Find an image that's different from the cover image
+        const differentImage = images.find(img => img.id !== coverImage?.id);
+        
+        if (differentImage && differentImage.storagePath) {
+          // Smaller square format for statistics section
+          statisticsImageUrl = differentImage.storagePath.includes('supabase') 
+            ? differentImage.storagePath.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=300&height=300&resize=cover'
+            : differentImage.storagePath;
+          console.log(`Statistics image URL generated:`, statisticsImageUrl, `(using ${differentImage.filename})`);
+        } else {
+          console.log(`No different image available for statistics section. Only one image or no valid different image.`);
+        }
+      } catch (error) {
+        console.warn('Could not fetch shoot statistics:', error);
+      }
+      
+      // Construct gallery URL and client portal URL
+      const galleryUrl = `${req.protocol}://${req.get('host')}/gallery/${shoot.customSlug || shoot.id}`;
+      const clientPortalUrl = `${req.protocol}://${req.get('host')}/client-portal`;
+      
+      // Send album ready email
+      await sendAlbumReadyEmail({
+        clientEmail: clientEmail,
+        clientName: clientName,
+        shootTitle: shoot.title || 'Your Photo Session',
+        galleryUrl: galleryUrl,
+        clientPortalUrl: clientPortalUrl,
+        customSlug: shoot.customSlug,
+        professionalRetouchCount: professionalRetouchCount,
+        totalImagesCount: totalImagesCount,
+        coverImageUrl: coverImageUrl,
+        statisticsImageUrl: statisticsImageUrl
+      });
+
+      console.log(`✅ Album ready email sent to ${clientEmail} for shoot: ${shoot.title}`);
+      res.json({ success: true, message: "Album ready notification sent successfully" });
+      
+    } catch (error) {
+      console.error("Album ready email error:", error);
+      res.status(500).json({ 
+        message: "Failed to send album ready notification",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 
@@ -665,6 +820,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete preview data (client selections, packages, analytics, etc) for a shoot
+  app.delete("/api/shoots/:id/preview-data", async (req, res) => {
+    try {
+      const shootId = req.params.id;
+      console.log('🗑️ Deleting preview data for shoot:', shootId);
+      
+      // NEW BEHAVIOR: Delete preview images but preserve dispute data
+      const deletionResults = {
+        deletedImages: 0,
+        deletedStorageFiles: 0,
+        preservedSelections: 0,
+        preservedAnalytics: 0,
+        auditLog: null as any
+      };
+
+      // Get preview images to delete (both DB records and storage files)
+      const previewImagesToDelete = await db
+        .select()
+        .from(previewImages)
+        .where(eq(previewImages.shootId, shootId));
+      
+      deletionResults.deletedImages = previewImagesToDelete.length;
+
+      // Get count of data we're preserving for disputes
+      const preservedSelections = await db
+        .select()
+        .from(clientSelections)
+        .where(eq(clientSelections.shootId, shootId));
+      
+      deletionResults.preservedSelections = preservedSelections.length;
+
+      const preservedAnalytics = await db
+        .select()
+        .from(analytics)
+        .where(eq(analytics.shootId, shootId));
+      
+      deletionResults.preservedAnalytics = preservedAnalytics.length;
+
+      // Create audit log entry
+      const auditEntry = {
+        shootId,
+        deletedAt: new Date().toISOString(),
+        imagesDeleted: previewImagesToDelete.length,
+        imageFilenames: previewImagesToDelete.map(img => img.filename),
+        preservedSelectionsCount: preservedSelections.length,
+        preservedAnalyticsCount: preservedAnalytics.length,
+        action: 'preview_images_cleanup', // Clarify this is storage cleanup, not dispute data removal
+        reason: 'Storage cleanup - dispute data preserved'
+      };
+
+      // Store audit log in analytics table
+      await db.insert(analytics).values({
+        userId: null,
+        shootId: shootId, // Keep the reference since we're not deleting analytics
+        actionType: 'preview_images_cleanup',
+        metadata: auditEntry,
+        createdAt: new Date()
+      });
+
+      // Initialize Supabase client for storage cleanup
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
+      // Delete preview images from Supabase Storage
+      let storageDeleteCount = 0;
+      for (const previewImage of previewImagesToDelete) {
+        try {
+          const { error } = await supabase.storage
+            .from('preview-images')
+            .remove([previewImage.supabaseStoragePath]);
+          
+          if (error) {
+            console.error(`Failed to delete storage file ${previewImage.filename}:`, error);
+          } else {
+            storageDeleteCount++;
+            console.log(`✅ Deleted storage file: ${previewImage.filename}`);
+          }
+        } catch (error) {
+          console.error(`Error deleting storage file ${previewImage.filename}:`, error);
+        }
+      }
+      
+      deletionResults.deletedStorageFiles = storageDeleteCount;
+
+      // Delete preview images from database
+      await db.delete(previewImages)
+        .where(eq(previewImages.shootId, shootId));
+
+      // PRESERVE dispute-related data:
+      // - client_selections (for dispute resolution)
+      // - analytics (for usage tracking)
+      // - selection_packages (for payment disputes)
+      console.log(`🛡️ Preserved ${deletionResults.preservedSelections} client selections for dispute resolution`);
+      console.log(`🛡️ Preserved ${deletionResults.preservedAnalytics} analytics records`);
+      
+      // NOTE: shoot_previews record is also preserved to maintain workflow UUID
+
+      console.log('✅ Preview images cleanup completed:', deletionResults);
+      
+      res.json({
+        message: 'Preview images cleaned up successfully. Dispute data preserved.',
+        deletedImages: deletionResults.deletedImages,
+        deletedStorageFiles: deletionResults.deletedStorageFiles,
+        preservedSelections: deletionResults.preservedSelections,
+        preservedAnalytics: deletionResults.preservedAnalytics,
+        auditLog: auditEntry
+      });
+    } catch (error: any) {
+      console.error('❌ Error deleting preview data:', error);
+      res.status(500).json({ 
+        message: 'Failed to delete preview data', 
+        error: error.message 
+      });
+    }
+  });
+
   app.patch("/api/shoots/:id/customization", async (req, res) => {
     try {
       const shootId = req.params.id; // Use string ID for UUID
@@ -878,6 +1151,140 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Image upload error:", error);
       res.status(500).json({ 
         message: "Failed to upload images",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Batch image upload endpoint for direct uploads (replacing Dropbox)
+  app.post("/api/images/batch-upload", upload.single('image'), async (req, res) => {
+    try {
+      const file = req.file;
+      const { shootId } = req.body;
+
+      if (!file) {
+        return res.status(400).json({ message: "No file provided" });
+      }
+
+      if (!shootId) {
+        return res.status(400).json({ message: "Shoot ID is required" });
+      }
+
+      console.log(`📸 Processing batch upload for shoot ${shootId}: ${file.originalname}`);
+
+      // Check for existing files with the same name and handle overwrite
+      const existingPreviewImages = await db.select()
+        .from(previewImages)
+        .where(and(
+          eq(previewImages.shootId, shootId),
+          eq(previewImages.filename, file.originalname)
+        ));
+
+      console.log(`🔍 Found ${existingPreviewImages.length} existing files with name: ${file.originalname}`);
+
+      // ROBUST APPROACH: Initialize preview workflow using atomic service
+      const { previewWorkflowService } = await import('./services/preview-workflow-service');
+      
+      // Initialize or verify preview workflow exists
+      const workflowState = await previewWorkflowService.initializePreviewWorkflow(shootId);
+      console.log(`🎯 Workflow state: ${workflowState.state} for shoot ${shootId}`);
+
+      // Initialize Supabase client
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY! // Use service role for admin operations
+      );
+
+      // If overwriting existing files, delete old storage files and database records
+      if (existingPreviewImages.length > 0) {
+        console.log(`🗑️ Overwriting ${existingPreviewImages.length} existing files`);
+        
+        for (const existingImage of existingPreviewImages) {
+          // Delete from Supabase Storage if storage path exists
+          if (existingImage.supabaseStoragePath) {
+            console.log(`🗑️ Deleting storage file: ${existingImage.supabaseStoragePath}`);
+            const { error: deleteError } = await supabase.storage
+              .from('preview-images')
+              .remove([existingImage.supabaseStoragePath]);
+            
+            if (deleteError) {
+              console.warn(`⚠️ Failed to delete storage file ${existingImage.supabaseStoragePath}:`, deleteError);
+            }
+          }
+          
+          // Delete database record
+          await db.delete(previewImages)
+            .where(eq(previewImages.id, existingImage.id));
+          
+          // NOTE: We intentionally DO NOT delete client_selections here because:
+          // 1. They're needed for dispute resolution
+          // 2. They're properly partitioned by shootId AND clientId
+          // 3. The UI doesn't pre-load old selections anyway
+          // 4. Each filename can safely exist across multiple albums/clients
+          
+          console.log(`✅ Deleted existing preview image: ${existingImage.filename}`);
+        }
+      }
+
+      // Upload to Supabase Storage (use preview-images bucket for preview workflow)
+      const timestamp = Date.now();
+      const randomId = Math.random().toString(36).substring(2);
+      const fileExtension = file.originalname.split('.').pop();
+      const filename = `${timestamp}_${randomId}.${fileExtension}`;
+      const storagePath = `shoots/${shootId}/${filename}`;
+      
+      // Upload to preview-images bucket for preview workflow
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('preview-images')
+        .upload(storagePath, file.buffer, {
+          contentType: file.mimetype,
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('Supabase upload error:', uploadError);
+        return res.status(500).json({ 
+          message: "Failed to upload to storage",
+          error: uploadError 
+        });
+      }
+
+      // Get public URL from preview-images bucket
+      const { data: { publicUrl } } = supabase.storage
+        .from('preview-images')
+        .getPublicUrl(storagePath);
+
+      // Create preview image record in database (using preview_images table, not regular images)
+      const previewImageData = {
+        shootId: shootId,
+        filename: file.originalname,
+        supabaseUrl: publicUrl,
+        supabaseStoragePath: storagePath,
+        originalDropboxPath: null, // Not using Dropbox anymore
+        fileSize: file.size,
+        contentType: file.mimetype,
+        uploadedBy: '070dae19-d4ce-4fe0-b3d4-a090fa3ece3a', // Use admin@slyfox.co.za profile ID
+        migrationBatchId: null,
+        metadata: null
+      };
+
+      // Insert directly into preview_images table using raw SQL/ORM
+      const [newPreviewImage] = await db.insert(previewImages).values(previewImageData).returning();
+
+      console.log(`🖼️ Preview image created: ${newPreviewImage.filename} for workflow state: ${workflowState.state}`);
+
+      res.json({ 
+        success: true, 
+        url: publicUrl,
+        image: newPreviewImage,
+        workflowState: workflowState,
+        message: `Successfully uploaded ${file.originalname}`
+      });
+
+    } catch (error) {
+      console.error("Batch upload error:", error);
+      res.status(500).json({ 
+        message: "Failed to upload image",
         error: error instanceof Error ? error.message : "Unknown error"
       });
     }
@@ -1640,7 +2047,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/shoots/:shootId/preview-settings", async (req, res) => {
     try {
       const { shootId } = req.params;
-      const { submission_completed, submission_completed_at, submission_completed_by } = req.body;
+      const { 
+        submission_completed, 
+        submission_completed_at, 
+        submission_completed_by,
+        editing_completed,
+        editing_completed_at
+      } = req.body;
       
       // Get existing settings first
       const existingSettings = await storage.getShootPreviewSettings(shootId);
@@ -1648,17 +2061,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: 'Preview settings not found' });
       }
       
-      // Update with submission status
-      const updatedSettings = await storage.updateShootPreviewSettings(existingSettings.id, {
-        submissionCompleted: submission_completed,
-        submissionCompletedAt: submission_completed_at ? new Date(submission_completed_at) : undefined,
-        submissionCompletedBy: submission_completed_by
-      });
+      // Prepare update object based on what fields are provided
+      const updateData: any = {};
+      
+      if (submission_completed !== undefined) {
+        updateData.submissionCompleted = submission_completed;
+      }
+      if (submission_completed_at !== undefined) {
+        updateData.submissionCompletedAt = submission_completed_at ? new Date(submission_completed_at) : undefined;
+      }
+      if (submission_completed_by !== undefined) {
+        updateData.submissionCompletedBy = submission_completed_by;
+      }
+      if (editing_completed !== undefined) {
+        updateData.editingCompleted = editing_completed;
+      }
+      if (editing_completed_at !== undefined) {
+        updateData.editingCompletedAt = editing_completed_at ? new Date(editing_completed_at) : undefined;
+      }
+      
+      // Update with provided fields
+      const updatedSettings = await storage.updateShootPreviewSettings(existingSettings.id, updateData);
       
       res.json(updatedSettings);
     } catch (error) {
-      console.error('Error updating preview submission status:', error);
-      res.status(500).json({ message: 'Failed to update submission status' });
+      console.error('Error updating preview settings:', error);
+      res.status(500).json({ message: 'Failed to update preview settings' });
     }
   });
 
@@ -1765,6 +2193,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ROBUST WORKFLOW STATE ENDPOINTS
+  console.log('🎯 Registering preview workflow state endpoints...');
+  
+  // GET /api/workflow/state/:shootId - Get workflow state for a single shoot
+  app.get("/api/workflow/state/:shootId", async (req, res) => {
+    try {
+      const { shootId } = req.params;
+      const { previewWorkflowService } = await import('./services/preview-workflow-service');
+      
+      const workflowState = await previewWorkflowService.getWorkflowState(shootId);
+      res.json(workflowState);
+    } catch (error) {
+      console.error('Error getting workflow state:', error);
+      res.status(500).json({ message: 'Failed to get workflow state' });
+    }
+  });
+
+  // POST /api/workflow/states - Get workflow states for multiple shoots
+  app.post("/api/workflow/states", async (req, res) => {
+    try {
+      const { shootIds } = req.body;
+      
+      if (!Array.isArray(shootIds)) {
+        return res.status(400).json({ message: 'shootIds must be an array' });
+      }
+      
+      const { previewWorkflowService } = await import('./services/preview-workflow-service');
+      const workflowStates = await previewWorkflowService.getMultipleWorkflowStates(shootIds);
+      
+      res.json(workflowStates);
+    } catch (error) {
+      console.error('Error getting multiple workflow states:', error);
+      res.status(500).json({ message: 'Failed to get workflow states' });
+    }
+  });
+
+  // POST /api/workflow/transition/:shootId - Transition workflow state
+  app.post("/api/workflow/transition/:shootId", async (req, res) => {
+    try {
+      const { shootId } = req.params;
+      const { action, submittedBy } = req.body;
+      const { previewWorkflowService } = await import('./services/preview-workflow-service');
+      
+      let workflowState;
+      
+      switch (action) {
+        case 'submit':
+          workflowState = await previewWorkflowService.markSubmissionCompleted(shootId, submittedBy);
+          break;
+        case 'complete_editing':
+          workflowState = await previewWorkflowService.markEditingCompleted(shootId);
+          break;
+        case 'reset':
+          workflowState = await previewWorkflowService.resetWorkflow(shootId);
+          break;
+        default:
+          return res.status(400).json({ message: 'Invalid action. Use: submit, complete_editing, or reset' });
+      }
+      
+      res.json(workflowState);
+    } catch (error) {
+      console.error('Error transitioning workflow state:', error);
+      res.status(500).json({ 
+        message: 'Failed to transition workflow state',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // GET /api/preview-images/:shootId - Get preview images from Supabase for client selection
   app.get("/api/preview-images/:shootId", async (req, res) => {
     try {
@@ -1793,6 +2290,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching preview images:', error);
       res.status(500).json({ message: 'Failed to fetch preview images' });
+    }
+  });
+
+  // POST /api/preview-images/:shootId/check-duplicates - Check for duplicate filenames before upload
+  app.post("/api/preview-images/:shootId/check-duplicates", async (req, res) => {
+    try {
+      const { shootId } = req.params;
+      const { filenames } = req.body;
+      
+      if (!Array.isArray(filenames)) {
+        return res.status(400).json({ message: 'filenames must be an array' });
+      }
+
+      // Get existing preview images for this shoot
+      const previewImages = await storage.getPreviewImages(shootId);
+      const existingFilenames = previewImages.map((img: any) => img.filename);
+      
+      // Find duplicates
+      const duplicates = filenames.filter(filename => existingFilenames.includes(filename));
+      
+      res.json({
+        duplicates,
+        hasDuplicates: duplicates.length > 0
+      });
+    } catch (error) {
+      console.error('Error checking for duplicate filenames:', error);
+      res.status(500).json({ message: 'Failed to check for duplicates' });
     }
   });
 

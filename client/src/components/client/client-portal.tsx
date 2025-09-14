@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUrl } from "@/lib/image-utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -34,9 +35,14 @@ import {
   ChevronUp,
   ChevronDown,
   ExternalLink,
-  Wand2
+  Wand2,
+  AlertTriangle
 } from "lucide-react";
 import { ImagePickerFast } from "./image-picker-fast";
+import { GallerySettingsCard } from "@/components/gallery/gallery-settings-card";
+import { GalleryRenderer } from "@/components/gallery/gallery-renderer";
+import { useAutoSaveGallerySettings } from "@/hooks/use-debounced-auto-save";
+import { useAutoSaveImageOrder } from '@/hooks/use-auto-save-image-order';
 
 interface Shoot {
   id: string;
@@ -98,14 +104,165 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
   const [gallerySettings, setGallerySettings] = useState({
     backgroundColor: "#1a1a1a",
     layoutStyle: "masonry",
-    borderStyle: "rounded", 
-    imageSpacing: "normal"
+    borderRadius: 8,
+    imageSpacingValue: 8,
+    coverPicAlignment: "centre",
+    navbarPosition: "top-left",
+    coverPicSize: 80
   });
   const [selectedCover, setSelectedCover] = useState<string | null>(null);
   const [visibleImageCount, setVisibleImageCount] = useState(20);
   const [draggedImage, setDraggedImage] = useState<string | null>(null);
   const [dragStartTime, setDragStartTime] = useState<number>(0);
   const [imageOrder, setImageOrder] = useState<string[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalImageId, setModalImageId] = useState<string | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Auto-save hooks - must be at top level of component
+  const { debouncedSave, saveImmediately, saveStatus, isSaving } = useAutoSaveGallerySettings({
+    shootId: selectedShoot || ''
+  });
+
+  const { debouncedSave: debouncedSaveImageOrder, saveStatus: imageOrderSaveStatus } = useAutoSaveImageOrder({
+    shootId: selectedShoot || ''
+  });
+
+  // Handler functions - moved to top level to avoid hooks rule violations
+  const handleGallerySettingsChange = (updateFn: (prev: any) => any) => {
+    setGallerySettings((prev) => {
+      const newSettings = updateFn(prev);
+      console.log('🔍 DEBUG: Saving settings to DB:', newSettings);
+      console.log('🔍 DEBUG: Border radius being saved:', newSettings.borderRadius, typeof newSettings.borderRadius);
+      
+      // Trigger auto-save with the new settings
+      debouncedSave(newSettings);
+      
+      return newSettings;
+    });
+  };
+
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, imageId: string) => {
+    setDraggedImage(imageId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, targetImageId: string) => {
+    e.preventDefault();
+    
+    if (!draggedImage || draggedImage === targetImageId) {
+      setDraggedImage(null);
+      return;
+    }
+
+    setImageOrder(currentOrder => {
+      const newOrder = [...currentOrder];
+      const draggedIndex = newOrder.indexOf(draggedImage);
+      const targetIndex = newOrder.indexOf(targetImageId);
+      
+      if (draggedIndex !== -1 && targetIndex !== -1) {
+        // Remove dragged item
+        newOrder.splice(draggedIndex, 1);
+        // Insert at new position
+        newOrder.splice(targetIndex, 0, draggedImage);
+      }
+      
+      // Auto-save new order
+      debouncedSaveImageOrder(newOrder, selectedCover);
+      
+      return newOrder;
+    });
+    
+    setDraggedImage(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedImage(null);
+  };
+
+  // Modal handlers
+  const handleViewFullRes = (storagePath: string) => {
+    const orderedImages = getOrderedImages();
+    const imageIndex = orderedImages.findIndex(img => img.storagePath === storagePath);
+    if (imageIndex !== -1) {
+      setCurrentImageIndex(imageIndex);
+      setModalImageId(orderedImages[imageIndex].id);
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleDownloadImage = async (storagePath: string, filename: string) => {
+    try {
+      const imageUrl = ImageUrl.forViewing(storagePath);
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast({
+        title: "Success",
+        description: "Image downloaded successfully",
+      });
+    } catch (error) {
+      console.error('Download failed:', error);
+      toast({
+        title: "Error",
+        description: "Failed to download image",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const navigateModal = (direction: 'prev' | 'next') => {
+    const orderedImages = getOrderedImages();
+    const currentIndex = currentImageIndex;
+    let newIndex;
+    
+    if (direction === 'prev') {
+      newIndex = currentIndex > 0 ? currentIndex - 1 : orderedImages.length - 1;
+    } else {
+      newIndex = currentIndex < orderedImages.length - 1 ? currentIndex + 1 : 0;
+    }
+    
+    setCurrentImageIndex(newIndex);
+    setModalImageId(orderedImages[newIndex].id);
+  };
+
+  // Get ordered images for display (main function)
+  const getOrderedImages = () => {
+    if (!images || images.length === 0) return [];
+    if (!imageOrder || imageOrder.length === 0) return images;
+    
+    const imageMap = new Map(images.map(img => [img.id, img]));
+    const orderedImages = imageOrder
+      .map(id => imageMap.get(id))
+      .filter(Boolean) as typeof images;
+    
+    // Add any new images not in order yet
+    const existingIds = new Set(imageOrder);
+    const newImages = images.filter(img => !existingIds.has(img.id));
+    
+    return [...orderedImages, ...newImages];
+  };
+
+  // Load more images function
+  const loadMoreImages = () => {
+    setVisibleImageCount(prev => Math.min(prev + 20, 100));
+  };
+
+  // Enable drag reordering for visible images
+  const isDragReorderingEnabled = true;
 
   // Debug logging to help identify loading issues
   console.log('ClientPortal loading for:', userEmail);
@@ -119,7 +276,21 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
     }),
   });
 
-  // Fetch preview settings for all shoots to determine which are preview albums
+  // ROBUST APPROACH: Fetch workflow states using new atomic service
+  const { data: workflowStates = {} } = useQuery({
+    queryKey: ["/api/workflow/states", shoots.map(s => s.id)],
+    queryFn: async () => {
+      if (!shoots.length) return {};
+      
+      const shootIds = shoots.map(s => s.id);
+      const response = await apiRequest('POST', `/api/workflow/states`, { shootIds });
+      
+      return await response.json();
+    },
+    enabled: shoots.length > 0
+  });
+
+  // Keep legacy preview settings for ImagePickerFast component compatibility
   const { data: previewSettings = {} } = useQuery({
     queryKey: ["/api/preview-settings/by-shoots", shoots.map(s => s.id)],
     queryFn: async () => {
@@ -131,7 +302,7 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
           try {
             const response = await apiRequest('GET', `/api/shoots/${shoot.id}/preview-settings`);
             const settings = await response.json();
-            if (settings && (settings.dropboxFolderPath || settings.dropboxShareLink)) {
+            if (settings && (settings.dropboxFolderPath || settings.dropboxShareLink || settings.isActive)) {
               settingsMap[shoot.id] = settings;
             }
           } catch (error) {
@@ -145,9 +316,11 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
     enabled: shoots.length > 0,
   });
 
-  // Debug logging
+  // Debug logging 
   console.log('Shoots loading:', shootsLoading, 'Error:', error, 'Shoots count:', shoots.length);
   console.log('Shoots data:', shoots);
+  console.log('🎯 Workflow states:', workflowStates);
+  console.log('Legacy preview settings:', previewSettings);
 
   // Fetch shoot data with images (same as admin approach)
   const { data: shootData, isLoading: imagesLoading } = useQuery({
@@ -171,11 +344,16 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
       
       // Initialize gallery settings from shoot data (provide defaults for null gallerySettings)
       const settings = shoot.gallerySettings || {};
+      console.log('🔍 DEBUG: Reading settings from shoot:', settings);
+      console.log('🔍 DEBUG: Border radius from DB:', settings.borderRadius, typeof settings.borderRadius);
       setGallerySettings({
         backgroundColor: settings.backgroundColor || '#1a1a1a',
-        borderStyle: settings.borderStyle || 'rounded',
         layoutStyle: settings.layoutStyle || 'masonry',
-        imageSpacing: settings.imageSpacing || 'normal'
+        borderRadius: settings.borderRadius !== undefined ? settings.borderRadius : 8,
+        imageSpacingValue: settings.imageSpacingValue !== undefined ? settings.imageSpacingValue : 8,
+        coverPicAlignment: settings.coverPicAlignment || 'centre',
+        navbarPosition: settings.navbarPosition || 'top-left',
+        coverPicSize: settings.coverPicSize !== undefined ? settings.coverPicSize : 80
       });
     } else {
       // Clear state when switching galleries to prevent stale state
@@ -201,22 +379,6 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
     }
   }, [images.length, images.map(img => `${img.id}-${img.sequence}`).join(',')]);
 
-  // Get ordered images for display
-  const getOrderedImages = () => {
-    if (imageOrder.length === 0) return images;
-    
-    const imageMap = new Map(images.map(img => [img.id, img]));
-    const orderedImages = imageOrder
-      .map(id => imageMap.get(id))
-      .filter(Boolean) as Image[];
-    
-    // Add any new images not in order yet
-    const orderedIds = new Set(imageOrder);
-    const newImages = images.filter(img => !orderedIds.has(img.id));
-    
-    return [...orderedImages, ...newImages];
-  };
-
   const filteredShoots = shoots.filter(shoot => {
     const matchesSearch = shoot.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          shoot.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -229,36 +391,47 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
 
   const uniqueShootTypes = Array.from(new Set(shoots.map(shoot => shoot.shootType)));
 
-  // Helper functions to determine album status
+  // ROBUST APPROACH: Helper functions using atomic workflow states
   const isPreviewAlbum = (shootId: string) => {
-    return !!previewSettings[shootId] && !previewSettings[shootId].submissionCompleted;
+    return workflowStates[shootId]?.state === 'preview';
   };
   
   const isSubmittedAlbum = (shootId: string) => {
-    return !!previewSettings[shootId] && previewSettings[shootId].submissionCompleted;
+    return workflowStates[shootId]?.state === 'editing';
   };
-
-  const handleDownloadImage = async (image: Image) => {
-    try {
-      // Use full resolution URL for downloads
-      const response = await fetch(ImageUrl.forFullSize(image.storagePath));
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = image.originalName || image.filename;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error('Download failed:', error);
-    }
+  
+  const isEditingComplete = (shootId: string) => {
+    return workflowStates[shootId]?.state === 'complete';
   };
-
-  const handleViewFullRes = (image: Image) => {
-    // Open full resolution image in new tab
-    window.open(ImageUrl.forFullSize(image.storagePath), '_blank');
+  
+  // Get state-specific UI configuration
+  const getWorkflowConfig = (shootId: string) => {
+    const state = workflowStates[shootId]?.state || 'default';
+    
+    const configs = {
+      'default': {
+        color: 'bg-salmon text-white',
+        buttonText: 'View Gallery',
+        action: 'gallery'
+      },
+      'preview': {
+        color: 'bg-cyan text-white',
+        buttonText: 'Select Images',
+        action: 'image-picker'
+      },
+      'editing': {
+        color: 'bg-yellow text-black',
+        buttonText: 'View Gallery (Processing)',
+        action: 'gallery'
+      },
+      'complete': {
+        color: 'bg-green-500 text-white',
+        buttonText: 'View Gallery (Ready)', 
+        action: 'gallery'
+      }
+    };
+    
+    return configs[state];
   };
 
   // Client-specific save order handler
@@ -415,9 +588,15 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                       <div className="flex justify-between items-start">
                         <div className="space-y-1">
                           <CardTitle className={`${
-                            isPreviewAlbum(shoot.id) ? 'text-cyan' : 
-                            isSubmittedAlbum(shoot.id) ? 'text-yellow-400' : 
-                            'text-salmon'
+                            (() => {
+                              const state = workflowStates[shoot.id]?.state || 'default';
+                              switch (state) {
+                                case 'preview': return 'text-cyan';
+                                case 'editing': return 'text-yellow-400';
+                                case 'complete': return 'text-green-500';
+                                default: return 'text-salmon';
+                              }
+                            })()
                           } text-lg`}>
                             {shoot.customTitle || shoot.title}
                           </CardTitle>
@@ -432,17 +611,34 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                             )}
                           </div>
                         </div>
-                        {isPreviewAlbum(shoot.id) && (
-                          <div className="text-xs text-cyan font-medium">
-                            image picker
-                          </div>
-                        )}
-                        {isSubmittedAlbum(shoot.id) && (
-                          <div className="text-xs text-yellow-400 font-medium flex items-center gap-1">
-                            <Wand2 className="w-3 h-3" />
-                            editing in progress
-                          </div>
-                        )}
+                        {(() => {
+                          const state = workflowStates[shoot.id]?.state || 'default';
+                          const workflowConfig = getWorkflowConfig(shoot.id);
+                          
+                          switch (state) {
+                            case 'preview':
+                              return (
+                                <div className="text-xs text-cyan font-medium">
+                                  image picker
+                                </div>
+                              );
+                            case 'editing':
+                              return (
+                                <div className="text-xs text-yellow-400 font-medium flex items-center gap-1">
+                                  <Wand2 className="w-3 h-3" />
+                                  editing in progress
+                                </div>
+                              );
+                            case 'complete':
+                              return (
+                                <div className="text-xs text-green-500 font-medium">
+                                  editing complete
+                                </div>
+                              );
+                            default:
+                              return null;
+                          }
+                        })()}
                       </div>
                     </CardHeader>
                     
@@ -470,20 +666,30 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                       
                       <Button 
                         className={`w-full text-white ${
-                          isPreviewAlbum(shoot.id) 
-                            ? 'bg-cyan hover:bg-cyan/90' 
-                            : isSubmittedAlbum(shoot.id)
-                            ? 'bg-yellow-500 hover:bg-yellow-600'
-                            : 'bg-salmon hover:bg-salmon-muted'
+                          (() => {
+                            const state = workflowStates[shoot.id]?.state || 'default';
+                            switch (state) {
+                              case 'preview': return 'bg-cyan hover:bg-cyan/90';
+                              case 'editing': return 'bg-yellow-500 hover:bg-yellow-600';
+                              case 'complete': return 'bg-green-600 hover:bg-green-700';
+                              default: return 'bg-salmon hover:bg-salmon-muted';
+                            }
+                          })()
                         }`}
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedShoot(shoot.id);
                         }}
                       >
-                        {isPreviewAlbum(shoot.id) ? 'Select Images' : 
-                         isSubmittedAlbum(shoot.id) ? 'View Gallery (Processing)' :
-                         'View Gallery'}
+                        {(() => {
+                          const state = workflowStates[shoot.id]?.state || 'default';
+                          switch (state) {
+                            case 'preview': return 'Select Images';
+                            case 'editing': return 'View Gallery (Processing)';
+                            case 'complete': return 'View Gallery (Ready)';
+                            default: return 'View Gallery';
+                          }
+                        })()}
                       </Button>
                     </CardContent>
                   </Card>
@@ -494,7 +700,7 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
         )}
 
         {/* Image Gallery View */}
-        {selectedShoot && !isPreviewAlbum(selectedShoot) && (
+        {selectedShoot && workflowStates[selectedShoot]?.state !== 'preview' && (
           <div className="space-y-6">
             {/* Gallery Header */}
             <div className="flex justify-between items-center">
@@ -529,6 +735,11 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                       {isSubmittedAlbum(selectedShoot) && (
                         <span className="ml-3 text-sm text-yellow-400 font-normal">
                           (Selection submitted - editing in progress)
+                        </span>
+                      )}
+                      {isEditingComplete(selectedShoot) && (
+                        <span className="ml-3 text-sm text-green-500 font-normal">
+                          (Editing complete)
                         </span>
                       )}
                     </h2>
@@ -682,28 +893,7 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                       <Palette className="w-5 h-5" />
                       Gallery Appearance
                     </CardTitle>
-                    <div className="flex items-center gap-2">
-                      {expandedCards.gallerySettings && (
-                        <Button
-                          onClick={async (e) => {
-                            e.stopPropagation();
-                            try {
-                              await apiRequest('PATCH', `/api/shoots/${selectedShoot}`, {
-                                gallerySettings: gallerySettings
-                              });
-                              queryClient.invalidateQueries({ queryKey: ['/api/client/shoots'] });
-                              queryClient.invalidateQueries({ queryKey: ['/api/shoots', selectedShoot] });
-                              toast({ title: "Gallery settings updated successfully!" });
-                            } catch (error) {
-                              toast({ title: "Error", description: "Failed to save gallery settings", variant: "destructive" });
-                            }
-                          }}
-                          className="bg-salmon text-white hover:bg-salmon-muted"
-                        >
-                          <Save className="w-4 h-4 mr-2" />
-                          Save Settings
-                        </Button>
-                      )}
+                    <div className="flex items-center gap-3">
                       {expandedCards.gallerySettings ? (
                         <ChevronUp className="w-5 h-5 text-salmon" />
                       ) : (
@@ -714,78 +904,256 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                 </CardHeader>
                 {expandedCards.gallerySettings && (
                   <CardContent className="space-y-4">
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <Label>Background Color</Label>
-                        <Select 
-                          value={gallerySettings.backgroundColor} 
-                          onValueChange={(value) => setGallerySettings(prev => ({...prev, backgroundColor: value}))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="#1a1a1a">Dark Charcoal</SelectItem>
-                            <SelectItem value="#000000">Pure Black</SelectItem>
-                            <SelectItem value="#2d2d2d">Medium Dark</SelectItem>
-                            <SelectItem value="#ffffff">Pure White</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div>
-                        <Label>Layout Style</Label>
-                        <Select 
-                          value={gallerySettings.layoutStyle} 
-                          onValueChange={(value) => setGallerySettings(prev => ({...prev, layoutStyle: value}))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="masonry">Masonry (Pinterest-style)</SelectItem>
-                            <SelectItem value="grid">Square Grid</SelectItem>
-                            <SelectItem value="columns">Automatic (Smart Ratio)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div>
-                        <Label>Border Style</Label>
-                        <Select 
-                          value={gallerySettings.borderStyle} 
-                          onValueChange={(value) => setGallerySettings(prev => ({...prev, borderStyle: value}))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="rounded">Rounded Corners</SelectItem>
-                            <SelectItem value="sharp">Sharp Corners</SelectItem>
-                            <SelectItem value="circular">Circular (for portraits)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div>
-                        <Label>Image Spacing</Label>
-                        <Select 
-                          value={gallerySettings.imageSpacing} 
-                          onValueChange={(value) => setGallerySettings(prev => ({...prev, imageSpacing: value}))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="tight">Tight (2px gaps)</SelectItem>
-                            <SelectItem value="normal">Normal (8px gaps)</SelectItem>
-                            <SelectItem value="loose">Loose (16px gaps)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    <div className="grid lg:grid-cols-2 gap-6">
+                      {/* Left Panel - Gallery Settings */}
+                      <div className="w-full">
+                        <div className="space-y-4 w-full gallery-two-column-layout">
+                              <GallerySettingsCard
+                                gallerySettings={gallerySettings}
+                                setGallerySettings={handleGallerySettingsChange}
+                                onSave={() => saveImmediately(gallerySettings)}
+                                isSaving={isSaving}
+                                standalone={false}
+                              />
+                            </div>
+                          </div>
+                          
+                          {/* Right Panel - Dropdown Controls */}
+                          <div className="w-full space-y-4 gallery-two-column-layout">
+                            <div className="gallery-slider-container w-full">
+                              <div className="gallery-slider-header">
+                                <Label className="gallery-slider-label">Layout Style</Label>
+                              </div>
+                              <div className="mt-2">
+                                <Select 
+                                  value={gallerySettings.layoutStyle || 'automatic'}
+                                  defaultValue="automatic"
+                                  onValueChange={(value) => {
+                                    handleGallerySettingsChange(prev => ({...prev, layoutStyle: value}));
+                                  }}
+                                >
+                                  <SelectTrigger className="gallery-select-trigger w-full">
+                                    <SelectValue placeholder="Select layout..." />
+                                  </SelectTrigger>
+                                  <SelectContent className="gallery-select-content">
+                                    <SelectItem value="automatic">Automatic</SelectItem>
+                                    <SelectItem value="square">Square 1:1</SelectItem>
+                                    <SelectItem value="portrait">Portrait 2:3</SelectItem>
+                                    <SelectItem value="landscape">Landscape 3:2</SelectItem>
+                                    <SelectItem value="instagram">Instagram 4:5</SelectItem>
+                                    <SelectItem value="upright">Upright 9:16</SelectItem>
+                                    <SelectItem value="wide">Wide 16:9</SelectItem>
+                                    <SelectItem value="masonry">Masonry</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+
+                            <div className="gallery-slider-container w-full">
+                              <div className="gallery-slider-header">
+                                <Label className="gallery-slider-label">Cover Pic Alignment</Label>
+                              </div>
+                              <div className="mt-2">
+                                <Select 
+                                  value={gallerySettings.coverPicAlignment || 'centre'}
+                                  defaultValue="centre"
+                                  onValueChange={(value) => {
+                                    handleGallerySettingsChange(prev => ({...prev, coverPicAlignment: value}));
+                                  }}
+                                >
+                                  <SelectTrigger className="gallery-select-trigger w-full">
+                                    <SelectValue placeholder="Select alignment..." />
+                                  </SelectTrigger>
+                                  <SelectContent className="gallery-select-content">
+                                    <SelectItem value="top">Top</SelectItem>
+                                    <SelectItem value="centre">Centre</SelectItem>
+                                    <SelectItem value="bottom">Bottom</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                            
+                            <div className="gallery-slider-container w-full">
+                              <div className="gallery-slider-header">
+                                <Label className="gallery-slider-label">Navigation Position</Label>
+                              </div>
+                              <div className="mt-2">
+                                <Select 
+                                  value={gallerySettings.navbarPosition || 'top-left'}
+                                  defaultValue="top-left"
+                                  onValueChange={(value) => {
+                                    // Use setTimeout to prevent immediate re-renders that affect main navigation
+                                    setTimeout(() => {
+                                      handleGallerySettingsChange(prev => ({...prev, navbarPosition: value}));
+                                    }, 0);
+                                  }}
+                                >
+                                  <SelectTrigger className="gallery-select-trigger w-full">
+                                    <SelectValue placeholder="Select position..." />
+                                  </SelectTrigger>
+                                  <SelectContent className="gallery-select-content">
+                                    <SelectItem value="top-left">Top Left</SelectItem>
+                                    <SelectItem value="top-center">Top Center</SelectItem>
+                                    <SelectItem value="top-right">Top Right</SelectItem>
+                                    <SelectItem value="center">Center</SelectItem>
+                                    <SelectItem value="bottom-left">Bottom Left</SelectItem>
+                                    <SelectItem value="bottom-right">Bottom Right</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    )}
+              </Card>
+
+              {/* Gallery Live Preview Card */}
+              <Card className="admin-gradient-card">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-salmon flex items-center gap-2">
+                      <Eye className="w-5 h-5" />
+                      Gallery Live Preview
+                    </CardTitle>
+                    <div className="flex items-center gap-3">
+                      {(() => {
+                        switch (imageOrderSaveStatus.status) {
+                          case 'saving':
+                            return (
+                              <div className="flex items-center gap-2 text-blue-400">
+                                <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                                <span className="text-sm">Saving...</span>
+                              </div>
+                            );
+                          case 'saved':
+                            return (
+                              <div className="flex items-center gap-2 text-green-400">
+                                <div className="w-4 h-4 border-2 border-green-400 rounded-full flex items-center justify-center">
+                                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                                </div>
+                                <span className="text-sm">Saved</span>
+                              </div>
+                            );
+                          case 'error':
+                            return (
+                              <div className="flex items-center gap-2 text-red-400">
+                                <div className="w-4 h-4 border-2 border-red-400 rounded-full flex items-center justify-center">
+                                  <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+                                </div>
+                                <span className="text-sm">Save failed</span>
+                              </div>
+                            );
+                          default:
+                            return null;
+                        }
+                      })()}
                     </div>
-                  </CardContent>
-                )}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div 
+                    className="rounded-lg overflow-hidden"
+                    style={{ 
+                      backgroundColor: gallerySettings.backgroundColor,
+                      minHeight: '400px'
+                    }}
+                  >
+                    {/* Cover Image Strip */}
+                    {selectedCover && (() => {
+                      const orderedImages = getOrderedImages();
+                      const coverImage = orderedImages.find(img => img.id === selectedCover);
+                      const coverImageUrl = coverImage?.storagePath ? ImageUrl.forViewing(coverImage.storagePath) : null;
+                      
+                      return coverImageUrl ? (
+                        <div 
+                          className="relative h-48 w-full bg-cover flex items-center justify-center"
+                          style={{
+                            backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${coverImageUrl})`,
+                            backgroundPosition: (() => {
+                              switch (gallerySettings.coverPicAlignment) {
+                                case 'top': return 'center top';
+                                case 'bottom': return 'center bottom';
+                                case 'centre':
+                                default: return 'center center';
+                              }
+                            })(),
+                            marginBottom: `${gallerySettings.imageSpacingValue || 8}px`
+                          }}
+                        >
+                          <h2 className="text-xl font-bold text-white text-center">
+                            {shoot?.customTitle || shoot?.title || 'Gallery'}
+                          </h2>
+                        </div>
+                      ) : (
+                        <div className="relative h-48 w-full bg-gray-800 flex items-center justify-center border-2 border-dashed border-gray-600">
+                          <div className="text-center text-gray-400">
+                            <Eye className="w-8 h-8 mx-auto mb-2" />
+                            <p className="text-sm">Cover image loading...</p>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                    
+                    {/* Gallery Title when no cover */}
+                    {!selectedCover && (
+                      <div className="p-4">
+                        <h2 className="text-xl font-bold text-white mb-4 text-center">
+                          {shoot?.customTitle || shoot?.title || 'Gallery'}
+                        </h2>
+                      </div>
+                    )}
+                    
+                    {/* Gallery Renderer */}
+                    <GalleryRenderer
+                      images={getOrderedImages()}
+                      gallerySettings={gallerySettings}
+                      selectedCover={selectedCover}
+                      onCoverChange={setSelectedCover}
+                      draggedImage={draggedImage}
+                      onDragStart={handleDragStart}
+                      onDragEnd={handleDragEnd}
+                      onDragOver={handleDragOver}
+                      onDrop={handleDrop}
+                      onImageClick={(imageId) => {
+                        console.log('Preview image clicked:', imageId);
+                      }}
+                      onViewFullRes={handleViewFullRes}
+                      onDownloadImage={handleDownloadImage}
+                      isDragReorderingEnabled={isDragReorderingEnabled}
+                      visibleImageCount={visibleImageCount}
+                      dragStartTime={dragStartTime}
+                      onMouseDown={() => setDragStartTime(Date.now())}
+                      isAdminMode={true}
+                    />
+                    
+                    {/* Load More Button */}
+                    {images.length > visibleImageCount && visibleImageCount < 100 && (
+                      <div className="text-center mt-6 p-4">
+                        <Button
+                          variant="outline"
+                          onClick={loadMoreImages}
+                          className="px-8 py-2"
+                        >
+                          Load More Images ({Math.min(20, Math.min(100, images.length) - visibleImageCount)} more)
+                        </Button>
+                      </div>
+                    )}
+                    
+                    {/* Large Album Notice */}
+                    {images.length > 100 && (
+                      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mt-4 mx-4">
+                        <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+                          <AlertTriangle className="w-4 h-4" />
+                          <span className="font-medium">Large Album Notice</span>
+                        </div>
+                        <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                          This album has {images.length} images. For performance, only the first 100 images are shown in the preview. You can still reorder the visible images.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
               </Card>
 
             </div>
@@ -794,7 +1162,7 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
         )}
 
         {/* Preview Album Image Picker */}
-        {selectedShoot && isPreviewAlbum(selectedShoot) && (
+        {selectedShoot && workflowStates[selectedShoot]?.state === 'preview' && (
           <div className="space-y-6">
             {/* Preview Header */}
             <div className="flex justify-between items-center">
@@ -846,6 +1214,92 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
           </div>
         )}
       </div>
+      
+      {/* Image Modal */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 overflow-hidden bg-black border-none">
+          {modalImageId && (() => {
+            const orderedImages = getOrderedImages();
+            const currentImage = orderedImages[currentImageIndex];
+            if (!currentImage) return null;
+            
+            const imageUrl = currentImage?.storagePath ? ImageUrl.forViewing(currentImage.storagePath) : null;
+            
+            return (
+              <div className="relative w-full h-full flex items-center justify-center">
+                {imageUrl && (
+                  <>
+                    {/* Main Image */}
+                    <img
+                      src={imageUrl}
+                      alt={currentImage.filename}
+                      className="max-w-full max-h-[95vh] object-contain"
+                      style={{ maxHeight: 'calc(100vh - 40px)' }}
+                    />
+                    
+                    {/* Navigation Areas - Left 40% */}
+                    <div
+                      className="absolute left-0 top-0 w-[40%] h-full cursor-pointer flex items-center justify-start pl-4 opacity-0 hover:opacity-100 transition-opacity duration-200"
+                      onClick={() => navigateModal('prev')}
+                      title="Previous image"
+                    >
+                      <div className="bg-black/50 text-white p-2 rounded-full backdrop-blur-sm">
+                        <ChevronDown className="w-6 h-6 transform rotate-90" />
+                      </div>
+                    </div>
+                    
+                    {/* Navigation Areas - Right 40% */}
+                    <div
+                      className="absolute right-0 top-0 w-[40%] h-full cursor-pointer flex items-center justify-end pr-4 opacity-0 hover:opacity-100 transition-opacity duration-200"
+                      onClick={() => navigateModal('next')}
+                      title="Next image"
+                    >
+                      <div className="bg-black/50 text-white p-2 rounded-full backdrop-blur-sm">
+                        <ChevronDown className="w-6 h-6 transform -rotate-90" />
+                      </div>
+                    </div>
+                    
+                    {/* Close Button */}
+                    <div className="absolute top-4 right-4">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm"
+                        onClick={() => setIsModalOpen(false)}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    
+                    {/* Image Info */}
+                    <div className="absolute bottom-4 left-4 bg-black/50 text-white px-3 py-2 rounded backdrop-blur-sm">
+                      <div className="text-sm">
+                        {currentImageIndex + 1} of {orderedImages.length}
+                      </div>
+                      <div className="text-xs text-gray-300">
+                        {currentImage.filename}
+                      </div>
+                    </div>
+                    
+                    {/* Download Button */}
+                    <div className="absolute bottom-4 right-4">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm"
+                        onClick={() => handleDownloadImage(currentImage.storagePath, currentImage.filename)}
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

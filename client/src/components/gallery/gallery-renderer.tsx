@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ImageUrl } from "@/lib/image-utils";
-import { Eye, Crown, X, Trash2 } from "lucide-react";
+import { Eye, Crown, X, Trash2, Download } from "lucide-react";
 import type { Image } from "@shared/schema";
 
 interface GallerySettings {
@@ -29,6 +29,7 @@ interface GalleryRendererProps {
   onDrop?: (e: React.DragEvent, targetImageId: string) => void;
   onImageClick?: (imageId: string) => void;
   onViewFullRes?: (storagePath: string) => void;
+  onDownloadImage?: (storagePath: string, filename: string) => void;
   onRemoveImage?: (imageId: string) => void;
   onDeleteImage?: (imageId: string) => void;
   isDragReorderingEnabled?: boolean;
@@ -52,6 +53,7 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
   onDrop,
   onImageClick,
   onViewFullRes,
+  onDownloadImage,
   onRemoveImage,
   onDeleteImage,
   isDragReorderingEnabled = false,
@@ -310,6 +312,11 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
                             <Eye className="w-3 h-3" />
                           </Button>
                         )}
+                        {onDownloadImage && (
+                          <Button size="sm" variant="secondary" className="bg-blue-600 text-white hover:bg-blue-700" title="Download Image" onClick={(e) => { e.stopPropagation(); onDownloadImage(image.storagePath, image.filename); }}>
+                            <Download className="w-3 h-3" />
+                          </Button>
+                        )}
                         {onCoverChange && (
                           <Button size="sm" variant="secondary" className="bg-salmon text-white hover:bg-salmon-muted" title="Make Cover" onClick={(e) => { e.stopPropagation(); const newCover = selectedCover === image.id ? null : image.id; onCoverChange(newCover); if (saveAppearanceMutation) { saveAppearanceMutation.mutate({ bannerImageId: newCover, gallerySettings, imageSequences: {} }); } }}>
                             <Crown className="w-3 h-3" />
@@ -419,6 +426,11 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
                         {onViewFullRes && (
                           <Button size="sm" variant="secondary" className="bg-purple-600 text-white hover:bg-purple-700" title="View Full Resolution" onClick={(e) => { e.stopPropagation(); onViewFullRes(image.storagePath); }}>
                             <Eye className="w-3 h-3" />
+                          </Button>
+                        )}
+                        {onDownloadImage && (
+                          <Button size="sm" variant="secondary" className="bg-blue-600 text-white hover:bg-blue-700" title="Download Image" onClick={(e) => { e.stopPropagation(); onDownloadImage(image.storagePath, image.filename); }}>
+                            <Download className="w-3 h-3" />
                           </Button>
                         )}
                         {onCoverChange && (

@@ -330,6 +330,8 @@ export const shootPreviews = pgTable("shoot_previews", {
   submissionCompleted: boolean("submission_completed").default(false),
   submissionCompletedAt: timestamp("submission_completed_at", { withTimezone: true }),
   submissionCompletedBy: text("submission_completed_by"),
+  editingCompleted: boolean("editing_completed").default(false),
+  editingCompletedAt: timestamp("editing_completed_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
 });

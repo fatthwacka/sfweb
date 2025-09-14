@@ -36,6 +36,7 @@ export const GallerySettingsCard: React.FC<GallerySettingsCardProps> = ({
 }) => {
   // Get current radius value (default to 8px)
   const getCurrentRadius = () => {
+    console.log('🔍 GallerySettingsCard: borderRadius from props:', gallerySettings.borderRadius, typeof gallerySettings.borderRadius);
     return gallerySettings.borderRadius !== undefined ? gallerySettings.borderRadius : 8;
   };
 

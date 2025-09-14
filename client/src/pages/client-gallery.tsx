@@ -139,10 +139,8 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
       } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
         // Scrolling down and past 100px, hide navbar
         setNavbarVisible(false);
-      } else if (currentScrollY < lastScrollY) {
-        // Scrolling up, show navbar
-        setNavbarVisible(true);
       }
+      // Removed the scroll up condition - navbar only reappears at top
 
       lastScrollY = currentScrollY;
     };

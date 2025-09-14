@@ -9,7 +9,7 @@
   --background: hsl(260, 30%, 18%);
   --foreground: hsl(0, 0%, 95%);
   --muted: hsl(260, 20%, 21%);
-  --muted-foreground: hsl(240, 5%, 65%);
+  --muted-foreground: hsl(240, 5%, 80%);
   --popover: hsl(260, 25%, 19%);
   --popover-foreground: hsl(0, 0%, 95%);
   --card: hsl(260, 20%, 19%);
@@ -28,8 +28,8 @@
   --radius: 0.5rem;
   
   /* Custom colors */
-  --salmon: hsl(16, 100%, 73%);
-  --salmon-muted: hsl(16, 80%, 65%);
+  --salmon: hsl(16, 100%, 70%);
+  --salmon-muted: hsl(16, 90%, 68%);
   --salmon-dark: hsl(16, 60%, 35%);
   --cyan: hsl(180, 100%, 50%);
   --cyan-muted: hsl(180, 80%, 60%);
@@ -46,6 +46,22 @@
 /* Hide reCAPTCHA badge - Google allows this with proper attribution */
 .grecaptcha-badge {
   visibility: hidden !important;
+}
+
+/* Success message animation */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
 }
 
 /* Admin panel gradient card class */
@@ -304,8 +320,8 @@
 
   /* Card System Classes */
   .studio-card {
-    @apply rounded-2xl p-8 shadow-2xl transition-all duration-500 transform hover:scale-[1.02];
-    background: linear-gradient(135deg, hsl(260, 25%, 25%) 0%, hsl(220, 20%, 22%) 100%);
+    @apply rounded-2xl p-8 shadow-2xl transition-all duration-500;
+    background: linear-gradient(to bottom, hsl(16, 30%, 15%) 0%, hsl(280, 45%, 25%) 50%, hsl(300, 40%, 28%) 100%);
     border: 1px solid rgba(255, 107, 107, 0.3);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 107, 107, 0.1);
   }
@@ -980,15 +996,63 @@
   }
   
   .studio-card-premium {
-    @apply rounded-2xl p-8 shadow-2xl transition-all duration-500 transform hover:scale-[1.02];
-    background: linear-gradient(135deg, hsl(180, 40%, 15%) 0%, hsl(260, 25%, 12%) 50%, hsl(220, 20%, 10%) 100%);
+    @apply rounded-2xl p-8 shadow-2xl transition-all duration-500;
+    background: linear-gradient(to bottom, hsl(180, 35%, 12%) 0%, hsl(280, 45%, 22%) 50%, hsl(310, 40%, 25%) 100%);
     border: 2px solid rgba(0, 255, 255, 0.4);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 255, 255, 0.2);
+  }
+
+  .studio-card-pink {
+    @apply rounded-2xl p-8 shadow-2xl transition-all duration-500;
+    background: linear-gradient(to bottom, hsl(330, 30%, 15%) 0%, hsl(320, 45%, 25%) 50%, hsl(315, 40%, 28%) 100%);
+    border: 2px solid rgba(255, 105, 180, 0.3);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 105, 180, 0.1);
+  }
+
+  .studio-card-green {
+    @apply rounded-2xl p-8 shadow-2xl transition-all duration-500;
+    background: linear-gradient(to bottom, hsl(120, 30%, 15%) 0%, hsl(140, 45%, 25%) 50%, hsl(160, 40%, 28%) 100%);
+    border: 2px solid rgba(34, 197, 94, 0.4);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(34, 197, 94, 0.2);
+  }
+
+  .studio-card-orange {
+    @apply rounded-2xl p-8 shadow-2xl transition-all duration-500;
+    background: linear-gradient(to bottom, hsl(25, 30%, 15%) 0%, hsl(30, 45%, 25%) 50%, hsl(35, 40%, 28%) 100%);
+    border: 2px solid rgba(249, 115, 22, 0.3);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(249, 115, 22, 0.1);
+  }
+
+  .studio-card-cyan {
+    @apply rounded-2xl p-8 shadow-2xl transition-all duration-500;
+    background: linear-gradient(to bottom, hsl(180, 30%, 15%) 0%, hsl(185, 45%, 25%) 50%, hsl(190, 40%, 28%) 100%);
+    border: 2px solid rgba(34, 211, 238, 0.4);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(34, 211, 238, 0.2);
   }
   
   .studio-card-premium:hover {
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 255, 255, 0.4);
     border-color: rgba(0, 255, 255, 0.8);
+  }
+
+  .studio-card-pink:hover {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 105, 180, 0.3);
+    border-color: rgba(255, 105, 180, 0.7);
+  }
+
+  .studio-card-green:hover {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(34, 197, 94, 0.4);
+    border-color: rgba(34, 197, 94, 0.8);
+  }
+
+  .studio-card-orange:hover {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(249, 115, 22, 0.3);
+    border-color: rgba(249, 115, 22, 0.7);
+  }
+
+  .studio-card-cyan:hover {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(34, 211, 238, 0.4);
+    border-color: rgba(34, 211, 238, 0.8);
   }
   
   .studio-card-title {
@@ -998,6 +1062,26 @@
   
   .studio-card-premium .studio-card-title {
     color: hsl(180, 100%, 50%);
+  }
+
+  .studio-card-title-pink {
+    @apply text-2xl mb-4 font-semibold;
+    color: hsl(320, 100%, 70%);
+  }
+
+  .studio-card-title-green {
+    @apply text-2xl mb-4 font-semibold;
+    color: hsl(140, 100%, 60%);
+  }
+
+  .studio-card-title-orange {
+    @apply text-2xl mb-4 font-semibold;
+    color: hsl(30, 100%, 65%);
+  }
+
+  .studio-card-title-cyan {
+    @apply text-2xl mb-4 font-semibold;
+    color: hsl(185, 100%, 55%);
   }
   
   .studio-card-price {
@@ -1021,27 +1105,48 @@
   .studio-card-premium .studio-card-feature-icon {
     color: hsl(180, 100%, 50%);
   }
-  
-  .studio-card {
-    @apply rounded-2xl border transition-all duration-300 transform hover:-translate-y-2 flex flex-col;
-    background: linear-gradient(135deg, hsl(16, 30%, 25%) 0%, hsl(260, 25%, 22%) 100%);
-    border-color: rgba(255, 107, 107, 0.4);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    min-height: 600px;
+
+  .studio-card-orange .studio-card-feature-icon {
+    color: hsl(30, 100%, 65%);
   }
+
+  .studio-card-cyan .studio-card-feature-icon {
+    color: hsl(185, 100%, 55%);
+  }
+
+  .studio-card-pink .studio-card-feature-icon {
+    color: hsl(320, 100%, 70%);
+  }
+
+  .studio-card-green .studio-card-feature-icon {
+    color: hsl(140, 100%, 60%);
+  }
+
+  /* Main card icon colors - override Tailwind classes */
+  .studio-card-orange .text-orange-400 {
+    color: hsl(30, 100%, 65%) !important;
+  }
+
+  .studio-card-cyan .text-cyan-400 {
+    color: hsl(185, 100%, 55%) !important;
+  }
+
+  .studio-card-pink .text-pink-400 {
+    color: hsl(320, 100%, 70%) !important;
+  }
+
+  .studio-card-green .text-green-400 {
+    color: hsl(140, 100%, 60%) !important;
+  }
+  
+  /* Duplicate studio-card definition removed - using primary definition above */
   
   .studio-card:hover {
     border-color: rgba(255, 107, 107, 0.7);
     box-shadow: 0 8px 30px rgba(255, 107, 107, 0.3);
   }
   
-  .studio-card-premium {
-    @apply rounded-2xl border transition-all duration-300 transform hover:-translate-y-2 flex flex-col;
-    background: linear-gradient(135deg, hsl(180, 40%, 28%) 0%, hsl(260, 25%, 25%) 50%, hsl(220, 20%, 22%) 100%);
-    border-color: rgba(0, 255, 255, 0.5);
-    box-shadow: 0 8px 30px rgba(0, 255, 255, 0.2);
-    min-height: 600px;
-  }
+  /* Duplicate studio-card-premium definition removed - using primary definition above */
   
   .studio-card-premium:hover {
     border-color: rgba(0, 255, 255, 0.8);
@@ -1058,33 +1163,93 @@
   }
   
   .studio-card-button {
-    @apply w-full px-8 py-4 rounded-full text-lg font-medium transition-all duration-300 mt-auto;
-    background: linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(16, 95%, 68%) 100%);
-    color: white;
+    @apply w-full px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-300 mt-auto;
+    background: linear-gradient(to bottom, hsl(280, 35%, 30%) 0%, hsl(300, 45%, 25%) 100%);
+    color: hsl(16, 100%, 73%);
     border: 1px solid hsl(16, 100%, 73%);
   }
   
   .studio-card-button:hover {
     transform: translateY(-2px);
-    background: linear-gradient(135deg, hsl(16, 100%, 78%) 0%, hsl(16, 100%, 73%) 100%);
-    color: white;
-    box-shadow: 0 10px 25px hsla(16, 100%, 73%, 0.5);
-    border-color: hsl(16, 100%, 78%);
+    background: linear-gradient(to bottom, hsl(280, 40%, 35%) 0%, hsl(300, 50%, 30%) 100%);
+    color: hsl(16, 100%, 80%);
+    box-shadow: 0 10px 25px hsla(16, 100%, 73%, 0.3);
+    border-color: hsl(16, 100%, 80%);
   }
   
   .studio-card-button-premium {
-    @apply w-full px-8 py-4 rounded-full text-lg font-medium transition-all duration-300 mt-auto;
-    background: linear-gradient(135deg, hsl(180, 100%, 50%) 0%, hsl(180, 95%, 45%) 100%);
-    color: white;
+    @apply w-full px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-300 mt-auto;
+    background: linear-gradient(to bottom, hsl(280, 35%, 30%) 0%, hsl(310, 45%, 25%) 100%);
+    color: hsl(180, 100%, 50%);
     border: 1px solid hsl(180, 100%, 50%);
   }
   
   .studio-card-button-premium:hover {
     transform: translateY(-2px);
-    background: linear-gradient(135deg, hsl(180, 100%, 55%) 0%, hsl(180, 100%, 50%) 100%);
-    color: white;
-    box-shadow: 0 10px 25px hsla(180, 100%, 50%, 0.5);
-    border-color: hsl(180, 100%, 55%);
+    background: linear-gradient(to bottom, hsl(280, 40%, 35%) 0%, hsl(310, 50%, 30%) 100%);
+    color: hsl(180, 100%, 60%);
+    box-shadow: 0 10px 25px hsla(180, 100%, 50%, 0.3);
+    border-color: hsl(180, 100%, 60%);
+  }
+
+  .studio-card-button-pink {
+    @apply w-full px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-300 mt-auto;
+    background: linear-gradient(to bottom, hsl(320, 35%, 20%) 0%, hsl(315, 45%, 15%) 100%);
+    color: hsl(320, 100%, 70%);
+    border: 1px solid hsl(320, 100%, 70%);
+  }
+
+  .studio-card-button-pink:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(to bottom, hsl(320, 40%, 25%) 0%, hsl(315, 50%, 20%) 100%);
+    color: hsl(320, 100%, 80%);
+    box-shadow: 0 10px 25px hsla(320, 100%, 70%, 0.3);
+    border-color: hsl(320, 100%, 80%);
+  }
+
+  .studio-card-button-green {
+    @apply w-full px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-300 mt-auto;
+    background: linear-gradient(to bottom, hsl(140, 35%, 20%) 0%, hsl(160, 45%, 15%) 100%);
+    color: hsl(140, 100%, 60%);
+    border: 1px solid hsl(140, 100%, 60%);
+  }
+
+  .studio-card-button-green:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(to bottom, hsl(140, 40%, 25%) 0%, hsl(160, 50%, 20%) 100%);
+    color: hsl(140, 100%, 70%);
+    box-shadow: 0 10px 25px hsla(140, 100%, 60%, 0.3);
+    border-color: hsl(140, 100%, 70%);
+  }
+
+  .studio-card-button-orange {
+    @apply w-full px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-300 mt-auto;
+    background: linear-gradient(to bottom, hsl(30, 35%, 20%) 0%, hsl(35, 45%, 15%) 100%);
+    color: hsl(30, 100%, 65%);
+    border: 1px solid hsl(30, 100%, 65%);
+  }
+
+  .studio-card-button-orange:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(to bottom, hsl(30, 40%, 25%) 0%, hsl(35, 50%, 20%) 100%);
+    color: hsl(30, 100%, 75%);
+    box-shadow: 0 10px 25px hsla(30, 100%, 65%, 0.3);
+    border-color: hsl(30, 100%, 75%);
+  }
+
+  .studio-card-button-cyan {
+    @apply w-full px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-300 mt-auto;
+    background: linear-gradient(to bottom, hsl(185, 35%, 20%) 0%, hsl(190, 45%, 15%) 100%);
+    color: hsl(185, 100%, 55%);
+    border: 1px solid hsl(185, 100%, 55%);
+  }
+
+  .studio-card-button-cyan:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(to bottom, hsl(185, 40%, 25%) 0%, hsl(190, 50%, 20%) 100%);
+    color: hsl(185, 100%, 65%);
+    box-shadow: 0 10px 25px hsla(185, 100%, 55%, 0.3);
+    border-color: hsl(185, 100%, 65%);
   }
   
   /* General Button Classes */
@@ -1373,7 +1538,6 @@
   .image-hover-effect:hover {
     box-shadow: 0 20px 40px rgba(0,0,0,0.3);
   }
-}
 
 @layer utilities {
   .animate-fade-in {
@@ -2452,4 +2616,5 @@ html, body {
 }
 [data-gradient-section="aboutLocation"] .text-muted-foreground {
   color: var(--aboutLocation-text-tertiary, #94a3b8) !important;
+}
 }

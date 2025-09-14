@@ -25,32 +25,6 @@ const additionalServices = [
   }
 ];
 
-const faqs = [
-  {
-    question: "What's included in all packages?",
-    answer: "All packages include professional editing, online gallery access, high-resolution downloads, and print release rights."
-  },
-  {
-    question: "How long does editing take?",
-    answer: "Standard delivery is 2-3 weeks for photography and 3-4 weeks for videography. Rush delivery is available for an additional fee."
-  },
-  {
-    question: "Do you travel outside Durban?",
-    answer: "Yes! We love destination shoots. Travel costs are calculated based on distance and accommodation requirements."
-  },
-  {
-    question: "Can I customize a package?",
-    answer: "Absolutely! We're happy to create custom packages that perfectly fit your needs and budget."
-  },
-  {
-    question: "What happens if it rains on my shoot day?",
-    answer: "We monitor weather closely and will work with you to reschedule if necessary. We also have indoor backup plans for most shoots."
-  },
-  {
-    question: "Do you offer payment plans?",
-    answer: "Yes, we offer flexible payment plans for bookings over R5,000. Contact us to discuss options."
-  }
-];
 
 export default function Pricing() {
   return (
@@ -63,145 +37,197 @@ export default function Pricing() {
       <Navigation />
       
 
-      {/* Videography Pricing */}
+      {/* Service Categories */}
       <section className="pt-32 pb-20 bg-gradient-to-br from-blue-900/40 via-background to-indigo-900/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6 h2-cyan">
-              Videography Packages
+              Our Services
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Cinematic videography services with professional editing and delivery in multiple formats.
+              Professional creative services across photography, videography, social media, and web development.
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Wedding Videography */}
-            <div className="studio-card">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            {/* Photography */}
+            <div className="studio-card-orange">
+              <Camera className="w-12 h-12 mx-auto mb-4 text-orange-400" />
               <div className="text-center mb-8">
-                <h3 className="studio-card-title">Wedding Films</h3>
-                <div className="studio-card-price">R12,500</div>
-                <p className="studio-card-duration">Cinematic wedding videography</p>
+                <h3 className="studio-card-title-orange">Photography</h3>
+                <div className="studio-card-price">R1,500</div>
+                <p className="studio-card-duration">packages from R1,500</p>
               </div>
 
               <ul className="space-y-4 mb-8">
                 <li className="studio-card-feature">
                   <Check className="studio-card-feature-icon" />
-                  <span>6-8 hour coverage</span>
+                  <span>Wedding photography</span>
                 </li>
                 <li className="studio-card-feature">
                   <Check className="studio-card-feature-icon" />
-                  <span>Highlight reel (3-5 minutes)</span>
+                  <span>Portrait sessions</span>
                 </li>
                 <li className="studio-card-feature">
                   <Check className="studio-card-feature-icon" />
-                  <span>Full ceremony footage</span>
+                  <span>Corporate events</span>
                 </li>
                 <li className="studio-card-feature">
                   <Check className="studio-card-feature-icon" />
-                  <span>Reception highlights</span>
+                  <span>Professional editing</span>
                 </li>
                 <li className="studio-card-feature">
                   <Check className="studio-card-feature-icon" />
-                  <span>Professional color grading</span>
+                  <span>High-resolution gallery</span>
                 </li>
                 <li className="studio-card-feature">
                   <Check className="studio-card-feature-icon" />
-                  <span>Multiple format delivery</span>
+                  <span>Print release rights</span>
                 </li>
               </ul>
 
-              <Link href="/contact">
-                <button className="studio-card-button">
-                  Choose Wedding Films
+              <Link href="/photography">
+                <button className="studio-card-button-orange">
+                  Learn More
                 </button>
               </Link>
             </div>
 
-            {/* Corporate Video */}
-            <div className="studio-card-premium relative">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="bg-salmon text-black px-6 py-2 rounded-full text-sm">Popular</span>
-              </div>
-
+            {/* Videography */}
+            <div className="studio-card-cyan relative">
+              <Video className="w-12 h-12 mx-auto mb-4 text-cyan-400" />
               <div className="text-center mb-8">
-                <h3 className="studio-card-title">Corporate Video</h3>
-                <div className="studio-card-price">R8,500</div>
-                <p className="studio-card-duration">Professional business videos</p>
+                <h3 className="studio-card-title-cyan">Videography</h3>
+                <div className="studio-card-price">R3,500</div>
+                <p className="studio-card-duration">packages from R3,500</p>
               </div>
 
               <ul className="space-y-4 mb-8">
                 <li className="studio-card-feature">
                   <Check className="studio-card-feature-icon" />
-                  <span>Full day production</span>
+                  <span>Wedding films</span>
                 </li>
                 <li className="studio-card-feature">
                   <Check className="studio-card-feature-icon" />
-                  <span>3-5 minute final video</span>
+                  <span>Corporate videos</span>
                 </li>
                 <li className="studio-card-feature">
                   <Check className="studio-card-feature-icon" />
-                  <span>Professional interviews</span>
+                  <span>Promotional content</span>
                 </li>
                 <li className="studio-card-feature">
                   <Check className="studio-card-feature-icon" />
-                  <span>Company profile content</span>
+                  <span>Professional editing</span>
                 </li>
                 <li className="studio-card-feature">
                   <Check className="studio-card-feature-icon" />
-                  <span>Motion graphics package</span>
+                  <span>Multiple formats</span>
                 </li>
                 <li className="studio-card-feature">
                   <Check className="studio-card-feature-icon" />
-                  <span>Multi-platform optimization</span>
+                  <span>Color grading</span>
                 </li>
               </ul>
 
-              <Link href="/contact">
-                <button className="studio-card-button-premium">
-                  Choose Corporate Video
+              <Link href="/videography">
+                <button className="studio-card-button-cyan">
+                  Learn More
                 </button>
               </Link>
             </div>
 
-            {/* Social Media Content */}
-            <div className="studio-card">
+            {/* Social Media */}
+            <div className="studio-card-pink">
+              <div className="w-12 h-12 mx-auto mb-4 flex items-center justify-center">
+                <svg className="w-12 h-12 text-pink-400" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+              </div>
               <div className="text-center mb-8">
-                <h3 className="studio-card-title">Social Content</h3>
-                <div className="studio-card-price">R2,500</div>
-                <p className="studio-card-duration">Social media video package</p>
+                <h3 className="studio-card-title-pink">Social Media</h3>
+                <div className="studio-card-price">R3,500</div>
+                <p className="studio-card-duration">packages from R3,500</p>
               </div>
 
-              <ul className="space-y-4 mb-8">
+                <ul className="space-y-4 mb-8">
+                  <li className="studio-card-feature">
+                    <Check className="studio-card-feature-icon" />
+                    <span>Content creation</span>
+                  </li>
                 <li className="studio-card-feature">
                   <Check className="studio-card-feature-icon" />
-                  <span>Half day shoot</span>
+                  <span>Strategic planning</span>
                 </li>
                 <li className="studio-card-feature">
                   <Check className="studio-card-feature-icon" />
-                  <span>10-15 short videos</span>
+                  <span>Platform management</span>
                 </li>
                 <li className="studio-card-feature">
                   <Check className="studio-card-feature-icon" />
-                  <span>Platform-specific editing</span>
+                  <span>Analytics & reporting</span>
                 </li>
                 <li className="studio-card-feature">
                   <Check className="studio-card-feature-icon" />
-                  <span>Instagram Reels & TikTok</span>
+                  <span>Engagement optimization</span>
                 </li>
                 <li className="studio-card-feature">
                   <Check className="studio-card-feature-icon" />
-                  <span>Trending formats</span>
-                </li>
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>Quick turnaround</span>
+                  <span>Campaign management</span>
                 </li>
               </ul>
 
-              <Link href="/contact">
-                <button className="studio-card-button">
-                  Choose Social Content
+              <Link href="/social-media">
+                <button className="studio-card-button-pink">
+                  Learn More
+                </button>
+              </Link>
+            </div>
+
+            {/* Web & Apps */}
+            <div className="studio-card-green relative">
+              <div className="w-12 h-12 mx-auto mb-4 flex items-center justify-center">
+                <svg className="w-12 h-12 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                  <line x1="8" y1="21" x2="16" y2="21"/>
+                  <line x1="12" y1="17" x2="12" y2="21"/>
+                </svg>
+              </div>
+              <div className="text-center mb-8">
+                <h3 className="studio-card-title-green">Web & Apps</h3>
+                <div className="studio-card-price">R3,500</div>
+                <p className="studio-card-duration">packages from R3,500</p>
+              </div>
+
+                <ul className="space-y-4 mb-8">
+                  <li className="studio-card-feature">
+                    <Check className="studio-card-feature-icon" />
+                    <span>AI Automation</span>
+                  </li>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>Website development</span>
+                </li>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>Mobile applications</span>
+                </li>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>E-commerce solutions</span>
+                </li>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>Hosting & maintenance</span>
+                </li>
+                <li className="studio-card-feature">
+                  <Check className="studio-card-feature-icon" />
+                  <span>SEO optimization</span>
+                </li>
+              </ul>
+
+              <Link href="/web-apps">
+                <button className="studio-card-button-green">
+                  Learn More
                 </button>
               </Link>
             </div>
@@ -237,28 +263,6 @@ export default function Pricing() {
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="py-20 bg-gradient-to-br from-rose-900/30 via-background to-pink-900/20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6 h2-cyan">
-              Frequently Asked Questions
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              Common questions about our pricing and services.
-            </p>
-          </div>
-
-          <div className="space-y-8">
-            {faqs.map((faq, index) => (
-              <div key={index} className="bg-charcoal rounded-2xl p-8">
-                <h3 className={`text-xl mb-4 ${index % 2 === 0 ? 'h3-salmon' : 'h3-cyan'}`}>{faq.question}</h3>
-                <p className="text-muted-foreground">{faq.answer}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Call to Action */}
       <section className="py-20 bg-gradient-to-br from-violet-900/35 via-background to-indigo-900/25">

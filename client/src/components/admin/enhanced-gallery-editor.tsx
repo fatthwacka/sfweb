@@ -286,14 +286,16 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
   // Initialize all settings from shoot data when shoot changes
   useEffect(() => {
-    if (shoot && shoot.id && images.length > 0) {
+    if (shoot && shoot.id) {
       setCustomSlug(shoot.customSlug || '');
       
       // Set cover: use bannerImageId if valid, otherwise use first image as fallback
       if (shoot.bannerImageId && images.some(img => img.id === shoot.bannerImageId)) {
         setSelectedCover(shoot.bannerImageId);
-      } else {
+      } else if (images.length > 0) {
         setSelectedCover(images[0].id);
+      } else {
+        setSelectedCover(null);
       }
       
       // Initialize gallery settings from shoot data (provide defaults for null gallerySettings)

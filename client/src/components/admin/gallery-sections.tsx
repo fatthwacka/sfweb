@@ -176,7 +176,7 @@ export function BasicInfoSection({
         <div className="flex items-center justify-between">
           <CardTitle className="text-salmon flex items-center gap-2">
             <Camera className="w-5 h-5" />
-            Basic Shoot Info
+            Gallery Basic Info
           </CardTitle>
           <div className="flex items-center gap-3">
             {isExpanded && <SaveStatusIndicator />}
@@ -426,7 +426,7 @@ export function AdvancedSettingsSection({ editableShoot, setEditableShoot, shoot
         <div className="flex items-center justify-between">
           <CardTitle className="text-salmon flex items-center gap-2">
             <Settings className="w-5 h-5" />
-            Advanced Settings
+            Gallery Advanced Settings
           </CardTitle>
           <div className="flex items-center gap-3">
             {isExpanded && <SaveStatusIndicator />}
