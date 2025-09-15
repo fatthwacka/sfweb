@@ -2,6 +2,7 @@ import React from 'react';
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TextColorsGroup } from "@/components/ui/text-color-picker";
+import { useGradientConfig } from "@/hooks/use-gradient-config";
 
 interface TextColorsConfig {
   primary: string;
@@ -22,8 +23,6 @@ interface GradientConfig {
 interface GradientPickerProps {
   sectionKey: string;
   label: string;
-  gradient: GradientConfig;
-  onChange: (gradient: GradientConfig) => void;
   showDirection?: boolean;
   showOpacity?: boolean;
   showAccentColor?: boolean;
@@ -44,24 +43,35 @@ const DIRECTION_OPTIONS = [
 export function GradientPicker({
   sectionKey,
   label,
-  gradient,
-  onChange,
   showDirection = true,
   showOpacity = false,
   showAccentColor = false,
   showTextColors = false
 }: GradientPickerProps) {
 
+  const {
+    config: gradient,
+    isLoading,
+    updateColor,
+    updateTextColor: updateTextColorHook,
+    isUpdating
+  } = useGradientConfig(sectionKey);
+
   const updateGradient = (updates: Partial<GradientConfig>) => {
-    onChange({ ...gradient, ...updates });
+    // For direction updates, use the updateColor helper
+    if (updates.direction) {
+      updateColor('direction', updates.direction);
+    }
+    // For other updates like startColor, middleColor, endColor
+    Object.entries(updates).forEach(([key, value]) => {
+      if (key !== 'direction' && key !== 'textColors') {
+        updateColor(key as keyof GradientConfig, value as string);
+      }
+    });
   };
 
   const updateTextColor = (colorType: keyof TextColorsConfig, color: string) => {
-    const updatedTextColors = {
-      ...gradient.textColors,
-      [colorType]: color
-    };
-    updateGradient({ textColors: updatedTextColors });
+    updateTextColorHook(colorType as 'primary' | 'secondary' | 'tertiary', color);
   };
 
   // Generate preview gradient (without opacity to avoid text issues)
@@ -69,12 +79,22 @@ export function GradientPicker({
     background: `linear-gradient(${gradient.direction}, ${gradient.startColor} 0%, ${gradient.middleColor} 50%, ${gradient.endColor} 100%)`
   };
 
+  if (isLoading) {
+    return (
+      <div className="gallery-slider-container">
+        <div className="gallery-slider-header">
+          <Label className="gallery-slider-label">Loading...</Label>
+        </div>
+        <div className="animate-pulse h-24 bg-slate-700 rounded"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="gallery-slider-container">
       <div className="gallery-slider-header">
         <Label className={`${showTextColors ? 'text-white text-lg font-bold' : 'gallery-slider-label'}`}>
-          {showTextColors ? 'Section Colors' : label}
+          {label}
         </Label>
       </div>
       

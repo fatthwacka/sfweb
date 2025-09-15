@@ -383,6 +383,15 @@ export const previewImages = pgTable("preview_images", {
   createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
 });
 
+// Site gradients configuration table for dynamic color management
+export const siteGradients = pgTable("site_gradients", {
+  id: serial("id").primaryKey(),
+  sectionKey: text("section_key").notNull().unique(), // e.g., 'privateGallery', 'services', 'testimonials'
+  gradientConfig: jsonb("gradient_config").notNull(), // Stores full gradient configuration
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
+});
+
 
 // Insert schemas for new tables
 export const insertShootPreviewSchema = createInsertSchema(shootPreviews).omit({
@@ -392,6 +401,12 @@ export const insertShootPreviewSchema = createInsertSchema(shootPreviews).omit({
 });
 
 export const insertClientSelectionSchema = createInsertSchema(clientSelections).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSiteGradientSchema = createInsertSchema(siteGradients).omit({
   id: true,
   createdAt: true,
   updatedAt: true,

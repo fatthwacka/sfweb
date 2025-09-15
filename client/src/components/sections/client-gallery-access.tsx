@@ -1,45 +1,37 @@
 import { Button } from "@/components/ui/button";
-import { List, Download, Share, Shield, Download as DownloadIcon, Share2 } from "lucide-react";
+import { Shield, Download as DownloadIcon, Share2 } from "lucide-react";
 import { GradientBackground } from "@/components/common/gradient-background";
-import { useSiteConfig } from "@/hooks/use-site-config";
 import { AuthButton } from "@/components/ui/auth-button";
 import { Link } from "wouter";
 
-const iconMap: Record<string, any> = {
-  'secure-access': Shield,
-  'easy-downloads': DownloadIcon,
-  'share-anywhere': Share2
-};
-
 export function ClientGalleryAccess() {
-  const { config } = useSiteConfig();
-  const privateGalleryConfig = config?.home?.privateGallery;
+  // Hardcoded content - current as of Sept 2025
+  const headline = "Your Private Gallery";
+  const description = "Showcase your images with style. Each shoot with Slyfox includes a professional online portfolio with all your shoot images. Access your photos anytime, anywhere. Share with family and friends, download high-resolution images, and relive your special moments through our secure client portal.";
 
-  // Fallback data if config is not loaded
-  const headline = privateGalleryConfig?.headline || "Your Private Gallery";
-  const description = privateGalleryConfig?.description || "Access your photos anytime, anywhere. Share with family and friends, download high-resolution images, and relive your special moments through our secure client portal.";
-  
-  const features = privateGalleryConfig?.features || [
+  const features = [
     {
       id: "secure-access",
       title: "Secure Access",
-      description: "Private password-protected galleries accessible only to you and those you share access with."
+      description: "Private password-protected galleries accessible only to you and those you share access with.",
+      icon: Shield
     },
     {
-      id: "easy-downloads", 
+      id: "easy-downloads",
       title: "Easy Downloads",
-      description: "Download individual photos or entire albums in various resolutions for different uses."
+      description: "Download individual photos or entire albums in various resolutions for different uses.",
+      icon: DownloadIcon
     },
     {
       id: "share-anywhere",
       title: "Share Anywhere",
-      description: "Share your gallery link via social media, email, or embed custom invitations."
+      description: "Share your gallery link via social media, email, or embed custom invitations.",
+      icon: Share2
     }
   ];
 
-  const primaryButton = privateGalleryConfig?.buttons?.primary || { text: "Access My Gallery", action: "/client-gallery" };
-  const secondaryButton = privateGalleryConfig?.buttons?.secondary || { text: "Gallery Demo", action: "/gallery/demo" };
-  const mainImage = privateGalleryConfig?.image || "/images/gallery/wedding-gallery-1.jpg";
+  const primaryButton = { text: "Access My Gallery", action: "/client-gallery" };
+  const secondaryButton = { text: "Gallery Demo", action: "/gallery/demo" };
 
   return (
     <GradientBackground section="privateGallery" className="py-20">
@@ -59,7 +51,7 @@ export function ClientGalleryAccess() {
 
             <div className="space-y-6 mb-8">
               {features.map((feature, index) => {
-                const Icon = iconMap[feature.id] || Shield;
+                const Icon = feature.icon;
                 return (
                   <div key={feature.id} className="flex items-start">
                     <div className="bg-cyan rounded-full p-2 mr-4 mt-1">

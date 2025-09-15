@@ -2,7 +2,7 @@ import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Camera, Check } from "lucide-react";
+import { Camera, Check, ChevronDown } from "lucide-react";
 import { useSiteConfig } from "@/hooks/use-site-config";
 import { GradientBackground } from "@/components/common/gradient-background";
 import { CategoryFeaturedGrid } from "@/components/shared/category-featured-grid";
@@ -50,17 +50,37 @@ export default function PhotographyEvents() {
           <p className="script-tagline mb-8 max-w-3xl mx-auto">
             {eventsConfig.hero.subtitle}
           </p>
-          <Link href={eventsConfig.hero.ctaLink || '/contact'}>
-            <Button className="btn-primary px-8 py-3 text-lg">
-              {eventsConfig.hero.ctaText}
-            </Button>
-          </Link>
+
+          {/* Scroll Down Button */}
+          <div className="flex justify-center">
+            <button
+              onClick={() => {
+                const servicesElement = document.querySelector('#category-services');
+                if (servicesElement) {
+                  const headerOffset = 80; // Account for fixed navigation bar
+                  const elementPosition = servicesElement.getBoundingClientRect().top;
+                  const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                  window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                  });
+                }
+              }}
+              className="bg-white p-2 rounded-full hover:scale-105 transform transition-all duration-300 shadow-lg cursor-pointer border-none flex items-center justify-center"
+              type="button"
+              style={{ width: '40px', height: '40px' }}
+            >
+              <ChevronDown className="w-4 h-4 text-gray-600" />
+            </button>
+          </div>
         </div>
       </section>
 
       {/* Service Overview Section */}
-      <GradientBackground 
-        section="services" 
+      <GradientBackground
+        id="category-services"
+        section="services"
         className="py-20"
         categoryType="photography"
         categoryName="events"
@@ -122,11 +142,11 @@ export default function PhotographyEvents() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-8 pt-6">
             {eventsConfig.packages.tiers.map((tier, index) => (
               <div
                 key={tier.id}
-                className={`group cursor-pointer bg-gradient-to-br from-slate-800/60 to-gray-900/80 rounded-2xl overflow-hidden shadow-2xl hover:shadow-gold/20 transition-all duration-500 transform hover:scale-[1.02] p-8 ${
+                className={`relative group cursor-pointer bg-gradient-to-br from-slate-800/60 to-gray-900/80 rounded-2xl shadow-2xl hover:shadow-gold/20 transition-all duration-500 transform hover:scale-[1.02] p-8 ${
                   tier.isPopular
                     ? 'border-2 border-salmon'
                     : 'border border-border'

@@ -961,7 +961,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
   return (
     <TooltipProvider>
       {/* Tab Navigation */}
-      <div className="mt-8 flex space-x-8 border-b border-border">
+      <div className="mt-8 flex justify-center space-x-8 border-b border-border">
         {[
           { id: 'overview', label: 'Overview', icon: BarChart3 },
           { id: 'clients', label: 'Clients', icon: Users },

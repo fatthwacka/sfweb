@@ -2,7 +2,7 @@ import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Camera, ArrowRight } from "lucide-react";
+import { Camera, ArrowRight, ChevronDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { photography as defaultPhotography } from "@/config/site-config";
@@ -154,11 +154,35 @@ export default function Photography() {
           <p className="script-tagline mb-8 max-w-3xl mx-auto">
             {config.hero.subtitle}
           </p>
+
+          {/* Scroll Down Button */}
+          <div className="flex justify-center">
+            <button
+              onClick={() => {
+                const servicesElement = document.querySelector('#photography-services');
+                if (servicesElement) {
+                  const headerOffset = 80; // Account for fixed navigation bar
+                  const elementPosition = servicesElement.getBoundingClientRect().top;
+                  const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                  window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                  });
+                }
+              }}
+              className="bg-white p-2 rounded-full hover:scale-105 transform transition-all duration-300 shadow-lg cursor-pointer border-none flex items-center justify-center"
+              type="button"
+              style={{ width: '40px', height: '40px' }}
+            >
+              <ChevronDown className="w-4 h-4 text-gray-600" />
+            </button>
+          </div>
         </div>
       </section>
 
       {/* Photography Categories */}
-      <section className="py-20 bg-gradient-to-br from-indigo-900/40 via-background to-blue-900/30">
+      <section id="photography-services" className="py-20 bg-gradient-to-br from-indigo-900/40 via-background to-blue-900/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6">
@@ -169,7 +193,7 @@ export default function Photography() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid sm:grid-cols-2 gap-8">
             {config.categories.map((category, index) => (
               <Link key={category.slug} href={`/photography/${category.slug}`}>
                 <div className="group cursor-pointer bg-gradient-to-br from-slate-800/60 to-gray-900/80 rounded-2xl overflow-hidden shadow-2xl hover:shadow-gold/20 transition-all duration-500 transform hover:scale-[1.02]">
@@ -184,25 +208,20 @@ export default function Photography() {
 
                   <div className="p-8">
                     <h3 className="text-2xl text-gold mb-4">{category.name}</h3>
-                    <p className="text-muted-foreground mb-6">
+                    <p className="text-muted-foreground mb-4">
                       {category.description}
                     </p>
 
-                    <div className="grid grid-cols-2 gap-2 mb-6">
+                    <div className="grid grid-cols-2 gap-2">
                       {category.features.map((feature, featureIndex) => (
                         <div
                           key={featureIndex}
-                          className="flex items-center text-sm text-muted-foreground"
+                          className="flex items-center text-sm text-gray-400"
                         >
-                          <div className="w-2 h-2 bg-gold rounded-full mr-2 flex-shrink-0"></div>
+                          <div className="w-1.5 h-1.5 bg-gradient-to-r from-gray-500 to-orange-400 rounded-full mr-3 flex-shrink-0"></div>
                           {feature}
                         </div>
                       ))}
-                    </div>
-
-                    <div className="flex items-center text-gold group-hover:translate-x-2 transition-transform duration-300">
-                      Learn More
-                      <ArrowRight className="w-5 h-5 ml-2 icon-cyan" />
                     </div>
                   </div>
                 </div>

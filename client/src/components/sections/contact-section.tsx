@@ -8,7 +8,6 @@ import { useToast } from "@/hooks/use-toast";
 import { MapPin, Mail, Phone, Clock } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { useSiteConfig } from "@/hooks/use-site-config";
 import { GradientBackground } from "@/components/common/gradient-background";
 import { useRecaptcha } from "@/hooks/use-recaptcha";
 
@@ -23,7 +22,6 @@ interface ContactFormData {
 }
 
 export function ContactSection() {
-  const { config } = useSiteConfig();
   const { toast } = useToast();
   const { executeRecaptcha, isRecaptchaLoaded } = useRecaptcha();
   const [formData, setFormData] = useState<ContactFormData>({
@@ -258,7 +256,7 @@ export function ContactSection() {
                   </div>
                   <div>
                     <h4 className="font-barlow font-semibold text-lg mb-2">Studio Location</h4>
-                    <p className="text-foreground">{config?.contact?.business?.address?.displayText || "Durban, South Africa"}</p>
+                    <p className="text-foreground">La Lucia, Umhlanga, Durban</p>
                     <p className="text-muted-foreground text-sm">Serving Durban & KZN</p>
                   </div>
                 </div>
@@ -270,8 +268,8 @@ export function ContactSection() {
                   </div>
                   <div>
                     <h4 className="font-barlow font-semibold text-lg mb-2">Email Us</h4>
-                    <p className="text-foreground">{config?.contact?.business?.email || "info@slyfox.co.za"}</p>
-                    <p className="text-muted-foreground text-sm">We respond within {config?.contact?.responseTimes?.email?.time || "24 hours"}</p>
+                    <p className="text-foreground">info@slyfox.co.za</p>
+                    <p className="text-muted-foreground text-sm">We respond within usually within hours</p>
                   </div>
                 </div>
 
@@ -282,9 +280,9 @@ export function ContactSection() {
                   </div>
                   <div>
                     <h4 className="font-barlow font-semibold text-lg mb-2">Call Us</h4>
-                    <p className="text-foreground">{config?.contact?.business?.phone || "+27 12 345 6789"}</p>
-                    <p className="text-foreground">{config?.contact?.hours?.weekdaysDisplay || "Monday - Friday"}: {config?.contact?.hours?.weekdaysTime || "9:00 AM - 6:00 PM"}</p>
-                    <p className="text-muted-foreground text-sm">{config?.contact?.hours?.saturdayDisplay || "Saturday"}: {config?.contact?.hours?.saturdayTime || "10:00 AM - 4:00 PM"}</p>
+                    <p className="text-foreground">076 916 3113</p>
+                    <p className="text-foreground">Monday - Friday: 9:00 AM - 6:00 PM</p>
+                    <p className="text-muted-foreground text-sm">Saturday: 10:00 AM - 4:00 PM</p>
                   </div>
                 </div>
 
@@ -295,8 +293,8 @@ export function ContactSection() {
                   </div>
                   <div>
                     <h4 className="font-barlow font-semibold text-lg mb-2">Business Hours</h4>
-                    <p className="text-foreground">{config?.contact?.hours?.weekdaysDisplay || "Monday - Friday"}: {config?.contact?.hours?.weekdaysTime || "9AM - 6PM"}</p>
-                    <p className="text-muted-foreground text-sm">{config?.contact?.hours?.saturdayDisplay || "Saturday"}: {config?.contact?.hours?.saturdayTime || "10AM - 4PM"}</p>
+                    <p className="text-foreground">Monday - Friday: 9:00 AM - 6:00 PM</p>
+                    <p className="text-muted-foreground text-sm">Saturday: 10:00 AM - 4:00 PM</p>
                   </div>
                 </div>
               </div>

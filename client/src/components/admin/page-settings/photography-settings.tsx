@@ -46,9 +46,9 @@ export function PhotographySettings() {
   const [activeCategory, setActiveCategory] = useState('weddings');
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      <Tabs value={activeCategory} onValueChange={setActiveCategory} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6 bg-slate-800/50 border border-slate-600">
+    <div className="space-y-6">
+      <Tabs value={activeCategory} onValueChange={setActiveCategory} className="space-y-0">
+        <TabsList className="grid w-full grid-cols-6 bg-slate-800/50 border border-slate-600 mb-0">
           {photographyCategories.map((category) => {
             const Icon = category.icon;
             return (
@@ -65,7 +65,7 @@ export function PhotographySettings() {
         </TabsList>
 
         {photographyCategories.map((category) => (
-          <TabsContent key={category.slug} value={category.slug}>
+          <TabsContent key={category.slug} value={category.slug} className="mt-0">
             <CategoryPageSettings type="photography" category={category.slug} />
           </TabsContent>
         ))}

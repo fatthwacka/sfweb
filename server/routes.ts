@@ -13,6 +13,7 @@ import { initializeAdmin } from './init-admin.js';
 import { createClient } from '@supabase/supabase-js';
 import simpleAssetsRouter from './routes/simple-assets';
 import siteConfigRouter from './site-config-api';
+import { gradientRoutes } from './routes/gradients';
 import { sendContactEmail, validateEmailConfig, sendAlbumReadyEmail } from './email-service';
 import { verifyRecaptcha } from './recaptcha-service';
 import { eq, and } from 'drizzle-orm';
@@ -1991,9 +1992,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Use the simple assets router for direct file management
   app.use('/api/simple-assets', simpleAssetsRouter);
-  
+
   // Use the site config router for configuration management
   app.use(siteConfigRouter);
+
+  // Use the gradient routes for gradient configuration management
+  app.use('/api/gradients', gradientRoutes);
   
 
   // GET /api/images/featured - Get featured images

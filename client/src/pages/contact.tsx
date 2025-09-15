@@ -3,7 +3,6 @@ import { Footer } from "@/components/layout/footer";
 import { ContactSection } from "@/components/sections/contact-section";
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Mail, Clock, MessageCircle, Instagram, Facebook } from "lucide-react";
-import { useSiteConfig } from "@/hooks/use-site-config";
 
 // Map icon strings to Lucide components
 const iconMap = {
@@ -16,50 +15,31 @@ const iconMap = {
 };
 
 export default function Contact() {
-  const { config, isLoading } = useSiteConfig();
   
-  // Debug logging
-  console.log('🏢 Contact page config:', {
-    businessName: config?.contact?.business?.name,
-    phone: config?.contact?.business?.phone,
-    isLoading
-  });
-  
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background text-foreground background-gradient-blobs flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-salmon"></div>
-          <p className="mt-4 text-muted-foreground">Loading contact information...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  // Create contact methods from business config (same source as admin panel)
+  // Hardcoded contact methods with actual business data
   const contactMethods = [
     {
       icon: iconMap.Phone,
       title: "Call Us",
-      details: [config?.contact?.business?.phone || "+27 12 345 6789", config?.contact?.responseTimes?.phone?.time || "Immediate"],
-      action: `tel:${config?.contact?.business?.phone?.replace(/\s/g, '') || "+27123456789"}`
+      details: ["076 916 3113", "Immediate"],
+      action: "tel:0769163113"
     },
     {
       icon: iconMap.Mail,
-      title: "Email Us", 
-      details: [config?.contact?.business?.email || "info@slyfox.co.za", config?.contact?.responseTimes?.email?.time || "Within 24 hours"],
-      action: `mailto:${config?.contact?.business?.email || "info@slyfox.co.za"}`
+      title: "Email Us",
+      details: ["info@slyfox.co.za", "Usually within hours"],
+      action: "mailto:info@slyfox.co.za"
     },
     {
       icon: iconMap.MessageCircle,
       title: "WhatsApp",
-      details: [config?.contact?.business?.whatsapp || "+27 12 345 6789", config?.contact?.responseTimes?.whatsapp?.time || "Within 2 hours"],
-      action: `https://wa.me/${config?.contact?.business?.whatsapp?.replace(/[^0-9]/g, '') || "27123456789"}`
+      details: ["+27 76 916 3113", "Usually within minutes"],
+      action: "https://wa.me/27769163113"
     },
     {
       icon: iconMap.MapPin,
       title: "Visit Us",
-      details: [config?.contact?.business?.address?.displayText || "Durban, South Africa", config?.contact?.hours?.sundayTime || "By appointment"],
+      details: ["La Lucia, Umhlanga, Durban", "By appointment"],
       action: "https://www.google.com/maps/search/?api=1&query=-29.7522499,31.052583"
     },
     {
@@ -180,20 +160,20 @@ export default function Contact() {
               </div>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span>{config?.contact?.hours?.weekdaysDisplay || "Monday - Friday"}</span>
-                  <span className="text-gold">{config?.contact?.hours?.weekdaysTime || "9:00 AM - 6:00 PM"}</span>
+                  <span>Monday - Friday</span>
+                  <span className="text-gold">9:00 AM - 6:00 PM</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>{config?.contact?.hours?.saturdayDisplay || "Saturday"}</span>
-                  <span className="text-gold">{config?.contact?.hours?.saturdayTime || "10:00 AM - 4:00 PM"}</span>
+                  <span>Saturday</span>
+                  <span className="text-gold">10:00 AM - 4:00 PM</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>{config?.contact?.hours?.sundayDisplay || "Sunday"}</span>
-                  <span className="text-muted-foreground">{config?.contact?.hours?.sundayTime || "By appointment"}</span>
+                  <span>Sunday</span>
+                  <span className="text-muted-foreground">By appointment</span>
                 </div>
               </div>
               <p className="text-sm text-muted-foreground mt-6">
-                {config?.contact?.hours?.note || "Evening and weekend shoots available by arrangement."}
+                Evening and weekend shoots available by arrangement.
               </p>
             </div>
 
@@ -208,24 +188,24 @@ export default function Contact() {
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between mb-2">
-                    <span className="font-semibold">{config?.contact?.responseTimes?.email?.title || "Email Inquiries"}</span>
-                    <span className="text-gold">{config?.contact?.responseTimes?.email?.time || "Within 24 hours"}</span>
+                    <span className="font-semibold">Email Inquiries</span>
+                    <span className="text-gold">Usually within hours</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">{config?.contact?.responseTimes?.email?.description || "Detailed responses to all project inquiries"}</p>
+                  <p className="text-sm text-muted-foreground">Detailed responses to all project inquiries</p>
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">
-                    <span className="font-semibold">{config?.contact?.responseTimes?.whatsapp?.title || "WhatsApp Messages"}</span>
-                    <span className="text-gold">{config?.contact?.responseTimes?.whatsapp?.time || "Within 2 hours"}</span>
+                    <span className="font-semibold">WhatsApp Messages</span>
+                    <span className="text-gold">Usually within minutes</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">{config?.contact?.responseTimes?.whatsapp?.description || "Quick questions and availability checks"}</p>
+                  <p className="text-sm text-muted-foreground">Quick questions and availability checks</p>
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">
-                    <span className="font-semibold">{config?.contact?.responseTimes?.phone?.title || "Phone Calls"}</span>
-                    <span className="text-gold">{config?.contact?.responseTimes?.phone?.time || "Immediate"}</span>
+                    <span className="font-semibold">Phone Calls</span>
+                    <span className="text-gold">Immediate</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">{config?.contact?.responseTimes?.phone?.description || "Direct line during business hours"}</p>
+                  <p className="text-sm text-muted-foreground">Direct line during business hours</p>
                 </div>
               </div>
             </div>
@@ -240,20 +220,20 @@ export default function Contact() {
               </div>
               <div className="space-y-3">
                 <div>
-                  <span className="font-semibold text-gold">{config?.contact?.serviceAreas?.primary?.title || "Primary Area:"}</span>
-                  <p className="text-sm">{config?.contact?.serviceAreas?.primary?.area || "Durban Metro (no travel fees)"}</p>
+                  <span className="font-semibold text-gold">Primary Area:</span>
+                  <p className="text-sm">Durban and northern suburbs, Midlands, KZN, SA</p>
                 </div>
                 <div>
-                  <span className="font-semibold text-gold">{config?.contact?.serviceAreas?.extended?.title || "Extended Area:"}</span>
-                  <p className="text-sm">{config?.contact?.serviceAreas?.extended?.area || "KwaZulu-Natal Province"}</p>
+                  <span className="font-semibold text-gold">Extended Area:</span>
+                  <p className="text-sm">KZN Province</p>
                 </div>
                 <div>
-                  <span className="font-semibold text-gold">{config?.contact?.serviceAreas?.destination?.title || "Destination:"}</span>
-                  <p className="text-sm">{config?.contact?.serviceAreas?.destination?.area || "Anywhere in South Africa & beyond"}</p>
+                  <span className="font-semibold text-gold">Destination:</span>
+                  <p className="text-sm">Anywhere in South Africa & beyond</p>
                 </div>
               </div>
               <p className="text-sm text-muted-foreground mt-6">
-                {config?.contact?.serviceAreas?.note || "Travel costs calculated based on distance and duration. Accommodation provided for multi-day shoots."}
+                Travel costs calculated based on distance and duration. Accommodation provided for multi-day shoots.
               </p>
             </div>
           </div>
@@ -264,22 +244,22 @@ export default function Contact() {
       <section className="py-20 bg-gradient-to-br from-red-900/30 via-background to-pink-900/20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl mb-6 h2-salmon">
-            {config?.contact?.emergency?.title || "Need Urgent Assistance?"}
+            Need Urgent Assistance?
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
-            {config?.contact?.emergency?.subtitle || "For time-sensitive inquiries or last-minute bookings, contact us directly for the fastest response."}
+            For time-sensitive inquiries or last-minute bookings, contact us directly for the fastest response. Alternative numbers: Slyfox 076 916 3113 ; Slyfox 072 154 3507 ; Dax 079 093 3541 ; Eben 068 243 1792
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
+            <Button
               className="btn-salmon"
-              onClick={() => window.open(`tel:${config?.contact?.emergency?.phone || "+27123456789"}`)}
+              onClick={() => window.open("tel:0769163113")}
             >
               <Phone className="w-5 h-5 mr-2" />
               Call Now
             </Button>
-            <Button 
+            <Button
               className="btn-outline-cyan"
-              onClick={() => window.open(config?.contact?.emergency?.whatsapp || "https://wa.me/27123456789")}
+              onClick={() => window.open("https://wa.me/27769163113")}
             >
               <MessageCircle className="w-5 h-5 mr-2" />
               WhatsApp

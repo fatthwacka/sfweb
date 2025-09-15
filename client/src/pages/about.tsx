@@ -3,89 +3,128 @@ import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Camera, Video, Award, Users, MapPin, Clock } from "lucide-react";
-import { useSiteConfig } from "@/hooks/use-site-config";
 import { GradientBackground } from "@/components/common/gradient-background";
 
 // Icon mapping for dynamic icon names
 const iconMap = {
   Users,
-  Clock, 
+  Clock,
   Camera,
   MapPin,
   Award,
   Video
 };
 
-// Default fallbacks
-const defaultStats = [
-  { number: "500+", label: "Happy Clients", icon: "Users" },
-  { number: "5 Years", label: "Experience", icon: "Clock" },
-  { number: "1000+", label: "Events Captured", icon: "Camera" },
-  { number: "Durban", label: "Based & Proud", icon: "MapPin" }
+// Hardcoded data from site-config-overrides.json
+const heroStats = [
+  { id: "stat-1", number: "500+", label: "Happy Clients", icon: "Users" },
+  { id: "stat-2", number: "5 Years", label: "Experience", icon: "Clock" },
+  { id: "stat-3", number: "1000+", label: "Events Captured", icon: "Camera" },
+  { id: "stat-4", number: "Durban", label: "Based & Proud", icon: "MapPin" }
 ];
 
-const defaultTeamMembers = [
+const teamMembers = [
   {
-    name: "Dax Tucker",
-    role: "Founder & Lead Photographer",
-    email: "dax@slyfox.co.za",
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
-    description: "With over 5 years of experience, Dax brings artistic vision and technical expertise to every project."
-  },
-  {
-    name: "Eben",
-    role: "Senior Videographer", 
+    id: "team-2",
+    name: "Eben Mpongo",
+    role: "Senior Photographer",
     email: "eben@slyfox.co.za",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
-    description: "Eben specializes in cinematic videography and brings stories to life through compelling visual narratives."
+    image: "/uploads/Eben-headshot2_1757419225166.jpg",
+    description: "Eben excels at glossy magazine grade photographs, capturing the subjects perfectly, and editing them magical mastery. Whether he's behind the camera or the editing computer, beautiful creations are in progress."
   },
   {
-    name: "Kyle",
-    role: "Creative Director",
-    email: "kyle@slyfox.co.za", 
-    image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
-    description: "Kyle oversees creative direction and ensures every project meets our high standards of excellence."
+    id: "team-1",
+    name: "Dax Tucker",
+    role: "Chief Kick Starter",
+    email: "dax@slyfox.co.za",
+    image: "/uploads/Dax-headshot_1757419137320.jpg",
+    description: "Operating with officially half a brain and a world of varied career experiences, Dax brings a background in engineering, software, design, and nightlife. Results are sure to quirky and hazardous."
+  },
+  {
+    id: "team-1756657853204",
+    name: "Rainier Potgieter",
+    role: "Chief Technical Officer",
+    email: "rain@slyfox.co.za",
+    image: "/uploads/rain_1756657920900.jpeg",
+    description: "Rain has 0s and 1s coursing through his veins and pushes the boundaries of what's possible and what shouldn't be attempted without risk of having satellites start falling out the sky, all before breakfast on a Monday morning."
+  },
+  {
+    id: "team-1756658266555",
+    name: "Jarid Norman",
+    role: "Sculpture & Master 3D Artist",
+    email: "jarid@slyfox.co.za",
+    image: "/uploads/jarid-norman_1756658590927.jpg",
+    description: "Jarid Norman, a name synonymous with amazing Hollywood grade special FX, costumes, and 3D models, Jarid is as nifty with chainsaw as he is with doing the make up to look like an actor has been chainsawed."
+  },
+  {
+    id: "team-1757419766627",
+    name: "Miss T",
+    role: "Content Creator",
+    email: "missT@slyfox.co.za",
+    image: "/uploads/missT-profile-pic_1757421913855.jpg",
+    description: "Miss T assists shoots, social media content productions, and scene setups."
+  },
+  {
+    id: "team-1756666622457",
+    name: "Kyle Wiesner",
+    role: "Content Producer",
+    email: "kyle@slyfox.co.za",
+    image: "/uploads/Kyle-headshot_1757419428307.jpg",
+    description: "Kyle oversees creative content production with a focus on food photography and social media ad creation, arresting hooks and scroll-stopping visuals, and some cunning ai enhancements, visual FX and editing skills."
+  },
+  {
+    id: "team-1757419632616",
+    name: "Jona Mpongo",
+    role: "Content Creator",
+    email: "jona@slyfox.co.za",
+    image: "/uploads/Jona-profile-pic_1757419759010.jpg",
+    description: "Jona oversees creative content creation with a focus on Ai enhancements, social media reels, fast-paced Tiktok videos, with bad boy music productions and sound tracks, and plenty of gangster attitude."
+  },
+  {
+    id: "team-1757421465533",
+    name: "Tarryn Mercier",
+    role: "Stylist",
+    email: "tarryn@slyfox.co.za",
+    image: "/uploads/Taz-profile-pic_1757421907023.jpg",
+    description: "Tarryn assists with shoots, social media content productions, and hair styling as well as food recipes and food art."
   }
 ];
 
-const defaultValues = [
+const companyValues = [
   {
+    id: "value-1",
     icon: "Camera",
     title: "Artistic Excellence",
     description: "We approach every project with creative vision and technical precision, ensuring stunning results that exceed expectations."
   },
   {
+    id: "value-2",
     icon: "Users",
     title: "Client-Centered",
     description: "Your vision is our priority. We listen, collaborate, and deliver personalized experiences that reflect your unique story."
   },
   {
+    id: "value-3",
     icon: "Award",
     title: "Professional Quality",
     description: "From equipment to editing, we maintain the highest professional standards in every aspect of our work."
   },
   {
+    id: "value-4",
     icon: "Clock",
     title: "Timely Delivery",
     description: "We respect your deadlines and deliver high-quality work within agreed timeframes, every time."
   }
 ];
 
-const defaultParagraphs = [
+const storyParagraphs = [
   "SlyFox Studios was born from a passion for visual storytelling and a commitment to capturing the authentic moments that matter most. Founded in Durban, we've grown from a small startup to a trusted name in professional photography and videography.",
   "Our journey began with a simple belief: every moment has a story worth telling. Whether it's the joy of a wedding day, the professionalism of a corporate headshot, or the celebration of a graduation, we approach each project with the same dedication to excellence.",
   "Today, we're proud to serve clients across Durban and beyond, combining artistic vision with technical expertise to create images and videos that stand the test of time."
 ];
 
 export default function About() {
-  const { config } = useSiteConfig();
-  
-  // Get data from config with fallbacks
-  const aboutData = config?.about;
-  const stats = aboutData?.hero?.stats || defaultStats;
-  const teamMembers = aboutData?.team?.members || defaultTeamMembers;
-  const values = aboutData?.values?.items || defaultValues;
-  const storyParagraphs = aboutData?.story?.paragraphs || defaultParagraphs;
+  // Hardcoded data - no more config dependency
   
   return (
     <div className="min-h-screen bg-background text-foreground background-gradient-blobs">
@@ -102,7 +141,7 @@ export default function About() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-4xl mb-6 h2-salmon">
-                {aboutData?.story?.title || "Our Story"}
+                Our Story
               </h2>
               <div className="space-y-6 text-lg text-muted-foreground">
                 {storyParagraphs.map((paragraph, index) => (
@@ -122,8 +161,8 @@ export default function About() {
             </div>
             
             <div className="relative">
-              <img 
-                src={aboutData?.story?.image || "https://images.unsplash.com/photo-1556075798-4825dfaaf498?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
+              <img
+                src="/uploads/food-photography-hero_1756060136335.jpg"
                 alt="SlyFox Studios team at work"
                 className="w-full rounded-2xl shadow-2xl"
               />
@@ -137,18 +176,18 @@ export default function About() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6 h2-cyan">
-              {aboutData?.values?.title || "Our Values"}
+              Our Values
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              {aboutData?.values?.description || "These core values guide everything we do, from our initial consultation to the final delivery of your images."}
+              These core values guide everything we do, from our initial consultation to the final delivery of your images.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {values.map((value, index) => {
+            {companyValues.map((value, index) => {
               const IconComponent = iconMap[value.icon as keyof typeof iconMap] || Award;
               return (
-                <div key={value.id || index} className="text-center p-6 bg-charcoal rounded-2xl hover:bg-salmon/10 transition-colors duration-300">
+                <div key={value.id} className="text-center p-6 bg-charcoal rounded-2xl hover:bg-salmon/10 transition-colors duration-300">
                   <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-6">
                     <IconComponent className={`w-8 h-8 ${index % 2 === 0 ? 'icon-salmon' : 'icon-cyan'}`} />
                   </div>
@@ -166,16 +205,16 @@ export default function About() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6 h2-salmon">
-              {aboutData?.team?.title || "Meet Our Team"}
+              Meet Our Team
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              {aboutData?.team?.description || "The creative minds behind SlyFox Studios, each bringing unique skills and passion to every project."}
+              The creative minds behind SlyFox Studios, each bringing unique skills and passion to every project.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {teamMembers.map((member, index) => (
-              <div key={member.id || index} className="bg-charcoal/80 rounded-2xl overflow-hidden shadow-2xl hover:shadow-salmon/20 transition-all duration-300 transform hover:-translate-y-2">
+              <div key={member.id} className="bg-charcoal/80 rounded-2xl overflow-hidden shadow-2xl hover:shadow-salmon/20 transition-all duration-300 transform hover:-translate-y-2">
                 <div className="relative h-80 overflow-hidden">
                   <img 
                     src={member.image}
@@ -250,15 +289,15 @@ export default function About() {
       <GradientBackground section="aboutCta" className="py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl mb-6 h2-cyan">
-            {aboutData?.cta?.title || "Ready to Create Together?"}
+            Ready to Create Together?
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
-            {aboutData?.cta?.description || "Let's discuss your vision and create something beautiful that tells your unique story."}
+            Let's discuss your vision and create something beautiful that tells your unique story.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
               <Button className="btn-cyan">
-                {aboutData?.cta?.buttonText || "Get In Touch"}
+                Get In Touch
               </Button>
             </Link>
             <Link href="/pricing">

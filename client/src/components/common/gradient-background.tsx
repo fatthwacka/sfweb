@@ -1,5 +1,6 @@
 import React from 'react';
 import { useSiteConfig } from '@/hooks/use-site-config';
+import { useGradientConfig } from '@/hooks/use-gradient-config';
 // Removed deprecated useFrontPageSettings import
 
 interface GradientBackgroundProps {
@@ -14,9 +15,9 @@ interface GradientBackgroundProps {
   categorySectionName?: 'serviceOverview' | 'packages' | 'recentWork' | 'seoContent';
 }
 
-export function GradientBackground({ 
-  section, 
-  children, 
+export function GradientBackground({
+  section,
+  children,
   className = '',
   fallbackGradient = 'linear-gradient(135deg, #1e293b 0%, #334155 50%, #0f172a 100%)',
   id,
@@ -25,22 +26,37 @@ export function GradientBackground({
   categorySectionName
 }: GradientBackgroundProps) {
   const { config } = useSiteConfig();
-  
+
+  // Use new Supabase gradient system for standard sections
+  const {
+    config: supabaseGradientConfig,
+    isLoading: isGradientLoading
+  } = useGradientConfig(section);
+
   // Get gradient config from appropriate source
   let gradientConfig;
-  
+
   if (categoryType && categoryName && categorySectionName) {
-    // Get gradient from category page config
+    // Get gradient from category page config (legacy system for now)
     gradientConfig = config?.categoryPages?.[categoryType]?.[categoryName]?.[categorySectionName]?.gradients;
   } else {
-    // Get gradient from standard location
-    gradientConfig = config?.gradients?.[section];
+    // Use new Supabase gradient system
+    gradientConfig = supabaseGradientConfig;
   }
-  
+
+  // Show loading state if gradient is loading and we don't have category config
+  if (isGradientLoading && !categoryType) {
+    return (
+      <div className={`relative ${className} animate-pulse bg-slate-700`} id={id}>
+        {children}
+      </div>
+    );
+  }
+
   // Use unified gradient system for all sections
   let gradientStyle;
   let textColors;
-  
+
   if (section === 'portfolio') {
     if (gradientConfig) {
       // Use new gradient system
@@ -62,11 +78,11 @@ export function GradientBackground({
       gradientStyle = fallbackGradient;
     }
   } else {
-    // Use new gradient system for all other sections
-    gradientStyle = gradientConfig 
+    // Use new gradient system for all sections
+    gradientStyle = gradientConfig
       ? `linear-gradient(${gradientConfig.direction}, ${gradientConfig.startColor} 0%, ${gradientConfig.middleColor || gradientConfig.startColor} 50%, ${gradientConfig.endColor} 100%)`
       : fallbackGradient;
-    
+
     // Get text colors from gradient config
     textColors = gradientConfig?.textColors;
   }

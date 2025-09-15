@@ -217,6 +217,110 @@
         ],
         "ctaText": "Explore Videography"
       }
+    },
+    "testimonials": {
+      "headline": "Production Experts",
+      "description": "You're in safe hands, with a team that has an eye for detail, and a passion for beauty.",
+      "items": [
+        {
+          "id": 1,
+          "name": "Sarah Troydon",
+          "role": "Wedding",
+          "company": "",
+          "quote": "Thank you so much guys, absolutely love the pics, and the team was a joy to work with",
+          "image": "/images/testimonials/client-sarah-jones.jpg",
+          "rating": 5,
+          "content": ""
+        },
+        {
+          "id": 2,
+          "name": "Michael Thompson",
+          "role": "Owner",
+          "company": "",
+          "quote": "Very cool headshots. really elevated our brand image. the guys were really creative and talented. ",
+          "image": "/images/testimonials/client-mike-johnson.jpg",
+          "rating": 5,
+          "content": ""
+        },
+        {
+          "id": 3,
+          "name": "Emma Rodriguez",
+          "role": "Brand manager",
+          "company": "Natural Elixir",
+          "quote": "thanks fo much , really loved the product shots and prodict videos so much, will be back soon",
+          "image": "/images/testimonials/client-emma-davis.jpg",
+          "rating": 5,
+          "content": ""
+        },
+        {
+          "id": "testimonial-1757855232830",
+          "name": "Michelle Daniels",
+          "role": "Customer",
+          "company": "Urban Living",
+          "quote": "captured our product range exactly as we imagined it, clean, sharp and with a touch of style.",
+          "image": "/images/gallery/commercial-gallery-2.jpg",
+          "rating": 5
+        },
+        {
+          "id": "testimonial-1757855414069",
+          "name": "David Hughes",
+          "role": "Product",
+          "company": "Apex Sportswear",
+          "quote": "Than you guys!! you shot our new range with a clean, natural style that matched the brief. Exactly.",
+          "image": "/images/gallery/commercial-gallery-2.jpg",
+          "rating": 5
+        },
+        {
+          "id": "testimonial-1757855415070",
+          "name": "New Customer",
+          "role": "Social Media",
+          "company": "Company Name",
+          "quote": "The posts feel natural, not forced, and actually get people talking. our posts have felt more genuine and engagement has gone up.",
+          "image": "/images/gallery/commercial-gallery-2.jpg",
+          "rating": 5
+        },
+        {
+          "id": "testimonial-1757855418287",
+          "name": "Lauren Maseko",
+          "role": "Website",
+          "company": "Brew Co.",
+          "quote": "The site is simple to navigate and reliable. Solid delivery",
+          "image": "/images/gallery/commercial-gallery-2.jpg",
+          "rating": 5
+        }
+      ]
+    },
+    "privateGallery": {
+      "headline": "Your Private Gallery",
+      "description": "Showcase your images with style. Each shoot with Slyfox includes a professional online portfolio with all your shoot images. Access your photos anytime, anywhere. Share with family and friends, download high-resolution images, and relive your special moments through our secure client portal.",
+      "features": [
+        {
+          "id": "secure-access",
+          "title": "Secure Access",
+          "description": "Private password-protected galleries accessible only to you and those you share access with."
+        },
+        {
+          "id": "easy-downloads",
+          "title": "Easy Downloads",
+          "description": "Download individual photos or entire albums in various resolutions for different uses."
+        },
+        {
+          "id": "share-anywhere",
+          "title": "Share Anywhere",
+          "description": "Share your gallery link via social media, email, or embed custom invitations."
+        }
+      ],
+      "buttons": {
+        "primary": {
+          "text": "Access My Gallery",
+          "action": "/client-gallery"
+        },
+        "secondary": {
+          "text": "Gallery Demo",
+          "action": "/gallery/demo"
+        }
+      },
+      "image": "/uploads/Professional-Portrait-Photography-by-Slyfox-Executive-Headshot-_1756301693089.jpg"
     }
   },
   "portfolio": {
@@ -539,7 +643,7 @@
       },
       "corporate": {
         "hero": {
-          "image": "/uploads/slyfox-corporate-photography-sml_1756911424609.jpg",
+          "image": "/images/hero/corporate-photography-hero.jpg",
           "title": "Corporate Photography",
           "subtitle": "Elevate your business image with professional photography",
           "ctaText": "Book Session"

@@ -42,18 +42,18 @@ export default function Admin() {
       {/* Header */}
       <section className="pt-32 pb-8 bg-gradient-to-br from-purple-dark via-background to-grey-dark">
         <div className="px-6 sm:px-8 lg:px-12 xl:px-16">
-          <div className="flex items-center justify-between">
+          <div className="relative flex items-center justify-center">
             <div className="flex items-center gap-4">
               <Shield className="w-12 h-12 icon-salmon" />
-              <div>
+              <div className="text-center">
                 <h1 className="text-3xl font-saira font-black">
                   Admin <span className="text-salmon">Panel</span>
                 </h1>
                 <p className="text-muted-foreground">Manage clients, shoots, and content</p>
               </div>
             </div>
-            
-            <Link href="/dashboard">
+
+            <Link href="/dashboard" className="absolute right-0">
               <Button variant="outline" className="border-salmon/30 text-salmon hover:border-salmon hover:bg-salmon hover:text-white">
                 Back to Dashboard
               </Button>

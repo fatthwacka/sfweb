@@ -1216,12 +1216,14 @@ router.get('/api/site-config', async (req, res) => {
       }
     };
     
-    // Merge default config with any overrides
-    const mergedConfig = deepMerge(defaultConfig, configOverrides);
-    
-    console.log('🔍 GET REQUEST - Serving config with portfolio.featured:', JSON.stringify(mergedConfig?.portfolio?.featured, null, 2));
-    
-    res.json(mergedConfig);
+    // If we have any overrides, use them directly without merging
+    // The overrides file should contain the complete configuration
+    const finalConfig = Object.keys(configOverrides).length > 0 ? configOverrides : defaultConfig;
+
+    console.log('🔍 GET REQUEST - Serving config with portfolio.featured:', JSON.stringify(finalConfig?.portfolio?.featured, null, 2));
+    console.log('🔍 Services config:', finalConfig?.home?.servicesOverview?.services?.map((s: any) => s.title));
+
+    res.json(finalConfig);
   } catch (error) {
     console.error('Failed to load site config:', error);
     
