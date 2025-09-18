@@ -48,7 +48,7 @@ const NavigationComponent = memo(function Navigation() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-8">
             <Link href="/photography" className={cn(
               "transition-colors duration-300 font-barlow font-light",
               location.startsWith('/photography') 
@@ -108,7 +108,7 @@ const NavigationComponent = memo(function Navigation() {
             <Button
               variant="ghost"
               size="sm"
-              className="lg:hidden p-2 rounded-md hover:bg-muted transition-colors duration-300"
+              className="md:hidden p-2 rounded-md hover:bg-muted transition-colors duration-300"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? (
@@ -122,7 +122,7 @@ const NavigationComponent = memo(function Navigation() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden py-4 px-4 border-t border-border bg-gray-800/85 backdrop-blur-sm">
+          <div className="md:hidden py-4 px-4 border-t border-border bg-gray-800/85 backdrop-blur-sm">
             <div className="space-y-4 text-right">
               <Link
                 href="/photography"

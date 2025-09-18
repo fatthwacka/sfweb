@@ -1,8 +1,39 @@
-# Site Configuration JSON VPS Rules
+# Site Configuration Architecture Documentation
 
-**⚠️ CRITICAL: This document captures hard-learned lessons about production configuration sync issues and their solutions.**
+**📅 Updated: September 2025 - New Hardcoded Architecture**
 
-## 🚨 The Problem: Docker Volume vs Filesystem Sync Issues
+## 🆕 Current Architecture (September 2025)
+
+### **Hardcoded Content System**
+As of September 2025, core content (contact, about pages) has been **hardcoded directly in React components** for:
+- ✅ Better performance (no config loading delays)
+- ✅ Improved reliability (no config sync issues)
+- ✅ Easier maintenance (direct code updates)
+- ✅ Faster deployments (no JSON dependency management)
+
+**Pages Now Hardcoded:**
+- **Contact Page** (`/client/src/pages/contact.tsx`) - All business info, contact methods, hours
+- **About Page** (`/client/src/pages/about.tsx`) - Team members, company story, values, stats
+
+**Gradient System Preserved:**
+- Admin panels still control **visual customization** (colors, gradients)
+- Database gradient storage maintained via Supabase
+- `GradientBackground` component system unchanged
+
+**Configuration Still Used For:**
+- Homepage hero slides and content
+- Photography category page data
+- Visual gradient configurations
+- Portfolio settings and featured content
+
+---
+
+## 📚 Previous Architecture (Historical Reference)
+
+<!--
+LEGACY SYSTEM DOCUMENTATION - Kept for troubleshooting reference
+
+## 🚨 The Problem: Docker Volume vs Filesystem Sync Issues (Pre-September 2025)
 
 ### What Happened (2025-09-01)
 During a routine configuration sync from development to production, we discovered that the standard approach of updating the host filesystem config file **does not automatically sync to the running Docker container** due to volume mounting behavior.
@@ -126,6 +157,7 @@ ssh slyfox-vps "cd /opt/sfweb && docker compose ps"
 - Team member descriptions have been updated
 - Hero slides, contact information, or any configuration has changed in development
 - After any deployment where configuration drift is suspected
+-->
 
 **⚠️ Required for these configuration types:**
 - Team member profiles and descriptions

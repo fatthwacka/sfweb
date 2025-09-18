@@ -49,7 +49,7 @@ export default function Pricing() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+          <div className="pricing-cards-grid gap-6">
             {/* Photography */}
             <div className="studio-card-orange">
               <Camera className="w-12 h-12 mx-auto mb-4 text-orange-400" />

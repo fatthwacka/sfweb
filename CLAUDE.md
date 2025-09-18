@@ -18,9 +18,34 @@ Available in root directory:
 
 **Usage Pattern**: Use the Task tool with the appropriate `subagent_type` parameter. These agents should be used PROACTIVELY - don't wait for the user to request them. If working on gallery features → use gallery-specialist, styling issues → use css-specialist, etc.
 
-## 📁 CRITICAL CONFIGURATION FILES
+## 🏗️ CURRENT ARCHITECTURE (SEPTEMBER 2025)
 
-**⚠️ PHOTOGRAPHY CATEGORY SYSTEM ARCHITECTURE (100% VERIFIED)**
+**⚠️ HYBRID SYSTEM: HARDCODED CORE + DYNAMIC VISUALS**
+
+### **Hardcoded Content Pages**
+Core content is now hardcoded in React components for optimal performance:
+- **Contact Page**: `/client/src/pages/contact.tsx` - Business info, hours, contact methods
+- **About Page**: `/client/src/pages/about.tsx` - Team members, story, values, stats
+- **Admin Panels**: Text management removed, visual controls (gradients/images) preserved
+
+### **Dynamic Configuration Pages**
+These still use JSON configuration:
+- **Homepage**: Hero slides, services overview, testimonials
+- **Photography Categories**: All 6 static pages use config data
+- **Portfolio**: Featured content and visual settings
+- **Gradients**: All section background colors via database
+
+### **Key Benefits**
+- ✅ Faster page loads (no config loading delays)
+- ✅ Simpler deployments (no JSON sync issues)
+- ✅ Better reliability (eliminates config corruption)
+- ✅ Visual customization preserved (gradients still work)
+
+---
+
+## 📁 DYNAMIC CONFIGURATION FILES
+
+**⚠️ PHOTOGRAPHY CATEGORY SYSTEM ARCHITECTURE (STILL ACTIVE)**
 
 **PRIMARY FILES:**
 

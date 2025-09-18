@@ -1,14 +1,41 @@
 # Complete Site Configuration System Reference
 
-This document provides a comprehensive mapping of ALL configuration files, dashboard components, and target pages in the SlyFox Studios site management system.
+**📅 Updated: September 2025 - Hybrid Hardcoded + Configuration Architecture**
 
-## 🗂️ ALL Configuration Files That Store Settings
+This document provides a comprehensive mapping of ALL configuration approaches, dashboard components, and target pages in the SlyFox Studios site management system.
 
-### **Primary Configuration Storage**
+## 🆕 Current Hybrid Architecture (September 2025)
+
+### **Hardcoded Content Pages**
+Core content pages are now **hardcoded directly in React components** for optimal performance:
+
+- **Contact Page** (`/client/src/pages/contact.tsx`) - Business info, contact methods, hours hardcoded
+- **About Page** (`/client/src/pages/about.tsx`) - Team members, story, values, stats hardcoded
+- **Admin Panels**: Simplified to **visual-only controls** (gradients, images only)
+
+### **Configuration-Based Pages**
+These pages still use dynamic configuration:
+
+- **Homepage** (`/client/src/pages/home.tsx`) - Hero slides, services overview, testimonials
+- **Photography Categories** - All 6 category pages use JSON configuration
+- **Portfolio Settings** - Featured content and visual configuration
+- **Gradient System** - All visual theming still managed via database/JSON
+
+### **Admin Panel Changes**
+- **Text Management**: Removed from Contact/About admin panels
+- **Visual Controls**: Gradient pickers preserved for all sections
+- **Image Management**: Maintained for dynamic content areas
+
+---
+
+## 🗂️ Configuration Files That Store Dynamic Settings
+
+### **Primary Configuration Storage (For Dynamic Content)**
 
 #### 1. **`/server/data/site-config-overrides.json`** ⭐ **PRIMARY PERSISTENCE FILE**
-- **Purpose**: Main configuration storage for all site management settings
-- **Scope**: Homepage, contact, about, portfolio, gradients, category pages
+- **Purpose**: Main configuration storage for dynamic site management settings
+- **Scope**: Homepage, ~~contact~~, ~~about~~, portfolio, gradients, category pages
+- **Note**: Contact and about sections no longer stored here (hardcoded as of September 2025)
 - **Persistence**: Atomic file writes, survives deployments via Docker volumes
 - **API Access**: 
   - GET `/api/site-config` (merged with defaults)

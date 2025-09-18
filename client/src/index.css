@@ -348,7 +348,7 @@
 
   /* Card System Classes */
   .studio-card {
-    @apply rounded-2xl p-8 shadow-2xl transition-all duration-500;
+    @apply rounded-2xl p-6 shadow-2xl transition-all duration-500;
     background: linear-gradient(to bottom, hsl(16, 30%, 15%) 0%, hsl(280, 45%, 25%) 50%, hsl(300, 40%, 28%) 100%);
     border: 1px solid rgba(255, 107, 107, 0.3);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 107, 107, 0.1);
@@ -379,12 +379,13 @@
   .btn-cyan {
     @apply px-8 py-4 rounded-lg font-barlow font-semibold text-lg transition-all duration-300;
     background: linear-gradient(135deg, hsl(180, 100%, 50%) 0%, hsl(180, 80%, 45%) 100%);
-    color: white;
+    color: hsl(0, 0%, 20%) !important;
     border: none;
   }
   
   .btn-cyan:hover {
     background: linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(16, 80%, 65%) 100%);
+    color: hsl(0, 0%, 20%) !important;
     transform: translateY(-2px);
     box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
   }
@@ -415,6 +416,22 @@
     color: white;
     transform: translateY(-2px);
     box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+  }
+
+  /* Elegant Button - Global site-wide elegant button style */
+  .btn-elegant {
+    @apply px-6 py-2 rounded-lg font-barlow font-medium text-sm transition-all duration-300;
+    background: linear-gradient(135deg, hsl(280, 30%, 20%) 0%, hsl(220, 20%, 25%) 100%);
+    border: 1px solid hsl(0, 0%, 40%);
+    color: hsl(0, 0%, 75%);
+  }
+  
+  .btn-elegant:hover {
+    background: linear-gradient(135deg, hsl(280, 50%, 35%) 0%, hsl(220, 40%, 40%) 50%, hsl(260, 45%, 35%) 100%);
+    border-color: hsl(0, 0%, 50%);
+    color: hsl(0, 0%, 85%);
+    transform: translateY(-1px);
+    box-shadow: 0 0 20px rgba(138, 43, 226, 0.3), 0 4px 15px rgba(138, 43, 226, 0.2);
   }
 
   /* Studio Card Button System - remove all inline styling */
@@ -1024,7 +1041,7 @@
   }
   
   .studio-card-premium {
-    @apply rounded-2xl p-8 shadow-2xl transition-all duration-500;
+    @apply rounded-2xl p-6 shadow-2xl transition-all duration-500;
     background: linear-gradient(to bottom, hsl(180, 35%, 12%) 0%, hsl(280, 45%, 22%) 50%, hsl(310, 40%, 25%) 100%);
     border: 2px solid rgba(0, 255, 255, 0.4);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 255, 255, 0.2);
@@ -1182,7 +1199,7 @@
   }
   
   .studio-card-content {
-    @apply p-8 flex-1 flex flex-col;
+    @apply p-2 flex-1 flex flex-col;
   }
   
   .studio-card-features {
@@ -1555,6 +1572,39 @@
     pointer-events: none;
   }
   
+  /* Pricing cards grid with custom breakpoints */
+  .pricing-cards-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  
+  /* 2 columns at 618px (768px - 150px) */
+  @media (min-width: 618px) {
+    .pricing-cards-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  /* 4 columns at 1130px (1280px - 150px) */
+  @media (min-width: 1130px) {
+    .pricing-cards-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  /* Videography about section grid with 900px breakpoint */
+  .videography-about-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  
+  /* 2 columns at 900px */
+  @media (min-width: 900px) {
+    .videography-about-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
   /* Gradient logo for navigation */
   .gradient-logo {
     background: linear-gradient(135deg, var(--salmon) 0%, var(--cyan) 100%);

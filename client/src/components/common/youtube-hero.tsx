@@ -11,20 +11,18 @@ interface YouTubeHeroProps {
 
 export function YouTubeHero({ videoId, title, subtitle, ctaText = "Get Started", ctaLink = "/contact" }: YouTubeHeroProps) {
   return (
-    <section className="relative h-[60vh] flex items-center justify-center video-container">
+    <section className="relative h-[50vh] md:h-[60vh] lg:h-[70vh] min-h-[400px] max-h-[600px] flex items-center justify-center overflow-hidden">
       {/* YouTube Video Background */}
-      <div className="video-background">
+      <div className="absolute inset-0 w-full h-full">
         <iframe
           src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&enablejsapi=1&origin=${window.location.origin}&disablekb=1&fs=0`}
           title="Background Video"
           allow="autoplay; encrypted-media; accelerometer; gyroscope; picture-in-picture"
           allowFullScreen={false}
-          className="w-full h-full scale-150 border-0"
-          style={{ 
-            minWidth: '177.77vh', // 16:9 aspect ratio
-            minHeight: '56.25vw',
-            border: 'none',
-            pointerEvents: 'none'
+          className="absolute top-1/2 left-1/2 w-[200%] h-[200%] -translate-x-1/2 -translate-y-1/2 pointer-events-none border-0"
+          style={{
+            minWidth: '100%',
+            minHeight: '100%'
           }}
         />
       </div>
@@ -45,7 +43,7 @@ export function YouTubeHero({ videoId, title, subtitle, ctaText = "Get Started",
         )}
         
         <Link href={ctaLink}>
-          <button className="btn-salmon">
+          <button className="btn-elegant">
             {ctaText}
           </button>
         </Link>

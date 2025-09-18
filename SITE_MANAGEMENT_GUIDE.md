@@ -1,5 +1,38 @@
 # Site Management Complete Implementation Guide
 
+**📅 Updated: September 2025 - New Hybrid Hardcoded + Configuration Architecture**
+
+## 🆕 **CURRENT ARCHITECTURE (September 2025)**
+
+### **Hardcoded Content System**
+As of September 2025, core content pages have been **hardcoded directly in React components** for:
+- ✅ Better performance (no config loading delays)
+- ✅ Improved reliability (no config sync issues)
+- ✅ Easier maintenance (direct code updates)
+- ✅ Faster deployments (no JSON dependency management)
+
+**Pages Now Hardcoded:**
+- **Contact Page** (`/client/src/pages/contact.tsx`) - All business info, contact methods, hours
+- **About Page** (`/client/src/pages/about.tsx`) - Team members, company story, values, stats
+
+**Configuration Still Used For:**
+- Homepage hero slides and content
+- Photography category page data
+- Visual gradient configurations
+- Portfolio settings and featured content
+
+**Admin Panel Changes:**
+- **Text Management**: Removed from Contact/About admin panels
+- **Visual Controls**: Gradient pickers preserved for all sections
+- **Image Management**: Maintained for dynamic content areas
+
+---
+
+## 📚 **PREVIOUS ARCHITECTURE (Historical Reference)**
+
+<!--
+LEGACY CONFIGURATION SYSTEM DOCUMENTATION - Kept for troubleshooting reference
+
 ## 🚨 **CRITICAL: CONFIGURATION PERSISTENCE & DEPLOYMENT** ⭐ **MUST READ**
 
 **⚠️ WARNING: Configuration changes made in development DO NOT automatically sync to production!**
@@ -1103,5 +1136,61 @@ Admin Component → Config File → API → Target Page
 
 This guide serves as the complete reference for implementing and extending the site management system. All information is current as of the latest implementation and reflects the actual working methodology.
 
-**FORWARD MODEL**: Follow Homepage Settings pattern for all new implementations  
+**FORWARD MODEL**: Follow Homepage Settings pattern for all new implementations
 **LEGACY CLEANUP**: Portfolio section and front-page-settings.tsx marked for future refactoring
+
+-->
+
+---
+
+## 🚀 **CURRENT HYBRID ARCHITECTURE GUIDE (September 2025)**
+
+### **Configuration Still Active For:**
+
+#### **Homepage Management** 🏠
+- **Hero Slides**: Dynamic content via admin dashboard
+- **Services Overview**: Configuration-based content management
+- **Testimonials**: Admin-managed customer reviews
+- **Visual Controls**: GradientBackground system for all sections
+
+#### **Photography Category Pages** 📸
+- **Category Settings**: wedding, corporate, portraits, events, products, graduation
+- **Content Management**: Hero sections, service descriptions, pricing packages
+- **Gallery Integration**: Dynamic image management
+- **SEO Content**: Category-specific optimization content
+
+#### **Visual Customization System**
+- **GradientBackground Component**: All gradient controls preserved
+- **Section Colors**: Admin dashboard color pickers for all sections
+- **CSS Variable System**: Automatic color application across components
+- **Real-time Preview**: Immediate visual updates in admin interface
+
+### **Simplified Deployment Process**
+
+With the new hardcoded architecture:
+
+```bash
+# STEP 1: Standard Docker deployment (handles all content)
+./deploy-production.sh
+
+# STEP 2: Only sync visual configurations if needed
+curl -s http://localhost:3000/api/site-config > /tmp/gradients-sync.json
+curl -X PATCH http://168.231.86.89:3000/api/site-config/bulk \
+  -H "Content-Type: application/json" \
+  -d @/tmp/gradients-sync.json
+
+# STEP 3: Verify deployment
+curl -s http://168.231.86.89:3000/api/site-config | jq '.gradients'
+```
+
+### **Active Configuration Files (Reduced Set)**
+- **`/server/data/site-config-overrides.json`** - Homepage content, category pages, visual settings
+- **`/shared/types/category-config.ts`** - Photography category fallbacks
+- **`/client/src/index.css`** - CSS variable mappings (preserved)
+
+### **Benefits of New Architecture**
+- ✅ **Faster Deployments**: Contact/About content deploys with code
+- ✅ **Reduced Complexity**: Fewer configuration sync requirements
+- ✅ **Better Performance**: No config loading for hardcoded pages
+- ✅ **Easier Maintenance**: Direct code updates for static content
+- ✅ **Preserved Flexibility**: Visual customization still fully functional

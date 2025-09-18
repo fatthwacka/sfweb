@@ -407,41 +407,62 @@ ssh slyfox-vps "tar -czf /tmp/sfweb-full-backup-$(date +%Y%m%d).tar.gz /opt/sfwe
 
 # 🔧 ADMIN DASHBOARD CONFIG SYNC
 
-When admin dashboard changes aren't appearing in production, the config file needs manual sync.
+**📅 Updated: September 2025 - Reduced Sync Requirements with Hardcoded Architecture**
 
-## Config Out of Sync Issue (14 Sep 2025)
+## Current Configuration Sync Status
 
-**Problem**: Production showing outdated content despite successful deployment
-- Dev: Shows "Social Media" service (correct)
-- Production: Shows "Ai Automation" service (outdated)
-- Root cause: In-memory config cache not matching latest admin changes
+**Pages That NO LONGER Need Sync** (September 2025):
+- ✅ **Contact Page**: Now hardcoded in React components
+- ✅ **About Page**: Now hardcoded in React components
+- ✅ **Static Content**: All team info, business details deploy with code
 
-**Solution**: Live API config extraction and sync
+**Pages That Still Need Config Sync**:
+- 🔄 **Homepage**: Hero slides, services overview, testimonials
+- 🔄 **Photography Categories**: All category page content
+- 🔄 **Visual Settings**: Gradient colors and visual customization
+
+## Simplified Config Sync Process (Post-Hardcoding)
+
+**Problem**: Homepage or photography category changes not appearing in production
+
+**Solution**: Sync only dynamic configuration
 ```bash
-# 1. Extract current working config from dev API
-curl -s http://localhost:3000/api/site-config > /tmp/latest-dev-config.json
+# 1. Extract current dynamic config from dev API
+curl -s http://localhost:3000/api/site-config > /tmp/dynamic-config.json
 
 # 2. Deploy to production server
-scp /tmp/latest-dev-config.json slyfox-vps:/opt/sfweb/server/data/site-config-overrides.json
+scp /tmp/dynamic-config.json slyfox-vps:/opt/sfweb/server/data/site-config-overrides.json
 
 # 3. Update running container and restart
 ssh slyfox-vps "cd /opt/sfweb && \
   docker cp server/data/site-config-overrides.json sfweb-app:/app/server/data/ && \
   docker compose -f docker-compose.yml -f docker-compose.prod.yml restart app"
 
-# 4. Verify sync worked
+# 4. Verify sync worked (homepage example)
 curl -s http://168.231.86.89:3000/api/site-config | jq -r '.home.servicesOverview.services[2].title'
 ```
 
-**Why This Works**: 
+**When to Use** (Reduced Scenarios):
+- Homepage content changes not appearing in production
+- Photography category page updates missing
+- Visual gradient/color changes not reflecting
+- ❌ **NO LONGER NEEDED**: Contact or About page content sync
+
+## Historical Config Sync Issue (14 Sep 2025)
+
+<!--
+LEGACY TROUBLESHOOTING REFERENCE - Before hardcoded architecture
+
+**Problem**: Production showing outdated content despite successful deployment
+- Dev: Shows "Social Media" service (correct)
+- Production: Shows "Ai Automation" service (outdated)
+- Root cause: In-memory config cache not matching latest admin changes
+
+**Why This Works**:
 - Dev API serves the actual current config (including in-memory admin changes)
 - File-based config might be stale if admin made changes after last save
 - API extraction captures the live, working configuration state
-
-**When to Use**:
-- Admin dashboard changes not appearing in production
-- Content differences between dev and production
-- After admin makes configuration changes via dashboard
+-->
 
 ---
 

@@ -11,21 +11,21 @@ const videographyCategories = [
     slug: "weddings",
     description: "Cinematic wedding films that tell your love story beautifully",
     image: "/images/hero/wedding-videography-hero.jpg",
-    features: ["Ceremony filming", "Reception highlights", "Couple interviews", "Same-day edits"]
+    features: ["Ceremony filming", "Dressing room shots", "Drone footage", "Reception coverage"]
   },
   {
     name: "Corporate Videos",
     slug: "corporate",
-    description: "Professional corporate videos that enhance your business presence",
+    description: "Professional corporate videos that elevate your company's status",
     image: "/images/hero/corporate-videography-hero.jpg",
-    features: ["Company profiles", "Training videos", "Testimonials", "Promotional content"]
+    features: ["Company overview", "Training/Team Building", "Interviews", "Adverts & Promo content"]
   },
   {
     name: "Events",
     slug: "events",
-    description: "Dynamic event videography capturing every important moment",
+    description: "Dynamic event videography capturing every glistening moment",
     image: "/images/hero/events-videography-hero.jpg",
-    features: ["Conference coverage", "Live streaming", "Highlight reels", "Multi-camera setup"]
+    features: ["Conferences", "Music Festivals", "Birthdays", "Functions"]
   },
   {
     name: "Product Videos",
@@ -37,16 +37,16 @@ const videographyCategories = [
   {
     name: "Social Media",
     slug: "social",
-    description: "Engaging social media content optimized for all platforms",
+    description: "Engaging social media content optimised for all platforms",
     image: "/images/hero/social-media-videography-hero.jpg",
     features: ["Instagram Reels", "TikTok content", "Facebook videos", "YouTube shorts"]
   },
   {
     name: "Animation",
     slug: "animation",
-    description: "Creative animation and motion graphics for various applications",
+    description: "Creative animation and motion graphics for visual impact",
     image: "/images/hero/animation-videography-hero.jpg",
-    features: ["Logo animations", "Explainer videos", "Motion graphics", "2D/3D animation"]
+    features: ["Logo Builds", "Explainer videos", "Character animation", "3D renders"]
   }
 ];
 
@@ -70,7 +70,7 @@ export default function Videography() {
       />
 
       {/* Videography Categories */}
-      <section className="pt-4 pb-20 bg-gradient-to-br from-slate-900/40 via-background to-gray-900/30">
+      <section className="py-20 bg-gradient-to-br from-slate-900/40 via-background to-gray-900/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="cyan text-4xl lg:text-5xl mb-6">
@@ -110,10 +110,6 @@ export default function Videography() {
                       ))}
                     </div>
                     
-                    <div className="flex items-center text-cyan group-hover:translate-x-2 transition-transform duration-300">
-                      Learn More
-                      <ArrowRight className="w-5 h-5 ml-2 icon-salmon" />
-                    </div>
                   </div>
                 </div>
               </Link>
@@ -158,8 +154,10 @@ export default function Videography() {
               }
             ].map((item, index) => (
               <div key={index} className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gold text-black rounded-full text-xl mb-6">
-                  {item.step}
+                <div className="inline-block mb-6">
+                  <div className="text-6xl font-bold bg-gradient-to-r from-cyan via-purple-400 to-salmon bg-clip-text text-transparent">
+                    {item.step}
+                  </div>
                 </div>
                 <h3 className="text-xl text-gold mb-4">{item.title}</h3>
                 <p className="text-muted-foreground">{item.description}</p>
@@ -178,7 +176,7 @@ export default function Videography() {
           <p className="text-xl text-muted-foreground mb-8">
             Let's discuss your videography needs and bring your vision to life with cinematic quality.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-row gap-4 justify-center">
             <Link href="/contact">
               <Button className="btn-cyan">
                 Start Your Project
