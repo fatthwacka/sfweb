@@ -11,8 +11,7 @@ export default function SocialMedia() {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-cyan-900/20" />
+      <GradientBackground section="social-media-hero" className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img 
             src="/images/hero/social-media-engine-03.jpg" 
@@ -25,7 +24,7 @@ export default function SocialMedia() {
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-block bg-black/70 border border-cyan rounded-2xl p-8 md:p-12">
-            <h1 className="mb-6">
+            <h1 className="mb-6 text-social-media-hero-primary">
               Social Media Excellence
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-white max-w-3xl mx-auto">
@@ -41,14 +40,13 @@ export default function SocialMedia() {
             </div>
           </div>
         </div>
-      </section>
+      </GradientBackground>
 
       {/* Services Overview */}
-      <section className="py-20 relative overflow-hidden" id="services">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/95 via-purple-900/20 to-blue-900/30" />
+      <GradientBackground section="social-media-services" className="py-20 relative overflow-hidden" id="services">
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6">
+            <h2 className="text-4xl lg:text-5xl mb-6 text-social-media-services-primary">
               Complete Social Media Solutions
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -58,9 +56,9 @@ export default function SocialMedia() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Service Card 1 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all service-card-gradient">
               <Camera className="w-12 h-12 text-cyan mb-4" />
-              <h3 className="mb-3">Content Creation</h3>
+              <h3 className="mb-3 text-social-media-services-primary">Content Creation</h3>
               <p className="text-muted-foreground mb-4">
                 Professional photography and videography tailored for social media platforms
               </p>
@@ -73,9 +71,9 @@ export default function SocialMedia() {
             </div>
 
             {/* Service Card 2 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all service-card-gradient">
               <TrendingUp className="w-12 h-12 text-salmon mb-4" />
-              <h3 className="mb-3">Business Analysis</h3>
+              <h3 className="mb-3 text-social-media-services-primary">Business Analysis</h3>
               <p className="text-muted-foreground mb-4">
                 Data-driven strategies to grow your audience and increase engagement
               </p>
@@ -88,9 +86,9 @@ export default function SocialMedia() {
             </div>
 
             {/* Service Card 3 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all service-card-gradient">
               <Users className="w-12 h-12 text-cyan mb-4" />
-              <h3 className="mb-3">Inbox Management</h3>
+              <h3 className="mb-3 text-social-media-services-primary">Inbox Management</h3>
               <p className="text-muted-foreground mb-4">
                 AI-assisted inbox management across all social media platforms with intelligent solutions
               </p>
@@ -103,9 +101,9 @@ export default function SocialMedia() {
             </div>
 
             {/* Service Card 4 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all service-card-gradient">
               <Video className="w-12 h-12 text-salmon mb-4" />
-              <h3 className="mb-3">Video Production</h3>
+              <h3 className="mb-3 text-social-media-services-primary">Video Production</h3>
               <p className="text-muted-foreground mb-4">
                 Engaging video content optimized for maximum reach and impact
               </p>
@@ -118,9 +116,9 @@ export default function SocialMedia() {
             </div>
 
             {/* Service Card 5 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all service-card-gradient">
               <Smartphone className="w-12 h-12 text-cyan mb-4" />
-              <h3 className="mb-3">AI Automation</h3>
+              <h3 className="mb-3 text-social-media-services-primary">AI Automation</h3>
               <p className="text-muted-foreground mb-4">
                 Automated content creation and scheduling powered by artificial intelligence
               </p>
@@ -133,9 +131,9 @@ export default function SocialMedia() {
             </div>
 
             {/* Service Card 6 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all service-card-gradient">
               <Hash className="w-12 h-12 text-salmon mb-4" />
-              <h3 className="mb-3">Advert Campaigns</h3>
+              <h3 className="mb-3 text-social-media-services-primary">Advert Campaigns</h3>
               <p className="text-muted-foreground mb-4">
                 Targeted advertising campaigns across Meta Suite and TikTok platforms
               </p>
@@ -148,14 +146,13 @@ export default function SocialMedia() {
             </div>
           </div>
         </div>
-      </section>
+      </GradientBackground>
 
       {/* Why Choose Us */}
-      <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900" />
+      <GradientBackground section="social-media-why-choose-us" className="py-20 relative overflow-hidden">
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6">
+            <h2 className="text-4xl lg:text-5xl mb-6 text-social-media-why-choose-us-primary">
               Slyfox Social Media Management
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -165,7 +162,7 @@ export default function SocialMedia() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div>
-              <h3 className="mb-4">Creative Excellence</h3>
+              <h3 className="mb-4 text-social-media-why-choose-us-primary">Creative Excellence</h3>
               <p className="text-muted-foreground mb-6">
                 Our team of photographers, videographers, and designers create stunning content that stops the scroll. 
                 We understand the visual language of social media and craft content that resonates with your audience.
@@ -187,7 +184,7 @@ export default function SocialMedia() {
             </div>
 
             <div>
-              <h3 className="mb-4">Strategic Approach</h3>
+              <h3 className="mb-4 text-social-media-why-choose-us-primary">Strategic Approach</h3>
               <p className="text-muted-foreground mb-6">
                 We don't just create beautiful content – we create content with purpose. Our strategies are backed by 
                 analytics, market research, and a deep understanding of social media algorithms.
@@ -209,14 +206,13 @@ export default function SocialMedia() {
             </div>
           </div>
         </div>
-      </section>
+      </GradientBackground>
 
       {/* Process Section */}
-      <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-gray-900" />
+      <GradientBackground section="social-media-process" className="py-20 relative overflow-hidden">
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6">
+            <h2 className="text-4xl lg:text-5xl mb-6 text-social-media-process-primary">
               Our Process
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -229,7 +225,7 @@ export default function SocialMedia() {
               <div className="w-16 h-16 bg-cyan/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl font-bold text-cyan">1</span>
               </div>
-              <h3 className="mb-2">Discovery</h3>
+              <h3 className="mb-2 text-social-media-process-primary">Discovery</h3>
               <p className="text-muted-foreground text-sm">
                 We learn about your brand, goals, and target audience
               </p>
@@ -239,7 +235,7 @@ export default function SocialMedia() {
               <div className="w-16 h-16 bg-salmon/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl font-bold text-salmon">2</span>
               </div>
-              <h3 className="mb-2">Strategy</h3>
+              <h3 className="mb-2 text-social-media-process-primary">Strategy</h3>
               <p className="text-muted-foreground text-sm">
                 Develop a custom social media strategy aligned with your objectives
               </p>
@@ -249,7 +245,7 @@ export default function SocialMedia() {
               <div className="w-16 h-16 bg-cyan/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl font-bold text-cyan">3</span>
               </div>
-              <h3 className="mb-2">Creation</h3>
+              <h3 className="mb-2 text-social-media-process-primary">Creation</h3>
               <p className="text-muted-foreground text-sm">
                 Produce high-quality content that captures your brand essence
               </p>
@@ -259,19 +255,19 @@ export default function SocialMedia() {
               <div className="w-16 h-16 bg-salmon/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl font-bold text-salmon">4</span>
               </div>
-              <h3 className="mb-2">Growth</h3>
+              <h3 className="mb-2 text-social-media-process-primary">Growth</h3>
               <p className="text-muted-foreground text-sm">
                 Monitor, analyze, and optimize for continuous improvement
               </p>
             </div>
           </div>
         </div>
-      </section>
+      </GradientBackground>
 
       {/* CTA Section */}
-      <section className="py-20">
+      <GradientBackground section="social-media-cta" className="py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl lg:text-5xl mb-6">
+          <h2 className="text-4xl lg:text-5xl mb-6 text-social-media-cta-primary">
             Ready to Transform Your Social Media?
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
@@ -291,7 +287,7 @@ export default function SocialMedia() {
             </Link>
           </div>
         </div>
-      </section>
+      </GradientBackground>
 
       <Footer />
     </div>

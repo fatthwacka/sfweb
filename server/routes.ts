@@ -14,6 +14,7 @@ import { createClient } from '@supabase/supabase-js';
 import simpleAssetsRouter from './routes/simple-assets';
 import siteConfigRouter from './site-config-api';
 import { gradientRoutes } from './routes/gradients';
+import pricingPackagesRouter from './pricing-packages-api';
 import { sendContactEmail, validateEmailConfig, sendAlbumReadyEmail } from './email-service';
 import { verifyRecaptcha } from './recaptcha-service';
 import { eq, and } from 'drizzle-orm';
@@ -1998,7 +1999,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Use the gradient routes for gradient configuration management
   app.use('/api/gradients', gradientRoutes);
-  
+
+  // Use the pricing packages router for pricing management
+  app.use(pricingPackagesRouter);
 
   // GET /api/images/featured - Get featured images
   app.get("/api/images/featured", async (req, res) => {

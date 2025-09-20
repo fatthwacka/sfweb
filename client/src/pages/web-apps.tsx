@@ -11,8 +11,7 @@ export default function WebApps() {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-purple-900/20 to-pink-900/20" />
+      <GradientBackground section="web-apps-hero" className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img 
             src="/images/hero/Slyfox-Ai-Automation-and-AppDev-02.jpg" 
@@ -24,7 +23,7 @@ export default function WebApps() {
           />
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="mb-6">
+          <h1 className="mb-6 text-web-apps-hero-primary">
             Web & App Development
           </h1>
           <p className="text-xl md:text-2xl mb-8 text-white max-w-3xl mx-auto">
@@ -39,14 +38,13 @@ export default function WebApps() {
             </Link>
           </div>
         </div>
-      </section>
+      </GradientBackground>
 
       {/* Services Overview */}
-      <section className="py-20 relative overflow-hidden" id="services">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/95 via-purple-900/20 to-blue-900/30" />
+      <GradientBackground section="web-apps-services" className="py-20 relative overflow-hidden" id="services">
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6">
+            <h2 className="text-4xl lg:text-5xl mb-6 text-web-apps-services-primary">
               Full-Stack Digital Solutions
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -56,9 +54,9 @@ export default function WebApps() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Service Card 1 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all service-card-gradient">
               <Globe className="w-12 h-12 text-salmon mb-4" />
-              <h3 className="mb-3">Web Development</h3>
+              <h3 className="mb-3 text-web-apps-services-primary">Web Development</h3>
               <p className="text-muted-foreground mb-4">
                 Modern, responsive websites that deliver exceptional user experiences
               </p>
@@ -71,9 +69,9 @@ export default function WebApps() {
             </div>
 
             {/* Service Card 2 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all service-card-gradient">
               <Smartphone className="w-12 h-12 text-cyan mb-4" />
-              <h3 className="mb-3">Mobile Apps</h3>
+              <h3 className="mb-3 text-web-apps-services-primary">Mobile Apps</h3>
               <p className="text-muted-foreground mb-4">
                 Native and cross-platform apps that users love to engage with
               </p>
@@ -86,9 +84,9 @@ export default function WebApps() {
             </div>
 
             {/* Service Card 3 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all service-card-gradient">
               <Code className="w-12 h-12 text-salmon mb-4" />
-              <h3 className="mb-3">Custom Software</h3>
+              <h3 className="mb-3 text-web-apps-services-primary">Custom Software</h3>
               <p className="text-muted-foreground mb-4">
                 Tailored solutions to solve your unique business challenges
               </p>
@@ -101,9 +99,9 @@ export default function WebApps() {
             </div>
 
             {/* Service Card 4 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all service-card-gradient">
               <Palette className="w-12 h-12 text-cyan mb-4" />
-              <h3 className="mb-3">UI/UX Design</h3>
+              <h3 className="mb-3 text-web-apps-services-primary">UI/UX Design</h3>
               <p className="text-muted-foreground mb-4">
                 Beautiful, intuitive designs that delight users at every touchpoint
               </p>
@@ -116,9 +114,9 @@ export default function WebApps() {
             </div>
 
             {/* Service Card 5 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-salmon/50 transition-all service-card-gradient">
               <Zap className="w-12 h-12 text-salmon mb-4" />
-              <h3 className="mb-3">Performance</h3>
+              <h3 className="mb-3 text-web-apps-services-primary">Performance</h3>
               <p className="text-muted-foreground mb-4">
                 Lightning-fast applications optimized for speed and efficiency
               </p>
@@ -131,9 +129,9 @@ export default function WebApps() {
             </div>
 
             {/* Service Card 6 */}
-            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
+            <div className="rounded-lg p-8 border border-white/10 hover:border-cyan/50 transition-all service-card-gradient">
               <Shield className="w-12 h-12 text-cyan mb-4" />
-              <h3 className="mb-3">Maintenance</h3>
+              <h3 className="mb-3 text-web-apps-services-primary">Maintenance</h3>
               <p className="text-muted-foreground mb-4">
                 Ongoing support to keep your digital assets secure and up-to-date
               </p>
@@ -146,13 +144,13 @@ export default function WebApps() {
             </div>
           </div>
         </div>
-      </section>
+      </GradientBackground>
 
       {/* Tech Stack Section */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6">
+            <h2 className="text-4xl lg:text-5xl mb-6 text-web-apps-hero-primary">
               Modern Technology Stack
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -162,8 +160,8 @@ export default function WebApps() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="rounded-lg p-6 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
-                <h3>Frontend</h3>
+              <div className="rounded-lg p-6 border border-white/10 hover:border-cyan/50 transition-all service-card-gradient">
+                <h3 className="text-web-apps-hero-primary">Frontend</h3>
                 <p className="text-sm text-muted-foreground mt-2">
                   React, Vue, Angular, Next.js
                 </p>
@@ -171,8 +169,8 @@ export default function WebApps() {
             </div>
 
             <div className="text-center">
-              <div className="rounded-lg p-6 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
-                <h3>Backend</h3>
+              <div className="rounded-lg p-6 border border-white/10 hover:border-salmon/50 transition-all service-card-gradient">
+                <h3 className="text-web-apps-hero-primary">Backend</h3>
                 <p className="text-sm text-muted-foreground mt-2">
                   Node.js, Python, PHP, .NET, Java
                 </p>
@@ -180,8 +178,8 @@ export default function WebApps() {
             </div>
 
             <div className="text-center">
-              <div className="rounded-lg p-6 border border-white/10 hover:border-cyan/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
-                <h3>Mobile</h3>
+              <div className="rounded-lg p-6 border border-white/10 hover:border-cyan/50 transition-all service-card-gradient">
+                <h3 className="text-web-apps-hero-primary">Mobile</h3>
                 <p className="text-sm text-muted-foreground mt-2">
                   React Native, Flutter, Swift, Kotlin
                 </p>
@@ -189,8 +187,8 @@ export default function WebApps() {
             </div>
 
             <div className="text-center">
-              <div className="rounded-lg p-6 border border-white/10 hover:border-salmon/50 transition-all" style={{background: 'linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%)'}}>
-                <h3>Cloud</h3>
+              <div className="rounded-lg p-6 border border-white/10 hover:border-salmon/50 transition-all service-card-gradient">
+                <h3 className="text-web-apps-hero-primary">Cloud</h3>
                 <p className="text-sm text-muted-foreground mt-2">
                   AWS, Google Cloud, Azure, Vercel
                 </p>
@@ -201,11 +199,10 @@ export default function WebApps() {
       </section>
 
       {/* Process Section */}
-      <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/95 via-purple-900/20 to-blue-900/30" />
+      <GradientBackground section="web-apps-process" className="py-20 relative overflow-hidden">
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6">
+            <h2 className="text-4xl lg:text-5xl mb-6 text-web-apps-process-primary">
               Our Development Process
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -218,7 +215,7 @@ export default function WebApps() {
               <div className="w-16 h-16 bg-salmon/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl font-bold text-salmon">1</span>
               </div>
-              <h3 className="mb-2">Discovery</h3>
+              <h3 className="mb-2 text-web-apps-process-primary">Discovery</h3>
               <p className="text-muted-foreground text-sm">
                 Understanding your needs and defining project scope
               </p>
@@ -228,7 +225,7 @@ export default function WebApps() {
               <div className="w-16 h-16 bg-cyan/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl font-bold text-cyan">2</span>
               </div>
-              <h3 className="mb-2">Design</h3>
+              <h3 className="mb-2 text-web-apps-process-primary">Design</h3>
               <p className="text-muted-foreground text-sm">
                 Creating wireframes and visual designs
               </p>
@@ -238,7 +235,7 @@ export default function WebApps() {
               <div className="w-16 h-16 bg-salmon/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl font-bold text-salmon">3</span>
               </div>
-              <h3 className="mb-2">Development</h3>
+              <h3 className="mb-2 text-web-apps-process-primary">Development</h3>
               <p className="text-muted-foreground text-sm">
                 Building your solution with clean, maintainable code
               </p>
@@ -248,7 +245,7 @@ export default function WebApps() {
               <div className="w-16 h-16 bg-cyan/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl font-bold text-cyan">4</span>
               </div>
-              <h3 className="mb-2">Testing</h3>
+              <h3 className="mb-2 text-web-apps-process-primary">Testing</h3>
               <p className="text-muted-foreground text-sm">
                 Rigorous quality assurance and user testing
               </p>
@@ -258,21 +255,20 @@ export default function WebApps() {
               <div className="w-16 h-16 bg-salmon/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl font-bold text-salmon">5</span>
               </div>
-              <h3 className="mb-2">Launch</h3>
+              <h3 className="mb-2 text-web-apps-process-primary">Launch</h3>
               <p className="text-muted-foreground text-sm">
                 Deployment and ongoing support
               </p>
             </div>
           </div>
         </div>
-      </section>
+      </GradientBackground>
 
 
       {/* CTA Section */}
-      <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/30 via-salmon-900/20 to-purple-900/40" />
+      <GradientBackground section="web-apps-cta" className="py-20 relative overflow-hidden">
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl lg:text-5xl mb-6">
+          <h2 className="text-4xl lg:text-5xl mb-6 text-web-apps-cta-primary">
             Ready to Build Something Amazing?
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
@@ -292,7 +288,7 @@ export default function WebApps() {
             </Link>
           </div>
         </div>
-      </section>
+      </GradientBackground>
 
       <Footer />
     </div>

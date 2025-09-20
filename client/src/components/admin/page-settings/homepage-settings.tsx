@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Upload, Save, AlertCircle, ChevronUp, ChevronDown, X, Plus, FolderOpen } from 'lucide-react';
+import { Upload, ChevronUp, ChevronDown, X, Plus, FolderOpen, CheckCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,8 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
 import { GradientPicker } from '@/components/ui/gradient-picker';
-import { useGradient } from '@/hooks/use-gradient';
+import { useAllGradients } from '@/hooks/use-all-gradients';
 import { CategoryPagesConfig } from '@shared/types/category-config';
+import { FrontPageSettingsCard } from '../front-page-settings';
 
 interface HeroSlide {
   id: string;
@@ -85,11 +86,12 @@ const defaultSiteConfig: SiteConfig = {
 
 export function HomepageSettings() {
   const queryClient = useQueryClient();
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [config, setConfig] = useState<SiteConfig>(defaultSiteConfig);
   const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
   const [isImageBrowserOpen, setIsImageBrowserOpen] = useState(false);
   const [browserCallback, setBrowserCallback] = useState<((path: string) => void) | null>(null);
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch ALL images from ALL folders for image browser
   const { data: allImages, isLoading: imagesLoading } = useQuery({
@@ -113,7 +115,7 @@ export function HomepageSettings() {
     }
   });
 
-  // Save mutation - MUST be before any conditional returns
+  // Auto-save mutation with 2000ms debounce - MUST be before any conditional returns
   const saveMutation = useMutation({
     mutationFn: async (newConfig: SiteConfig) => {
       const response = await fetch('/api/site-config/bulk', {
@@ -126,20 +128,43 @@ export function HomepageSettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/site-config'] });
-      setHasUnsavedChanges(false);
-      toast({
-        title: "Settings saved",
-        description: "Homepage settings have been updated successfully."
-      });
+      setIsAutoSaving(false);
+      // No toast for auto-save to avoid spam
     },
     onError: (error) => {
+      setIsAutoSaving(false);
       toast({
-        title: "Save failed",
+        title: "Auto-save failed",
         description: error instanceof Error ? error.message : "Failed to save settings",
         variant: "destructive"
       });
     }
   });
+
+  // Debounced auto-save function
+  const debouncedAutoSave = useCallback((newConfig: SiteConfig) => {
+    // Clear existing timeout
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    // Set loading state immediately
+    setIsAutoSaving(true);
+
+    // Set new timeout for 2000ms
+    debounceTimeoutRef.current = setTimeout(() => {
+      saveMutation.mutate(newConfig);
+    }, 2000);
+  }, [saveMutation]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Update local state when data loads - MUST be before conditional returns
   useEffect(() => {
@@ -201,15 +226,12 @@ export function HomepageSettings() {
   };
 
 
-  // Auto-save will be implemented in next iteration
-
+  // Auto-save configuration changes with 2000ms debounce
   const handleConfigChange = (newConfig: SiteConfig) => {
+    // Update local state immediately for responsive UI
     setConfig(newConfig);
-    setHasUnsavedChanges(true);
-  };
-
-  const handleSave = () => {
-    saveMutation.mutate(config);
+    // Trigger debounced auto-save
+    debouncedAutoSave(newConfig);
   };
 
   // Early return if loading or config not ready - AFTER all hooks
@@ -673,38 +695,35 @@ export function HomepageSettings() {
             </CardDescription>
           </div>
           <div className="flex items-center gap-3">
-            {hasUnsavedChanges && (
-              <div className="flex items-center gap-2 text-amber-300 bg-amber-900/30 px-3 py-1.5 rounded-full border border-amber-500/30">
-                <AlertCircle size={16} />
-                <span className="text-sm font-medium">Unsaved changes</span>
-              </div>
-            )}
-            <Button
-              onClick={handleSave}
-              disabled={!hasUnsavedChanges || saveMutation.isPending}
-              className="bg-salmon hover:bg-salmon-muted text-white"
-            >
-              {saveMutation.isPending ? (
-                <div className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  Saving...
+            {/* Auto-save Status Indicator */}
+            <div className="flex items-center gap-1 text-sm">
+              {isAutoSaving || saveMutation.isPending ? (
+                <div className="flex items-center gap-2 text-blue-400 bg-blue-900/30 px-3 py-1.5 rounded-full border border-blue-500/30">
+                  <div className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-sm font-medium">Auto-saving...</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-2">
-                  <Save size={16} />
-                  Save Changes
+                <div className="flex items-center gap-2 text-green-400 bg-green-900/30 px-3 py-1.5 rounded-full border border-green-500/30">
+                  <CheckCircle className="w-3 h-3" />
+                  <span className="text-sm font-medium">Auto-save enabled</span>
                 </div>
               )}
-            </Button>
+            </div>
           </div>
         </div>
       </CardHeader>
       
       <CardContent>
         <Tabs defaultValue="hero-slides" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 bg-slate-800">
+        <TabsList className="grid w-full grid-cols-5 bg-slate-800">
           <TabsTrigger value="hero-slides" className="data-[state=active]:bg-salmon data-[state=active]:text-white">
             Hero Slides
+          </TabsTrigger>
+          <TabsTrigger value="services" className="data-[state=active]:bg-salmon data-[state=active]:text-white">
+            Services
+          </TabsTrigger>
+          <TabsTrigger value="portfolio" className="data-[state=active]:bg-salmon data-[state=active]:text-white">
+            Portfolio
           </TabsTrigger>
           <TabsTrigger value="private-gallery" className="data-[state=active]:bg-salmon data-[state=active]:text-white">
             Private Gallery
@@ -827,6 +846,24 @@ export function HomepageSettings() {
           </div>
         </TabsContent>
 
+        <TabsContent value="services">
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold text-white">Services Section Styling</h3>
+              <p className="text-sm text-gray-300">Customize the services section background and text colors</p>
+            </div>
+
+            <ServicesGradientSection />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="portfolio">
+          <div className="space-y-6">
+            {/* Portfolio Front Page Settings - Now uses gradient system */}
+            <PortfolioGradientSection />
+          </div>
+        </TabsContent>
+
 
         <TabsContent value="private-gallery">
           <div className="space-y-6">
@@ -910,31 +947,24 @@ export function HomepageSettings() {
   );
 }
 
-// Gradient Section Components  
+// Gradient Section Components - Updated to use optimized system
 function HeroGradientSection() {
-  const { gradient, updateGradient } = useGradient('hero');
-
   return (
     <GradientPicker
       sectionKey="hero" 
-      label="Hero Section Background Gradient"
-      gradient={gradient}
-      onChange={updateGradient}
+      title="Hero Section"
       showDirection={true}
       showOpacity={false}
+      showTextColors={true}
     />
   );
 }
 
 function ServicesGradientSection() {
-  const { gradient, updateGradient } = useGradient('services');
-
   return (
     <GradientPicker
       sectionKey="services" 
-      label="Services Section Background Gradient"
-      gradient={gradient}
-      onChange={updateGradient}
+      title="Services Section"
       showDirection={true}
       showOpacity={false}
       showTextColors={true}
@@ -946,7 +976,7 @@ function TestimonialsGradientSection() {
   return (
     <GradientPicker
       sectionKey="testimonials"
-      label="Testimonials Background Gradient"
+      title="Testimonials Section"
       showDirection={true}
       showOpacity={false}
       showTextColors={true}
@@ -954,15 +984,44 @@ function TestimonialsGradientSection() {
   );
 }
 
-
 function PrivateGalleryGradientSection() {
   return (
     <GradientPicker
       sectionKey="privateGallery"
-      label="Private Gallery Background Gradient"
+      title="Private Gallery Section"
       showDirection={true}
       showOpacity={false}
       showTextColors={true}
+    />
+  );
+}
+
+function PortfolioGradientSection() {
+  return (
+    <div className="space-y-6">
+      {/* Portfolio Background Colors */}
+      <GradientPicker
+        sectionKey="portfolio"
+        title="Portfolio Section"
+        showDirection={true}
+        showOpacity={false}
+        showTextColors={true}
+      />
+      
+      {/* Portfolio Settings Card with integrated gradient system */}
+      <PortfolioSettingsCard />
+    </div>
+  );
+}
+
+function PortfolioSettingsCard() {
+  const { getPortfolioSettings } = useAllGradients();
+  const portfolioSettings = getPortfolioSettings();
+  
+  return (
+    <FrontPageSettingsCard
+      settings={portfolioSettings}
+      // No onSave prop = auto-save mode enabled
     />
   );
 }

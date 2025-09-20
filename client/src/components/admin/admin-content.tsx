@@ -20,9 +20,11 @@ import { StaffManagement } from "./staff-management";
 import { SimpleAssetsPanel } from "./simple-assets-panel";
 import { ContactSettings } from "./page-settings/contact-settings";
 import { HomepageSettings } from "./page-settings/homepage-settings";
-import { PortfolioSettings } from "./page-settings/portfolio-settings";
 import { PhotographySettings } from "./page-settings/photography-settings";
+import { VideographySettings } from "./page-settings/videography-settings";
 import AboutSettings from "./page-settings/about-settings";
+import { WebAppsSettings } from "./page-settings/web-apps-settings";
+import { SocialMediaSettings } from "./page-settings/social-media-settings";
 import {
   BarChart3,
   Users,
@@ -103,7 +105,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'shoots' | 'images' | 'galleries' | 'site-management' | 'staff' | 'users'>('overview');
-  const [activePageSettings, setActivePageSettings] = useState<'contact' | 'homepage' | 'portfolio' | 'photography' | 'about' | null>(null);
+  const [activePageSettings, setActivePageSettings] = useState<'contact' | 'homepage' | 'photography' | 'videography' | 'about' | 'web-apps' | 'social-media' | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState<'alphabetical' | 'alphabetical-reverse' | 'date-newest' | 'date-oldest'>('date-newest');
   const [newClientOpen, setNewClientOpen] = useState(false);
@@ -2369,20 +2371,6 @@ export function AdminContent({ userRole }: AdminContentProps) {
                   
                   <div 
                     className={`rounded-lg p-4 border cursor-pointer transition-all duration-200 ${
-                      activePageSettings === 'portfolio'
-                        ? 'bg-blue-500/20 border-blue-400 shadow-lg shadow-blue-500/20 ring-1 ring-blue-400/30'
-                        : 'bg-slate-800/50 border-slate-600 hover:border-purple-500/50'
-                    }`}
-                    onClick={() => setActivePageSettings('portfolio')}
-                  >
-                    <div className="flex items-center justify-center gap-2 h-full">
-                      <span className="text-2xl">🎨</span>
-                      <h3 className="text-lg font-semibold text-white">Portfolio</h3>
-                    </div>
-                  </div>
-                  
-                  <div 
-                    className={`rounded-lg p-4 border cursor-pointer transition-all duration-200 ${
                       activePageSettings === 'photography'
                         ? 'bg-blue-500/20 border-blue-400 shadow-lg shadow-blue-500/20 ring-1 ring-blue-400/30'
                         : 'bg-slate-800/50 border-slate-600 hover:border-yellow-500/50'
@@ -2395,7 +2383,14 @@ export function AdminContent({ userRole }: AdminContentProps) {
                     </div>
                   </div>
                   
-                  <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-600 opacity-50">
+                  <div 
+                    className={`rounded-lg p-4 border cursor-pointer transition-all duration-200 ${
+                      activePageSettings === 'videography'
+                        ? 'bg-purple-500/20 border-purple-400 shadow-lg shadow-purple-500/20 ring-1 ring-purple-400/30'
+                        : 'bg-slate-800/50 border-slate-600 hover:border-purple-500/50'
+                    }`}
+                    onClick={() => setActivePageSettings('videography')}
+                  >
                     <div className="flex items-center justify-center gap-2 h-full">
                       <span className="text-2xl">🎬</span>
                       <h3 className="text-lg font-semibold text-white">Videography</h3>
@@ -2430,10 +2425,31 @@ export function AdminContent({ userRole }: AdminContentProps) {
                     </div>
                   </div>
                   
-                  <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-600 opacity-50">
+                  <div 
+                    className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 ${
+                      activePageSettings === 'web-apps' 
+                        ? 'bg-blue-500/20 border-blue-400 shadow-lg shadow-blue-500/20 ring-1 ring-blue-400/30' 
+                        : 'bg-slate-800/50 border-slate-600 hover:border-blue-500/50'
+                    }`}
+                    onClick={() => setActivePageSettings('web-apps')}
+                  >
                     <div className="flex items-center justify-center gap-2 h-full">
-                      <span className="text-2xl">🔍</span>
-                      <h3 className="text-lg font-semibold text-white">Global SEO</h3>
+                      <span className="text-2xl">💻</span>
+                      <h3 className="text-lg font-semibold text-white">Web Apps</h3>
+                    </div>
+                  </div>
+                  
+                  <div 
+                    className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 ${
+                      activePageSettings === 'social-media' 
+                        ? 'bg-pink-500/20 border-pink-400 shadow-lg shadow-pink-500/20 ring-1 ring-pink-400/30' 
+                        : 'bg-slate-800/50 border-slate-600 hover:border-pink-500/50'
+                    }`}
+                    onClick={() => setActivePageSettings('social-media')}
+                  >
+                    <div className="flex items-center justify-center gap-2 h-full">
+                      <span className="text-2xl">📱</span>
+                      <h3 className="text-lg font-semibold text-white">Social Media</h3>
                     </div>
                   </div>
                 </div>
@@ -2452,20 +2468,33 @@ export function AdminContent({ userRole }: AdminContentProps) {
                 </div>
               )}
 
-              {activePageSettings === 'portfolio' && (
-                <div className="mt-8">
-                  <PortfolioSettings />
-                </div>
-              )}
               {activePageSettings === 'about' && (
                 <div className="mt-8">
                   <AboutSettings />
+                </div>
+              )}
+
+              {activePageSettings === 'web-apps' && (
+                <div className="mt-8">
+                  <WebAppsSettings />
+                </div>
+              )}
+
+              {activePageSettings === 'social-media' && (
+                <div className="mt-8">
+                  <SocialMediaSettings />
                 </div>
               )}
               
               {activePageSettings === 'photography' && (
                 <div className="mt-8">
                   <PhotographySettings />
+                </div>
+              )}
+
+              {activePageSettings === 'videography' && (
+                <div className="mt-8">
+                  <VideographySettings />
                 </div>
               )}
 

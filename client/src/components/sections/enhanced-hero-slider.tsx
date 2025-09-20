@@ -176,9 +176,9 @@ export function EnhancedHeroSlider() {
           </h1>
           
           {/* Subtitle */}
-          <p className="text-lg md:text-xl text-white font-quicksand font-light mb-4">
+          <h3 className="text-lg md:text-xl text-white font-quicksand font-light mb-4">
             {currentSlideData.subtitle}
-          </p>
+          </h3>
           
           {/* CTA Button */}
           <div className="flex justify-center">

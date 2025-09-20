@@ -6,6 +6,7 @@ import { Camera, Check, ChevronDown } from "lucide-react";
 import { useSiteConfig } from "@/hooks/use-site-config";
 import { GradientBackground } from "@/components/common/gradient-background";
 import { CategoryFeaturedGrid } from "@/components/shared/category-featured-grid";
+import { PricingPackagesDisplay } from "@/components/sections/pricing-packages-display";
 
 export default function PhotographyPortraits() {
   const { config, isLoading } = useSiteConfig();
@@ -80,7 +81,7 @@ export default function PhotographyPortraits() {
       {/* Service Overview Section */}
       <GradientBackground
         id="category-services"
-        section="services"
+        section="photography-portrait-services"
         className="py-20"
         categoryType="photography"
         categoryName="portraits"
@@ -92,9 +93,9 @@ export default function PhotographyPortraits() {
               <h2 className="text-4xl lg:text-5xl mb-6">
                 {portraitConfig.serviceOverview.title}
               </h2>
-              <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+              <h3 className="text-xl mb-8 leading-relaxed">
                 {portraitConfig.serviceOverview.description}
-              </p>
+              </h3>
               
               <div className="grid grid-cols-2 gap-2 mb-8">
                 {portraitConfig.serviceOverview.features.map((feature, index) => (
@@ -125,74 +126,25 @@ export default function PhotographyPortraits() {
       </GradientBackground>
 
       {/* Packages Section */}
-      <GradientBackground 
-        section="portfolio" 
+      <GradientBackground
+        section="photography-portrait-packages"
         className="py-20"
         categoryType="photography"
         categoryName="portraits"
         categorySectionName="packages"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6">
-              {portraitConfig.packages.title}
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              {portraitConfig.packages.description}
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 pt-6">
-            {portraitConfig.packages.tiers.map((tier, index) => (
-              <div
-                key={tier.id}
-                className={`relative group cursor-pointer bg-gradient-to-br from-slate-800/60 to-gray-900/80 rounded-2xl shadow-2xl hover:shadow-gold/20 transition-all duration-500 transform hover:scale-[1.02] p-8 ${
-                  tier.isPopular
-                    ? 'border-2 border-salmon'
-                    : 'border border-border'
-                }`}
-              >
-                {tier.isPopular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <div className="bg-gradient-to-r from-salmon to-cyan text-white px-4 py-1 rounded-full text-sm font-semibold">
-                      Most Popular
-                    </div>
-                  </div>
-                )}
-                
-                <div className="text-center mb-6">
-                  <h3 className="text-2xl mb-4">
-                    {tier.name}
-                  </h3>
-                  <div className="text-4xl font-bold mb-2 text-gradient">{tier.price}</div>
-                  <p className="text-muted-foreground">{tier.duration}</p>
-                </div>
-
-                <ul className="space-y-3 mb-8">
-                  {tier.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center text-sm text-muted-foreground">
-                      <div className="w-2 h-2 bg-gradient-to-r from-salmon to-cyan rounded-full mr-2 flex-shrink-0"></div>
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link href="/contact" className="block">
-                  <Button 
-                    className={`w-full ${tier.isPopular ? 'btn-salmon' : 'btn-outline-cyan'}`}
-                  >
-                    Book Now
-                  </Button>
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
+        <PricingPackagesDisplay
+          pageIdentifier="photography_portraits"
+          title={portraitConfig.packages.title || "Portrait Photography Packages"}
+          description={portraitConfig.packages.description || "Professional portrait photography solutions"}
+          ctaLink="/contact"
+          ctaText="Book Now"
+        />
       </GradientBackground>
 
       {/* Recent Work Section */}
-      <GradientBackground 
-        section="testimonials" 
+      <GradientBackground
+        section="photography-portrait-recent-work"
         className="py-20"
         categoryType="photography"
         categoryName="portraits"
@@ -203,9 +155,9 @@ export default function PhotographyPortraits() {
             <h2 className="text-4xl lg:text-5xl mb-6">
               {portraitConfig.recentWork.title}
             </h2>
-            <p className="text-xl text-muted-foreground">
+            <h3 className="text-xl ">
               {portraitConfig.recentWork.description}
-            </p>
+            </h3>
           </div>
 
           {/* OLD STATIC GRID - COMMENTED OUT
@@ -241,8 +193,8 @@ export default function PhotographyPortraits() {
       </GradientBackground>
 
       {/* SEO Content Section */}
-      <GradientBackground 
-        section="contact" 
+      <GradientBackground
+        section="photography-portrait-seo"
         className="py-20"
         categoryType="photography"
         categoryName="portraits"

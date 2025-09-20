@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import { Settings, ChevronUp, ChevronDown, Save, CheckCircle, AlertCircle } from "lucide-react";
 import { useDebouncedApiSave } from '@/hooks/use-debounced-api-save';
+import { useAllGradients } from '@/hooks/use-all-gradients';
 
 interface FrontPageSettings {
   imagePadding?: number;
@@ -16,6 +17,7 @@ interface FrontPageSettings {
   borderColor?: string;
   borderColorEnd?: string;
   borderThickness?: number;
+  borderOpacity?: number;
   backgroundGradientStart?: string;
   backgroundGradientEnd?: string;
   backgroundGradientMiddle?: string;
@@ -40,6 +42,10 @@ export const FrontPageSettingsCard: React.FC<FrontPageSettingsProps> = ({
   isSaving = false
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  
+  // Check if we're in gradient system mode (when called from portfolio section)
+  const { updatePortfolioSettings, isUpdating } = useAllGradients();
+  const isGradientMode = !onSave; // When onSave is not provided, we're in auto-save mode
 
   // Default settings
   const defaultSettings: FrontPageSettings = {
@@ -50,6 +56,7 @@ export const FrontPageSettingsCard: React.FC<FrontPageSettingsProps> = ({
     borderColor: '#ffffff', // Border color start for images
     borderColorEnd: '#cccccc', // Border color end for images
     borderThickness: 0, // Border thickness (0-3px)
+    borderOpacity: 100, // Border opacity (0-100%)
     backgroundGradientStart: '#1e293b', // Section background gradient start
     backgroundGradientEnd: '#0f172a', // Section background gradient end
     backgroundGradientMiddle: '#334155', // Section background gradient middle
@@ -70,19 +77,10 @@ export const FrontPageSettingsCard: React.FC<FrontPageSettingsProps> = ({
   //   delay: 500
   // });
 
-  // Sync local state ONLY on initial load - no auto-sync after that
+  // Sync local state when server settings change (but prevent infinite loops)
   useEffect(() => {
     setLocalSettings(serverSettings);
-    
-    // On initial load, sync existing portfolio gradient to new system
-    if (serverSettings.backgroundGradientStart || serverSettings.backgroundGradientMiddle || serverSettings.backgroundGradientEnd) {
-      syncCompleteGradientToNewSystem({
-        startColor: serverSettings.backgroundGradientStart || '#1e293b',
-        middleColor: serverSettings.backgroundGradientMiddle || '#334155', 
-        endColor: serverSettings.backgroundGradientEnd || '#0f172a'
-      });
-    }
-  }, []); // Only run once on mount
+  }, [JSON.stringify(serverSettings)]); // Only when actual data changes
 
   // Local state for input fields (for immediate responsiveness)
   const [paddingInputValue, setPaddingInputValue] = useState(localSettings.imagePadding?.toString() || '2');
@@ -101,9 +99,14 @@ export const FrontPageSettingsCard: React.FC<FrontPageSettingsProps> = ({
   const updateSettings = (updates: Partial<FrontPageSettings>) => {
     const newSettings = { ...localSettings, ...updates };
     
-    // Only update local state - no auto-save
+    // Update local state
     setLocalSettings(newSettings);
     onSettingsChange?.(newSettings);
+    
+    // Auto-save when in gradient mode (portfolio settings)
+    if (isGradientMode) {
+      updatePortfolioSettings(updates);
+    }
   };
 
   // Manual save function
@@ -317,12 +320,17 @@ export const FrontPageSettingsCard: React.FC<FrontPageSettingsProps> = ({
               Front Page Featured Section Settings
             </CardTitle>
             
-            {/* Save Status - Manual save only */}
+            {/* Save Status */}
             <div className="flex items-center gap-1 text-sm">
-              {isSaving ? (
+              {(isSaving || (isGradientMode && isUpdating)) ? (
                 <div className="flex items-center gap-1 text-blue-400">
                   <div className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
                   Saving...
+                </div>
+              ) : isGradientMode ? (
+                <div className="flex items-center gap-1 text-green-400">
+                  <CheckCircle className="w-3 h-3" />
+                  Auto-save enabled
                 </div>
               ) : (
                 <div className="flex items-center gap-1 text-gray-400">
@@ -333,18 +341,6 @@ export const FrontPageSettingsCard: React.FC<FrontPageSettingsProps> = ({
           </div>
           
           <div className="flex items-center gap-2">
-            {/* Manual Save Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleManualSave}
-              disabled={isSaving}
-              className="text-salmon hover:text-salmon-muted border-salmon/30"
-            >
-              <Save className="w-3 h-3 mr-1" />
-              {isSaving ? 'Saving...' : 'Save Now'}
-            </Button>
-            
             <Button
               variant="ghost"
               size="sm"
@@ -479,7 +475,31 @@ export const FrontPageSettingsCard: React.FC<FrontPageSettingsProps> = ({
                   className="flex-1 h-8 rounded cursor-pointer custom-color-input"
                   title="End Color"
                 />
-                <div className="flex-1"></div>
+                <div
+                  className="flex-1 h-8 rounded cursor-pointer custom-color-input border-2 border-slate-500 hover:border-slate-400 transition-colors flex items-center justify-center text-xs font-medium text-white"
+                  style={{ 
+                    background: `linear-gradient(90deg, transparent, rgba(255,255,255,${(localSettings.borderOpacity || 100) / 100}))`,
+                  }}
+                  onClick={() => {
+                    const currentOpacity = localSettings.borderOpacity ?? 100; // Use nullish coalescing
+                    let newOpacity;
+                    
+                    // Cycle through: 100 → 0 → 25 → 50 → 75 → 100
+                    switch (currentOpacity) {
+                      case 100: newOpacity = 0; break;
+                      case 0: newOpacity = 25; break;
+                      case 25: newOpacity = 50; break;
+                      case 50: newOpacity = 75; break;
+                      case 75: newOpacity = 100; break;
+                      default: newOpacity = 0; // fallback for any other value
+                    }
+                    
+                    updateSettings({ borderOpacity: newOpacity });
+                  }}
+                  title={`Border Opacity: ${localSettings.borderOpacity || 100}% (click to cycle)`}
+                >
+                  {Math.round(localSettings.borderOpacity || 100)}%
+                </div>
               </div>
             </div>
 
@@ -540,33 +560,15 @@ export const FrontPageSettingsCard: React.FC<FrontPageSettingsProps> = ({
               </Select>
             </div>
 
-            {/* Background Gradient Control */}
-            <div className="gallery-slider-container flex-1">
+            {/* Reserved for future use */}
+            <div className="gallery-slider-container flex-1 opacity-50">
               <div className="gallery-slider-header">
-                <Label className="gallery-slider-label">Background Gradient</Label>
+                <Label className="gallery-slider-label text-gray-500">Reserved</Label>
               </div>
-              <div className="flex gap-2">
-                <input
-                  type="color"
-                  value={localSettings.backgroundGradientStart || '#1e293b'}
-                  onChange={(e) => updateGradientStart(e.target.value)}
-                  className="flex-1 h-8 rounded cursor-pointer custom-color-input"
-                  title="Start Color"
-                />
-                <input
-                  type="color"
-                  value={localSettings.backgroundGradientMiddle || '#334155'}
-                  onChange={(e) => updateGradientMiddle(e.target.value)}
-                  className="flex-1 h-8 rounded cursor-pointer custom-color-input"
-                  title="Middle Color"
-                />
-                <input
-                  type="color"
-                  value={localSettings.backgroundGradientEnd || '#0f172a'}
-                  onChange={(e) => updateGradientEnd(e.target.value)}
-                  className="flex-1 h-8 rounded cursor-pointer custom-color-input"
-                  title="End Color"
-                />
+              <div className="flex gap-1">
+                <div className="flex-1 h-8 bg-gray-700 rounded border border-gray-600"></div>
+                <div className="flex-1 h-8 bg-gray-700 rounded border border-gray-600"></div>
+                <div className="flex-1 h-8 bg-gray-700 rounded border border-gray-600"></div>
               </div>
             </div>
 

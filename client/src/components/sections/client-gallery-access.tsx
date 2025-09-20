@@ -45,9 +45,9 @@ export function ClientGalleryAccess() {
                   `${word} `
               )}
             </h2>
-            <p className="text-xl mb-8">
+            <h3 className="text-xl mb-8">
               {description}
-            </p>
+            </h3>
 
             <div className="space-y-6 mb-8">
               {features.map((feature, index) => {

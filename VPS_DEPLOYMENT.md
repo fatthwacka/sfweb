@@ -57,6 +57,37 @@ services:
 
 **If deployment script fails, follow manual process below.**
 
+---
+
+## 🚨 CRITICAL POST-DEPLOYMENT: IMAGE PERMISSIONS FIX
+
+**⚠️ MANDATORY STEP: Image permissions get corrupted during every deployment**
+
+```bash
+# ALWAYS run after any deployment (automated or manual)
+ssh slyfox-vps "cd /opt/sfweb && chmod -R 644 public/images"
+ssh slyfox-vps "cd /opt/sfweb && find public -type d -exec chmod 755 {} \;"
+
+# Verify fix worked (should return HTTP 200)
+curl -I https://slyfox.co.za/images/logos/slyfox-logo-black.png
+```
+
+**Why This Happens**: 
+- rsync file transfer corrupts file permissions during deployment
+- Images become inaccessible (HTTP 403/404) without proper permissions
+- Affects ALL images: logos, gallery photos, hero images, icons
+
+**Required Permissions**:
+- **Image Files**: 644 (readable by web server)
+- **Directories**: 755 (traversable by web server)
+
+**Symptoms of Permission Issues**:
+- Broken images on website (missing logos, gallery photos)
+- HTTP 403 Forbidden errors when accessing image URLs
+- Site appears to load but images don't display
+
+**This step is REQUIRED after every deployment - no exceptions!**
+
 ## 🚀 Deployment Type Guide
 - **Code Changes Only** → Quick deploy + Quick success checks (2 minutes)
 - **First Time/New Environment** → Full verification process (10 minutes)  
@@ -67,6 +98,20 @@ services:
 - **Temporary directory cleanup failure**: Script may fail with "Directory not empty" - this is non-critical, code sync still succeeds
 - **Container startup interruption**: If script fails after code sync, manually restart with production overrides
 - **Recovery command**: `ssh slyfox-vps "cd /opt/sfweb && docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build"`
+
+## Docker Build Cache Issues (18 Sep 2025)
+- **Symptom**: Deployment appears successful but code changes not reflected on site
+- **Root Cause**: Docker cached build layers prevent new source code from being compiled
+- **Detection**: Old asset timestamps in production (e.g., August assets vs September source files)
+- **Solution**: Force clean rebuild with `--no-cache` flag:
+  ```bash
+  ssh slyfox-vps "cd /opt/sfweb && docker compose down && docker system prune -f"
+  ssh slyfox-vps "cd /opt/sfweb && docker build --no-cache -f Dockerfile --target runner ."
+  ssh slyfox-vps "cd /opt/sfweb && docker tag [IMAGE_ID] sfweb-app:latest"
+  ssh slyfox-vps "cd /opt/sfweb && docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d"
+  ```
+- **Prevention**: Monitor asset timestamps vs source file changes during deployment
+- **Impact**: Critical - site may appear deployed but serve stale functionality
 
 ---
 
@@ -172,6 +217,21 @@ ssh slyfox-vps "sudo journalctl -u docker --since '1 hour ago' | grep -i build"
 ssh slyfox-vps "docker buildx ls"  # Platform support
 ```
 
+## Cache Detection and Validation
+```bash
+# Check if build assets are stale (key diagnostic)
+ssh slyfox-vps "cd /opt/sfweb && find client/src/pages -name '*.tsx' -newer public/assets/hero -ls"
+# If ANY files shown = source newer than build = cache issue
+
+# Verify asset timestamps inside container
+ssh slyfox-vps "cd /opt/sfweb && docker exec sfweb-app ls -la public/assets/"
+# Compare timestamps with source file changes
+
+# Check build success in Docker logs
+ssh slyfox-vps "cd /opt/sfweb && docker compose logs app | grep -E '(vite|built|Done)'"
+# Should show recent build completion with "✓ built in Xs"
+```
+
 ## Container Health
 ```bash
 ssh slyfox-vps "docker compose ps"
@@ -268,8 +328,14 @@ curl -X PATCH https://slyfox.co.za/api/site-config/bulk \
 ## Quick Success Checks (Every Deployment)
 - [ ] `curl -I https://slyfox.co.za` returns HTTP/2 200
 - [ ] `ssh slyfox-vps "cd /opt/sfweb && docker compose ps"` shows both containers Up
+- [ ] Image permissions: `curl -I https://slyfox.co.za/images/logos/slyfox-logo-black.png` returns HTTP/2 200
 - [ ] Admin panel loads: https://slyfox.co.za/admin
 - [ ] Client portal accessible: `curl -I https://slyfox.co.za/client-portal`
+
+## Cache Verification (When Code Changes Expected)
+- [ ] Build asset freshness: `ssh slyfox-vps "cd /opt/sfweb && docker exec sfweb-app ls -la public/assets/"` shows recent timestamps
+- [ ] Bundle contains changes: `curl -s https://slyfox.co.za/assets/[bundle-name].js | grep -c [test-string]` finds expected content
+- [ ] Client-side routing: Test dynamic routes in real browser (server commands only show index.html)
 
 ## Full Success Verification (When Environment Changed)
 
@@ -468,8 +534,15 @@ LEGACY TROUBLESHOOTING REFERENCE - Before hardcoded architecture
 
 # 🎯 DEPLOYMENT HISTORY
 
-**Last Successful Deployment**: 2025-09-08 (Multi-platform fix)  
+**Last Successful Deployment**: 2025-09-18 (Docker cache fix + videography updates)  
 **Critical Fixes Applied**:
+- Docker build cache bypass methodology
+- Videography YouTube integration deployment
+- Production asset validation improvements
+- Image permissions automation
+
+**Previous Deployment**: 2025-09-08 (Multi-platform fix)  
+**Legacy Fixes**:
 - Docker multi-platform build compatibility
 - Production override enforcement  
 - Mobile site development mode bug

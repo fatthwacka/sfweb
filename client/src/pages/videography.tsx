@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Video, ArrowRight } from "lucide-react";
 import { YouTubeHero } from "@/components/common/youtube-hero";
+import { GradientBackground } from "@/components/common/gradient-background";
 
 const videographyCategories = [
   {
@@ -70,7 +71,7 @@ export default function Videography() {
       />
 
       {/* Videography Categories */}
-      <section className="py-20 bg-gradient-to-br from-slate-900/40 via-background to-gray-900/30">
+      <GradientBackground section="videography-landing-services" className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="cyan text-4xl lg:text-5xl mb-6">
@@ -116,10 +117,10 @@ export default function Videography() {
             ))}
           </div>
         </div>
-      </section>
+      </GradientBackground>
 
       {/* Process Section */}
-      <section className="py-20 bg-gradient-to-br from-blue-900/30 via-background to-indigo-900/20">
+      <GradientBackground section="videography-landing-portfolio" className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6">
@@ -165,10 +166,10 @@ export default function Videography() {
             ))}
           </div>
         </div>
-      </section>
+      </GradientBackground>
 
       {/* Call to Action */}
-      <section className="py-20 bg-gradient-to-br from-amber-900/25 via-background to-orange-900/20">
+      <GradientBackground section="videography-landing-cta" className="py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl mb-6 h2-cyan">
             Ready to Create Your Video?
@@ -189,7 +190,7 @@ export default function Videography() {
             </Link>
           </div>
         </div>
-      </section>
+      </GradientBackground>
 
       <Footer />
     </div>

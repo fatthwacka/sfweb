@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { ArrowLeft, Video, Check, Play } from "lucide-react";
 import { YouTubeHero } from "@/components/common/youtube-hero";
+import { GradientBackground } from "@/components/common/gradient-background";
 
 const categoryData: Record<string, {
   name: string;
@@ -332,7 +333,7 @@ export default function VideographyCategory() {
       />
 
       {/* About Section */}
-      <section className="py-20 bg-gradient-to-br from-violet-900/30 via-background to-blue-900/20">
+      <GradientBackground section="videography-category-services" className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="videography-about-grid gap-16 items-center">
             <div>
@@ -365,10 +366,10 @@ export default function VideographyCategory() {
             </div>
           </div>
         </div>
-      </section>
+      </GradientBackground>
 
       {/* Packages Section */}
-      <section className="py-20 bg-gradient-to-br from-amber-900/30 via-background to-orange-900/20">
+      <GradientBackground section="videography-category-packages" className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6 h2-cyan">
@@ -413,10 +414,10 @@ export default function VideographyCategory() {
             ))}
           </div>
         </div>
-      </section>
+      </GradientBackground>
 
       {/* Showreel Section */}
-      <section id="showreel" className="py-20 bg-gradient-to-br from-rose-900/25 via-background to-pink-900/20">
+      <GradientBackground section="videography-category-recent-work" className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6 h2-salmon">
@@ -480,7 +481,7 @@ export default function VideographyCategory() {
             </Link>
           </div>
         </div>
-      </section>
+      </GradientBackground>
 
       <Footer />
     </div>

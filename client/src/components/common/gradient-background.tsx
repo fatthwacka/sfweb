@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSiteConfig } from '@/hooks/use-site-config';
-import { useGradientConfig } from '@/hooks/use-gradient-config';
+import { useAllGradients } from '@/hooks/use-all-gradients';
 // Removed deprecated useFrontPageSettings import
 
 interface GradientBackgroundProps {
@@ -27,21 +27,27 @@ export function GradientBackground({
 }: GradientBackgroundProps) {
   const { config } = useSiteConfig();
 
-  // Use new Supabase gradient system for standard sections
+  // Construct the correct gradient key for category pages
+  let gradientKey = section;
+  if (categoryType && categoryName && categorySectionName === 'packages' && section === 'portfolio') {
+    // For pricing sections on category pages, use specific key format
+    gradientKey = `pricing-${categoryType}_${categoryName}`;
+  }
+
+  // Use bulk gradient system for optimal performance
   const {
-    config: supabaseGradientConfig,
+    allGradients,  // SUBSCRIBE TO THE ACTUAL DATA to trigger re-renders
+    getGradient,
     isLoading: isGradientLoading
-  } = useGradientConfig(section);
+  } = useAllGradients();
 
-  // Get gradient config from appropriate source
-  let gradientConfig;
+  // Get gradient config from bulk API (unified system)
+  // The new getGradient always returns a config (with defaults), so no null check needed
+  let gradientConfig = getGradient(gradientKey);
 
-  if (categoryType && categoryName && categorySectionName) {
-    // Get gradient from category page config (legacy system for now)
-    gradientConfig = config?.categoryPages?.[categoryType]?.[categoryName]?.[categorySectionName]?.gradients;
-  } else {
-    // Use new Supabase gradient system
-    gradientConfig = supabaseGradientConfig;
+  // Legacy fallback only if gradient system is not loaded
+  if (isGradientLoading && categoryType && categoryName && categorySectionName) {
+    gradientConfig = config?.categoryPages?.[categoryType]?.[categoryName]?.[categorySectionName]?.gradients || gradientConfig;
   }
 
   // Show loading state if gradient is loading and we don't have category config

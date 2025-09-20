@@ -8,6 +8,8 @@ import { toast } from '@/hooks/use-toast';
 import { GradientPicker } from '@/components/ui/gradient-picker';
 import { ImageBrowser } from '@/components/shared/image-browser';
 import { CategoryPageConfig, defaultCategoryPageConfig } from '@shared/types/category-config';
+import { PricingPackagesEditor } from '@/components/admin/pricing-packages-editor';
+import { createPageIdentifier } from '@shared/types/pricing';
 
 interface CategoryPageSettingsProps {
   type: 'photography' | 'videography';
@@ -255,6 +257,25 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
     });
   };
 
+  // SEO handlers
+  const updateSeoConfig = (updates: Partial<CategoryPageConfig['seo']>) => {
+    updateCategoryConfig({
+      seo: {
+        ...categoryConfig.seo,
+        ...updates
+      }
+    });
+  };
+
+  const updateSeoContentConfig = (updates: Partial<CategoryPageConfig['seoContent']>) => {
+    updateCategoryConfig({
+      seoContent: {
+        ...categoryConfig.seoContent,
+        ...updates
+      }
+    });
+  };
+
   // Recent work handlers
   const updateRecentWorkConfig = (updates: Partial<CategoryPageConfig['recentWork']>) => {
     updateCategoryConfig({
@@ -288,16 +309,6 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
     updateRecentWorkConfig({ images: newImages });
   };
 
-  // SEO content handlers
-  const updateSeoContentConfig = (updates: Partial<CategoryPageConfig['seoContent']>) => {
-    updateCategoryConfig({
-      seoContent: {
-        ...categoryConfig.seoContent,
-        ...updates
-      }
-    });
-  };
-
   // Handle save
   const handleSave = () => {
     saveMutation.mutate(config);
@@ -321,11 +332,12 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
     <div className="space-y-6">
       <div className="bg-gradient-to-br from-purple-900/30 to-purple-800/20 border border-purple-700/30 rounded-lg p-6">
         <Tabs defaultValue="hero" className="space-y-0">
-          <TabsList className="grid w-full grid-cols-4 bg-slate-800/50 border border-slate-600 mb-0">
+          <TabsList className="grid w-full grid-cols-5 bg-slate-800/50 border border-slate-600 mb-0">
             <TabsTrigger value="hero" className="data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:font-semibold text-slate-300">Hero</TabsTrigger>
             <TabsTrigger value="overview" className="data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:font-semibold text-slate-300">Service Overview</TabsTrigger>
             <TabsTrigger value="packages" className="data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:font-semibold text-slate-300">Packages</TabsTrigger>
             <TabsTrigger value="work" className="data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:font-semibold text-slate-300">Recent Work</TabsTrigger>
+            <TabsTrigger value="seo" className="data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:font-semibold text-slate-300">SEO Content</TabsTrigger>
           </TabsList>
 
         {/* Hero Section */}
@@ -411,7 +423,7 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
               {/* Section Colors */}
               <div className="gallery-slider-container">
                 <GradientPicker
-                  sectionKey={`${type}-${category}-overview`}
+                  sectionKey={`${type}-${category.replace('s', '')}-services`}
                   label="Service Overview Section Colors"
                   gradient={categoryConfig.serviceOverview.gradients}
                   onChange={(gradient) => updateServiceOverviewConfig({ gradients: gradient })}
@@ -442,54 +454,15 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
 
         {/* Packages Section */}
         <TabsContent value="packages" className="mt-0">
-          <Card>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle>Pricing Packages - Visual Customization</CardTitle>
-                  <CardDescription>
-                    Manage section colors for your pricing packages display
-                  </CardDescription>
-                </div>
-                <div className="flex items-center gap-3">
-                  {hasUnsavedChanges && (
-                    <div className="flex items-center text-yellow-400 text-sm">
-                      <AlertCircle className="w-4 h-4 mr-1" />
-                      Unsaved changes
-                    </div>
-                  )}
-                  <Button
-                    onClick={handleSave}
-                    disabled={!hasUnsavedChanges || saveMutation.isPending}
-                    className="btn-salmon"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Section Colors */}
-              <div className="gallery-slider-container">
-                <GradientPicker
-                  sectionKey={`${type}-${category}-packages`}
-                  label="Packages Section Colors"
-                  gradient={categoryConfig.packages.gradients}
-                  onChange={(gradient) => updatePackagesConfig({ gradients: gradient })}
-                  showDirection={true}
-                  showTextColors={true}
-                />
-              </div>
-
-              <div className="p-4 bg-slate-800/30 rounded-lg border border-slate-600/30">
-                <p className="text-slate-300 text-sm">
-                  Package details (names, prices, features) are now managed in the application code for SEO consistency.
-                  Use this section to customize the visual appearance of your pricing section.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <PricingPackagesEditor
+            pageIdentifier={createPageIdentifier(type, category)}
+            pageType={type}
+            category={category}
+            onSave={() => {
+              // Refresh any data if needed
+              queryClient.invalidateQueries({ queryKey: ['siteConfig'] });
+            }}
+          />
         </TabsContent>
 
         {/* Recent Work Section */}
@@ -525,7 +498,7 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
               {/* Section Colors */}
               <div className="gallery-slider-container">
                 <GradientPicker
-                  sectionKey={`${type}-${category}-work`}
+                  sectionKey={`${type}-${category.replace('s', '')}-recent-work`}
                   label="Recent Work Section Colors"
                   gradient={categoryConfig.recentWork.gradients}
                   onChange={(gradient) => updateRecentWorkConfig({ gradients: gradient })}
@@ -585,6 +558,189 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
                       <p className="text-sm text-muted-foreground">Upload images to showcase your recent work</p>
                     </div>
                   )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* SEO Content Section */}
+        <TabsContent value="seo" className="mt-0">
+          <Card>
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle>SEO Content Section</CardTitle>
+                  <CardDescription>
+                    Manage SEO content and visual styling for your {categoryDisplayName.toLowerCase()} page
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-3">
+                  {hasUnsavedChanges && (
+                    <div className="flex items-center text-yellow-400 text-sm">
+                      <AlertCircle className="w-4 h-4 mr-1" />
+                      Unsaved changes
+                    </div>
+                  )}
+                  <Button
+                    onClick={handleSave}
+                    disabled={!hasUnsavedChanges || saveMutation.isPending}
+                    className="btn-salmon"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* SEO Section Colors */}
+              <div className="gallery-slider-container">
+                <GradientPicker
+                  sectionKey={`${type}-${category.replace(/s$/, '')}-seo`}
+                  title="SEO Content Section"
+                  showDirection={true}
+                  showTextColors={true}
+                />
+              </div>
+              
+              {/* SEO Meta Information */}
+              <div className="space-y-4">
+                <h4 className="text-lg font-semibold text-white">SEO Meta Information</h4>
+                <div className="grid gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-1">
+                      SEO Page Title
+                    </label>
+                    <input
+                      type="text"
+                      value={categoryConfig.seo?.title || ''}
+                      onChange={(e) => updateSeoConfig({ title: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder={`${categoryDisplayName} Photography Durban | SlyFox Studios`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-1">
+                      Meta Description
+                    </label>
+                    <textarea
+                      value={categoryConfig.seo?.description || ''}
+                      onChange={(e) => updateSeoConfig({ description: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows={2}
+                      placeholder={`Professional ${category} photography services in Durban...`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-1">
+                      SEO Keywords
+                    </label>
+                    <input
+                      type="text"
+                      value={categoryConfig.seo?.keywords || ''}
+                      onChange={(e) => updateSeoConfig({ keywords: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder={`Durban ${category} photographer, ${category} photography, SlyFox Studios`}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* SEO Content Sections */}
+              <div className="space-y-4">
+                <h4 className="text-lg font-semibold text-white">SEO Content Sections</h4>
+                <div className="grid gap-6">
+                  {/* Section 1 */}
+                  <div className="space-y-3">
+                    <h5 className="text-md font-medium text-slate-300">Content Section 1</h5>
+                    <div className="grid gap-3">
+                      <input
+                        type="text"
+                        value={categoryConfig.seoContent?.content?.section1?.title || ''}
+                        onChange={(e) => updateSeoContentConfig({ 
+                          content: {
+                            ...categoryConfig.seoContent?.content,
+                            section1: {
+                              ...categoryConfig.seoContent?.content?.section1,
+                              title: e.target.value
+                            }
+                          }
+                        })}
+                        className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Section 1 Title"
+                      />
+                      <textarea
+                        value={categoryConfig.seoContent?.content?.section1?.text || ''}
+                        onChange={(e) => updateSeoContentConfig({ 
+                          content: {
+                            ...categoryConfig.seoContent?.content,
+                            section1: {
+                              ...categoryConfig.seoContent?.content?.section1,
+                              text: e.target.value
+                            }
+                          }
+                        })}
+                        className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        rows={3}
+                        placeholder="Section 1 content text..."
+                      />
+                    </div>
+                  </div>
+
+                  {/* Section 2 */}
+                  <div className="space-y-3">
+                    <h5 className="text-md font-medium text-slate-300">Content Section 2</h5>
+                    <div className="grid gap-3">
+                      <input
+                        type="text"
+                        value={categoryConfig.seoContent?.content?.section2?.title || ''}
+                        onChange={(e) => updateSeoContentConfig({ 
+                          content: {
+                            ...categoryConfig.seoContent?.content,
+                            section2: {
+                              ...categoryConfig.seoContent?.content?.section2,
+                              title: e.target.value
+                            }
+                          }
+                        })}
+                        className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Section 2 Title"
+                      />
+                      <textarea
+                        value={categoryConfig.seoContent?.content?.section2?.text || ''}
+                        onChange={(e) => updateSeoContentConfig({ 
+                          content: {
+                            ...categoryConfig.seoContent?.content,
+                            section2: {
+                              ...categoryConfig.seoContent?.content?.section2,
+                              text: e.target.value
+                            }
+                          }
+                        })}
+                        className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        rows={3}
+                        placeholder="Section 2 content text..."
+                      />
+                    </div>
+                  </div>
+
+                  {/* Conclusion */}
+                  <div className="space-y-3">
+                    <h5 className="text-md font-medium text-slate-300">Conclusion</h5>
+                    <textarea
+                      value={categoryConfig.seoContent?.content?.conclusion || ''}
+                      onChange={(e) => updateSeoContentConfig({ 
+                        content: {
+                          ...categoryConfig.seoContent?.content,
+                          conclusion: e.target.value
+                        }
+                      })}
+                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows={3}
+                      placeholder="Conclusion text..."
+                    />
+                  </div>
                 </div>
               </div>
             </CardContent>

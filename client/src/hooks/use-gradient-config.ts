@@ -77,12 +77,30 @@ export function useGradientConfig(sectionKey: string) {
 
       return response.json();
     },
-    onSuccess: () => {
-      // Invalidate and refetch the gradient config
-      queryClient.invalidateQueries(['gradient', sectionKey]);
+    onMutate: async (newConfig: Partial<GradientConfig>) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries(['gradient', sectionKey]);
+
+      // Snapshot the previous value
+      const previousConfig = queryClient.getQueryData(['gradient', sectionKey]);
+
+      // Optimistically update to the new value
+      const optimisticConfig = { ...config, ...newConfig };
+      queryClient.setQueryData(['gradient', sectionKey], optimisticConfig);
+
+      // Return a context object with the snapshotted value
+      return { previousConfig };
     },
-    onError: (error) => {
+    onError: (error, newConfig, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousConfig) {
+        queryClient.setQueryData(['gradient', sectionKey], context.previousConfig);
+      }
       console.error(`Failed to update gradient config for ${sectionKey}:`, error);
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure we have the latest data
+      queryClient.invalidateQueries(['gradient', sectionKey]);
     }
   });
 

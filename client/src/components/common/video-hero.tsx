@@ -56,9 +56,9 @@ export function VideoHero({
             {title}
           </h1>
           
-          <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed">
+          <h3 className="text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed">
             {subtitle}
-          </p>
+          </h3>
 
           {(primaryAction || secondaryAction) && (
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">

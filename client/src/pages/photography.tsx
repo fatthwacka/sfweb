@@ -188,9 +188,9 @@ export default function Photography() {
             <h2 className="text-4xl lg:text-5xl mb-6">
               {config.sections.intro.title}
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            <h3 className="text-xl max-w-3xl mx-auto">
               {config.sections.intro.subtitle}
-            </p>
+            </h3>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-8">
@@ -237,9 +237,9 @@ export default function Photography() {
           <h2 className="text-4xl mb-6 h2-salmon">
             {config.sections.callToAction.title}
           </h2>
-          <p className="text-xl text-muted-foreground mb-8">
+          <h3 className="text-xl mb-8">
             {config.sections.callToAction.subtitle}
-          </p>
+          </h3>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href={config.sections.callToAction.primaryButton.link}>
               <Button className="btn-salmon">{config.sections.callToAction.primaryButton.text}</Button>

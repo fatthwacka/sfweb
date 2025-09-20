@@ -147,17 +147,6 @@
           ]
         },
         {
-          "id": "test-slide",
-          "title": "Prestige",
-          "subtitle": "Celebrity & Event Photography",
-          "cta": "Book now",
-          "image": "/uploads/Event-photography-hero_1756059986933.jpg",
-          "gradient": [
-            "rgba(255,0,0,0.5)",
-            "rgba(0,255,0,0.5)"
-          ]
-        },
-        {
           "id": "slide-1756060051119",
           "title": "Headshots",
           "subtitle": "Profile & Corporate Pics",
@@ -166,6 +155,17 @@
           "gradient": [
             "rgba(0,0,0,0.7)",
             "rgba(0,0,0,0.3)"
+          ]
+        },
+        {
+          "id": "test-slide",
+          "title": "Prestige",
+          "subtitle": "Celebrity & Event Photography",
+          "cta": "Book now",
+          "image": "/images/hero/portrait-photography-hero.jpg",
+          "gradient": [
+            "rgba(255,0,0,0.5)",
+            "rgba(0,255,0,0.5)"
           ]
         },
         {
@@ -216,7 +216,41 @@
           "Animation"
         ],
         "ctaText": "Explore Videography"
-      }
+      },
+      "services": [
+        {
+          "id": "photography-service",
+          "title": "Photography",
+          "description": "Capture life's precious moments with our professional photography services. From weddings to corporate events, we create stunning visual narratives.",
+          "image": "/images/services/photography-service-showcase.jpg",
+          "ctaText": "Explore Photography",
+          "services": [
+            "Weddings",
+            "Portraits",
+            "Corporate",
+            "Events",
+            "Products",
+            "Graduation"
+          ],
+          "color": "salmon"
+        },
+        {
+          "id": "videography-service",
+          "title": "Videography",
+          "description": "Bring your stories to life with cinematic videography. From wedding films to corporate content, we create compelling visual experiences.",
+          "image": "/images/services/photography-service-showcase.jpg",
+          "ctaText": "Explore Videography",
+          "services": [
+            "Wedding Films",
+            "Corporate Videos",
+            "Events",
+            "Product Videos",
+            "Social Media",
+            "Animation"
+          ],
+          "color": "cyan"
+        }
+      ]
     }
   },
   "portfolio": {
@@ -231,7 +265,7 @@
       "backgroundGradientStart": "#cddaee",
       "backgroundGradientMiddle": "#081b30",
       "backgroundGradientEnd": "#6e6a81",
-      "textColor": "#ffffff",
+      "textColor": "#bf7878",
       "textColorEnd": "#537093",
       "textColorPrimary": "#ffffff",
       "textColorSecondary": "#e2e8f0",
@@ -715,7 +749,7 @@
               "tertiary": "#94a3b8"
             }
           },
-          "image": "/images/hero/food-photography-hero.jpg"
+          "image": "/uploads/slyfox-pro-studio-lighting.jpg"
         },
         "packages": {
           "title": "Event Photography Packages",

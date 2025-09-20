@@ -6,6 +6,7 @@ import { Camera, Check, ChevronDown } from "lucide-react";
 import { useSiteConfig } from "@/hooks/use-site-config";
 import { GradientBackground } from "@/components/common/gradient-background";
 import { CategoryFeaturedGrid } from "@/components/shared/category-featured-grid";
+import { PricingPackagesDisplay } from "@/components/sections/pricing-packages-display";
 
 export default function PhotographyWeddings() {
   const { config, isLoading } = useSiteConfig();
@@ -13,7 +14,7 @@ export default function PhotographyWeddings() {
   // Get wedding photography configuration
   const weddingConfig = config?.categoryPages?.photography?.weddings;
   
-  if (isLoading || !weddingConfig) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
         <div className="text-center">
@@ -22,13 +23,59 @@ export default function PhotographyWeddings() {
       </div>
     );
   }
+  
+  // Default wedding config if none exists
+  const defaultWeddingConfig = {
+    hero: {
+      title: "Professional Wedding Photography",
+      subtitle: "Capturing your special day with elegance and style",
+      image: "/images/services/wedding-photography.jpg",
+      alt: "Professional Wedding Photography by SlyFox Studios"
+    },
+    serviceOverview: {
+      title: "Wedding Photography Services",
+      description: "Professional wedding photography in Durban",
+      features: ["Full day coverage", "Professional editing", "Online gallery", "Print options"],
+      image: "/images/services/wedding-photography.jpg"
+    },
+    packages: {
+      title: "Wedding Photography Packages",
+      description: "Choose the perfect package for your special day"
+    },
+    recentWork: {
+      title: "Recent Wedding Photography",
+      description: "See our latest wedding photography work",
+      images: ["/images/services/wedding-photography.jpg"]
+    },
+    seoContent: {
+      title: "Professional Wedding Photography in Durban",
+      content: {
+        section1: {
+          title: "Wedding Photography Services",
+          text: "Professional wedding photography services in Durban"
+        },
+        section2: {
+          title: "Why Choose SlyFox Studios",
+          text: "Professional photographers with years of experience"
+        },
+        conclusion: "Contact us today to discuss your wedding photography needs"
+      }
+    },
+    seo: {
+      title: "Wedding Photography - SlyFox Studios",
+      description: "Professional wedding photography in Durban",
+      keywords: "wedding, photography, durban"
+    }
+  };
+
+  const finalWeddingConfig = weddingConfig || defaultWeddingConfig;
 
   return (
     <div className="min-h-screen bg-background text-foreground background-gradient-blobs">
       {/* SEO Meta Tags */}
-      <title>{weddingConfig.seo.title}</title>
-      <meta name="description" content={weddingConfig.seo.description} />
-      <meta name="keywords" content={weddingConfig.seo.keywords} />
+      <title>{finalWeddingConfig.seo.title}</title>
+      <meta name="description" content={finalWeddingConfig.seo.description} />
+      <meta name="keywords" content={finalWeddingConfig.seo.keywords} />
       
       <Navigation />
       
@@ -36,8 +83,8 @@ export default function PhotographyWeddings() {
       <section className="relative h-screen overflow-hidden flex items-center justify-center">
         <div className="absolute inset-0">
           <img 
-            src={weddingConfig.hero.image}
-            alt={weddingConfig.hero.alt || `Professional Wedding Photography by SlyFox Studios in Durban - elegant wedding ceremony with bride and groom`}
+            src={finalWeddingConfig.hero.image}
+            alt={finalWeddingConfig.hero.alt}
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 hero-gradient"></div>
@@ -45,10 +92,10 @@ export default function PhotographyWeddings() {
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="mb-6">
-            {weddingConfig.hero.title}
+            {finalWeddingConfig.hero.title}
           </h1>
           <p className="script-tagline mb-8 max-w-3xl mx-auto">
-            {weddingConfig.hero.subtitle}
+            {finalWeddingConfig.hero.subtitle}
           </p>
 
           {/* Scroll Down Button */}
@@ -80,7 +127,7 @@ export default function PhotographyWeddings() {
       {/* Service Overview Section */}
       <GradientBackground
         id="category-services"
-        section="services"
+        section="photography-wedding-services"
         className="py-20"
         categoryType="photography"
         categoryName="weddings"
@@ -90,14 +137,14 @@ export default function PhotographyWeddings() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-4xl lg:text-5xl mb-6">
-                {weddingConfig.serviceOverview.title}
+                {finalWeddingConfig.serviceOverview.title}
               </h2>
-              <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-                {weddingConfig.serviceOverview.description}
-              </p>
+              <h3 className="text-xl mb-8 leading-relaxed">
+                {finalWeddingConfig.serviceOverview.description}
+              </h3>
               
               <div className="grid grid-cols-2 gap-2 mb-8">
-                {weddingConfig.serviceOverview.features.map((feature, index) => (
+                {finalWeddingConfig.serviceOverview.features.map((feature, index) => (
                   <div key={index} className="flex items-center text-sm text-muted-foreground">
                     <div className="w-2 h-2 bg-gradient-to-r from-salmon to-cyan rounded-full mr-2 flex-shrink-0"></div>
                     <span>{feature}</span>
@@ -115,7 +162,7 @@ export default function PhotographyWeddings() {
             
             <div className="relative">
               <img 
-                src={weddingConfig.serviceOverview.image || weddingConfig.recentWork.images[0] || '/images/placeholder-gallery.jpg'}
+                src={finalWeddingConfig.serviceOverview.image || finalWeddingConfig.recentWork.images[0] || '/images/placeholder-gallery.jpg'}
                 alt="Wedding Photography example"
                 className="w-full rounded-2xl shadow-2xl"
               />
@@ -125,74 +172,25 @@ export default function PhotographyWeddings() {
       </GradientBackground>
 
       {/* Packages Section */}
-      <GradientBackground 
-        section="portfolio" 
+      <GradientBackground
+        section="photography-wedding-packages"
         className="py-20"
         categoryType="photography"
         categoryName="weddings"
         categorySectionName="packages"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6">
-              {weddingConfig.packages.title}
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              {weddingConfig.packages.description}
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 pt-6">
-            {weddingConfig.packages.tiers.map((tier, index) => (
-              <div
-                key={tier.id}
-                className={`relative group cursor-pointer bg-gradient-to-br from-slate-800/60 to-gray-900/80 rounded-2xl shadow-2xl hover:shadow-gold/20 transition-all duration-500 transform hover:scale-[1.02] p-8 ${
-                  tier.isPopular
-                    ? 'border-2 border-salmon'
-                    : 'border border-border'
-                }`}
-              >
-                {tier.isPopular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <div className="bg-gradient-to-r from-salmon to-cyan text-white px-4 py-1 rounded-full text-sm font-semibold">
-                      Most Popular
-                    </div>
-                  </div>
-                )}
-                
-                <div className="text-center mb-6">
-                  <h3 className="text-2xl mb-4">
-                    {tier.name}
-                  </h3>
-                  <div className="text-4xl font-bold mb-2 text-gradient">{tier.price}</div>
-                  <p className="text-muted-foreground">{tier.duration}</p>
-                </div>
-
-                <ul className="space-y-3 mb-8">
-                  {tier.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center text-sm text-muted-foreground">
-                      <div className="w-2 h-2 bg-gradient-to-r from-salmon to-cyan rounded-full mr-2 flex-shrink-0"></div>
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link href="/contact" className="block">
-                  <Button 
-                    className={`w-full ${tier.isPopular ? 'btn-salmon' : 'btn-outline-cyan'}`}
-                  >
-                    Book Now
-                  </Button>
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
+        <PricingPackagesDisplay
+          pageIdentifier="photography_weddings"
+          title={finalWeddingConfig.packages.title}
+          description={finalWeddingConfig.packages.description}
+          ctaLink="/contact"
+          ctaText="Book Now"
+        />
       </GradientBackground>
 
       {/* Recent Work Section */}
-      <GradientBackground 
-        section="testimonials" 
+      <GradientBackground
+        section="photography-wedding-recent-work"
         className="py-20"
         categoryType="photography"
         categoryName="weddings"
@@ -201,11 +199,11 @@ export default function PhotographyWeddings() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6">
-              {weddingConfig.recentWork.title}
+              {finalWeddingConfig.recentWork.title}
             </h2>
-            <p className="text-xl text-muted-foreground">
-              {weddingConfig.recentWork.description}
-            </p>
+            <h3 className="text-xl ">
+              {finalWeddingConfig.recentWork.description}
+            </h3>
           </div>
 
           {/* OLD STATIC GRID - COMMENTED OUT
@@ -241,8 +239,8 @@ export default function PhotographyWeddings() {
       </GradientBackground>
 
       {/* SEO Content Section */}
-      <GradientBackground 
-        section="contact" 
+      <GradientBackground
+        section="photography-wedding-seo"
         className="py-20"
         categoryType="photography"
         categoryName="weddings"
@@ -251,32 +249,32 @@ export default function PhotographyWeddings() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6">
-              {weddingConfig.seoContent.title}
+              {finalWeddingConfig.seoContent.title}
             </h2>
           </div>
 
           <div className="max-w-none">
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                {weddingConfig.seoContent.content.section1.title}
+                {finalWeddingConfig.seoContent.content.section1.title}
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                {weddingConfig.seoContent.content.section1.text}
+                {finalWeddingConfig.seoContent.content.section1.text}
               </p>
             </div>
 
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                {weddingConfig.seoContent.content.section2.title}
+                {finalWeddingConfig.seoContent.content.section2.title}
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                {weddingConfig.seoContent.content.section2.text}
+                {finalWeddingConfig.seoContent.content.section2.text}
               </p>
             </div>
 
             <div>
               <p className="text-xl text-muted-foreground">
-                {weddingConfig.seoContent.content.conclusion}
+                {finalWeddingConfig.seoContent.content.conclusion}
               </p>
               
               <div className="mt-8 text-center">

@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ChevronLeft, ChevronRight, X, RefreshCw } from "lucide-react";
 import { formatClassification } from "@/lib/classification-utils";
 import { ImageUrl } from "@/lib/image-utils";
-import { useSiteConfig } from "@/hooks/use-site-config";
+import { useAllGradients } from "@/hooks/use-all-gradients";
 import { GradientBackground } from "@/components/common/gradient-background";
 import type { Image } from "@shared/schema";
 
@@ -103,9 +103,9 @@ export function PortfolioShowcase() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [randomSeed, setRandomSeed] = useState(Date.now());
 
-  // Get site configuration including portfolio settings
-  const { config } = useSiteConfig();
-  const portfolioSettings = config?.portfolio?.featured;
+  // Get portfolio settings from gradient system (new approach)
+  const { getPortfolioSettings } = useAllGradients();
+  const portfolioSettings = getPortfolioSettings();
 
   // Fetch featured images from Supabase
   const { data: featuredImages, isLoading: imagesLoading } = useQuery<Image[]>({
