@@ -115,7 +115,9 @@ export function PricingPackagesDisplay({
                 '--pricing-accent-light': `${hsl.l}%`,
                 '--pricing-accent': `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`,
                 '--pricing-accent-dark': `hsl(${hsl.h - 5}, ${Math.round(hsl.s / 2)}%, 20%)`,
-                '--pricing-accent-light': `hsl(${hsl.h + 8}, ${hsl.s + 15}%, 75%)`
+                '--pricing-accent-light': `hsl(${hsl.h + 8}, ${hsl.s + 15}%, 75%)`,
+                '--pricing-border-color': `hsl(${hsl.h - 10}, ${hsl.s}%, ${hsl.l}%, 0.5)`,
+                '--pricing-border-color-hover': `hsl(${hsl.h - 10}, ${hsl.s}%, ${hsl.l}%, 0.8)`
               } as React.CSSProperties;
 
               return (
@@ -245,7 +247,9 @@ export function PricingPackagesDisplay({
               '--pricing-accent-light': `${hsl.l}%`,
               '--pricing-accent': `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`,
               '--pricing-accent-dark': `hsl(${hsl.h - 5}, ${Math.round(hsl.s / 2)}%, 20%)`,
-              '--pricing-accent-light': `hsl(${hsl.h + 8}, ${hsl.s + 15}%, 75%)`
+              '--pricing-accent-light': `hsl(${hsl.h + 8}, ${hsl.s + 15}%, 75%)`,
+              '--pricing-border-color': `hsl(${hsl.h - 10}, ${hsl.s}%, ${hsl.l}%, 0.5)`,
+              '--pricing-border-color-hover': `hsl(${hsl.h - 10}, ${hsl.s}%, ${hsl.l}%, 0.8)`
             } as React.CSSProperties;
 
             return (

@@ -32,14 +32,22 @@ Core content is now hardcoded in React components for optimal performance:
 These still use JSON configuration:
 - **Homepage**: Hero slides, services overview, testimonials
 - **Photography Categories**: All 6 static pages use config data
-- **Portfolio**: Featured content and visual settings
-- **Gradients**: All section background colors via database
+- **Portfolio**: Featured content and visual settings (now via Supabase gradients API)
+- **Gradients**: All section background colors via Supabase database
+- **Pricing Packages**: Per-card accent colors stored in `pricing_packages` table
+
+### **Recent Architecture Improvements (September 20, 2025)**
+- **Per-Card Pricing Colors**: Individual accent color control for each pricing tier card
+- **Portfolio Migration**: Moved from JSON config to Supabase gradients API
+- **Enhanced Color System**: 8-color palette with HSL manipulation for sophisticated color schemes
+- **CategoryNavigation Component**: Reusable navigation for photography/videography categories
 
 ### **Key Benefits**
 - ✅ Faster page loads (no config loading delays)
 - ✅ Simpler deployments (no JSON sync issues)
 - ✅ Better reliability (eliminates config corruption)
-- ✅ Visual customization preserved (gradients still work)
+- ✅ Visual customization preserved (gradients + per-card colors)
+- ✅ Granular design control (individual card accent colors)
 
 ---
 
@@ -601,6 +609,10 @@ docker-compose exec postgres psql -U postgres -d slyfox_studios
 - **Dynamic Content Configuration**: Hero slides, company info, and page settings management with atomic file persistence
 - **Visual Content Editing**: Drag-and-drop image uploads with thumbnail management
 - **Real-time Configuration**: Changes reflect immediately across all pages and survive deployments
+- **Per-Card Pricing Colors**: Individual accent color control for each pricing tier card with HSL manipulation
+- **Enhanced Gradient Picker**: 8-color palette with real-time text color feedback in admin interface
+- **Portfolio Supabase Migration**: Portfolio settings moved from JSON to database with auto-save
+- **CategoryNavigation Component**: Reusable navigation for photography/videography category pages
 - **Image upload, organization, and sequence management**
 - **SEO-optimized gallery URLs with slug-based routing**
 - **Analytics tracking for user interactions**

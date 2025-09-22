@@ -1316,8 +1316,8 @@
       hsl(0, 0%, 15%) 100%
     );
     
-    /* Border: Accent at 30% opacity for subtle definition */
-    border: 2px solid hsl(var(--pricing-accent-hue), var(--pricing-accent-sat), var(--pricing-accent-light), 0.3);
+    /* Border: 1px at 50% opacity with hue shift opposite to title (-10 degrees) */
+    border: 1px solid var(--pricing-border-color);
     
     /* Shadow: Base + accent glow */
     box-shadow: 
@@ -1330,7 +1330,7 @@
     box-shadow: 
       0 20px 60px rgba(0, 0, 0, 0.6), 
       0 0 40px hsl(var(--pricing-accent-hue), var(--pricing-accent-sat), var(--pricing-accent-light), 0.4);
-    border-color: hsl(var(--pricing-accent-hue), var(--pricing-accent-sat), var(--pricing-accent-light), 0.8);
+    border-color: var(--pricing-border-color-hover);
   }
 
   /* Card Title: Solid accent color for visibility */
