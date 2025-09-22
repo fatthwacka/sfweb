@@ -72,6 +72,28 @@ export function GradientPicker({
   const displayLabel = label || formatSectionTitle(sectionKey);
   const displayTitle = title || displayLabel;
 
+  // Helper function to convert CSS variables to actual colors for display
+  const getDisplayColor = (colorValue: string | undefined, fallback: string = '#ffffff'): string => {
+    if (!colorValue) return fallback;
+    
+    // Handle CSS variables by mapping to actual theme colors
+    if (colorValue.includes('var(')) {
+      if (colorValue.includes('salmon')) return '#e34e26'; // Updated salmon (more red, darker)
+      if (colorValue.includes('cyan')) return '#0d9b8f'; // Updated cyan (more green, darker)
+      if (colorValue.includes('accent-1')) return '#e34e26'; // New accent-1 (warm red-orange)
+      if (colorValue.includes('accent-2')) return '#0d9b8f'; // New accent-2 (teal-green)
+      if (colorValue.includes('white')) return '#ffffff';
+      if (colorValue.includes('light-1')) return '#e2e8f0';
+      if (colorValue.includes('light-2')) return '#bfc8d4';
+      if (colorValue.includes('dark-1')) return '#4b475c';
+      if (colorValue.includes('dark-2')) return '#373f49';
+      return fallback;
+    }
+    
+    // Return hex colors as-is
+    return colorValue;
+  };
+
   // UNIFIED HOOK SYSTEM - Single source of truth for gradient data and updates
   const { 
     getGradient, 
@@ -248,34 +270,86 @@ export function GradientPicker({
             <div className="space-y-2">
               <Label className="text-white text-xs font-medium">{displayTitle} Preview</Label>
               <div 
-                className="w-full h-8 rounded border-2 border-white/50 shadow-lg"
+                className="w-full h-8 rounded border border-slate-400/40 shadow-lg"
                 style={previewStyle}
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-white text-xs font-medium">Main Title Text</Label>
-              <div className="flex gap-1">
-                <div
-                  className={`flex-1 h-8 rounded cursor-pointer transition-all hover:scale-105 border-2 bg-theme-salmon ${
-                    (gradient.textColors?.primary === 'var(--color-salmon)' || gradient.textColors?.primary === 'var(--salmon)') ? 'border-white' : 'border-slate-500'
-                  }`}
-                  onClick={() => updateTextColorLocal('primary', 'var(--color-salmon)')}
-                  title="Theme Primary Color (Salmon)"
-                />
-                <div
-                  className={`flex-1 h-8 rounded cursor-pointer transition-all hover:scale-105 border-2 bg-theme-cyan ${
-                    (gradient.textColors?.primary === 'var(--color-cyan)' || gradient.textColors?.primary === 'var(--cyan)') ? 'border-white' : 'border-slate-500'
-                  }`}
-                  onClick={() => updateTextColorLocal('primary', 'var(--color-cyan)')}
-                  title="Theme Secondary Color (Cyan)"
-                />
-                <input
-                  type="color"
-                  value={gradient.textColors?.primary?.startsWith('var(') ? '#ffffff' : (gradient.textColors?.primary || '#ffffff')}
-                  onChange={(e) => updateTextColorLocal('primary', e.target.value)}
-                  className="flex-1 h-8 rounded cursor-pointer custom-color-input border-2 border-slate-500 hover:border-slate-400 transition-colors"
-                  title="Custom Color Picker"
-                />
+              <Label 
+                className="text-xs font-medium transition-colors duration-200"
+                style={{ color: getDisplayColor(gradient.textColors?.primary, '#ffffff') }}
+              >
+                Main Title Text
+              </Label>
+              <div className="w-full h-8 rounded border border-slate-400/40 bg-black/30 p-1 flex items-center justify-center">
+                <div className="grid grid-cols-8 gap-1 items-center justify-items-center w-full">
+                  {/* Single row: White → Light-1 → Light-2 → Dark-1 → Dark-2 → Salmon → Cyan → Custom Picker */}
+                  <div
+                    className={`h-5 w-5 rounded cursor-pointer transition-all hover:scale-110 border border-slate-400/40 ${
+                      gradient.textColors?.primary === 'var(--color-white)' ? 'swatch-selected' : ''
+                    }`}
+                    style={{ backgroundColor: '#ffffff' }}
+                    onClick={() => updateTextColorLocal('primary', 'var(--color-white)')}
+                    title="Pure White"
+                  />
+                  <div
+                    className={`h-5 w-5 rounded cursor-pointer transition-all hover:scale-110 border border-slate-400/40 ${
+                      gradient.textColors?.primary === 'var(--color-light-1)' ? 'swatch-selected' : ''
+                    }`}
+                    style={{ backgroundColor: '#e2e8f0' }}
+                    onClick={() => updateTextColorLocal('primary', 'var(--color-light-1)')}
+                    title="Light Blue 1"
+                  />
+                  <div
+                    className={`h-5 w-5 rounded cursor-pointer transition-all hover:scale-110 border border-slate-400/40 ${
+                      gradient.textColors?.primary === 'var(--color-light-2)' ? 'swatch-selected' : ''
+                    }`}
+                    style={{ backgroundColor: '#bfc8d4' }}
+                    onClick={() => updateTextColorLocal('primary', 'var(--color-light-2)')}
+                    title="Light Blue 2"
+                  />
+                  <div
+                    className={`h-5 w-5 rounded cursor-pointer transition-all hover:scale-110 border border-slate-400/40 ${
+                      gradient.textColors?.primary === 'var(--color-dark-1)' ? 'swatch-selected' : ''
+                    }`}
+                    style={{ backgroundColor: '#4b475c' }}
+                    onClick={() => updateTextColorLocal('primary', 'var(--color-dark-1)')}
+                    title="Dark Purple Gray"
+                  />
+                  <div
+                    className={`h-5 w-5 rounded cursor-pointer transition-all hover:scale-110 border border-slate-400/40 ${
+                      gradient.textColors?.primary === 'var(--color-dark-2)' ? 'swatch-selected' : ''
+                    }`}
+                    style={{ backgroundColor: '#373f49' }}
+                    onClick={() => updateTextColorLocal('primary', 'var(--color-dark-2)')}
+                    title="Dark Blue Gray"
+                  />
+                  <div
+                    className={`h-5 w-5 rounded cursor-pointer transition-all hover:scale-110 border border-slate-400/40 bg-theme-accent-1 ${
+                      gradient.textColors?.primary === 'var(--color-accent-1)' ? 'swatch-selected' : ''
+                    }`}
+                    onClick={() => updateTextColorLocal('primary', 'var(--color-accent-1)')}
+                    title="Accent 1 (Warm)"
+                  />
+                  <div
+                    className={`h-5 w-5 rounded cursor-pointer transition-all hover:scale-110 border border-slate-400/40 bg-theme-accent-2 ${
+                      gradient.textColors?.primary === 'var(--color-accent-2)' ? 'swatch-selected' : ''
+                    }`}
+                    onClick={() => updateTextColorLocal('primary', 'var(--color-accent-2)')}
+                    title="Accent 2 (Cool)"
+                  />
+                  <div className="relative h-5 w-5">
+                    <div className="absolute inset-0 rounded bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 via-indigo-500 to-purple-500 p-0.5">
+                      <input
+                        type="color"
+                        value={gradient.textColors?.primary?.startsWith('var(') ? '#ffffff' : (gradient.textColors?.primary || '#ffffff')}
+                        onChange={(e) => updateTextColorLocal('primary', e.target.value)}
+                        className="h-full w-full rounded cursor-pointer custom-color-input border-0"
+                        title="Custom Color Picker"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -289,49 +363,101 @@ export function GradientPicker({
                   type="color"
                   value={gradient.startColor || '#1e293b'}
                   onChange={(e) => updateGradientLocal({ startColor: e.target.value })}
-                  className="flex-1 h-8 rounded cursor-pointer custom-color-input border-2 border-white/30 shadow-md"
+                  className="flex-1 h-8 rounded cursor-pointer custom-color-input border border-slate-400/40 shadow-md"
                   title="Start Color"
                 />
                 <input
                   type="color"
                   value={gradient.middleColor || '#334155'}
                   onChange={(e) => updateGradientLocal({ middleColor: e.target.value })}
-                  className="flex-1 h-8 rounded cursor-pointer custom-color-input border-2 border-white/30 shadow-md"
+                  className="flex-1 h-8 rounded cursor-pointer custom-color-input border border-slate-400/40 shadow-md"
                   title="Middle Color"
                 />
                 <input
                   type="color"
                   value={gradient.endColor || '#0f172a'}
                   onChange={(e) => updateGradientLocal({ endColor: e.target.value })}
-                  className="flex-1 h-8 rounded cursor-pointer custom-color-input border-2 border-white/30 shadow-md"
+                  className="flex-1 h-8 rounded cursor-pointer custom-color-input border border-slate-400/40 shadow-md"
                   title="End Color"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-white text-xs font-medium">Section Subtitle</Label>
-              <div className="flex gap-1">
-                <div
-                  className={`flex-1 h-8 rounded cursor-pointer transition-all hover:scale-105 border-2 bg-theme-salmon ${
-                    (gradient.textColors?.secondary === 'var(--color-salmon)' || gradient.textColors?.secondary === 'var(--salmon)') ? 'border-white' : 'border-slate-500'
-                  }`}
-                  onClick={() => updateTextColorLocal('secondary', 'var(--color-salmon)')}
-                  title="Theme Primary Color (Salmon)"
-                />
-                <div
-                  className={`flex-1 h-8 rounded cursor-pointer transition-all hover:scale-105 border-2 bg-theme-cyan ${
-                    (gradient.textColors?.secondary === 'var(--color-cyan)' || gradient.textColors?.secondary === 'var(--cyan)') ? 'border-white' : 'border-slate-500'
-                  }`}
-                  onClick={() => updateTextColorLocal('secondary', 'var(--color-cyan)')}
-                  title="Theme Secondary Color (Cyan)"
-                />
-                <input
-                  type="color"
-                  value={gradient.textColors?.secondary?.startsWith('var(') ? '#e2e8f0' : (gradient.textColors?.secondary || '#e2e8f0')}
-                  onChange={(e) => updateTextColorLocal('secondary', e.target.value)}
-                  className="flex-1 h-8 rounded cursor-pointer custom-color-input border-2 border-slate-500 hover:border-slate-400 transition-colors"
-                  title="Custom Color Picker"
-                />
+              <Label 
+                className="text-xs font-medium transition-colors duration-200"
+                style={{ color: getDisplayColor(gradient.textColors?.secondary, '#e2e8f0') }}
+              >
+                Section Subtitle
+              </Label>
+              <div className="w-full h-8 rounded border border-slate-400/40 bg-black/30 p-1 flex items-center justify-center">
+                <div className="grid grid-cols-8 gap-1 items-center justify-items-center w-full">
+                  {/* Single row: White → Light-1 → Light-2 → Dark-1 → Dark-2 → Salmon → Cyan → Custom Picker */}
+                  <div
+                    className={`h-5 w-5 rounded cursor-pointer transition-all hover:scale-110 border border-slate-400/40 ${
+                      gradient.textColors?.secondary === 'var(--color-white)' ? 'swatch-selected' : ''
+                    }`}
+                    style={{ backgroundColor: '#ffffff' }}
+                    onClick={() => updateTextColorLocal('secondary', 'var(--color-white)')}
+                    title="Pure White"
+                  />
+                  <div
+                    className={`h-5 w-5 rounded cursor-pointer transition-all hover:scale-110 border border-slate-400/40 ${
+                      gradient.textColors?.secondary === 'var(--color-light-1)' ? 'swatch-selected' : ''
+                    }`}
+                    style={{ backgroundColor: '#e2e8f0' }}
+                    onClick={() => updateTextColorLocal('secondary', 'var(--color-light-1)')}
+                    title="Light Blue 1"
+                  />
+                  <div
+                    className={`h-5 w-5 rounded cursor-pointer transition-all hover:scale-110 border border-slate-400/40 ${
+                      gradient.textColors?.secondary === 'var(--color-light-2)' ? 'swatch-selected' : ''
+                    }`}
+                    style={{ backgroundColor: '#bfc8d4' }}
+                    onClick={() => updateTextColorLocal('secondary', 'var(--color-light-2)')}
+                    title="Light Blue 2"
+                  />
+                  <div
+                    className={`h-5 w-5 rounded cursor-pointer transition-all hover:scale-110 border border-slate-400/40 ${
+                      gradient.textColors?.secondary === 'var(--color-dark-1)' ? 'swatch-selected' : ''
+                    }`}
+                    style={{ backgroundColor: '#4b475c' }}
+                    onClick={() => updateTextColorLocal('secondary', 'var(--color-dark-1)')}
+                    title="Dark Purple Gray"
+                  />
+                  <div
+                    className={`h-5 w-5 rounded cursor-pointer transition-all hover:scale-110 border border-slate-400/40 ${
+                      gradient.textColors?.secondary === 'var(--color-dark-2)' ? 'swatch-selected' : ''
+                    }`}
+                    style={{ backgroundColor: '#373f49' }}
+                    onClick={() => updateTextColorLocal('secondary', 'var(--color-dark-2)')}
+                    title="Dark Blue Gray"
+                  />
+                  <div
+                    className={`h-5 w-5 rounded cursor-pointer transition-all hover:scale-105 border bg-theme-accent-1 ${
+                      gradient.textColors?.secondary === 'var(--color-accent-1)' ? 'swatch-selected' : ''
+                    }`}
+                    onClick={() => updateTextColorLocal('secondary', 'var(--color-accent-1)')}
+                    title="Accent 1 (Warm)"
+                  />
+                  <div
+                    className={`h-5 w-5 rounded cursor-pointer transition-all hover:scale-105 border bg-theme-accent-2 ${
+                      gradient.textColors?.secondary === 'var(--color-accent-2)' ? 'swatch-selected' : ''
+                    }`}
+                    onClick={() => updateTextColorLocal('secondary', 'var(--color-accent-2)')}
+                    title="Accent 2 (Cool)"
+                  />
+                  <div className="relative h-5 w-5">
+                    <div className="absolute inset-0 rounded bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 via-indigo-500 to-purple-500 p-0.5">
+                      <input
+                        type="color"
+                        value={gradient.textColors?.secondary?.startsWith('var(') ? '#e2e8f0' : (gradient.textColors?.secondary || '#e2e8f0')}
+                        onChange={(e) => updateTextColorLocal('secondary', e.target.value)}
+                        className="h-full w-full rounded cursor-pointer custom-color-input border-0"
+                        title="Custom Color Picker"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -345,7 +471,7 @@ export function GradientPicker({
                   value={gradient.direction} 
                   onValueChange={(value) => updateGradientLocal({ direction: value })}
                 >
-                  <SelectTrigger className="bg-slate-800/80 border-white/30 text-white h-8 shadow-md">
+                  <SelectTrigger className="bg-slate-800/80 border-slate-400/40 text-white h-8 shadow-md">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-slate-600">
@@ -359,29 +485,81 @@ export function GradientPicker({
               </div>
             )}
             <div className="space-y-2">
-              <Label className="text-white text-xs font-medium">Card Features</Label>
-              <div className="flex gap-1">
-                <div
-                  className={`flex-1 h-8 rounded cursor-pointer transition-all hover:scale-105 border-2 bg-theme-salmon ${
-                    (gradient.textColors?.tertiary === 'var(--color-salmon)' || gradient.textColors?.tertiary === 'var(--salmon)') ? 'border-white' : 'border-slate-500'
-                  }`}
-                  onClick={() => updateTextColorLocal('tertiary', 'var(--color-salmon)')}
-                  title="Theme Primary Color (Salmon)"
-                />
-                <div
-                  className={`flex-1 h-8 rounded cursor-pointer transition-all hover:scale-105 border-2 bg-theme-cyan ${
-                    (gradient.textColors?.tertiary === 'var(--color-cyan)' || gradient.textColors?.tertiary === 'var(--cyan)') ? 'border-white' : 'border-slate-500'
-                  }`}
-                  onClick={() => updateTextColorLocal('tertiary', 'var(--color-cyan)')}
-                  title="Theme Secondary Color (Cyan)"
-                />
-                <input
-                  type="color"
-                  value={gradient.textColors?.tertiary?.startsWith('var(') ? '#94a3b8' : (gradient.textColors?.tertiary || '#94a3b8')}
-                  onChange={(e) => updateTextColorLocal('tertiary', e.target.value)}
-                  className="flex-1 h-8 rounded cursor-pointer custom-color-input border-2 border-slate-500 hover:border-slate-400 transition-colors"
-                  title="Custom Color Picker"
-                />
+              <Label 
+                className="text-xs font-medium transition-colors duration-200"
+                style={{ color: getDisplayColor(gradient.textColors?.tertiary, '#94a3b8') }}
+              >
+                Card Features
+              </Label>
+              <div className="w-full h-8 rounded border border-slate-400/40 bg-black/30 p-1 flex items-center justify-center">
+                <div className="grid grid-cols-8 gap-1 items-center justify-items-center w-full">
+                  {/* Single row: White → Light-1 → Light-2 → Dark-1 → Dark-2 → Salmon → Cyan → Custom Picker */}
+                  <div
+                    className={`h-5 w-5 rounded cursor-pointer transition-all hover:scale-110 border border-slate-400/40 ${
+                      gradient.textColors?.tertiary === 'var(--color-white)' ? 'swatch-selected' : ''
+                    }`}
+                    style={{ backgroundColor: '#ffffff' }}
+                    onClick={() => updateTextColorLocal('tertiary', 'var(--color-white)')}
+                    title="Pure White"
+                  />
+                  <div
+                    className={`h-5 w-5 rounded cursor-pointer transition-all hover:scale-110 border border-slate-400/40 ${
+                      gradient.textColors?.tertiary === 'var(--color-light-1)' ? 'swatch-selected' : ''
+                    }`}
+                    style={{ backgroundColor: '#e2e8f0' }}
+                    onClick={() => updateTextColorLocal('tertiary', 'var(--color-light-1)')}
+                    title="Light Blue 1"
+                  />
+                  <div
+                    className={`h-5 w-5 rounded cursor-pointer transition-all hover:scale-110 border border-slate-400/40 ${
+                      gradient.textColors?.tertiary === 'var(--color-light-2)' ? 'swatch-selected' : ''
+                    }`}
+                    style={{ backgroundColor: '#bfc8d4' }}
+                    onClick={() => updateTextColorLocal('tertiary', 'var(--color-light-2)')}
+                    title="Light Blue 2"
+                  />
+                  <div
+                    className={`h-5 w-5 rounded cursor-pointer transition-all hover:scale-110 border border-slate-400/40 ${
+                      gradient.textColors?.tertiary === 'var(--color-dark-1)' ? 'swatch-selected' : ''
+                    }`}
+                    style={{ backgroundColor: '#4b475c' }}
+                    onClick={() => updateTextColorLocal('tertiary', 'var(--color-dark-1)')}
+                    title="Dark Purple Gray"
+                  />
+                  <div
+                    className={`h-5 w-5 rounded cursor-pointer transition-all hover:scale-110 border border-slate-400/40 ${
+                      gradient.textColors?.tertiary === 'var(--color-dark-2)' ? 'swatch-selected' : ''
+                    }`}
+                    style={{ backgroundColor: '#373f49' }}
+                    onClick={() => updateTextColorLocal('tertiary', 'var(--color-dark-2)')}
+                    title="Dark Blue Gray"
+                  />
+                  <div
+                    className={`h-5 w-5 rounded cursor-pointer transition-all hover:scale-105 border bg-theme-accent-1 ${
+                      gradient.textColors?.tertiary === 'var(--color-accent-1)' ? 'swatch-selected' : ''
+                    }`}
+                    onClick={() => updateTextColorLocal('tertiary', 'var(--color-accent-1)')}
+                    title="Accent 1 (Warm)"
+                  />
+                  <div
+                    className={`h-5 w-5 rounded cursor-pointer transition-all hover:scale-105 border bg-theme-accent-2 ${
+                      gradient.textColors?.tertiary === 'var(--color-accent-2)' ? 'swatch-selected' : ''
+                    }`}
+                    onClick={() => updateTextColorLocal('tertiary', 'var(--color-accent-2)')}
+                    title="Accent 2 (Cool)"
+                  />
+                  <div className="relative h-5 w-5">
+                    <div className="absolute inset-0 rounded bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 via-indigo-500 to-purple-500 p-0.5">
+                      <input
+                        type="color"
+                        value={gradient.textColors?.tertiary?.startsWith('var(') ? '#94a3b8' : (gradient.textColors?.tertiary || '#94a3b8')}
+                        onChange={(e) => updateTextColorLocal('tertiary', e.target.value)}
+                        className="h-full w-full rounded cursor-pointer custom-color-input border-0"
+                        title="Custom Color Picker"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -392,7 +570,7 @@ export function GradientPicker({
           {/* Gradient Preview */}
           <div className="space-y-2">
             <div 
-              className="w-full h-8 rounded border-2 border-white/50 shadow-lg"
+              className="w-full h-8 rounded border border-slate-400/40 shadow-lg"
               style={previewStyle}
             />
           </div>

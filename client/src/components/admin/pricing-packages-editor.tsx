@@ -29,6 +29,33 @@ export function PricingPackagesEditor({
   const [pricingPackage, setPricingPackage] = useState<PricingPackage | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [saveTimeoutId, setSaveTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  // Function to convert hex to HSL
+  const hexToHsl = (hex: string) => {
+    const r = parseInt(hex.slice(1, 3), 16) / 255;
+    const g = parseInt(hex.slice(3, 5), 16) / 255;
+    const b = parseInt(hex.slice(5, 7), 16) / 255;
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0, s = 0, l = (max + min) / 2;
+
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+
+    return {
+      h: Math.round(h * 360),
+      s: Math.round(s * 100),
+      l: Math.round(l * 100)
+    };
+  };
 
   // Load pricing package data
   useEffect(() => {
@@ -50,6 +77,9 @@ export function PricingPackagesEditor({
         updated_at: undefined,
         id: undefined
       };
+
+      console.log('Saving pricing package:', cleanPackage);
+      console.log('Tiers being saved:', cleanPackage.tiers);
 
       const response = await fetch(`/api/pricing-packages/${pageIdentifier}`, {
         method: 'PATCH',
@@ -124,6 +154,7 @@ export function PricingPackagesEditor({
               featured: false,
               featured_text: '',
               description: 'Perfect for smaller events and intimate gatherings',
+              accent_color: '#ff6b6b', // Salmon for basic tier
               features: [
                 'Professional photographer',
                 'Up to 100 edited images',
@@ -139,6 +170,7 @@ export function PricingPackagesEditor({
               featured: true,
               featured_text: 'Most Popular',
               description: 'Our most popular package with extended coverage',
+              accent_color: '#4ecdc4', // Cyan for premium tier
               features: [
                 'Professional photographer',
                 'Up to 200 edited images',
@@ -156,6 +188,7 @@ export function PricingPackagesEditor({
               featured: false,
               featured_text: '',
               description: 'Complete premium service for your special day',
+              accent_color: '#a855f7', // Purple for luxury tier
               features: [
                 'Lead + assistant photographer',
                 'Up to 400 edited images',
@@ -186,6 +219,7 @@ export function PricingPackagesEditor({
               featured: false,
               featured_text: '',
               description: 'Perfect for smaller events and intimate gatherings',
+              accent_color: '#ff6b6b', // Salmon for basic tier
               features: [
                 'Professional photographer',
                 'Up to 100 edited images',
@@ -201,6 +235,7 @@ export function PricingPackagesEditor({
               featured: true,
               featured_text: 'Most Popular',
               description: 'Our most popular package with extended coverage',
+              accent_color: '#4ecdc4', // Cyan for premium tier
               features: [
                 'Professional photographer',
                 'Up to 200 edited images',
@@ -218,6 +253,7 @@ export function PricingPackagesEditor({
               featured: false,
               featured_text: '',
               description: 'Complete premium service for your special day',
+              accent_color: '#a855f7', // Purple for luxury tier
               features: [
                 'Lead + assistant photographer',
                 'Up to 400 edited images',
@@ -345,6 +381,7 @@ export function PricingPackagesEditor({
           />
         </CardContent>
       </Card>
+
 
       {/* Pricing Tiers */}
       <Card>
@@ -573,8 +610,26 @@ export function PricingPackagesEditor({
                         })}
                       </div>
 
-                      {/* Simple CTA Button Preview */}
+                      {/* Card Accent Color Picker */}
                       <div className="mt-4 pt-3 border-t">
+                        <div className="mb-3">
+                          <Label className="text-xs font-medium mb-2 block">Card Color</Label>
+                          <div className="relative">
+                            <input
+                              type="color"
+                              value={tier.accent_color || '#a855f7'}
+                              onChange={(e) => {
+                                console.log('Setting accent color:', e.target.value, 'for tier:', tierIndex);
+                                updateTier(tierIndex, { accent_color: e.target.value });
+                                setHasChanges(true);
+                              }}
+                              className="w-full h-10 rounded-lg border-2 border-gray-600 cursor-pointer hover:border-gray-400 transition-all"
+                              title="Choose card accent color"
+                            />
+                          </div>
+                        </div>
+                        
+                        {/* Simple CTA Button Preview */}
                         <Button
                           className="w-full text-white font-semibold py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700"
                           disabled

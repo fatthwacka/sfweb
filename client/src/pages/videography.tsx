@@ -5,47 +5,48 @@ import { Link } from "wouter";
 import { Video, ArrowRight } from "lucide-react";
 import { YouTubeHero } from "@/components/common/youtube-hero";
 import { GradientBackground } from "@/components/common/gradient-background";
+import { CategoryNavigation } from "@/components/common/category-navigation";
 
 const videographyCategories = [
   {
-    name: "Wedding Films",
+    name: "Weddings",
     slug: "weddings",
-    description: "Cinematic wedding films that tell your love story beautifully",
+    description: "Cinematic films that tell your love story",
     image: "/images/hero/wedding-videography-hero.jpg",
-    features: ["Ceremony filming", "Dressing room shots", "Drone footage", "Reception coverage"]
+    features: ["Ceremony", "Reception", "Drone", "Family"]
   },
   {
-    name: "Corporate Videos",
+    name: "Corporate",
     slug: "corporate",
-    description: "Professional corporate videos that elevate your company's status",
+    description: "Videos that elevate your business",
     image: "/images/hero/corporate-videography-hero.jpg",
-    features: ["Company overview", "Training/Team Building", "Interviews", "Adverts & Promo content"]
+    features: ["Company intro", "Adverts & Promo", "Conferences", "Interviews"]
   },
   {
     name: "Events",
     slug: "events",
-    description: "Dynamic event videography capturing every glistening moment",
+    description: "Capturing every glistening moment",
     image: "/images/hero/events-videography-hero.jpg",
     features: ["Conferences", "Music Festivals", "Birthdays", "Functions"]
   },
   {
     name: "Product Videos",
     slug: "products",
-    description: "Compelling product videos that showcase features and benefits",
+    description: "Showcase features and benefits",
     image: "/images/hero/product-videography-hero.jpg",
-    features: ["Product demonstrations", "Unboxing videos", "Commercial spots", "360° product views"]
+    features: ["Product adverts", "Lifestyle uses", "Unboxing", "360° product"]
   },
   {
     name: "Social Media",
     slug: "social",
-    description: "Engaging social media content optimised for all platforms",
+    description: "Engaging social media content production",
     image: "/images/hero/social-media-videography-hero.jpg",
     features: ["Instagram Reels", "TikTok content", "Facebook videos", "YouTube shorts"]
   },
   {
     name: "Animation",
     slug: "animation",
-    description: "Creative animation and motion graphics for visual impact",
+    description: "Motion graphics for visual impact",
     image: "/images/hero/animation-videography-hero.jpg",
     features: ["Logo Builds", "Explainer videos", "Character animation", "3D renders"]
   }
@@ -74,15 +75,28 @@ export default function Videography() {
       <GradientBackground section="videography-landing-services" className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="cyan text-4xl lg:text-5xl mb-6">
+            <h2 className="text-4xl lg:text-5xl mb-6">
               Our <span>Videography Services</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            <h3 className="text-xl max-w-3xl mx-auto">
               From intimate wedding films to dynamic corporate content, we create videos that engage, inspire, and deliver results.
-            </p>
+            </h3>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          {/* Quick Navigation */}
+          <CategoryNavigation 
+            categories={[
+              { name: "Weddings", slug: "weddings", shortName: "Weddings" },
+              { name: "Corporate", slug: "corporate", shortName: "Corporate" },
+              { name: "Events", slug: "events", shortName: "Events" },
+              { name: "Product Videos", slug: "products", shortName: "Products" },
+              { name: "Social Media", slug: "social", shortName: "Social" },
+              { name: "Animation", slug: "animation", shortName: "Animation" }
+            ]}
+            basePath="videography"
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {videographyCategories.map((category, index) => (
               <Link key={category.slug} href={`/videography/${category.slug}`}>
                 <div className="group cursor-pointer bg-gradient-to-br from-slate-800/60 to-gray-900/80 rounded-2xl overflow-hidden shadow-2xl hover:shadow-gold/20 transition-all duration-500 transform hover:scale-[1.02]">
@@ -94,18 +108,18 @@ export default function Videography() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <Video className="w-12 h-12 icon-salmon" />
+                      <Video className="w-12 h-12" />
                     </div>
                   </div>
                   
-                  <div className="p-8">
-                    <h3 className="text-2xl text-gold mb-4">{category.name}</h3>
-                    <p className="text-muted-foreground mb-6">{category.description}</p>
+                  <div className="p-8 pb-6">
+                    <h3 className="text-2xl mb-4">{category.name}</h3>
+                    <p className="mb-6 text-muted-foreground">{category.description}</p>
                     
                     <div className="grid grid-cols-2 gap-2 mb-6">
                       {category.features.map((feature, featureIndex) => (
                         <div key={featureIndex} className="flex items-center text-sm text-muted-foreground">
-                          <div className="w-2 h-2 bg-salmon rounded-full mr-2 flex-shrink-0"></div>
+                          <div className="w-1.5 h-1.5 rounded-full mr-2 flex-shrink-0 bullet-point-accent"></div>
                           {feature}
                         </div>
                       ))}
@@ -124,11 +138,11 @@ export default function Videography() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6">
-              Our Video <span className="text-gold">Process</span>
+              Our Video <span>Process</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            <h3 className="text-xl max-w-3xl mx-auto">
               From concept to delivery, we ensure every video project exceeds expectations.
-            </p>
+            </h3>
           </div>
 
           <div className="grid md:grid-cols-4 gap-8">
@@ -156,11 +170,11 @@ export default function Videography() {
             ].map((item, index) => (
               <div key={index} className="text-center">
                 <div className="inline-block mb-6">
-                  <div className="text-6xl font-bold bg-gradient-to-r from-cyan via-purple-400 to-salmon bg-clip-text text-transparent">
+                  <div className="text-6xl font-bold">
                     {item.step}
                   </div>
                 </div>
-                <h3 className="text-xl text-gold mb-4">{item.title}</h3>
+                <h3 className="text-xl mb-4">{item.title}</h3>
                 <p className="text-muted-foreground">{item.description}</p>
               </div>
             ))}
@@ -171,12 +185,12 @@ export default function Videography() {
       {/* Call to Action */}
       <GradientBackground section="videography-landing-cta" className="py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl mb-6 h2-cyan">
+          <h2 className="text-4xl mb-6">
             Ready to Create Your Video?
           </h2>
-          <p className="text-xl text-muted-foreground mb-8">
+          <h3 className="text-xl mb-8">
             Let's discuss your videography needs and bring your vision to life with cinematic quality.
-          </p>
+          </h3>
           <div className="flex flex-row gap-4 justify-center">
             <Link href="/contact">
               <Button className="btn-cyan">

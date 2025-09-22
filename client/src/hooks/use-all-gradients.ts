@@ -42,6 +42,7 @@ export function useAllGradients() {
   const queryClient = useQueryClient();
   const [isPortfolioSaving, setIsPortfolioSaving] = useState(false);
   const portfolioDebounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const portfolioSpinnerTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // AGGRESSIVE CACHING: 15min stale time, 30min cache retention, no window focus refetch
   const { data: allGradients, isLoading, error } = useQuery({
@@ -125,6 +126,14 @@ export function useAllGradients() {
       }
       console.error(`Failed to update gradient config for ${variables.sectionKey}:`, error);
     },
+    onError: (error, variables, context) => {
+      // Rollback optimistic updates on error
+      if (context?.previousGradients) {
+        queryClient.setQueryData(['gradients', 'all'], context.previousGradients);
+      }
+      setIsPortfolioSaving(false);
+      console.error(`Failed to update gradient config for ${variables.sectionKey}:`, error);
+    },
     onSettled: () => {
       // Simple invalidation - let React Query handle the rest efficiently
       queryClient.invalidateQueries(['gradients', 'all']);
@@ -175,30 +184,50 @@ export function useAllGradients() {
   };
 
   const updatePortfolioSettings = useCallback((settings: Partial<GradientConfig['portfolioSettings']>) => {
-    // Clear existing timeout
+    // OPTION 4: Immediate Optimistic + Background Sync
+    
+    // 1. Immediate optimistic update - no delays, instant UI response
+    const currentGradients = queryClient.getQueryData(['gradients', 'all']) as AllGradientsResponse || {};
+    const currentPortfolio = currentGradients.portfolio || getDefaultGradient('portfolio');
+    const newSettings = { ...currentPortfolio.portfolioSettings, ...settings };
+    
+    // Update React Query cache immediately for instant UI feedback
+    queryClient.setQueryData(['gradients', 'all'], {
+      ...currentGradients,
+      portfolio: { ...currentPortfolio, portfolioSettings: newSettings }
+    });
+
+    // 2. Clear previous timeouts (proper debounce behavior)
     if (portfolioDebounceTimeoutRef.current) {
       clearTimeout(portfolioDebounceTimeoutRef.current);
     }
+    if (portfolioSpinnerTimeoutRef.current) {
+      clearTimeout(portfolioSpinnerTimeoutRef.current);
+    }
 
-    // Set saving state after 1500ms delay
+    // Reset spinner state
+    setIsPortfolioSaving(false);
+
+    // 3. Background save with proper debounce (resets on each change)
     portfolioDebounceTimeoutRef.current = setTimeout(() => {
-      setIsPortfolioSaving(true);
-    }, 1500);
-
-    // Set another timeout for actual save after 2000ms total
-    setTimeout(() => {
-      const currentGradient = getGradient('portfolio');
-      const currentPortfolioSettings = currentGradient.portfolioSettings || {};
-      const updatedPortfolioSettings = { ...currentPortfolioSettings, ...settings };
+      // Show spinner briefly before save (300ms delay)
+      portfolioSpinnerTimeoutRef.current = setTimeout(() => {
+        setIsPortfolioSaving(true);
+      }, 300);
       
-      updateGradient.mutate({ 
-        sectionKey: 'portfolio', 
-        gradientConfig: { 
-          portfolioSettings: updatedPortfolioSettings 
-        } 
-      });
-    }, 2000);
-  }, [updateGradient, getGradient]);
+      // Actual save after spinner delay
+      setTimeout(() => {
+        // Get final state at save time (fresh, not stale closure)
+        const finalGradients = queryClient.getQueryData(['gradients', 'all']) as AllGradientsResponse || {};
+        const finalPortfolio = finalGradients.portfolio || getDefaultGradient('portfolio');
+        
+        updateGradient.mutate({ 
+          sectionKey: 'portfolio', 
+          gradientConfig: { portfolioSettings: finalPortfolio.portfolioSettings } 
+        });
+      }, 300); // Brief spinner delay
+    }, 2000); // True debounce - resets with each change
+  }, [queryClient, updateGradient]);
 
   return {
     // Data access - REACTIVE: These values change when React Query updates

@@ -76,12 +76,54 @@ export function PricingPackagesDisplay({
             {tiers.map((tier: PricingTier, index: number) => {
               const isHighlighted = isTierHighlighted(tier, index, tiers.length);
 
+              // Convert hex accent color to HSL for CSS variables
+              const hexToHsl = (hex: string) => {
+                const r = parseInt(hex.slice(1, 3), 16) / 255;
+                const g = parseInt(hex.slice(3, 5), 16) / 255;
+                const b = parseInt(hex.slice(5, 7), 16) / 255;
+
+                const max = Math.max(r, g, b);
+                const min = Math.min(r, g, b);
+                let h = 0, s = 0, l = (max + min) / 2;
+
+                if (max !== min) {
+                  const d = max - min;
+                  s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                  switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                  }
+                  h /= 6;
+                }
+
+                return {
+                  h: Math.round(h * 360),
+                  s: Math.round(s * 100),
+                  l: Math.round(l * 100)
+                };
+              };
+
+              // Get accent color from tier data, fallback to purple
+              const accentColor = tier.accent_color || '#a855f7';
+              const hsl = hexToHsl(accentColor);
+
+              // Set CSS variables for this specific card
+              const cardStyle = {
+                '--pricing-accent-hue': hsl.h.toString(),
+                '--pricing-accent-sat': `${hsl.s}%`,
+                '--pricing-accent-light': `${hsl.l}%`,
+                '--pricing-accent': `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`,
+                '--pricing-accent-dark': `hsl(${hsl.h - 5}, ${Math.round(hsl.s / 2)}%, 20%)`,
+                '--pricing-accent-light': `hsl(${hsl.h + 8}, ${hsl.s + 15}%, 75%)`
+              } as React.CSSProperties;
+
               return (
-                <div key={index} className="studio-card-accent relative">
+                <div key={index} className="studio-card-accent relative" style={cardStyle}>
                   {/* Featured Badge */}
                   {tier.featured && tier.featured_text && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center">
+                      <span className="studio-card-featured-badge">
                         <Star className="w-4 h-4 mr-1" />
                         {tier.featured_text}
                       </span>
@@ -164,12 +206,54 @@ export function PricingPackagesDisplay({
           {tiers.map((tier: PricingTier, index: number) => {
             const isHighlighted = isTierHighlighted(tier, index, tiers.length);
 
+            // Convert hex accent color to HSL for CSS variables
+            const hexToHsl = (hex: string) => {
+              const r = parseInt(hex.slice(1, 3), 16) / 255;
+              const g = parseInt(hex.slice(3, 5), 16) / 255;
+              const b = parseInt(hex.slice(5, 7), 16) / 255;
+
+              const max = Math.max(r, g, b);
+              const min = Math.min(r, g, b);
+              let h = 0, s = 0, l = (max + min) / 2;
+
+              if (max !== min) {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                  case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                  case g: h = (b - r) / d + 2; break;
+                  case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+              }
+
+              return {
+                h: Math.round(h * 360),
+                s: Math.round(s * 100),
+                l: Math.round(l * 100)
+              };
+            };
+
+            // Get accent color from tier data, fallback to purple
+            const accentColor = tier.accent_color || '#a855f7';
+            const hsl = hexToHsl(accentColor);
+
+            // Set CSS variables for this specific card
+            const cardStyle = {
+              '--pricing-accent-hue': hsl.h.toString(),
+              '--pricing-accent-sat': `${hsl.s}%`,
+              '--pricing-accent-light': `${hsl.l}%`,
+              '--pricing-accent': `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`,
+              '--pricing-accent-dark': `hsl(${hsl.h - 5}, ${Math.round(hsl.s / 2)}%, 20%)`,
+              '--pricing-accent-light': `hsl(${hsl.h + 8}, ${hsl.s + 15}%, 75%)`
+            } as React.CSSProperties;
+
             return (
-              <div key={index} className="studio-card-accent relative">
+              <div key={index} className="studio-card-accent relative" style={cardStyle}>
                 {/* Featured Badge */}
                 {tier.featured && tier.featured_text && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center">
+                    <span className="studio-card-featured-badge">
                       <Star className="w-4 h-4 mr-1" />
                       {tier.featured_text}
                     </span>

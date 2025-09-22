@@ -338,17 +338,17 @@ export default function VideographyCategory() {
           <div className="videography-about-grid gap-16 items-center">
             <div>
               <h2 className="text-4xl mb-6">
-                <span className="text-salmon">{data.name}</span>
+                {data.name}
               </h2>
-              <p className="text-lg text-muted-foreground mb-8">
+              <h3 className="text-lg mb-8">
                 {data.longDescription}
-              </p>
+              </h3>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {data.features.map((feature, index) => (
-                  <div key={index} className="flex items-center">
-                    <Check className="w-5 h-5 text-cyan mr-3 flex-shrink-0" />
-                    <span className="text-sm">{feature}</span>
+                  <div key={index} className="flex items-center text-sm text-muted-foreground">
+                    <Check className="w-5 h-5 mr-3 flex-shrink-0" />
+                    <span>{feature}</span>
                   </div>
                 ))}
               </div>
@@ -372,12 +372,12 @@ export default function VideographyCategory() {
       <GradientBackground section="videography-category-packages" className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6 h2-cyan">
+            <h2 className="text-4xl lg:text-5xl mb-6">
               {data.name} Packages
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            <h3 className="text-xl max-w-3xl mx-auto">
               Choose the perfect package for your video needs. All packages include professional editing and digital delivery.
-            </p>
+            </h3>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -420,12 +420,12 @@ export default function VideographyCategory() {
       <GradientBackground section="videography-category-recent-work" className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6 h2-salmon">
+            <h2 className="text-4xl lg:text-5xl mb-6">
               Recent Work
             </h2>
-            <p className="text-xl text-muted-foreground">
+            <h3 className="text-xl">
               Browse our latest {data.name.toLowerCase()} projects
-            </p>
+            </h3>
           </div>
 
           {["corporate", "products", "events", "animation"].includes(category) ? (

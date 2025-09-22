@@ -8,7 +8,8 @@ export const pricingTierSchema = z.object({
   featured: z.boolean().default(false),
   featured_text: z.string().optional(),
   description: z.string().optional(),
-  features: z.array(z.string()).max(10, 'Maximum 10 features allowed').default([])
+  features: z.array(z.string()).max(10, 'Maximum 10 features allowed').default([]),
+  accent_color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Must be a valid hex color').default('#a855f7')
 });
 
 // Zod schema for section colors
@@ -60,7 +61,8 @@ export const defaultPricingTier: PricingTier = {
   featured: false,
   featured_text: '',
   description: '',
-  features: []
+  features: [],
+  accent_color: '#a855f7' // Default purple
 };
 
 // Helper function to create page identifier

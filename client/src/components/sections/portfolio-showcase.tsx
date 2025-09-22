@@ -247,11 +247,11 @@ export function PortfolioShowcase() {
             A glimpse into our creative journey - showcasing moments that matter, stories that inspire, and memories that last forever.
           </p>
 
-          {/* Filter buttons - Desktop: flex wrap, Mobile: horizontal scroll */}
+          {/* Filter buttons - Desktop: flex wrap, Mobile/Tablet: horizontal scroll */}
           <div className="mb-12">
-            {/* Mobile horizontal scroll container */}
-            <div className="sm:hidden overflow-x-auto scrollbar-hide">
-              <div className="flex gap-2 px-4 pb-2" style={{ width: 'max-content' }}>
+            {/* Mobile and tablet horizontal scroll container */}
+            <div className="xl:hidden overflow-x-auto scrollbar-hide">
+              <div className="flex gap-2 px-4 pb-2 justify-center" style={{ width: 'max-content', margin: '0 auto' }}>
                 {filterOptions.map(option => (
                   <Button
                     key={option.value}
@@ -278,8 +278,8 @@ export function PortfolioShowcase() {
               </div>
             </div>
             
-            {/* Desktop flex wrap container */}
-            <div className="hidden sm:flex flex-wrap justify-center gap-4">
+            {/* Large desktop flex container (no wrap needed at this size) */}
+            <div className="hidden xl:flex justify-center gap-4">
               {filterOptions.map(option => (
                 <Button
                   key={option.value}

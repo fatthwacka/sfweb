@@ -6,6 +6,7 @@ import { Camera, ArrowRight, ChevronDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { photography as defaultPhotography } from "@/config/site-config";
+import { CategoryNavigation } from "@/components/common/category-navigation";
 
 // Fallback configuration in case import fails
 const fallbackPhotography = {
@@ -35,46 +36,46 @@ const fallbackPhotography = {
   },
   categories: [
     {
-      name: "Weddings & Newborn",
+      name: "Weddings & Maternity",
       slug: "weddings",
-      description: "Capturing your special day with timeless elegance and emotion",
+      description: "Captured with timeless elegance",
       image: "/images/hero/wedding-photography-hero.jpg",
-      features: ["Engagement sessions", "Ceremony coverage", "Reception photography", "Bridal portraits"]
+      features: ["Weddings", "Engagements", "Maternity", "Newborn"]
     },
     {
       name: "Portraits & Headshots",
       slug: "portraits", 
-      description: "Professional headshots and personal portraits that tell your story",
+      description: "Glossy magazine grade portraits",
       image: "/images/hero/portrait-photography-hero.jpg",
-      features: ["Executive headshots", "Family portraits", "Personal branding", "Studio sessions"]
+      features: ["Portraits", "Studio", "Headshots", "Family"]
     },
     {
       name: "Products & Brands",
       slug: "products",
-      description: "Showcase your products with stunning commercial photography",
+      description: "Stunning commercial photography",
       image: "/images/hero/product-photography-hero.jpg", 
-      features: ["E-commerce photography", "Catalog shoots", "Lifestyle product shots", "360° product views"]
+      features: ["Product Hero", "Catalog", "Lifestyle", "Ecommerce"]
     },
     {
       name: "Events & Functions",
       slug: "events",
-      description: "Documenting memorable moments at conferences, parties, and gatherings", 
+      description: "Capturing memorable moments", 
       image: "/images/hero/Event-photography-hero.jpg",
-      features: ["Conference photography", "Party coverage", "Award ceremonies", "Networking events"]
+      features: ["Conferences", "Music Festivals", "Birthdays", "Parties"]
     },
     {
       name: "Corporate & Business", 
       slug: "corporate",
-      description: "Elevate your business image with professional corporate photography",
+      description: "Elevate your business profile",
       image: "/images/hero/corporate-photography-hero.jpg",
-      features: ["Team headshots", "Office photography", "Corporate events", "Brand documentation"]
+      features: ["Headshots", "Team building", "Offices", "Events"]
     },
     {
-      name: "Graduation & Matric Dances",
+      name: "Graduation",
       slug: "graduation",
-      description: "Celebrate academic achievements with memorable graduation photos",
+      description: "Academic graduation photos",
       image: "/images/hero/graduation-photography-hero.jpg", 
-      features: ["Graduation ceremonies", "Individual portraits", "Family group shots", "Campus photography"]
+      features: ["Matric Dances", "Graduation", "University", "College"]
     }
   ]
 };
@@ -186,15 +187,71 @@ export default function Photography() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6">
-              {config.sections.intro.title}
+              Our <span>Photography Services</span>
             </h2>
             <h3 className="text-xl max-w-3xl mx-auto">
-              {config.sections.intro.subtitle}
+              Discover our range of photography services, each tailored to capture the unique essence of your moments.
             </h3>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-8">
-            {config.categories.map((category, index) => (
+          {/* Quick Navigation */}
+          <CategoryNavigation 
+            categories={[
+              { name: "Weddings & Maternity", slug: "weddings", shortName: "Weddings" },
+              { name: "Portraits & Headshots", slug: "portraits", shortName: "Portraits" },
+              { name: "Products & Brands", slug: "products", shortName: "Products" },
+              { name: "Events & Functions", slug: "events", shortName: "Events" },
+              { name: "Corporate & Business", slug: "corporate", shortName: "Corporate" },
+              { name: "Graduation", slug: "graduation", shortName: "Graduation" }
+            ]}
+            basePath="photography"
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              {
+                name: "Weddings & Maternity",
+                slug: "weddings",
+                description: "Captured with timeless elegance",
+                image: "/images/hero/wedding-photography-hero.jpg",
+                features: ["Weddings", "Engagements", "Maternity", "Newborn"]
+              },
+              {
+                name: "Portraits & Headshots",
+                slug: "portraits",
+                description: "Glossy magazine grade portraits",
+                image: "/images/hero/portrait-photography-hero.jpg",
+                features: ["Portraits", "Studio", "Headshots", "Family"]
+              },
+              {
+                name: "Products & Brands",
+                slug: "products",
+                description: "Stunning commercial photography",
+                image: "/images/hero/product-photography-hero.jpg",
+                features: ["Product Hero", "Catalog", "Lifestyle", "Ecommerce"]
+              },
+              {
+                name: "Events & Functions",
+                slug: "events",
+                description: "Capturing memorable moments",
+                image: "/images/hero/Event-photography-hero.jpg",
+                features: ["Conferences", "Music Festivals", "Birthdays", "Parties"]
+              },
+              {
+                name: "Corporate & Business",
+                slug: "corporate",
+                description: "Elevate your business profile",
+                image: "/images/hero/corporate-photography-hero.jpg",
+                features: ["Headshots", "Team building", "Offices", "Events"]
+              },
+              {
+                name: "Graduation",
+                slug: "graduation",
+                description: "Academic graduation photos",
+                image: "/images/hero/graduation-photography-hero.jpg",
+                features: ["Matric Dances", "Graduation", "University", "College"]
+              }
+            ].map((category, index) => (
               <Link key={category.slug} href={`/photography/${category.slug}`}>
                 <div className="group cursor-pointer bg-gradient-to-br from-slate-800/60 to-gray-900/80 rounded-2xl overflow-hidden shadow-2xl hover:shadow-gold/20 transition-all duration-500 transform hover:scale-[1.02]">
                   <div className="relative h-64 overflow-hidden">
@@ -206,7 +263,7 @@ export default function Photography() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
                   </div>
 
-                  <div className="p-8">
+                  <div className="p-8 pb-6">
                     <h3 className="text-2xl text-gold mb-4">{category.name}</h3>
                     <p className="text-muted-foreground mb-4">
                       {category.description}
@@ -216,9 +273,9 @@ export default function Photography() {
                       {category.features.map((feature, featureIndex) => (
                         <div
                           key={featureIndex}
-                          className="flex items-center text-sm text-gray-400"
+                          className="flex items-center text-sm text-muted-foreground"
                         >
-                          <div className="w-1.5 h-1.5 bg-gradient-to-r from-gray-500 to-orange-400 rounded-full mr-3 flex-shrink-0"></div>
+                          <div className="w-1.5 h-1.5 rounded-full mr-2 flex-shrink-0 bullet-point-accent"></div>
                           {feature}
                         </div>
                       ))}

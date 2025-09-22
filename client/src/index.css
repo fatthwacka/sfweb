@@ -27,20 +27,66 @@
   --ring: hsl(16, 100%, 73%);
   --radius: 0.5rem;
   
-  /* Custom colors */
-  --salmon: hsl(16, 100%, 70%);
-  --salmon-muted: hsl(16, 90%, 68%);
-  --salmon-dark: hsl(16, 60%, 35%);
-  --cyan: hsl(180, 100%, 50%);
-  --cyan-muted: hsl(180, 80%, 60%);
-  --cyan-dark: hsl(180, 40%, 15%);
-  --cyan-bright: hsl(180, 100%, 65%);
+  /* Custom colors - Primary palette */
+  --salmon: hsl(8, 90%, 63%);         /* More red, darker */
+  --salmon-muted: hsl(8, 80%, 60%);
+  --salmon-dark: hsl(8, 60%, 30%);
+  --cyan: hsl(172, 90%, 45%);         /* More green, darker */
+  --cyan-muted: hsl(172, 80%, 55%);
+  --cyan-dark: hsl(172, 40%, 15%);
+  --cyan-bright: hsl(172, 90%, 60%);
   --purple-dark: hsl(260, 40%, 21%);
   --grey-dark: hsl(220, 15%, 19%);
+  
+  /* Extended color palette - 4 new theme colors */
+  --theme-light-1: rgb(226, 232, 240);   /* Light grayish blue */
+  --theme-light-2: rgb(191, 200, 212);   /* Medium grayish blue */
+  --theme-dark-1: rgb(75, 71, 92);       /* Dark purple-gray */
+  --theme-dark-2: rgb(55, 63, 73);       /* Very dark blue-gray */
+  --theme-white: rgb(255, 255, 255);     /* Pure white */
+  
+  /* New accent colors (replacing problematic salmon/cyan) */
+  --theme-accent-1: hsl(8, 90%, 63%);    /* Warm red-orange (was salmon) */
+  --theme-accent-2: hsl(172, 90%, 45%);  /* Teal-green (was cyan) */
+
+  /* ========================================
+     UNIFIED PRICING CARD SYSTEM VARIABLES
+     Color-Derived Design from Single Accent
+     ======================================== */
+  
+  /* Default Pricing Card Variables (fallback purple) */
+  --pricing-accent-hue: 280;
+  --pricing-accent-sat: 80%;
+  --pricing-accent-light: 60%;
+  --pricing-accent: hsl(var(--pricing-accent-hue), var(--pricing-accent-sat), var(--pricing-accent-light));
+  
+  /* Derived accent variants for enhanced design harmony */
+  --pricing-accent-dark: hsl(calc(var(--pricing-accent-hue) - 5), calc(var(--pricing-accent-sat) / 2), 20%);    /* Very dark, less saturated, hue -5° */
+  --pricing-accent-light: hsl(calc(var(--pricing-accent-hue) + 8), calc(var(--pricing-accent-sat) + 15%), 75%);  /* Much brighter, hue +8° */
+  
+  /* COLOR DERIVATION MAP:
+     Card Background: --pricing-accent-dark (subtle depth in gradient middle)
+     Card Border: --pricing-accent @ 30% opacity (subtle definition)
+     Card Title: --pricing-accent +10°/+20% sat gradient (vibrant header)
+     Price Text: --pricing-accent direct (prominent pricing)
+     Duration Text: --pricing-accent muted variation (harmonious subtitle)
+     Feature Icons: --pricing-accent-light (bright, visible bullets)
+     CTA Button: --pricing-accent gradient (call-to-action prominence)
+     Featured Badge: --pricing-accent-light to --pricing-accent gradient (standout appeal)
+  */
   
   /* Theme color mappings for text color pickers */
   --color-primary: var(--salmon);
   --color-secondary: var(--cyan);
+  --color-salmon: var(--salmon);
+  --color-cyan: var(--cyan);
+  --color-light-1: var(--theme-light-1);
+  --color-light-2: var(--theme-light-2);
+  --color-dark-1: var(--theme-dark-1);
+  --color-dark-2: var(--theme-dark-2);
+  --color-white: var(--theme-white);
+  --color-accent-1: var(--theme-accent-1);
+  --color-accent-2: var(--theme-accent-2);
 }
 
 /* Hide reCAPTCHA badge - Google allows this with proper attribution */
@@ -153,6 +199,76 @@
       hsl(260, 30%, 18%);
     background-attachment: fixed;
     min-height: 100vh;
+  }
+  
+  /* Smooth gradient transitions for all dynamic backgrounds and text colors */
+  [class*="text-"][class*="-primary"],
+  [class*="text-"][class*="-secondary"],
+  [class*="text-"][class*="-tertiary"],
+  .text-salmon,
+  .text-cyan,
+  .text-theme-accent-1,
+  .text-theme-accent-2,
+  .text-theme-light-1,
+  .text-theme-light-2,
+  .text-theme-dark-1,
+  .text-theme-dark-2,
+  .text-theme-white,
+  .text-primary-gradient,
+  .text-secondary-gradient,
+  .text-tertiary-gradient,
+  .text-muted-foreground {
+    transition: color 0.8s ease-in-out;
+  }
+  
+  /* Smooth transitions for gradient backgrounds */
+  [style*="background"][style*="gradient"],
+  [style*="background-image"],
+  .gradient-background,
+  [class*="bg-gradient"] {
+    transition: background 0.8s ease-in-out, background-image 0.8s ease-in-out;
+  }
+  
+  /* Initial fade-in animation for gradient sections */
+  [data-gradient-section] {
+    animation: gradientFadeIn 1.0s ease-out;
+  }
+  
+  @keyframes gradientFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(15px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Prevent gradient flash on initial load */
+  [data-gradient-section]:not([data-loaded]) {
+    opacity: 0;
+  }
+  
+  [data-gradient-section][data-loaded="true"] {
+    opacity: 1;
+    transition: opacity 0.8s ease-in-out;
+  }
+  
+  /* Smooth color inheritance for all elements */
+  h1, h2, h3, h4, h5, h6, p, span, div {
+    transition: color 0.8s ease-in-out;
+  }
+  
+  /* Golden glow for selected color swatches */
+  .swatch-selected {
+    box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.8), 0 0 12px rgba(255, 215, 0, 0.6);
+    transform: scale(1.15);
+  }
+  
+  /* Custom bullet point color - medium-light grey with warm hint */
+  .bullet-point-accent {
+    background-color: hsl(8, 50%, 75%); /* Medium-light grey with prominent warm red-orange undertone */
   }
   
   /* Typography System - NEVER use inline fonts */
@@ -434,32 +550,7 @@
     box-shadow: 0 0 20px rgba(138, 43, 226, 0.3), 0 4px 15px rgba(138, 43, 226, 0.2);
   }
 
-  /* Studio Card Button System - remove all inline styling */
-  .studio-card-button {
-    @apply w-full mt-auto py-4 rounded-xl font-barlow font-semibold text-lg transition-all duration-300;
-    background: linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(16, 80%, 65%) 100%);
-    color: white;
-    border: none;
-  }
-  
-  .studio-card-button:hover {
-    background: linear-gradient(135deg, hsl(16, 80%, 65%) 0%, hsl(16, 60%, 55%) 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
-  }
-
-  .studio-card-button-premium {
-    @apply w-full mt-auto py-4 rounded-xl font-barlow font-semibold text-lg transition-all duration-300;
-    background: linear-gradient(135deg, hsl(180, 100%, 50%) 0%, hsl(180, 80%, 45%) 100%);
-    color: white;
-    border: none;
-  }
-  
-  .studio-card-button-premium:hover {
-    background: linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(16, 80%, 65%) 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
-  }
+  /* Old studio card button styles removed - using unified accent system only */
   
   /* Contact Section Styling */
   .contact-info-card {
@@ -1207,132 +1298,98 @@
     min-height: 240px;
   }
   
-  .studio-card-button {
-    @apply w-full px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-300 mt-auto;
-    background: linear-gradient(to bottom, hsl(280, 35%, 30%) 0%, hsl(300, 45%, 25%) 100%);
-    color: hsl(16, 100%, 73%);
-    border: 1px solid hsl(16, 100%, 73%);
-  }
-  
-  .studio-card-button:hover {
-    transform: translateY(-2px);
-    background: linear-gradient(to bottom, hsl(280, 40%, 35%) 0%, hsl(300, 50%, 30%) 100%);
-    color: hsl(16, 100%, 80%);
-    box-shadow: 0 10px 25px hsla(16, 100%, 73%, 0.3);
-    border-color: hsl(16, 100%, 80%);
-  }
-  
-  .studio-card-button-premium {
-    @apply w-full px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-300 mt-auto;
-    background: linear-gradient(to bottom, hsl(280, 35%, 30%) 0%, hsl(310, 45%, 25%) 100%);
-    color: hsl(180, 100%, 50%);
-    border: 1px solid hsl(180, 100%, 50%);
-  }
-  
-  .studio-card-button-premium:hover {
-    transform: translateY(-2px);
-    background: linear-gradient(to bottom, hsl(280, 40%, 35%) 0%, hsl(310, 50%, 30%) 100%);
-    color: hsl(180, 100%, 60%);
-    box-shadow: 0 10px 25px hsla(180, 100%, 50%, 0.3);
-    border-color: hsl(180, 100%, 60%);
-  }
+  /* Old button color variants removed - using unified accent system only */
 
-  .studio-card-button-pink {
-    @apply w-full px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-300 mt-auto;
-    background: linear-gradient(to bottom, hsl(320, 35%, 20%) 0%, hsl(315, 45%, 15%) 100%);
-    color: hsl(320, 100%, 70%);
-    border: 1px solid hsl(320, 100%, 70%);
-  }
+  /* ========================================
+     UNIFIED PRICING CARD SYSTEM
+     Color-Derived Design from Single Accent
+     ======================================== */
 
-  .studio-card-button-pink:hover {
-    transform: translateY(-2px);
-    background: linear-gradient(to bottom, hsl(320, 40%, 25%) 0%, hsl(315, 50%, 20%) 100%);
-    color: hsl(320, 100%, 80%);
-    box-shadow: 0 10px 25px hsla(320, 100%, 70%, 0.3);
-    border-color: hsl(320, 100%, 80%);
-  }
-
-  .studio-card-button-green {
-    @apply w-full px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-300 mt-auto;
-    background: linear-gradient(to bottom, hsl(140, 35%, 20%) 0%, hsl(160, 45%, 15%) 100%);
-    color: hsl(140, 100%, 60%);
-    border: 1px solid hsl(140, 100%, 60%);
-  }
-
-  .studio-card-button-green:hover {
-    transform: translateY(-2px);
-    background: linear-gradient(to bottom, hsl(140, 40%, 25%) 0%, hsl(160, 50%, 20%) 100%);
-    color: hsl(140, 100%, 70%);
-    box-shadow: 0 10px 25px hsla(140, 100%, 60%, 0.3);
-    border-color: hsl(140, 100%, 70%);
-  }
-
-  .studio-card-button-orange {
-    @apply w-full px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-300 mt-auto;
-    background: linear-gradient(to bottom, hsl(30, 35%, 20%) 0%, hsl(35, 45%, 15%) 100%);
-    color: hsl(30, 100%, 65%);
-    border: 1px solid hsl(30, 100%, 65%);
-  }
-
-  .studio-card-button-orange:hover {
-    transform: translateY(-2px);
-    background: linear-gradient(to bottom, hsl(30, 40%, 25%) 0%, hsl(35, 50%, 20%) 100%);
-    color: hsl(30, 100%, 75%);
-    box-shadow: 0 10px 25px hsla(30, 100%, 65%, 0.3);
-    border-color: hsl(30, 100%, 75%);
-  }
-
-  .studio-card-button-cyan {
-    @apply w-full px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-300 mt-auto;
-    background: linear-gradient(to bottom, hsl(185, 35%, 20%) 0%, hsl(190, 45%, 15%) 100%);
-    color: hsl(185, 100%, 55%);
-    border: 1px solid hsl(185, 100%, 55%);
-  }
-
-  .studio-card-button-cyan:hover {
-    transform: translateY(-2px);
-    background: linear-gradient(to bottom, hsl(185, 40%, 25%) 0%, hsl(190, 50%, 20%) 100%);
-    color: hsl(185, 100%, 65%);
-    box-shadow: 0 10px 25px hsla(185, 100%, 55%, 0.3);
-    border-color: hsl(185, 100%, 65%);
-  }
-
-  /* Unified Theme for Photography Pricing Pages */
+  /* Automatically derived color variants */
   .studio-card-accent {
     @apply rounded-2xl p-8 shadow-2xl transition-all duration-500;
-    background: linear-gradient(-45deg, hsl(0, 0%, 12%) 0%, hsl(280, 12%, 28%) 50%, hsl(0, 0%, 15%) 100%);
-    border: 2px solid rgba(138, 43, 226, 0.3);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(138, 43, 226, 0.15);
+    
+    /* Background: Enhanced 3-color gradient using dark accent variant */
+    background: linear-gradient(-45deg, 
+      hsl(0, 0%, 12%) 0%, 
+      var(--pricing-accent-dark) 50%, 
+      hsl(0, 0%, 15%) 100%
+    );
+    
+    /* Border: Accent at 30% opacity for subtle definition */
+    border: 2px solid hsl(var(--pricing-accent-hue), var(--pricing-accent-sat), var(--pricing-accent-light), 0.3);
+    
+    /* Shadow: Base + accent glow */
+    box-shadow: 
+      0 10px 40px rgba(0, 0, 0, 0.4), 
+      0 0 30px hsl(var(--pricing-accent-hue), var(--pricing-accent-sat), var(--pricing-accent-light), 0.15);
   }
 
   .studio-card-accent:hover {
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(138, 43, 226, 0.4);
-    border-color: rgba(138, 43, 226, 0.8);
+    /* Enhanced shadow and border on hover */
+    box-shadow: 
+      0 20px 60px rgba(0, 0, 0, 0.6), 
+      0 0 40px hsl(var(--pricing-accent-hue), var(--pricing-accent-sat), var(--pricing-accent-light), 0.4);
+    border-color: hsl(var(--pricing-accent-hue), var(--pricing-accent-sat), var(--pricing-accent-light), 0.8);
   }
 
+  /* Card Title: Solid accent color for visibility */
   .studio-card-title-accent {
-    @apply text-2xl mb-4 font-light;
-    color: #e2e8f0 !important;
+    @apply text-3xl font-bold mb-4;
+    color: var(--pricing-accent-light) !important;
   }
 
-  /* Card description - light grey, not controlled by gradient picker */
+  /* Price Display: Solid accent color for visibility */
+  .studio-card-price {
+    @apply text-4xl font-bold mb-2;
+    color: var(--pricing-accent) !important;
+  }
+
+  /* Duration/Subtitle: Muted but harmonious */
+  .studio-card-duration {
+    @apply text-sm font-medium;
+    color: hsl(var(--pricing-accent-hue), calc(var(--pricing-accent-sat) / 3), 70%);
+  }
+
+  /* Feature Icons: Bright accent variant for enhanced visibility */
+  .studio-card-feature {
+    @apply flex items-center text-sm;
+  }
+
+  .studio-card-feature-icon {
+    @apply w-5 h-5 mr-3 flex-shrink-0;
+    color: var(--pricing-accent-light);
+  }
+
+
+  /* Card description - light grey, not controlled by accent */
   .studio-card-accent .text-center .text-muted-foreground {
     color: #94a3b8 !important;
   }
 
-  .studio-card-button-accent {
-    @apply w-full px-3 py-2 rounded-md text-base font-medium transition-all duration-300 mt-auto;
-    background: linear-gradient(-45deg, hsl(280, 15%, 22%) 0%, hsl(285, 20%, 18%) 100%);
-    color: hsl(285, 60%, 75%);
-    border: 1px solid hsl(285, 40%, 45%);
+  /* Featured Badge: Clean CSS variable integration */
+  .studio-card-featured-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white;
+    background: var(--pricing-accent);
+    background-image: none;
+    border: none;
   }
 
+  /* CTA Button: Clean CSS variable integration */
+  .studio-card-button-accent {
+    @apply w-full mt-auto py-4 rounded-xl font-barlow font-semibold text-lg transition-all duration-300;
+    background: var(--pricing-accent);
+    background-image: none;
+    color: white;
+    border: 1px solid var(--pricing-accent);
+  }
+  
   .studio-card-button-accent:hover {
     transform: translateY(-2px);
-    background: linear-gradient(-45deg, hsl(285, 40%, 25%) 0%, hsl(290, 50%, 20%) 100%);
-    color: hsl(285, 100%, 75%);
-    box-shadow: 0 10px 25px hsla(285, 100%, 65%, 0.3);
-    border-color: hsl(285, 100%, 75%);
+    background: var(--pricing-accent-light);
+    background-image: none;
+    border-color: var(--pricing-accent-light);
+    box-shadow: 0 5px 20px hsl(var(--pricing-accent-hue), var(--pricing-accent-sat), var(--pricing-accent-light), 0.4);
   }
   
   /* General Button Classes */
@@ -2869,7 +2926,262 @@ html, body {
 .bg-theme-cyan {
   background-color: var(--cyan) !important;
 }
+
+/* New accent color classes (clean slate, no conflicts) */
+.bg-theme-accent-1 {
+  background-color: var(--color-accent-1) !important;
 }
+
+.bg-theme-accent-2 {
+  background-color: var(--color-accent-2) !important;
+}
+
+.text-theme-accent-1 {
+  color: var(--color-accent-1) !important;
+}
+
+.text-theme-accent-2 {
+  color: var(--color-accent-2) !important;
+}
+}
+
+
+/* SEMANTIC HEADER HIERARCHY - AUTO GENERATED */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /* SEMANTIC HEADER HIERARCHY - AUTO GENERATED */
@@ -3626,3 +3938,5 @@ html, body {
 [data-gradient-section="web-apps-services"] .text-muted-foreground {
   color: var(--web-apps-services-text-tertiary, #94a3b8) !important;
 }
+
+/* High-specificity overrides removed - using clean base classes only */

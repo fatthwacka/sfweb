@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSiteConfig } from '@/hooks/use-site-config';
 import { useAllGradients } from '@/hooks/use-all-gradients';
 // Removed deprecated useFrontPageSettings import
@@ -26,6 +26,7 @@ export function GradientBackground({
   categorySectionName
 }: GradientBackgroundProps) {
   const { config } = useSiteConfig();
+  const [loaded, setLoaded] = useState(false);
 
   // Construct the correct gradient key for category pages
   let gradientKey = section;
@@ -50,14 +51,8 @@ export function GradientBackground({
     gradientConfig = config?.categoryPages?.[categoryType]?.[categoryName]?.[categorySectionName]?.gradients || gradientConfig;
   }
 
-  // Show loading state if gradient is loading and we don't have category config
-  if (isGradientLoading && !categoryType) {
-    return (
-      <div className={`relative ${className} animate-pulse bg-slate-700`} id={id}>
-        {children}
-      </div>
-    );
-  }
+  // No loading state - always render immediately with smooth transitions
+  // Eliminates brownish overlay completely while providing smooth fade-in
 
   // Use unified gradient system for all sections
   let gradientStyle;
@@ -111,12 +106,22 @@ export function GradientBackground({
     [`--${section}-text-tertiary`]: resolveColor(textColors?.tertiary, '#94a3b8')
   } as React.CSSProperties;
 
+  // Mark as loaded after gradient data is available
+  useEffect(() => {
+    if (!isGradientLoading) {
+      // Small delay to ensure smooth fade-in
+      const timer = setTimeout(() => setLoaded(true), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isGradientLoading]);
+
   return (
     <div 
       id={id}
-      className={`relative ${className}`}
+      className={`relative ${className} transition-all duration-[800ms] ease-out`}
       style={backgroundStyle}
       data-gradient-section={section}
+      data-loaded={loaded}
     >
       {children}
     </div>
