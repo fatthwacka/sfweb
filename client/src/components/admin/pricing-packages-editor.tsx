@@ -5,9 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Trash2, ChevronUp, ChevronDown, Star, AlertCircle, Check } from 'lucide-react';
+import { Plus, Trash2, ChevronUp, ChevronDown, Star, AlertCircle, Check, ArrowUp, ArrowDown } from 'lucide-react';
 import { GradientPicker } from '@/components/ui/gradient-picker';
-import { type PricingPackage, type PricingTier, defaultPricingTier } from '@shared/types/pricing';
+import { type PricingPackage, type PricingTier, type PricingFeature, defaultPricingTier, normalizeFeatures, convertToNewFeatureFormat } from '@shared/types/pricing';
 import { useToast } from '@/hooks/use-toast';
 
 interface PricingPackagesEditorProps {
@@ -68,9 +68,18 @@ export function PricingPackagesEditor({
     try {
       setSaving(true);
 
+      // Compact features arrays to remove gaps (sparse arrays)
+      const compactedTiers = pricingPackage.tiers.map(tier => ({
+        ...tier,
+        features: normalizeFeatures(tier.features || [])
+          .filter(f => f.text && f.text.trim() !== '') // Remove empty entries
+          .map((f, idx) => ({ ...f })) // Re-index the array
+      }));
+
       // Clean the data before sending - remove null fields
       const cleanPackage = {
         ...pricingPackage,
+        tiers: compactedTiers,
         created_by: undefined,
         updated_by: undefined,
         created_at: undefined,
@@ -132,7 +141,7 @@ export function PricingPackagesEditor({
         clearTimeout(timeoutId);
       }
     };
-  }, [pricingPackage, hasChanges, handleSave]);
+  }, [pricingPackage, hasChanges]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadPricingPackage = async () => {
     try {
@@ -204,6 +213,7 @@ export function PricingPackagesEditor({
         }
 
         setPricingPackage(loadedPackage);
+        setHasChanges(false); // Ensure no changes on initial load
       } else {
         // Initialize with default package with 3 sample tiers
         const defaultPackage: PricingPackage = {
@@ -268,6 +278,7 @@ export function PricingPackagesEditor({
           ]
         };
         setPricingPackage(defaultPackage);
+        setHasChanges(false); // Ensure no changes on initial load
         // Save the default to Supabase
         await fetch(`/api/pricing-packages`, {
           method: 'POST',
@@ -477,30 +488,21 @@ export function PricingPackagesEditor({
                     <div className="text-center mb-6 pt-2">
                       <Input
                         value={tier.title}
-                        onChange={(e) => {
-                          updateTier(tierIndex, { title: e.target.value });
-                          setHasChanges(true);
-                        }}
+                        onChange={(e) => updateTier(tierIndex, { title: e.target.value })}
                         placeholder="Package Title"
                         className="text-center text-2xl font-bold mb-4 bg-transparent border-0 border-b-2 rounded-none focus:ring-0 pb-2"
                       />
                       <div className="mb-3">
                         <Input
                           value={tier.price}
-                          onChange={(e) => {
-                            updateTier(tierIndex, { price: e.target.value });
-                            setHasChanges(true);
-                          }}
+                          onChange={(e) => updateTier(tierIndex, { price: e.target.value })}
                           placeholder="R2,500"
                           className="text-center text-4xl font-bold bg-transparent border-0 border-b-2 rounded-none focus:ring-0 pb-2"
                         />
                       </div>
                       <Input
                         value={tier.subtitle || ''}
-                        onChange={(e) => {
-                          updateTier(tierIndex, { subtitle: e.target.value });
-                          setHasChanges(true);
-                        }}
+                        onChange={(e) => updateTier(tierIndex, { subtitle: e.target.value })}
                         placeholder="e.g., 2 hours coverage"
                         className="text-center text-sm bg-transparent border-0 border-b rounded-none focus:ring-0 pb-2"
                       />
@@ -517,10 +519,7 @@ export function PricingPackagesEditor({
                       {tier.featured && (
                         <Input
                           value={tier.featured_text || ''}
-                          onChange={(e) => {
-                            updateTier(tierIndex, { featured_text: e.target.value });
-                            setHasChanges(true);
-                          }}
+                          onChange={(e) => updateTier(tierIndex, { featured_text: e.target.value })}
                           placeholder="Badge text"
                           className="ml-2 text-xs h-7 w-24"
                         />
@@ -530,10 +529,7 @@ export function PricingPackagesEditor({
                     {/* Description */}
                     <Textarea
                       value={tier.description || ''}
-                      onChange={(e) => {
-                        updateTier(tierIndex, { description: e.target.value });
-                        setHasChanges(true);
-                      }}
+                      onChange={(e) => updateTier(tierIndex, { description: e.target.value })}
                       placeholder="Brief description"
                       rows={2}
                       className="mb-4 text-sm resize-none"
@@ -545,33 +541,74 @@ export function PricingPackagesEditor({
                         <Label className="text-xs font-medium">Package Features</Label>
                         <span className="text-xs text-muted-foreground">10 features max</span>
                       </div>
-                      <div className="space-y-1 max-h-80 overflow-y-auto pr-1">
+                      <div className="space-y-1">
                         {Array.from({ length: 10 }, (_, featureIndex) => {
-                          const feature = tier.features?.[featureIndex] || '';
-                          const isEmpty = !feature || feature.trim() === '';
+                          // Normalize features to new format for consistent handling
+                          const normalizedFeatures = normalizeFeatures(tier.features || []);
+                          const feature = normalizedFeatures[featureIndex] || { text: '', enabled: true };
+                          const isEmpty = !feature.text || feature.text.trim() === '';
+
+                          // Check if there are gaps above this filled feature
+                          const hasGapsAbove = !isEmpty && normalizedFeatures
+                            .slice(0, featureIndex)
+                            .some((f, idx) => !f.text || f.text.trim() === '');
 
                           return (
                             <div key={featureIndex} className="flex items-center group relative">
-                              {/* Left icon - fixed width */}
-                              <div className={`h-4 w-4 rounded-full flex items-center justify-center flex-shrink-0 transition-all mr-3 ${
-                                isEmpty
-                                  ? 'bg-slate-600/30 border border-slate-600/50'
-                                  : 'bg-green-500 border-0'
-                              }`}>
-                                {!isEmpty && <Check className="h-2.5 w-2.5 text-white" />}
+                              {/* Left icon - clickable toggle */}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (!isEmpty) {
+                                    // Toggle enabled state for existing features
+                                    const newFeatures = [...normalizedFeatures];
+                                    if (newFeatures[featureIndex]) {
+                                      newFeatures[featureIndex] = {
+                                        ...newFeatures[featureIndex],
+                                        enabled: !newFeatures[featureIndex].enabled
+                                      };
+                                    }
+                                    // Clean up empty features at the end
+                                    while (newFeatures.length > 0 &&
+                                           (!newFeatures[newFeatures.length - 1].text ||
+                                            newFeatures[newFeatures.length - 1].text.trim() === '')) {
+                                      newFeatures.pop();
+                                    }
+                                    updateTier(tierIndex, { features: newFeatures });
+                                    setHasChanges(true);
+                                  }
+                                }}
+                                className={`h-4 w-4 rounded-full flex items-center justify-center flex-shrink-0 transition-all mr-3 ${
+                                  isEmpty
+                                    ? 'bg-slate-600/30 border border-slate-600/50 cursor-default'
+                                    : feature.enabled
+                                      ? 'bg-green-500 border-0 hover:bg-green-600 cursor-pointer'
+                                      : 'bg-slate-500/50 border border-slate-500/70 hover:bg-slate-400/50 cursor-pointer'
+                                }`}
+                                disabled={isEmpty}
+                              >
+                                {!isEmpty && <Check className={`h-2.5 w-2.5 transition-colors ${
+                                  feature.enabled ? 'text-white' : 'text-slate-400'
+                                }`} />}
                                 {isEmpty && <span className="text-xs text-slate-500">{featureIndex + 1}</span>}
-                              </div>
+                              </button>
 
                               {/* Input field - fills available space */}
                               <Input
-                                value={feature}
+                                value={feature.text}
                                 onChange={(e) => {
-                                  const newFeatures = [...(tier.features || [])];
+                                  const newFeatures = [...normalizedFeatures];
                                   while (newFeatures.length <= featureIndex) {
-                                    newFeatures.push('');
+                                    newFeatures.push({ text: '', enabled: true });
                                   }
-                                  newFeatures[featureIndex] = e.target.value;
-                                  while (newFeatures.length > 0 && newFeatures[newFeatures.length - 1] === '') {
+                                  newFeatures[featureIndex] = {
+                                    ...newFeatures[featureIndex],
+                                    text: e.target.value
+                                  };
+                                  // Clean up empty features at the end
+                                  while (newFeatures.length > 0 &&
+                                         (!newFeatures[newFeatures.length - 1].text ||
+                                          newFeatures[newFeatures.length - 1].text.trim() === '')) {
                                     newFeatures.pop();
                                   }
                                   updateTier(tierIndex, { features: newFeatures });
@@ -581,29 +618,84 @@ export function PricingPackagesEditor({
                                 className={`text-xs h-8 transition-all ${
                                   isEmpty
                                     ? 'bg-slate-800/30 border-slate-700/50 text-slate-400 placeholder:text-slate-500'
-                                    : 'bg-slate-800/60 border-slate-600 text-slate-200'
-                                } hover:border-cyan-400/50 focus:border-cyan-400 focus:bg-slate-800/80`}
-                                style={{ marginRight: '40px' }}
+                                    : feature.enabled
+                                      ? 'bg-slate-800/60 border-slate-600 text-slate-200'
+                                      : 'bg-slate-800/30 border-slate-700/50 text-slate-300'
+                                } ${hasGapsAbove ? 'border-yellow-500/50' : ''} hover:border-cyan-400/50 focus:border-cyan-400 focus:bg-slate-800/80`}
+                                title={hasGapsAbove ? 'This feature will move up when saved (gaps will be removed)' : ''}
                               />
 
-                              {/* Right delete button - fixed position */}
+                              {/* Right controls - reorder and delete buttons */}
                               {!isEmpty && (
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/20 absolute right-0 top-1/2 transform -translate-y-1/2 mr-1"
-                                  onClick={() => {
-                                    const newFeatures = [...(tier.features || [])];
-                                    newFeatures[featureIndex] = '';
-                                    while (newFeatures.length > 0 && newFeatures[newFeatures.length - 1] === '') {
-                                      newFeatures.pop();
-                                    }
-                                    updateTier(tierIndex, { features: newFeatures });
-                                    setHasChanges(true);
-                                  }}
-                                >
-                                  <Trash2 className="h-3 w-3 text-red-400" />
-                                </Button>
+                                <div className="absolute right-0 top-1/2 transform -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  {/* Move Up Button */}
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-5 w-5 hover:bg-blue-500/20"
+                                    onClick={() => {
+                                      if (featureIndex === 0) return; // Can't move up from first position
+                                      const newFeatures = [...normalizedFeatures];
+                                      // Swap with previous feature
+                                      [newFeatures[featureIndex - 1], newFeatures[featureIndex]] =
+                                        [newFeatures[featureIndex], newFeatures[featureIndex - 1]];
+                                      updateTier(tierIndex, { features: newFeatures });
+                                      setHasChanges(true);
+                                    }}
+                                    disabled={featureIndex === 0}
+                                    title="Move up"
+                                  >
+                                    <ArrowUp className="h-3 w-3 text-blue-400" />
+                                  </Button>
+
+                                  {/* Move Down Button */}
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-5 w-5 hover:bg-blue-500/20"
+                                    onClick={() => {
+                                      // Find the next non-empty feature to swap with
+                                      const nextNonEmptyIndex = normalizedFeatures
+                                        .slice(featureIndex + 1)
+                                        .findIndex(f => f.text && f.text.trim() !== '') + featureIndex + 1;
+
+                                      if (nextNonEmptyIndex <= featureIndex || nextNonEmptyIndex >= normalizedFeatures.length) return;
+
+                                      const newFeatures = [...normalizedFeatures];
+                                      // Swap with next non-empty feature
+                                      [newFeatures[featureIndex], newFeatures[nextNonEmptyIndex]] =
+                                        [newFeatures[nextNonEmptyIndex], newFeatures[featureIndex]];
+                                      updateTier(tierIndex, { features: newFeatures });
+                                      setHasChanges(true);
+                                    }}
+                                    disabled={!normalizedFeatures.slice(featureIndex + 1).some(f => f.text && f.text.trim() !== '')}
+                                    title="Move down"
+                                  >
+                                    <ArrowDown className="h-3 w-3 text-blue-400" />
+                                  </Button>
+
+                                  {/* Delete Button */}
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-5 w-5 hover:bg-red-500/20 ml-1"
+                                    onClick={() => {
+                                      const newFeatures = [...normalizedFeatures];
+                                      newFeatures[featureIndex] = { text: '', enabled: true };
+                                      // Clean up empty features at the end
+                                      while (newFeatures.length > 0 &&
+                                             (!newFeatures[newFeatures.length - 1].text ||
+                                              newFeatures[newFeatures.length - 1].text.trim() === '')) {
+                                        newFeatures.pop();
+                                      }
+                                      updateTier(tierIndex, { features: newFeatures });
+                                      setHasChanges(true);
+                                    }}
+                                    title="Delete feature"
+                                  >
+                                    <Trash2 className="h-3 w-3 text-red-400" />
+                                  </Button>
+                                </div>
                               )}
                             </div>
                           );
@@ -621,9 +713,9 @@ export function PricingPackagesEditor({
                               onChange={(e) => {
                                 console.log('Setting accent color:', e.target.value, 'for tier:', tierIndex);
                                 updateTier(tierIndex, { accent_color: e.target.value });
-                                setHasChanges(true);
                               }}
-                              className="w-full h-10 rounded-lg border-2 border-gray-600 cursor-pointer hover:border-gray-400 transition-all"
+                              className="w-full h-10 rounded-lg border-0 cursor-pointer hover:opacity-80 transition-all shadow-lg hover:shadow-xl"
+                              style={{ border: 'none', outline: 'none' }}
                               title="Choose card accent color"
                             />
                           </div>

@@ -1,7 +1,7 @@
-import { Check, Star } from 'lucide-react';
+import { Star, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'wouter';
-import { type PricingPackage, type PricingTier } from '@shared/types/pricing';
+import { type PricingPackage, type PricingTier, normalizeFeatures, getFeatureDisplayText, isFeatureEnabled } from '@shared/types/pricing';
 import { usePricingPackages, formatPrice, isTierHighlighted } from '@/hooks/use-pricing-packages';
 
 interface PricingPackagesDisplayProps {
@@ -70,7 +70,7 @@ export function PricingPackagesDisplay({
           <div className={`pricing-cards-grid gap-6 ${
             tiers.length === 1 ? 'max-w-md mx-auto' :
             tiers.length === 2 ? 'max-w-2xl mx-auto grid-cols-1 md:grid-cols-2' :
-            tiers.length === 3 ? 'grid-cols-1 md:grid-cols-3' :
+            tiers.length === 3 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' :
             'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
           }`}>
             {tiers.map((tier: PricingTier, index: number) => {
@@ -141,21 +141,28 @@ export function PricingPackagesDisplay({
                     {tier.subtitle && (
                       <p className="studio-card-duration">{tier.subtitle}</p>
                     )}
+                    {/* Temporarily commented out for experiment
                     {tier.description && (
-                      <p className="text-muted-foreground mt-3 text-sm">
+                      <p className="text-muted-foreground mt-3 text-base">
                         {tier.description}
                       </p>
                     )}
+                    */}
                   </div>
 
                   {/* Features List */}
                   <ul className="space-y-4 mb-8">
-                    {tier.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="studio-card-feature">
-                        <Check className="studio-card-feature-icon" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
+                    {normalizeFeatures(tier.features).map((feature, featureIndex) => {
+                      const enabled = isFeatureEnabled(feature);
+                      const text = getFeatureDisplayText(feature);
+                      return (
+                        <li key={featureIndex} className="studio-card-feature">
+                          {/* <CheckCircle2 className={`studio-card-feature-icon ${enabled ? 'enabled' : 'disabled'}`} /> */}
+                          <div className={`studio-card-feature-circle ${enabled ? 'enabled' : 'disabled'}`} />
+                          <span className={enabled ? '' : 'studio-card-feature-disabled'}>{text}</span>
+                        </li>
+                      );
+                    })}
                   </ul>
 
                   {/* CTA Button */}
@@ -202,7 +209,7 @@ export function PricingPackagesDisplay({
         <div className={`pricing-cards-grid gap-6 ${
           tiers.length === 1 ? 'max-w-md mx-auto' :
           tiers.length === 2 ? 'max-w-2xl mx-auto grid-cols-1 md:grid-cols-2' :
-          tiers.length === 3 ? 'grid-cols-1 md:grid-cols-3' :
+          tiers.length === 3 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' :
           'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
         }`}>
           {tiers.map((tier: PricingTier, index: number) => {
@@ -273,21 +280,28 @@ export function PricingPackagesDisplay({
                   {tier.subtitle && (
                     <p className="studio-card-duration">{tier.subtitle}</p>
                   )}
+                  {/* Temporarily commented out for experiment
                   {tier.description && (
                     <p className="text-muted-foreground mt-3 text-sm">
                       {tier.description}
                     </p>
                   )}
+                  */}
                 </div>
 
                 {/* Features List */}
-                <ul className="space-y-4 mb-8">
-                  {tier.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="studio-card-feature">
-                      <Check className="studio-card-feature-icon" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
+                <ul className="space-y-1 mb-8 mt-16">
+                  {normalizeFeatures(tier.features).map((feature, featureIndex) => {
+                    const enabled = isFeatureEnabled(feature);
+                    const text = getFeatureDisplayText(feature);
+                    return (
+                      <li key={featureIndex} className="studio-card-feature">
+                        {/* <CheckCircle2 className={`studio-card-feature-icon ${enabled ? 'enabled' : 'disabled'}`} /> */}
+                        <div className={`studio-card-feature-circle ${enabled ? 'enabled' : 'disabled'}`} />
+                        <span className={enabled ? '' : 'studio-card-feature-disabled'}>{text}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
 
                 {/* CTA Button */}
@@ -313,6 +327,7 @@ export const defaultPricingTiers: Record<string, PricingTier[]> = {
       price: 'R8,500',
       subtitle: '4 hours coverage',
       featured: false,
+      accent_color: '#ff6b6b',
       features: [
         'Professional photographer',
         '200+ edited images',
@@ -327,6 +342,7 @@ export const defaultPricingTiers: Record<string, PricingTier[]> = {
       subtitle: '8 hours coverage',
       featured: true,
       featured_text: 'Most Popular',
+      accent_color: '#4ecdc4',
       features: [
         'Lead + second photographer',
         '400+ edited images',
@@ -342,6 +358,7 @@ export const defaultPricingTiers: Record<string, PricingTier[]> = {
       price: 'R25,000',
       subtitle: 'Full day coverage',
       featured: false,
+      accent_color: '#a855f7',
       features: [
         'Lead + 2 photographers',
         '600+ edited images',
@@ -361,6 +378,7 @@ export const defaultPricingTiers: Record<string, PricingTier[]> = {
       price: 'R2,500',
       subtitle: 'Per session',
       featured: false,
+      accent_color: '#ff6b6b',
       features: [
         'Up to 10 people',
         '2 edited images per person',
@@ -375,6 +393,7 @@ export const defaultPricingTiers: Record<string, PricingTier[]> = {
       subtitle: '4 hours',
       featured: true,
       featured_text: 'Popular',
+      accent_color: '#4ecdc4',
       features: [
         'Event coverage',
         'Team photos',
@@ -389,6 +408,7 @@ export const defaultPricingTiers: Record<string, PricingTier[]> = {
       price: 'R8,000',
       subtitle: '8 hours',
       featured: false,
+      accent_color: '#a855f7',
       features: [
         'Complete event coverage',
         'Multiple locations',
@@ -406,6 +426,7 @@ export const defaultPricingTiers: Record<string, PricingTier[]> = {
       price: 'R3,500',
       subtitle: '4 hours coverage',
       featured: false,
+      accent_color: '#ff6b6b',
       features: [
         'Professional photographer',
         '150+ edited images',
@@ -420,6 +441,7 @@ export const defaultPricingTiers: Record<string, PricingTier[]> = {
       subtitle: '8 hours coverage',
       featured: true,
       featured_text: 'Popular',
+      accent_color: '#4ecdc4',
       features: [
         'Professional photographer',
         '300+ edited images',
@@ -434,6 +456,7 @@ export const defaultPricingTiers: Record<string, PricingTier[]> = {
       price: 'R10,000',
       subtitle: 'Full day coverage',
       featured: false,
+      accent_color: '#a855f7',
       features: [
         'Lead + assistant photographer',
         '500+ edited images',
@@ -451,6 +474,7 @@ export const defaultPricingTiers: Record<string, PricingTier[]> = {
       price: 'R1,500',
       subtitle: '1 hour session',
       featured: false,
+      accent_color: '#ff6b6b',
       features: [
         'Professional photographer',
         '20+ edited images',
@@ -465,6 +489,7 @@ export const defaultPricingTiers: Record<string, PricingTier[]> = {
       subtitle: '2 hour session',
       featured: true,
       featured_text: 'Popular',
+      accent_color: '#4ecdc4',
       features: [
         'Professional photographer',
         '40+ edited images',
@@ -481,6 +506,7 @@ export const defaultPricingTiers: Record<string, PricingTier[]> = {
       price: 'R800',
       subtitle: 'Per graduate',
       featured: false,
+      accent_color: '#ff6b6b',
       features: [
         'Professional photographer',
         '10+ edited images',
@@ -495,6 +521,7 @@ export const defaultPricingTiers: Record<string, PricingTier[]> = {
       subtitle: 'Up to 5 graduates',
       featured: true,
       featured_text: 'Best Value',
+      accent_color: '#4ecdc4',
       features: [
         'Professional photographer',
         '40+ edited images',
@@ -511,6 +538,7 @@ export const defaultPricingTiers: Record<string, PricingTier[]> = {
       price: 'R1,200',
       subtitle: 'Up to 5 products',
       featured: false,
+      accent_color: '#ff6b6b',
       features: [
         'Professional photographer',
         '2 images per product',
@@ -525,6 +553,7 @@ export const defaultPricingTiers: Record<string, PricingTier[]> = {
       subtitle: 'Up to 10 products',
       featured: true,
       featured_text: 'Most Popular',
+      accent_color: '#4ecdc4',
       features: [
         'Professional photographer',
         '4 images per product',

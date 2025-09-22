@@ -1225,13 +1225,7 @@
     color: hsl(var(--foreground));
   }
   
-  .studio-card-duration {
-    @apply text-base text-muted-foreground mb-6;
-  }
   
-  .studio-card-feature {
-    @apply flex items-center text-sm text-muted-foreground mb-3;
-  }
   
   .studio-card-feature-icon {
     @apply w-4 h-4 mr-3 flex-shrink-0;
@@ -1345,26 +1339,62 @@
     color: var(--pricing-accent) !important;
   }
 
-  /* Duration/Subtitle: Muted but harmonious */
+  /* Duration/Subtitle: Uses card's accent color at 80% opacity - high specificity to override gradient sections */
+  .studio-card-accent .studio-card-duration,
   .studio-card-duration {
     @apply text-sm font-medium;
-    color: hsl(var(--pricing-accent-hue), calc(var(--pricing-accent-sat) / 3), 70%);
+    color: var(--pricing-accent) !important;
+    opacity: 0.8;
   }
 
-  /* Feature Icons: Bright accent variant for enhanced visibility */
+  /* Feature Icons: Circular design with enabled/disabled states */
   .studio-card-feature {
-    @apply flex items-center text-sm;
+    @apply flex items-center text-base mb-1 font-barlow font-light;
+    color: #ffffff;
+    opacity: 0.85;
   }
 
+  /* Commented out icon styles - kept for easy reversion */
+  /*
   .studio-card-feature-icon {
-    @apply w-5 h-5 mr-3 flex-shrink-0;
-    color: var(--pricing-accent-light);
+    @apply w-6 h-6 mr-3;
+    flex-shrink: 0;
+  }
+
+  .studio-card-feature-icon.enabled {
+    color: var(--pricing-accent);
+  }
+
+  .studio-card-feature-icon.disabled {
+    color: hsl(0, 0%, 40%);
+  }
+  */
+
+  /* Simple circle indicators for features */
+  .studio-card-feature-circle {
+    @apply w-3 h-3 mr-3 rounded-full;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+  }
+
+  .studio-card-feature-circle.enabled {
+    background: var(--pricing-border-color);
+    border: 1px solid var(--pricing-accent);
+  }
+
+  .studio-card-feature-circle.disabled {
+    background: hsl(0, 0%, 20%);
+    border: 1px solid hsl(0, 0%, 30%);
+  }
+
+  .studio-card-feature-disabled {
+    color: hsl(0, 0%, 55%) !important;
   }
 
 
-  /* Card description - light grey, not controlled by accent */
+  /* Card description - brighter grey for better readability */
   .studio-card-accent .text-center .text-muted-foreground {
-    color: #94a3b8 !important;
+    color: #b8c4d4 !important;
   }
 
   /* Featured Badge: Clean CSS variable integration */

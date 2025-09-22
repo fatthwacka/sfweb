@@ -1,5 +1,11 @@
 import { z } from 'zod';
 
+// Zod schema for individual pricing feature with toggle state
+export const pricingFeatureSchema = z.object({
+  text: z.string().min(1, 'Feature text is required'),
+  enabled: z.boolean().default(true)
+});
+
 // Zod schema for pricing tier
 export const pricingTierSchema = z.object({
   title: z.string().min(1, 'Title is required').max(50, 'Title must be less than 50 characters'),
@@ -8,7 +14,10 @@ export const pricingTierSchema = z.object({
   featured: z.boolean().default(false),
   featured_text: z.string().optional(),
   description: z.string().optional(),
-  features: z.array(z.string()).max(10, 'Maximum 10 features allowed').default([]),
+  features: z.union([
+    z.array(z.string()).max(10, 'Maximum 10 features allowed'), // Backward compatibility for existing string arrays
+    z.array(pricingFeatureSchema).max(10, 'Maximum 10 features allowed') // New feature objects with enabled state
+  ]).default([]),
   accent_color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Must be a valid hex color').default('#a855f7')
 });
 
@@ -37,6 +46,7 @@ export const pricingPackageSchema = z.object({
 });
 
 // TypeScript types inferred from Zod schemas
+export type PricingFeature = z.infer<typeof pricingFeatureSchema>;
 export type PricingTier = z.infer<typeof pricingTierSchema>;
 export type SectionColors = z.infer<typeof sectionColorsSchema>;
 export type PricingPackage = z.infer<typeof pricingPackageSchema>;
@@ -81,4 +91,29 @@ export function parsePageIdentifier(identifier: string): { pageType: 'photograph
   if (!['photography', 'videography'].includes(pageType)) return null;
 
   return { pageType, category };
+}
+
+// Helper functions for feature compatibility
+export function isNewFeatureFormat(features: string[] | PricingFeature[]): features is PricingFeature[] {
+  return features.length > 0 && typeof features[0] === 'object' && 'text' in features[0];
+}
+
+export function normalizeFeatures(features: string[] | PricingFeature[]): PricingFeature[] {
+  if (isNewFeatureFormat(features)) {
+    return features;
+  }
+  // Convert old string array to new format (all enabled by default)
+  return features.map(text => ({ text, enabled: true }));
+}
+
+export function convertToNewFeatureFormat(features: string[]): PricingFeature[] {
+  return features.map(text => ({ text, enabled: true }));
+}
+
+export function getFeatureDisplayText(feature: string | PricingFeature): string {
+  return typeof feature === 'string' ? feature : feature.text;
+}
+
+export function isFeatureEnabled(feature: string | PricingFeature): boolean {
+  return typeof feature === 'string' ? true : feature.enabled;
 }
