@@ -970,8 +970,10 @@ export function AdminContent({ userRole }: AdminContentProps) {
           { id: 'shoots', label: 'Shoots', icon: Camera },
           { id: 'images', label: 'Images', icon: FileImage },
           { id: 'galleries', label: 'Gallery Management', icon: Palette },
+          ...(userRole === 'super_admin' || userRole === 'staff' ? [
+            { id: 'site-management', label: 'Site Management', icon: Home }
+          ] : []),
           ...(userRole === 'super_admin' ? [
-            { id: 'site-management', label: 'Site Management', icon: Home },
             { id: 'staff', label: 'Staff Management', icon: Shield },
             { id: 'users', label: 'User Management', icon: User }
           ] : [])
@@ -2343,7 +2345,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
             </div>
           )}
 
-          {activeTab === 'site-management' && userRole === 'super_admin' && (
+          {activeTab === 'site-management' && (userRole === 'super_admin' || userRole === 'staff') && (
             <div className="space-y-8">
               <div className="bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-lg p-6 border border-purple-500/30">
                 <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
