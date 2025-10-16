@@ -43,6 +43,9 @@ These still use JSON configuration:
 - **Portfolio Migration**: Moved from JSON config to Supabase gradients API
 - **Enhanced Color System**: 8-color palette with HSL manipulation for sophisticated color schemes
 - **CategoryNavigation Component**: Reusable navigation for photography/videography categories
+- **Image Reordering Performance**: Optimized batch updates from 9-64 seconds to <700ms with SQL fixes
+- **Gallery Modal UX**: Large navigation bars, proper image scaling, mobile swipe support
+- **Subtle Hover Effects**: Reduced gallery hover darkening from ~30% to ~5% for better UX
 
 ### **Key Benefits**
 - ✅ Faster page loads (no config loading delays)
