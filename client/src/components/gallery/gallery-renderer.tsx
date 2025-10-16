@@ -637,11 +637,11 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
               <img
                 src={ImageUrl.forViewing(image.storagePath)}
                 alt={`Gallery image ${index + 1}`}
-                className="w-full h-auto object-cover transition-all duration-300 group-hover:brightness-90"
+                className="w-full h-auto object-cover transition-all duration-300 group-hover:brightness-95"
                 loading="lazy"
                 style={getBorderStyle()}
               />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
             </div>
           ))}
         </div>
@@ -660,11 +660,11 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
               <img
                 src={ImageUrl.forViewing(image.storagePath)}
                 alt={`Gallery image ${index + 1}`}
-                className="w-full h-full object-cover transition-all duration-300 group-hover:brightness-90"
+                className="w-full h-full object-cover transition-all duration-300 group-hover:brightness-95"
                 loading="lazy"
                 style={getBorderStyle()}
               />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
             </div>
           ))}
         </div>

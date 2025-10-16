@@ -705,13 +705,13 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                         <img
                           src={ImageUrl.forViewing(image.storagePath)}
                           alt={image.filename}
-                          className="w-full h-auto object-cover block transition-all duration-300 group-hover:brightness-90"
+                          className="w-full h-auto object-cover block transition-all duration-300 group-hover:brightness-[0.97]"
                           style={{ verticalAlign: 'top', ...getBorderStyle() }}
                           loading="lazy"
                         />
 
                         {/* Gallery image overlay */}
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/[0.03] transition-colors duration-300" />
 
                         {/* Selection indicator */}
                         {selectedImages.has(image.id) && (
@@ -783,13 +783,13 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                           <img
                             src={ImageUrl.forViewing(image.storagePath)}
                             alt={image.filename}
-                            className="w-full h-full object-cover transition-all duration-300 group-hover:brightness-90"
+                            className="w-full h-full object-cover transition-all duration-300 group-hover:brightness-[0.97]"
                             style={getBorderStyle()}
                             loading="lazy"
                           />
 
                           {/* Gallery image overlay */}
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/[0.03] transition-colors duration-300" />
 
                           {/* Selection indicator */}
                           {selectedImages.has(image.id) && (

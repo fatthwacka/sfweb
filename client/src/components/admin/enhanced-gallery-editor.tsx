@@ -360,34 +360,41 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
   const handleDrop = useCallback((e: React.DragEvent, targetImageId: string) => {
     e.preventDefault();
-    
+
     if (!draggedImage || draggedImage === targetImageId) {
       setDraggedImage(null);
       return;
     }
 
+    console.log('🎯 handleDrop called - draggedImage:', draggedImage, 'targetImageId:', targetImageId);
+
+    // Calculate new order and save it immediately with the correct values
     setImageOrder(currentOrder => {
       const newOrder = [...currentOrder];
       const draggedIndex = newOrder.indexOf(draggedImage);
       const targetIndex = newOrder.indexOf(targetImageId);
-      
+
+      console.log('📊 Order indices - dragged:', draggedIndex, 'target:', targetIndex);
+
       // Only proceed if both indices are valid
       if (draggedIndex !== -1 && targetIndex !== -1) {
         // Remove dragged item and insert at new position
         newOrder.splice(draggedIndex, 1);
         newOrder.splice(targetIndex, 0, draggedImage);
+
+        console.log('✅ New order calculated, triggering save with', newOrder.length, 'images');
+
+        // Trigger auto-save with the NEW order (not the stale state)
+        setTimeout(() => {
+          debouncedSaveImageOrder(newOrder, selectedCover);
+        }, 0);
       }
-      
+
       return newOrder;
     });
-    
-    // Trigger auto-save after order change
-    setTimeout(() => {
-      triggerImageOrderAutoSave();
-    }, 0);
-    
+
     setDraggedImage(null);
-  }, [draggedImage]);
+  }, [draggedImage, selectedCover, debouncedSaveImageOrder]);
 
   const handleDragEnd = useCallback(() => {
     setDraggedImage(null);
@@ -776,37 +783,16 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
               Gallery Live Preview
             </CardTitle>
             <div className="flex items-center gap-3">
-              {(() => {
-                switch (imageOrderSaveStatus.status) {
-                  case 'saving':
-                    return (
-                      <div className="flex items-center gap-2 text-blue-400">
-                        <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-                        <span className="text-sm">Saving...</span>
-                      </div>
-                    );
-                  case 'saved':
-                    return (
-                      <div className="flex items-center gap-2 text-green-400">
-                        <div className="w-4 h-4 border-2 border-green-400 rounded-full flex items-center justify-center">
-                          <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                        </div>
-                        <span className="text-sm">Saved</span>
-                      </div>
-                    );
-                  case 'error':
-                    return (
-                      <div className="flex items-center gap-2 text-red-400">
-                        <div className="w-4 h-4 border-2 border-red-400 rounded-full flex items-center justify-center">
-                          <div className="w-2 h-2 bg-red-400 rounded-full"></div>
-                        </div>
-                        <span className="text-sm">Save failed</span>
-                      </div>
-                    );
-                  default:
-                    return null;
-                }
-              })()}
+              {/* REMOVED: Blocking "Saving..." spinner for instant drag feedback */}
+              {/* Background persistence happens silently without UI indicators */}
+              {imageOrderSaveStatus.status === 'error' && (
+                <div className="flex items-center gap-2 text-amber-400" title="Background save will retry automatically">
+                  <div className="w-3 h-3 border-2 border-amber-400 rounded-full flex items-center justify-center">
+                    <div className="w-1.5 h-1.5 bg-amber-400 rounded-full"></div>
+                  </div>
+                  <span className="text-xs">Retrying...</span>
+                </div>
+              )}
             </div>
           </div>
         </CardHeader>

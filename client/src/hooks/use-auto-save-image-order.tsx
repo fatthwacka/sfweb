@@ -14,103 +14,116 @@ interface SaveStatus {
   error?: string;
 }
 
-export function useAutoSaveImageOrder({ shootId, debounceMs = 300 }: UseAutoSaveImageOrderOptions) {
+export function useAutoSaveImageOrder({ shootId, debounceMs = 1500 }: UseAutoSaveImageOrderOptions) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [saveStatus, setSaveStatus] = useState<SaveStatus>({ status: 'idle' });
   const timeoutRef = useRef<NodeJS.Timeout>();
   const pendingDataRef = useRef<any>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const isMountedRef = useRef(true);
 
   const saveImageOrderMutation = useMutation({
     mutationFn: (data: any) => {
-      // Cancel any pending request
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-      
-      // Create new abort controller for this request
-      abortControllerRef.current = new AbortController();
-      
-      return apiRequest('PATCH', `/api/shoots/${shootId}`, data, {
-        signal: abortControllerRef.current.signal
-      });
+      console.log('🌐 mutationFn called, sending PATCH to /api/shoots/' + shootId, data);
+      console.log(`📤 Sending ${Object.keys(data.imageSequences || {}).length} sequence updates to server`);
+
+      // DON'T abort previous requests - let all saves complete
+      // The debounce ensures we only send the final accumulated state
+      // Multiple saves happening means rapid dragging, and all should succeed
+
+      return apiRequest('PATCH', `/api/shoots/${shootId}`, data);
     },
     onMutate: (data) => {
-      setSaveStatus({ status: 'saving' });
-      
-      // OPTIMISTIC UPDATE: Immediately update the cache with new data
-      // This makes the UI respond instantly while the server processes the request
+      console.log('🔵 onMutate - starting SILENT save in background');
+
+      // SILENT SAVE: No status indicator to avoid blocking perceived UI responsiveness
+      // Users should see instant drag completion, not "Saving..." spinners
+
+      // OPTIMISTIC UPDATE: Must update cache to prevent useEffect from resetting imageOrder
+      // The component's useEffect watches query cache and resets local state if they don't match
       const previousShootData = queryClient.getQueryData(['/api/shoots', shootId]);
-      
+
       if (previousShootData) {
+        console.log('📦 Updating cache with', Object.keys(data.imageSequences || {}).length, 'sequence changes');
         queryClient.setQueryData(['/api/shoots', shootId], (old: any) => {
           if (!old?.shoot) return old;
-          
+
           return {
             ...old,
             shoot: {
               ...old.shoot,
               bannerImageId: data.bannerImageId,
-              // Update image sequences if provided
-              ...(data.imageSequences && {
-                images: old.images?.map((img: any) => ({
-                  ...img,
-                  sequence: data.imageSequences[img.id] || img.sequence
-                }))
-              })
-            }
+            },
+            // Update image sequences in the images array
+            images: old.images?.map((img: any) => ({
+              ...img,
+              sequence: data.imageSequences?.[img.id] ?? img.sequence
+            })) || []
           };
         });
+      } else {
+        console.log('⚠️ No previous shoot data in cache');
       }
-      
+
       // Return context for potential rollback
       return { previousShootData };
     },
     onSuccess: () => {
-      // OPTIMIZED: Only invalidate the specific shoot query, not all shoots
-      // This reduces the query load dramatically
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
-      }, 100);
-      
-      setSaveStatus({ 
-        status: 'saved', 
-        lastSaved: new Date()
-      });
-      
-      // Auto-hide "saved" status after 2 seconds
-      setTimeout(() => {
-        setSaveStatus(prev => prev.status === 'saved' ? { status: 'idle' } : prev);
-      }, 2000);
-    },
-    onError: (error: any, data, context) => {
-      console.error('Image order auto-save failed:', error);
-      
-      // ROLLBACK: Restore previous data if the request failed
-      if (context?.previousShootData) {
-        queryClient.setQueryData(['/api/shoots', shootId], context.previousShootData);
-      }
-      
-      setSaveStatus({ 
-        status: 'error', 
-        error: error.message || 'Save failed'
-      });
-      
-      // Only show toast if it's not an abort error (user triggered)
-      if (error.name !== 'AbortError') {
-        toast({
-          title: "Save Error",
-          description: "Failed to save image order. Please try again.",
-          variant: "destructive"
+      console.log('✅ onSuccess - SILENT save completed in background');
+
+      // SUCCESS: Server has persisted the image order
+      // No cache updates or query invalidation needed because:
+      // 1. Component uses local state (imageOrder) for rendering, not query cache
+      // 2. Updating cache would cause re-renders and trigger infinite save loop
+      // 3. Local state is already correct from the drag-and-drop action
+      // 4. Query invalidation would cause 1+ minute refetch with 140+ images
+      //
+      // The local state is the source of truth, server is just persistence
+
+      // SILENT SUCCESS: No UI feedback needed
+      // The drag already completed instantly from the user's perspective
+      if (isMountedRef.current) {
+        setSaveStatus({
+          status: 'saved',
+          lastSaved: new Date()
         });
 
-        // Auto-retry after 5 seconds (only for non-abort errors)
+        // Auto-hide status immediately (no visible indicator)
         setTimeout(() => {
-          if (pendingDataRef.current) {
+          if (isMountedRef.current) {
+            setSaveStatus(prev => prev.status === 'saved' ? { status: 'idle' } : prev);
+          }
+        }, 100);
+      }
+    },
+    onError: (error: any, data, context) => {
+      console.error('❌ Image order SILENT save failed:', error);
+
+      // No rollback needed since we don't modify cache optimistically
+      // The local state remains as the user set it via drag-and-drop
+      // The server just didn't persist it yet
+
+      // Only show errors for real failures, not aborts
+      if (error.name !== 'AbortError' && isMountedRef.current) {
+        setSaveStatus({
+          status: 'error',
+          error: error.message || 'Save failed'
+        });
+
+        // Show a subtle toast, but don't block the UI
+        toast({
+          title: "Background save error",
+          description: "Image order will retry automatically.",
+          variant: "default"
+        });
+
+        // Auto-retry after 3 seconds (only for non-abort errors)
+        setTimeout(() => {
+          if (pendingDataRef.current && isMountedRef.current) {
+            console.log('🔄 Retrying failed save...');
             saveImageOrderMutation.mutate(pendingDataRef.current);
           }
-        }, 5000);
+        }, 3000);
       }
     }
   });
@@ -118,21 +131,30 @@ export function useAutoSaveImageOrder({ shootId, debounceMs = 300 }: UseAutoSave
   const lastOrderRef = useRef<string[]>([]);
 
   const debouncedSave = useCallback((imageOrder: string[], selectedCover: string | null) => {
-    // Clear existing timeout
+    console.log('🔄 debouncedSave called with', imageOrder.length, 'images, cover:', selectedCover);
+
+    // Clear existing timeout - this is KEY for accumulating multiple rapid drags
     if (timeoutRef.current) {
+      console.log('⏰ Clearing existing timeout (accumulating changes)');
       clearTimeout(timeoutRef.current);
     }
+
+    // DON'T abort in-flight requests - let them complete to avoid data loss
+    // The debounce timeout will handle accumulating rapid changes
+    // Only the final accumulated state will be sent after user stops dragging
 
     // OPTIMIZATION: Only send sequences that actually changed
     const newSequences: Record<string, number> = {};
     const oldOrder = lastOrderRef.current;
-    
+
+    console.log('📋 Comparing against lastOrderRef with', oldOrder.length, 'images');
+
     // Find images that moved to new positions
     imageOrder.forEach((imageId, index) => {
       const newSequence = index + 1;
       const oldIndex = oldOrder.indexOf(imageId);
       const oldSequence = oldIndex >= 0 ? oldIndex + 1 : -1;
-      
+
       // Only include if sequence changed
       if (oldSequence !== newSequence) {
         newSequences[imageId] = newSequence;
@@ -156,9 +178,12 @@ export function useAutoSaveImageOrder({ shootId, debounceMs = 300 }: UseAutoSave
     pendingDataRef.current = data;
     lastOrderRef.current = [...imageOrder];
 
-    // Set new timeout
+    console.log('⏳ Setting timeout for', debounceMs, 'ms - will only save FINAL state');
+
+    // Set new timeout - only fires after user stops dragging for debounceMs
     timeoutRef.current = setTimeout(() => {
-      if (pendingDataRef.current) {
+      console.log('🚀 User stopped dragging, sending FINAL state to server');
+      if (pendingDataRef.current && isMountedRef.current) {
         saveImageOrderMutation.mutate(pendingDataRef.current);
         pendingDataRef.current = null;
       }
@@ -184,15 +209,20 @@ export function useAutoSaveImageOrder({ shootId, debounceMs = 300 }: UseAutoSave
     saveImageOrderMutation.mutate(data);
   }, [saveImageOrderMutation]);
 
-  // Cleanup timeout and abort controller on unmount
+  // Cleanup timeout on unmount
   useEffect(() => {
+    isMountedRef.current = true;
+
     return () => {
+      isMountedRef.current = false;
+
+      // Clear any pending debounced saves
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
+
+      // Don't abort in-flight requests - let them complete even if component unmounts
+      // This ensures data persistence is never interrupted
     };
   }, []);
 

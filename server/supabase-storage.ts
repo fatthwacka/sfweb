@@ -249,19 +249,19 @@ export class SupabaseStorage implements IStorage {
       // ULTRA OPTIMIZATION: Single SQL UPDATE with CASE statement for all images at once
       // This is the fastest possible approach for bulk updates
       const imageIds = entries.map(([id]) => id);
-      const caseStatement = entries.map(([id, sequence]) => 
+      const caseStatement = entries.map(([id, sequence]) =>
         `WHEN '${id}' THEN ${sequence}`
       ).join(' ');
-      
-      // Build the raw SQL query
+
+      // Build the raw SQL query with proper array casting for PostgreSQL ANY()
       const updateQuery = sql`
-        UPDATE ${images} 
+        UPDATE ${images}
         SET sequence = CASE id ${sql.raw(caseStatement)} END
-        WHERE id = ANY(${imageIds})
+        WHERE id = ANY(ARRAY[${sql.join(imageIds.map(id => sql`${id}`), sql`, `)}]::uuid[])
       `;
-      
+
       await db.execute(updateQuery);
-      
+
       const duration = Date.now() - startTime;
       console.log(`✅ SINGLE SQL batch update completed in ${duration}ms for ${entries.length} images`);
     } catch (error) {

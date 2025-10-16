@@ -1017,37 +1017,16 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                       Gallery Live Preview
                     </CardTitle>
                     <div className="flex items-center gap-3">
-                      {(() => {
-                        switch (imageOrderSaveStatus.status) {
-                          case 'saving':
-                            return (
-                              <div className="flex items-center gap-2 text-blue-400">
-                                <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-                                <span className="text-sm">Saving...</span>
-                              </div>
-                            );
-                          case 'saved':
-                            return (
-                              <div className="flex items-center gap-2 text-green-400">
-                                <div className="w-4 h-4 border-2 border-green-400 rounded-full flex items-center justify-center">
-                                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                                </div>
-                                <span className="text-sm">Saved</span>
-                              </div>
-                            );
-                          case 'error':
-                            return (
-                              <div className="flex items-center gap-2 text-red-400">
-                                <div className="w-4 h-4 border-2 border-red-400 rounded-full flex items-center justify-center">
-                                  <div className="w-2 h-2 bg-red-400 rounded-full"></div>
-                                </div>
-                                <span className="text-sm">Save failed</span>
-                              </div>
-                            );
-                          default:
-                            return null;
-                        }
-                      })()}
+                      {/* REMOVED: Blocking "Saving..." spinner for instant drag feedback */}
+                      {/* Background persistence happens silently without UI indicators */}
+                      {imageOrderSaveStatus.status === 'error' && (
+                        <div className="flex items-center gap-2 text-amber-400" title="Background save will retry automatically">
+                          <div className="w-3 h-3 border-2 border-amber-400 rounded-full flex items-center justify-center">
+                            <div className="w-1.5 h-1.5 bg-amber-400 rounded-full"></div>
+                          </div>
+                          <span className="text-xs">Retrying...</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardHeader>
