@@ -641,7 +641,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
           height: getCoverPicSize(),
           ...getBackgroundStyle(),
           ...(coverImage && {
-            backgroundImage: `url(${ImageUrl.forFullSize(coverImage.storagePath)})`,
+            backgroundImage: `url(${ImageUrl.forViewing(coverImage.storagePath)})`,
             backgroundSize: "cover",
             backgroundPosition: getCoverImageAlignment(),
           }),
@@ -673,16 +673,14 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
               <p className="text-gray-400">No images found in this gallery.</p>
             </div>
           ) : (
-            false ? (
-              <div 
+            (gallerySettings?.layoutStyle === 'masonry') ? (
+              <div
                 className="masonry-grid-seamless"
-                style={{ 
+                style={{
                   columnGap: getSpacingStyle(),
                   columnFill: 'balance',
                   orphans: 1,
-                  widows: 1,
-                  minHeight: images.length > 12 ? '100vh' : 'auto',
-                  columns: window.innerWidth >= 1150 ? '5' : window.innerWidth >= 1024 ? '4' : window.innerWidth >= 768 ? '3' : '2'
+                  widows: 1
                 }}
               >
                 {images
