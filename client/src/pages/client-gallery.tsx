@@ -126,6 +126,46 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [modalImageIndex, images.length]);
 
+  // Touch/swipe navigation for mobile
+  useEffect(() => {
+    if (modalImageIndex === null) return;
+
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX = e.changedTouches[0].screenX;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    };
+
+    const handleSwipe = () => {
+      const swipeThreshold = 50; // Minimum distance for a swipe
+      const diff = touchStartX - touchEndX;
+
+      if (Math.abs(diff) > swipeThreshold) {
+        if (diff > 0) {
+          // Swiped left - show next image
+          navigateModal("next");
+        } else {
+          // Swiped right - show previous image
+          navigateModal("prev");
+        }
+      }
+    };
+
+    window.addEventListener("touchstart", handleTouchStart);
+    window.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [modalImageIndex, images.length]);
+
   // Navbar hide/show on scroll
   useEffect(() => {
     let lastScrollY = window.scrollY;
@@ -878,43 +918,50 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
           {/* Close button */}
           <button
             onClick={closeModal}
-            className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-10"
+            className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-20"
           >
             <X className="w-8 h-8" />
           </button>
 
-          {/* Navigation arrows */}
+          {/* Left navigation bar - 1/3 screen height clickable area */}
           <button
             onClick={() => navigateModal("prev")}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors z-10"
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 h-1/3 w-16 md:w-24 flex items-center justify-center text-white hover:bg-white/10 transition-all z-10 group"
+            aria-label="Previous image"
           >
-            <ChevronLeft className="w-8 h-8" />
+            <ChevronLeft className="w-8 h-8 md:w-12 md:h-12 group-hover:scale-110 transition-transform" />
           </button>
 
+          {/* Right navigation bar - 1/3 screen height clickable area */}
           <button
             onClick={() => navigateModal("next")}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors z-10"
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 h-1/3 w-16 md:w-24 flex items-center justify-center text-white hover:bg-white/10 transition-all z-10 group"
+            aria-label="Next image"
           >
-            <ChevronRight className="w-8 h-8" />
+            <ChevronRight className="w-8 h-8 md:w-12 md:h-12 group-hover:scale-110 transition-transform" />
           </button>
 
-          {/* Modal image - uses transformed URL for faster loading */}
-          <div className="max-w-screen-lg max-h-screen p-4 flex items-center justify-center">
+          {/* Modal image container - properly sized to fill available space */}
+          <div className="w-full h-full p-4 md:p-8 flex items-center justify-center">
             <img
               src={ImageUrl.forViewing(images[modalImageIndex]?.storagePath)}
               alt={images[modalImageIndex]?.filename}
-              className="max-w-full max-h-full object-contain"
+              className="max-w-full max-h-full w-auto h-auto object-contain"
+              style={{
+                maxWidth: 'calc(100vw - 2rem)',
+                maxHeight: 'calc(100vh - 8rem)'
+              }}
             />
           </div>
 
           {/* Image info bar */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-4 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full text-white text-sm">
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-4 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full text-white text-sm z-20">
             <span>
               {modalImageIndex + 1} of {images.length}
             </span>
             <span>•</span>
-            <span>{images[modalImageIndex]?.originalName}</span>
-            <span>•</span>
+            <span className="hidden sm:inline">{images[modalImageIndex]?.originalName}</span>
+            <span className="hidden sm:inline">•</span>
             <button
               onClick={() =>
                 downloadImage(
