@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 // import { DatePicker } from "@/components/ui/date-picker";
 import { useToast } from "@/hooks/use-toast";
@@ -47,7 +48,11 @@ import {
   Check,
   Download,
   Star,
-  FolderPlus
+  FolderPlus,
+  Heart,
+  ThumbsUp,
+  ThumbsDown,
+  ArrowUpDown
 } from "lucide-react";
 
 interface Client {
@@ -92,6 +97,9 @@ interface Image {
   isPrivate: boolean;
   sequence: number;
   downloadCount: number;
+  heartsCount: number;
+  likesCount: number;
+  dislikesCount: number;
   createdAt: string;
   classification?: string;
   featuredImage?: boolean;
@@ -173,6 +181,18 @@ export function AdminContent({ userRole }: AdminContentProps) {
   // Image filters
   const [selectedClientFilter, setSelectedClientFilter] = useState<string>('__all__');
   const [selectedShootFilter, setSelectedShootFilter] = useState<string>('__all__');
+  const [imageSortBy, setImageSortBy] = useState<'date-newest' | 'date-oldest'>('date-newest');
+  const [engagementFilters, setEngagementFilters] = useState<{
+    hearts: boolean;
+    likes: boolean;
+    dislikes: boolean;
+    featured: boolean;
+  }>({
+    hearts: false,
+    likes: false,
+    dislikes: false,
+    featured: false
+  });
 
   // Fetch data with client-shoot relationships
   const { data: clients = [], isLoading: clientsLoading } = useQuery<Client[]>({
@@ -205,14 +225,14 @@ export function AdminContent({ userRole }: AdminContentProps) {
     setSelectedImages(newSelected);
   };
 
-  // Get filtered images based on current filters
+  // Get filtered and sorted images based on current filters
   const getFilteredImages = () => {
-    return images.filter(image => {
+    const filtered = images.filter(image => {
       // Search term filter
       if (searchTerm && !image.filename.toLowerCase().includes(searchTerm.toLowerCase())) {
         return false;
       }
-      
+
       // Client filter
       if (selectedClientFilter && selectedClientFilter !== '__all__') {
         const imageShoot = shoots.find(shoot => shoot.id === image.shootId);
@@ -220,13 +240,38 @@ export function AdminContent({ userRole }: AdminContentProps) {
           return false;
         }
       }
-      
+
       // Shoot filter
       if (selectedShootFilter && selectedShootFilter !== '__all__' && image.shootId !== selectedShootFilter) {
         return false;
       }
-      
+
+      // Engagement filters - if any filter is active, image must match at least one
+      const hasActiveFilters = Object.values(engagementFilters).some(Boolean);
+      if (hasActiveFilters) {
+        const matchesFilter = (
+          (engagementFilters.hearts && (image.heartsCount || 0) > 0) ||
+          (engagementFilters.likes && (image.likesCount || 0) > 0) ||
+          (engagementFilters.dislikes && (image.dislikesCount || 0) > 0) ||
+          (engagementFilters.featured && image.featuredImage)
+        );
+        if (!matchesFilter) {
+          return false;
+        }
+      }
+
       return true;
+    });
+
+    // Sort images based on selected sort option
+    return filtered.sort((a, b) => {
+      switch (imageSortBy) {
+        case 'date-oldest':
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        case 'date-newest':
+        default:
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
     });
   };
 
@@ -2003,7 +2048,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                         </SelectContent>
                       </Select>
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
                       <Label className="text-sm font-medium">Filter by Shoot:</Label>
                       <Select value={selectedShootFilter} onValueChange={setSelectedShootFilter}>
@@ -2022,14 +2067,101 @@ export function AdminContent({ userRole }: AdminContentProps) {
                         </SelectContent>
                       </Select>
                     </div>
-                    
-                    {(selectedClientFilter !== '__all__' || selectedShootFilter !== '__all__') && (
+
+                    <div className="flex items-center gap-2">
+                      <Label className="text-sm font-medium">Sort by:</Label>
+                      <Select value={imageSortBy} onValueChange={(value: any) => setImageSortBy(value)}>
+                        <SelectTrigger className="w-40">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="date-newest">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="w-3 h-3" />
+                              Date (Newest)
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="date-oldest">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="w-3 h-3" />
+                              Date (Oldest)
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <Label className="text-sm font-medium">Filter by engagement:</Label>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="filter-hearts"
+                            checked={engagementFilters.hearts}
+                            onCheckedChange={(checked) => 
+                              setEngagementFilters(prev => ({ ...prev, hearts: !!checked }))
+                            }
+                          />
+                          <Label htmlFor="filter-hearts" className="text-sm cursor-pointer flex items-center gap-1">
+                            <Heart className="w-3 h-3" />
+                            Hearts
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="filter-likes"
+                            checked={engagementFilters.likes}
+                            onCheckedChange={(checked) => 
+                              setEngagementFilters(prev => ({ ...prev, likes: !!checked }))
+                            }
+                          />
+                          <Label htmlFor="filter-likes" className="text-sm cursor-pointer flex items-center gap-1">
+                            <ThumbsUp className="w-3 h-3" />
+                            Likes
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="filter-dislikes"
+                            checked={engagementFilters.dislikes}
+                            onCheckedChange={(checked) => 
+                              setEngagementFilters(prev => ({ ...prev, dislikes: !!checked }))
+                            }
+                          />
+                          <Label htmlFor="filter-dislikes" className="text-sm cursor-pointer flex items-center gap-1">
+                            <ThumbsDown className="w-3 h-3" />
+                            Dislikes
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="filter-featured"
+                            checked={engagementFilters.featured}
+                            onCheckedChange={(checked) => 
+                              setEngagementFilters(prev => ({ ...prev, featured: !!checked }))
+                            }
+                          />
+                          <Label htmlFor="filter-featured" className="text-sm cursor-pointer flex items-center gap-1">
+                            <Star className="w-3 h-3" />
+                            Featured
+                          </Label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {(selectedClientFilter !== '__all__' || selectedShootFilter !== '__all__' || Object.values(engagementFilters).some(Boolean)) && (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => {
                           setSelectedClientFilter('__all__');
                           setSelectedShootFilter('__all__');
+                          setEngagementFilters({
+                            hearts: false,
+                            likes: false,
+                            dislikes: false,
+                            featured: false
+                          });
                         }}
                         className="text-xs"
                       >
@@ -2215,9 +2347,40 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                     </span>
                                   </div>
                                 </div>
-                                
+
                                 {/* Featured Status and Action Buttons */}
                                 <div className="flex gap-1 items-center">
+                                  {/* Interaction Counts with notification bubbles */}
+                                  <div className="relative" title="Hearts">
+                                    <Heart className="w-4 h-4 text-gray-400" />
+                                    {(image.heartsCount || 0) > 0 && (
+                                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                                        {image.heartsCount > 9 ? '9+' : image.heartsCount}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <div className="relative" title="Likes">
+                                    <ThumbsUp className="w-4 h-4 text-gray-400" />
+                                    {(image.likesCount || 0) > 0 && (
+                                      <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[9px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                                        {image.likesCount > 9 ? '9+' : image.likesCount}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <div className="relative" title="Dislikes">
+                                    <ThumbsDown className="w-4 h-4 text-gray-400" />
+                                    {(image.dislikesCount || 0) > 0 && (
+                                      <span className="absolute -top-1 -right-1 bg-yellow-500 text-white text-[9px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                                        {image.dislikesCount > 9 ? '9+' : image.dislikesCount}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {/* Divider */}
+                                  <div className="w-px h-4 bg-border mx-0.5"></div>
+
                                   {/* Featured Toggle Button - Always visible */}
                                   <Button 
                                     size="sm" 
