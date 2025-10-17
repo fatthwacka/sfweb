@@ -521,16 +521,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { slug } = req.params;
       const client = await storage.getClientBySlug(slug);
-      
+
       if (!client) {
         return res.status(404).json({ message: "Client not found" });
       }
 
       // Use email-based matching for shoots
       const shoots = client.email ? await storage.getShootsByClientEmail(client.email) : [];
-      res.json({ client, shoots });
+
+      // Fetch images for each shoot to get cover images
+      const shootsWithImages = await Promise.all(
+        shoots.map(async (shoot) => {
+          const images = await storage.getImagesByShoot(shoot.id);
+          return { ...shoot, images };
+        })
+      );
+
+      res.json({ client, shoots: shootsWithImages });
     } catch (error) {
       console.error("Client fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch client" });
+    }
+  });
+
+  app.get("/api/clients/by-email/:email", async (req, res) => {
+    try {
+      const { email } = req.params;
+      const client = await storage.getClientByEmail(email);
+
+      if (!client) {
+        return res.status(404).json({ message: "Client not found" });
+      }
+
+      res.json(client);
+    } catch (error) {
+      console.error("Client fetch by email error:", error);
       res.status(500).json({ message: "Failed to fetch client" });
     }
   });
@@ -1072,7 +1097,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Image upload endpoint with Supabase storage
-  app.post("/api/images/upload", upload.array('images', 20), async (req, res) => {
+  // Supports up to 50 images per batch upload (10MB each max)
+  // TODO: Implement proper upload manager with resumable uploads for larger batches
+  app.post("/api/images/upload", upload.array('images', 50), async (req, res) => {
     try {
       const files = req.files as Express.Multer.File[];
       const { shootId } = req.body;

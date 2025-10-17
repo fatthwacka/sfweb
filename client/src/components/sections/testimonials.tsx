@@ -4,8 +4,6 @@ import { useSiteConfig } from "@/hooks/use-site-config";
 import { GradientBackground } from "@/components/common/gradient-background";
 
 export function Testimonials() {
-  const [startIndex, setStartIndex] = useState(0);
-  
   // Hardcoded testimonials for SEO - crawlers will see this content immediately
   const testimonials = [
     {
@@ -62,26 +60,35 @@ export function Testimonials() {
     }
   ];
 
-  // Auto-advance every 4 seconds
+  // Track indices for each of the 3 card positions
+  const [cardIndices, setCardIndices] = useState([0, 1, 2]);
+
+  // Auto-advance - pick a random card position and update it to a new random testimonial
   useEffect(() => {
     const interval = setInterval(() => {
-      setStartIndex((prevIndex) => (prevIndex + 1) % testimonials.length);
-    }, 4000);
-    
+      setCardIndices((prevIndices) => {
+        // Pick a random card position (0, 1, or 2)
+        const cardPosition = Math.floor(Math.random() * 3);
+
+        // Get testimonial indices that are NOT currently visible
+        const availableIndices = testimonials
+          .map((_, i) => i)
+          .filter((i) => !prevIndices.includes(i));
+
+        // Pick a random testimonial from available ones
+        const newIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+
+        // Update just that one card position
+        const newIndices = [...prevIndices];
+        newIndices[cardPosition] = newIndex;
+        return newIndices;
+      });
+    }, 900); // Update every 0.9 seconds
+
     return () => clearInterval(interval);
   }, [testimonials.length]);
 
-  // Get 3 visible cards based on current start index
-  const getVisibleCards = () => {
-    const visible = [];
-    for (let i = 0; i < 3; i++) {
-      const index = (startIndex + i) % testimonials.length;
-      visible.push(testimonials[index]);
-    }
-    return visible;
-  };
-
-  const visibleCards = getVisibleCards();
+  const visibleCards = cardIndices.map((index) => testimonials[index]);
 
   // Array of gradient backgrounds for variety
   const gradients = [
@@ -93,9 +100,9 @@ export function Testimonials() {
     'linear-gradient(135deg, hsl(300, 25%, 18%) 0%, hsl(300, 20%, 16%) 50%, hsl(280, 20%, 14%) 100%)'  // Pink tint
   ];
 
-  // Generate background for each card based on position and time
-  const getCardGradient = (cardIndex) => {
-    const gradientIndex = (startIndex + cardIndex) % gradients.length;
+  // Generate background for each card based on testimonial ID
+  const getCardGradient = (testimonialIndex) => {
+    const gradientIndex = testimonialIndex % gradients.length;
     return gradients[gradientIndex];
   };
 
@@ -111,14 +118,14 @@ export function Testimonials() {
           </p>
         </div>
 
-        {/* 3-Card Grid - Content cycles through positions */}
+        {/* 3-Card Grid - Individual cards cycle randomly */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {visibleCards.map((testimonial, index) => (
-            <div 
-              key={`${testimonial.id}-${startIndex}-${index}`}
+          {visibleCards.map((testimonial, cardPosition) => (
+            <div
+              key={`${testimonial.id}-${cardIndices[cardPosition]}`}
               className="rounded-2xl p-8 border border-border hover:border-gold transition-all duration-300 shadow-lg backdrop-blur-sm"
               style={{
-                background: getCardGradient(index),
+                background: getCardGradient(cardIndices[cardPosition]),
                 boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 107, 107, 0.1)'
               }}
             >

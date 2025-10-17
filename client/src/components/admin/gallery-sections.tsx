@@ -588,26 +588,6 @@ export function AddImagesSection({ onUpload, isUploading, toast, shootId }: AddI
                   <Upload className="w-4 h-4 mr-2" />
                   {isUploading ? 'Uploading...' : `Upload ${selectedFiles.length > 0 ? `${selectedFiles.length} ` : ''}Images`}
                 </Button>
-                
-                {/* Futuristic Upload Progress Overlay */}
-                {isUploading && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-salmon/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                    <div className="flex items-center space-x-2">
-                      <div className="relative">
-                        <div className="w-6 h-6 border-2 border-cyan-300/30 rounded-full"></div>
-                        <div className="absolute inset-0 w-6 h-6 border-2 border-t-cyan-400 border-r-purple-400 border-b-salmon border-l-transparent rounded-full animate-spin"></div>
-                      </div>
-                      <div className="text-white font-semibold text-sm tracking-wider">
-                        UPLOADING
-                      </div>
-                      <div className="flex space-x-1">
-                        <div className="w-1 h-1 bg-cyan-400 rounded-full animate-pulse"></div>
-                        <div className="w-1 h-1 bg-purple-400 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-                        <div className="w-1 h-1 bg-salmon rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             )}
             {isExpanded ? (
@@ -689,7 +669,7 @@ export function AddImagesSection({ onUpload, isUploading, toast, shootId }: AddI
             </div>
           )}
           <p className="text-xs text-muted-foreground mt-2">
-            Supports: JPG, PNG, WEBP • Max 10MB per image • Bulk upload supported
+            Supports: JPG, PNG, WEBP • Max 10MB per image • Up to 50 images per batch
           </p>
         </div>
         </CardContent>

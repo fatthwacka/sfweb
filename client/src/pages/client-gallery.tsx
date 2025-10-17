@@ -14,6 +14,7 @@ import {
   X,
   Eye,
   Info,
+  ChevronDown,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -56,6 +57,13 @@ interface Image {
   createdAt: string;
 }
 
+interface Client {
+  id: number;
+  name: string;
+  slug: string;
+  email: string;
+}
+
 export default function ClientGallery({ shootId }: { shootId?: string }) {
   const params = useParams();
   const { toast } = useToast();
@@ -84,6 +92,12 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
   // Fetch all shoots for the same client to enable next/previous album navigation
   const { data: clientShoots = [] } = useQuery({
     queryKey: ["/api/shoots", "client", shoot?.clientId],
+    enabled: !!shoot?.clientId,
+  });
+
+  // Fetch client information for portfolio link
+  const { data: client } = useQuery<Client>({
+    queryKey: ["/api/clients/by-email", shoot?.clientId],
     enabled: !!shoot?.clientId,
   });
 
@@ -571,22 +585,20 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
               </div>
             )}
 
-            {/* VIEW GALLERY Button */}
-            <Button
-              onClick={() => {
-                document.querySelector('.gallery-container-public')?.scrollIntoView({ 
-                  behavior: 'smooth', 
-                  block: 'start' 
-                });
-              }}
-              className="border border-white/40 text-white hover:bg-white hover:text-black transition-all duration-300 px-6 py-2 rounded-md font-barlow font-medium text-sm uppercase tracking-wide bg-transparent"
-            >
-              VIEW GALLERY
-            </Button>
+            {/* Client Portfolio Button */}
+            {client && (
+              <Link href={`/portfolio/${client.slug}`}>
+                <Button
+                  className="border border-white/40 text-white hover:bg-white hover:text-black transition-all duration-300 px-6 py-2 rounded-md font-barlow font-medium text-sm uppercase tracking-wide bg-transparent"
+                >
+                  {client.name.split(' ')[0]}
+                </Button>
+              </Link>
+            )}
 
             {/* Action Icons Row */}
             <div className="flex items-center justify-center gap-6 mt-4">
-              
+
               {/* Logo/Home Link */}
               <div className="relative group flex items-center justify-center">
                 <Link href="/" className="flex items-center justify-center">
@@ -597,27 +609,36 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                   />
                 </Link>
                 <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-black/90 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
-                  SlyFox Studios
+                  Slyfox - home
+                </div>
+              </div>
+
+              {/* View Album Icon (Down Arrow) */}
+              <div className="relative group flex items-center justify-center">
+                <button
+                  onClick={() => {
+                    document.querySelector('.gallery-container-public')?.scrollIntoView({
+                      behavior: 'smooth',
+                      block: 'start'
+                    });
+                  }}
+                  className="bg-transparent text-white hover:scale-110 transition-all duration-300 p-0 flex items-center justify-center"
+                >
+                  <ChevronDown className="w-7 h-7" />
+                </button>
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-black/90 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
+                  View Album
                 </div>
               </div>
 
               {/* Shoot Info Icon */}
               <div className="relative group flex items-center justify-center">
-                <Info className="w-6 h-6 text-white cursor-default hover:scale-110 transition-all duration-300" />
-                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-black/90 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
-                  <div className="flex items-center gap-4">
-                    {shoot.location && (
-                      <div className="flex items-center">
-                        <MapPin className="w-3 h-3 mr-1" />
-                        {shoot.location}
-                      </div>
-                    )}
-                    {shoot.shootDate && (
-                      <div className="flex items-center">
-                        <Calendar className="w-3 h-3 mr-1" />
-                        {new Date(shoot.shootDate).toLocaleDateString()}
-                      </div>
-                    )}
+                <Info className="w-7 h-7 text-white cursor-default hover:scale-110 transition-all duration-300" />
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-4 py-3 bg-black/90 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none max-w-lg">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="font-semibold">{shoot.customTitle || shoot.title}</div>
+                    {shoot.location && <div className="text-gray-300">{shoot.location}</div>}
+                    {shoot.description && <div className="text-gray-400 break-words">{shoot.description}</div>}
                   </div>
                 </div>
               </div>
