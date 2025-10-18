@@ -15,6 +15,9 @@ import {
   Eye,
   Info,
   ChevronDown,
+  Heart,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -64,6 +67,34 @@ interface Client {
   email: string;
 }
 
+// LocalStorage key for user interactions
+const INTERACTIONS_STORAGE_KEY = 'slyfox_image_interactions';
+
+interface ImageInteraction {
+  imageId: string;
+  type: 'heart' | 'like' | 'dislike';
+  timestamp: number;
+}
+
+// Helper to get user interactions from localStorage
+const getUserInteractions = (): ImageInteraction[] => {
+  try {
+    const stored = localStorage.getItem(INTERACTIONS_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+};
+
+// Helper to save user interactions to localStorage
+const saveUserInteractions = (interactions: ImageInteraction[]) => {
+  try {
+    localStorage.setItem(INTERACTIONS_STORAGE_KEY, JSON.stringify(interactions));
+  } catch (error) {
+    console.error('Failed to save interactions to localStorage:', error);
+  }
+};
+
 export default function ClientGallery({ shootId }: { shootId?: string }) {
   const params = useParams();
   const { toast } = useToast();
@@ -71,7 +102,18 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
   const [visibleImageCount, setVisibleImageCount] = useState(30);
   const [modalImageIndex, setModalImageIndex] = useState<number | null>(null);
   const [navbarVisible, setNavbarVisible] = useState(true);
+  const [userInteractions, setUserInteractions] = useState<Map<string, 'heart' | 'like' | 'dislike'>>(new Map());
   const slug = shootId || params.slug;
+
+  // Load user interactions from localStorage on mount
+  useEffect(() => {
+    const interactions = getUserInteractions();
+    const interactionMap = new Map<string, 'heart' | 'like' | 'dislike'>();
+    interactions.forEach(({ imageId, type }) => {
+      interactionMap.set(imageId, type);
+    });
+    setUserInteractions(interactionMap);
+  }, []);
 
   // Fetch shoot data directly by slug - this is a public gallery for a single shoot
   const {
@@ -306,6 +348,69 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
           variant: "destructive",
         });
       });
+  };
+
+  // Handle image interactions (heart, like, dislike)
+  const handleImageInteraction = async (imageId: string, type: 'heart' | 'like' | 'dislike', e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    // Check if user already has this interaction
+    const currentInteraction = userInteractions.get(imageId);
+    const action = currentInteraction === type ? 'remove' : 'add';
+
+    // Optimistically update UI
+    const newInteractions = new Map(userInteractions);
+    if (action === 'remove') {
+      newInteractions.delete(imageId);
+    } else {
+      newInteractions.set(imageId, type);
+    }
+    setUserInteractions(newInteractions);
+
+    // Save to localStorage
+    const storageInteractions = getUserInteractions().filter(i => i.imageId !== imageId);
+    if (action === 'add') {
+      storageInteractions.push({ imageId, type, timestamp: Date.now() });
+    }
+    saveUserInteractions(storageInteractions);
+
+    // Send to backend
+    try {
+      const response = await fetch(`/api/images/${imageId}/interact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ type, action }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update interaction');
+      }
+
+      // Show success toast
+      const messages = {
+        heart: action === 'add' ? 'Added to favorites ❤️' : 'Removed from favorites',
+        like: action === 'add' ? 'Liked 👍' : 'Like removed',
+        dislike: action === 'add' ? 'Disliked 👎' : 'Dislike removed'
+      };
+
+      toast({
+        title: messages[type],
+        duration: 2000,
+      });
+    } catch (error) {
+      // Revert optimistic update on error
+      setUserInteractions(userInteractions);
+      const originalInteractions = getUserInteractions();
+      saveUserInteractions(originalInteractions);
+
+      toast({
+        title: "Failed to save interaction",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    }
   };
 
   if (shootLoading) {
@@ -783,37 +888,89 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
                         {/* Hover overlay with buttons at bottom */}
                         <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                          <div className="absolute bottom-2 left-2 right-2 flex justify-center gap-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                downloadImage(
-                                  image.storagePath,
-                                  image.originalName,
-                                );
-                              }}
-                              className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                              title="Download Image"
-                            >
-                              <Download className="w-4 h-4 text-white" />
-                            </button>
-                            <button
-                              onClick={(e) => handleShareImage(actualIndex, e)}
-                              className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                              title="Share Image"
-                            >
-                              <Share2 className="w-4 h-4 text-white" />
-                            </button>
-                            <a
-                              href={ImageUrl.forFullSize(image.storagePath)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                              title="View Full Resolution"
-                            >
-                              <Eye className="w-4 h-4 text-white" />
-                            </a>
+                          <div className="absolute bottom-2 left-2 right-2 flex justify-between gap-2">
+                            {/* Left side - Interaction buttons */}
+                            <div className="flex gap-2">
+                              <button
+                                onClick={(e) => handleImageInteraction(image.id, 'heart', e)}
+                                className={`backdrop-blur-sm p-2 rounded-full hover:bg-red-500 transition-colors ${
+                                  userInteractions.get(image.id) === 'heart'
+                                    ? 'bg-red-500'
+                                    : 'bg-white/20'
+                                }`}
+                                title="Love"
+                              >
+                                <Heart className={`w-4 h-4 ${
+                                  userInteractions.get(image.id) === 'heart'
+                                    ? 'fill-white text-white'
+                                    : 'text-white'
+                                }`} />
+                              </button>
+                              <button
+                                onClick={(e) => handleImageInteraction(image.id, 'like', e)}
+                                className={`backdrop-blur-sm p-2 rounded-full hover:bg-green-500 transition-colors ${
+                                  userInteractions.get(image.id) === 'like'
+                                    ? 'bg-green-500'
+                                    : 'bg-white/20'
+                                }`}
+                                title="Like"
+                              >
+                                <ThumbsUp className={`w-4 h-4 ${
+                                  userInteractions.get(image.id) === 'like'
+                                    ? 'fill-white text-white'
+                                    : 'text-white'
+                                }`} />
+                              </button>
+                              <button
+                                onClick={(e) => handleImageInteraction(image.id, 'dislike', e)}
+                                className={`backdrop-blur-sm p-2 rounded-full hover:bg-yellow-500 transition-colors ${
+                                  userInteractions.get(image.id) === 'dislike'
+                                    ? 'bg-yellow-500'
+                                    : 'bg-white/20'
+                                }`}
+                                title="Dislike"
+                              >
+                                <ThumbsDown className={`w-4 h-4 ${
+                                  userInteractions.get(image.id) === 'dislike'
+                                    ? 'fill-white text-white'
+                                    : 'text-white'
+                                }`} />
+                              </button>
+                            </div>
+
+                            {/* Right side - Action buttons */}
+                            <div className="flex gap-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  downloadImage(
+                                    image.storagePath,
+                                    image.originalName,
+                                  );
+                                }}
+                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
+                                title="Download Image"
+                              >
+                                <Download className="w-4 h-4 text-white" />
+                              </button>
+                              <button
+                                onClick={(e) => handleShareImage(actualIndex, e)}
+                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
+                                title="Share Image"
+                              >
+                                <Share2 className="w-4 h-4 text-white" />
+                              </button>
+                              <a
+                                href={ImageUrl.forFullSize(image.storagePath)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="bg-white/20 backdrop-blur-sm px-3 py-2 rounded-full hover:bg-white/30 transition-colors flex items-center justify-center"
+                                title="View Full Resolution"
+                              >
+                                <span className="text-white text-xs font-bold">HD</span>
+                              </a>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -861,37 +1018,89 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
                           {/* Hover overlay with buttons at bottom */}
                           <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <div className="absolute bottom-2 left-2 right-2 flex justify-center gap-2">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  downloadImage(
-                                    image.storagePath,
-                                    image.originalName,
-                                  );
-                                }}
-                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                                title="Download Image"
-                              >
-                                <Download className="w-4 h-4 text-white" />
-                              </button>
-                              <button
-                                onClick={(e) => handleShareImage(actualIndex, e)}
-                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                                title="Share Image"
-                              >
-                                <Share2 className="w-4 h-4 text-white" />
-                              </button>
-                              <a
-                                href={ImageUrl.forFullSize(image.storagePath)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                                title="View Full Resolution"
-                              >
-                                <Eye className="w-4 h-4 text-white" />
-                              </a>
+                            <div className="absolute bottom-2 left-2 right-2 flex justify-between gap-2">
+                              {/* Left side - Interaction buttons */}
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={(e) => handleImageInteraction(image.id, 'heart', e)}
+                                  className={`backdrop-blur-sm p-2 rounded-full hover:bg-red-500 transition-colors ${
+                                    userInteractions.get(image.id) === 'heart'
+                                      ? 'bg-red-500'
+                                      : 'bg-white/20'
+                                  }`}
+                                  title="Love"
+                                >
+                                  <Heart className={`w-4 h-4 ${
+                                    userInteractions.get(image.id) === 'heart'
+                                      ? 'fill-white text-white'
+                                      : 'text-white'
+                                  }`} />
+                                </button>
+                                <button
+                                  onClick={(e) => handleImageInteraction(image.id, 'like', e)}
+                                  className={`backdrop-blur-sm p-2 rounded-full hover:bg-green-500 transition-colors ${
+                                    userInteractions.get(image.id) === 'like'
+                                      ? 'bg-green-500'
+                                      : 'bg-white/20'
+                                  }`}
+                                  title="Like"
+                                >
+                                  <ThumbsUp className={`w-4 h-4 ${
+                                    userInteractions.get(image.id) === 'like'
+                                      ? 'fill-white text-white'
+                                      : 'text-white'
+                                  }`} />
+                                </button>
+                                <button
+                                  onClick={(e) => handleImageInteraction(image.id, 'dislike', e)}
+                                  className={`backdrop-blur-sm p-2 rounded-full hover:bg-yellow-500 transition-colors ${
+                                    userInteractions.get(image.id) === 'dislike'
+                                      ? 'bg-yellow-500'
+                                      : 'bg-white/20'
+                                  }`}
+                                  title="Dislike"
+                                >
+                                  <ThumbsDown className={`w-4 h-4 ${
+                                    userInteractions.get(image.id) === 'dislike'
+                                      ? 'fill-white text-white'
+                                      : 'text-white'
+                                  }`} />
+                                </button>
+                              </div>
+
+                              {/* Right side - Action buttons */}
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    downloadImage(
+                                      image.storagePath,
+                                      image.originalName,
+                                    );
+                                  }}
+                                  className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
+                                  title="Download Image"
+                                >
+                                  <Download className="w-4 h-4 text-white" />
+                                </button>
+                                <button
+                                  onClick={(e) => handleShareImage(actualIndex, e)}
+                                  className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
+                                  title="Share Image"
+                                >
+                                  <Share2 className="w-4 h-4 text-white" />
+                                </button>
+                                <a
+                                  href={ImageUrl.forFullSize(image.storagePath)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="bg-white/20 backdrop-blur-sm px-3 py-2 rounded-full hover:bg-white/30 transition-colors flex items-center justify-center"
+                                  title="View Full Resolution"
+                                >
+                                  <span className="text-white text-xs font-bold">HD</span>
+                                </a>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -975,14 +1184,69 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
             />
           </div>
 
-          {/* Image info bar */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-4 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full text-white text-sm z-20">
+          {/* Image info bar with interaction buttons */}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-3 bg-black/50 backdrop-blur-sm px-4 py-3 rounded-full text-white text-sm z-20">
+            {/* Image counter */}
             <span>
               {modalImageIndex + 1} of {images.length}
             </span>
-            <span>•</span>
-            <span className="hidden sm:inline">{images[modalImageIndex]?.originalName}</span>
+            
+            {/* Filename (hidden on mobile for space) */}
+            <span className="hidden md:inline">•</span>
+            <span className="hidden md:inline truncate max-w-32">{images[modalImageIndex]?.originalName}</span>
+            
+            {/* Interaction buttons */}
             <span className="hidden sm:inline">•</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={(e) => handleImageInteraction(images[modalImageIndex]?.id, 'heart', e)}
+                className={`p-2 rounded-full hover:bg-red-500/80 transition-colors ${
+                  userInteractions.get(images[modalImageIndex]?.id) === 'heart'
+                    ? 'bg-red-500'
+                    : 'bg-white/20'
+                }`}
+                title="Love"
+              >
+                <Heart className={`w-4 h-4 ${
+                  userInteractions.get(images[modalImageIndex]?.id) === 'heart'
+                    ? 'fill-white text-white'
+                    : 'text-white'
+                }`} />
+              </button>
+              <button
+                onClick={(e) => handleImageInteraction(images[modalImageIndex]?.id, 'like', e)}
+                className={`p-2 rounded-full hover:bg-green-500/80 transition-colors ${
+                  userInteractions.get(images[modalImageIndex]?.id) === 'like'
+                    ? 'bg-green-500'
+                    : 'bg-white/20'
+                }`}
+                title="Like"
+              >
+                <ThumbsUp className={`w-4 h-4 ${
+                  userInteractions.get(images[modalImageIndex]?.id) === 'like'
+                    ? 'fill-white text-white'
+                    : 'text-white'
+                }`} />
+              </button>
+              <button
+                onClick={(e) => handleImageInteraction(images[modalImageIndex]?.id, 'dislike', e)}
+                className={`p-2 rounded-full hover:bg-yellow-500/80 transition-colors ${
+                  userInteractions.get(images[modalImageIndex]?.id) === 'dislike'
+                    ? 'bg-yellow-500'
+                    : 'bg-white/20'
+                }`}
+                title="Dislike"
+              >
+                <ThumbsDown className={`w-4 h-4 ${
+                  userInteractions.get(images[modalImageIndex]?.id) === 'dislike'
+                    ? 'fill-white text-white'
+                    : 'text-white'
+                }`} />
+              </button>
+            </div>
+            
+            {/* Download button */}
+            <span>•</span>
             <button
               onClick={() =>
                 downloadImage(
@@ -990,7 +1254,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                   images[modalImageIndex]?.originalName,
                 )
               }
-              className="hover:text-salmon transition-colors"
+              className="p-2 rounded-full hover:bg-white/30 bg-white/20 transition-colors"
               title="Download Image"
             >
               <Download className="w-4 h-4" />

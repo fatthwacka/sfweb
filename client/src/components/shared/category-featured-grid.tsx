@@ -267,22 +267,13 @@ export function CategoryFeaturedGrid({
         <DialogTitle className="sr-only">
           {currentImage ? `Viewing ${categoryKey} - ${currentImage.filename}` : 'Image Gallery'}
         </DialogTitle>
-        <DialogContent className="max-w-6xl w-full h-[90vh] p-0 border-none bg-black/95" aria-describedby="image-modal-description">
+        <DialogContent className="max-w-6xl w-full h-[90vh] p-0 border-none bg-black/95 [&>button]:!w-[18px] [&>button]:!h-[18px] [&>button>svg]:!w-[18px] [&>button>svg]:!h-[18px] [&>button]:text-white [&>button]:hover:bg-white/20" aria-describedby="image-modal-description">
           <div className="relative h-full flex items-center justify-center">
-            {/* Close Button */}
-            <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-4 right-4 z-50 text-white hover:bg-white/20"
-            onClick={() => setModalOpen(false)}
-          >
-            <X className="w-6 h-6" />
-          </Button>
 
-          {/* Previous Navigation Zone - Full height clickable area */}
+          {/* Previous Navigation Zone - 30% height centered clickable area */}
           {displayedImages.length > 1 && (
             <div
-              className="absolute left-0 top-0 bottom-0 w-20 z-50 flex items-center justify-start pl-4 bg-gradient-to-r from-black/20 to-transparent hover:from-black/40 cursor-pointer transition-all duration-200 group"
+              className="absolute left-0 top-1/2 -translate-y-1/2 h-[30%] w-20 z-50 flex items-center justify-start pl-4 bg-gradient-to-r from-black/20 to-transparent hover:from-black/40 cursor-pointer transition-all duration-200 group"
               onClick={prevImage}
               aria-label="Previous image"
             >
@@ -292,10 +283,10 @@ export function CategoryFeaturedGrid({
             </div>
           )}
 
-          {/* Next Navigation Zone - Full height clickable area */}
+          {/* Next Navigation Zone - 30% height centered clickable area */}
           {displayedImages.length > 1 && (
             <div
-              className="absolute right-0 top-0 bottom-0 w-20 z-50 flex items-center justify-end pr-4 bg-gradient-to-l from-black/20 to-transparent hover:from-black/40 cursor-pointer transition-all duration-200 group"
+              className="absolute right-0 top-1/2 -translate-y-1/2 h-[30%] w-20 z-50 flex items-center justify-end pr-4 bg-gradient-to-l from-black/20 to-transparent hover:from-black/40 cursor-pointer transition-all duration-200 group"
               onClick={nextImage}
               aria-label="Next image"
             >
