@@ -17,14 +17,14 @@ import { gradientRoutes } from './routes/gradients';
 import pricingPackagesRouter from './pricing-packages-api';
 import { sendContactEmail, validateEmailConfig, sendAlbumReadyEmail } from './email-service';
 import { verifyRecaptcha } from './recaptcha-service';
-import { eq, and } from 'drizzle-orm';
-import { 
-  insertUserSchema, insertClientSchema, insertShootSchema, 
+import { eq, and, sql } from 'drizzle-orm';
+import {
+  insertUserSchema, insertClientSchema, insertShootSchema,
   insertImageSchema, insertBookingSchema, insertAnalyticsSchema,
   updateImageSequenceSchema, updateAlbumCoverSchema, updateShootDetailsSchema,
   updateShootCustomizationSchema, insertShootPreviewSchema, insertClientSelectionSchema,
   insertSelectionPackageSchema,
-  clientSelections, selectionPackages, analytics, previewImages, shootPreviews
+  clientSelections, selectionPackages, analytics, previewImages, shootPreviews, images
 } from "@shared/schema";
 import { dropboxService } from './services/dropbox-service';
 import { z } from "zod";
@@ -1314,6 +1314,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Batch upload error:", error);
       res.status(500).json({ 
         message: "Failed to upload image",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Image interaction endpoint (hearts, likes, dislikes)
+  app.post("/api/images/:imageId/interact", async (req, res) => {
+    try {
+      const { imageId } = req.params;
+      const { type, action } = req.body;
+
+      // Validate interaction type
+      if (!['heart', 'like', 'dislike'].includes(type)) {
+        return res.status(400).json({
+          message: "Invalid interaction type. Must be 'heart', 'like', or 'dislike'"
+        });
+      }
+
+      // Validate action
+      if (!['add', 'remove'].includes(action)) {
+        return res.status(400).json({
+          message: "Invalid action. Must be 'add' or 'remove'"
+        });
+      }
+
+      // Map interaction type to database column (using camelCase as per schema)
+      const columnMap: Record<string, keyof typeof images.$inferSelect> = {
+        heart: 'heartsCount',
+        like: 'likesCount',
+        dislike: 'dislikesCount'
+      };
+      const column = columnMap[type];
+
+      // Update the count using Drizzle ORM
+      const increment = action === 'add' ? 1 : -1;
+
+      // Get current image
+      const currentImage = await db.select().from(images).where(eq(images.id, imageId)).limit(1);
+
+      if (!currentImage || currentImage.length === 0) {
+        return res.status(404).json({ message: "Image not found" });
+      }
+
+      // Calculate new count
+      const currentCount = (currentImage[0][column] as number) || 0;
+      const newCount = Math.max(0, currentCount + increment);
+
+      // Build update object based on interaction type
+      const updateData: any = {
+        lastInteractionAt: new Date()
+      };
+      updateData[column] = newCount;
+
+      // Update the image
+      await db.update(images)
+        .set(updateData)
+        .where(eq(images.id, imageId));
+
+      res.json({
+        success: true,
+        imageId,
+        type,
+        action,
+        newCount: Number(newCount)
+      });
+
+    } catch (error) {
+      console.error("Image interaction error:", error);
+      res.status(500).json({
+        message: "Failed to update image interaction",
         error: error instanceof Error ? error.message : "Unknown error"
       });
     }
