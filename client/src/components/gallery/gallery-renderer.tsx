@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ImageUrl } from "@/lib/image-utils";
-import { Eye, Crown, X, Trash2, Download } from "lucide-react";
+import { Eye, Crown, X, Trash2, Download, RotateCcw, Loader2 } from "lucide-react";
 import type { Image } from "@shared/schema";
 
 interface GallerySettings {
@@ -32,6 +32,8 @@ interface GalleryRendererProps {
   onDownloadImage?: (storagePath: string, filename: string) => void;
   onRemoveImage?: (imageId: string) => void;
   onDeleteImage?: (imageId: string) => void;
+  onReplaceImage?: (imageId: string) => void;
+  replacingImages?: Set<string>;
   isDragReorderingEnabled?: boolean;
   visibleImageCount?: number;
   dragStartTime?: number;
@@ -56,6 +58,8 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
   onDownloadImage,
   onRemoveImage,
   onDeleteImage,
+  onReplaceImage,
+  replacingImages = new Set(),
   isDragReorderingEnabled = false,
   visibleImageCount = 20,
   dragStartTime = 0,
@@ -304,32 +308,47 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
                       </div>
                     )}
                   
+                    {/* Spinner Overlay for Replacing Images */}
+                    {replacingImages.has(image.id) && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+                        <div className="bg-white rounded-lg p-4 shadow-lg flex items-center gap-2">
+                          <Loader2 className="w-5 h-5 animate-spin text-salmon" />
+                          <span className="text-sm font-medium text-gray-700">Replacing...</span>
+                        </div>
+                      </div>
+                    )}
+                  
                     {/* Hover Buttons */}
                     <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
                         {onViewFullRes && (
-                          <Button size="sm" variant="secondary" className="bg-purple-600 text-white hover:bg-purple-700" title="View Full Resolution" onClick={(e) => { e.stopPropagation(); onViewFullRes(image.storagePath); }}>
-                            <Eye className="w-3 h-3" />
+                          <Button size="xs" variant="secondary" className="bg-purple-600 text-white hover:bg-purple-700 w-6 h-6 p-0" title="View Full Resolution" onClick={(e) => { e.stopPropagation(); onViewFullRes(image.storagePath); }}>
+                            <Eye className="w-2.5 h-2.5" />
                           </Button>
                         )}
                         {onDownloadImage && (
-                          <Button size="sm" variant="secondary" className="bg-blue-600 text-white hover:bg-blue-700" title="Download Image" onClick={(e) => { e.stopPropagation(); onDownloadImage(image.storagePath, image.filename); }}>
-                            <Download className="w-3 h-3" />
+                          <Button size="xs" variant="secondary" className="bg-blue-600 text-white hover:bg-blue-700 w-6 h-6 p-0" title="Download Image" onClick={(e) => { e.stopPropagation(); onDownloadImage(image.storagePath, image.filename); }}>
+                            <Download className="w-2.5 h-2.5" />
                           </Button>
                         )}
                         {onCoverChange && (
-                          <Button size="sm" variant="secondary" className="bg-salmon text-white hover:bg-salmon-muted" title="Make Cover" onClick={(e) => { e.stopPropagation(); const newCover = selectedCover === image.id ? null : image.id; onCoverChange(newCover); if (saveAppearanceMutation) { saveAppearanceMutation.mutate({ bannerImageId: newCover, gallerySettings, imageSequences: {} }); } }}>
-                            <Crown className="w-3 h-3" />
+                          <Button size="xs" variant="secondary" className="bg-salmon text-white hover:bg-salmon-muted w-6 h-6 p-0" title="Make Cover" onClick={(e) => { e.stopPropagation(); const newCover = selectedCover === image.id ? null : image.id; onCoverChange(newCover); if (saveAppearanceMutation) { saveAppearanceMutation.mutate({ bannerImageId: newCover, gallerySettings, imageSequences: {} }); } }}>
+                            <Crown className="w-2.5 h-2.5" />
+                          </Button>
+                        )}
+                        {onReplaceImage && (
+                          <Button size="xs" variant="secondary" className="bg-green-600 text-white hover:bg-green-700 w-6 h-6 p-0" title="Replace Image" onClick={(e) => { e.stopPropagation(); onReplaceImage(image.id); }}>
+                            <RotateCcw className="w-2.5 h-2.5" />
                           </Button>
                         )}
                         {onRemoveImage && (
-                          <Button size="sm" variant="secondary" className="bg-yellow-600 text-white hover:bg-yellow-700" title="Remove from Album" onClick={(e) => { e.stopPropagation(); onRemoveImage(image.id); }}>
-                            <X className="w-3 h-3" />
+                          <Button size="xs" variant="secondary" className="bg-yellow-600 text-white hover:bg-yellow-700 w-6 h-6 p-0" title="Remove from Album" onClick={(e) => { e.stopPropagation(); onRemoveImage(image.id); }}>
+                            <X className="w-2.5 h-2.5" />
                           </Button>
                         )}
                         {onDeleteImage && (
-                          <Button size="sm" variant="destructive" title="Delete from Database" onClick={(e) => { e.stopPropagation(); onDeleteImage(image.id); }}>
-                            <Trash2 className="w-3 h-3" />
+                          <Button size="xs" variant="destructive" className="w-6 h-6 p-0" title="Delete from Database" onClick={(e) => { e.stopPropagation(); onDeleteImage(image.id); }}>
+                            <Trash2 className="w-2.5 h-2.5" />
                           </Button>
                         )}
                       </div>
@@ -420,32 +439,47 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
                       </div>
                     )}
                   
+                    {/* Spinner Overlay for Replacing Images */}
+                    {replacingImages.has(image.id) && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+                        <div className="bg-white rounded-lg p-4 shadow-lg flex items-center gap-2">
+                          <Loader2 className="w-5 h-5 animate-spin text-salmon" />
+                          <span className="text-sm font-medium text-gray-700">Replacing...</span>
+                        </div>
+                      </div>
+                    )}
+                  
                     {/* Hover Buttons */}
                     <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
                         {onViewFullRes && (
-                          <Button size="sm" variant="secondary" className="bg-purple-600 text-white hover:bg-purple-700" title="View Full Resolution" onClick={(e) => { e.stopPropagation(); onViewFullRes(image.storagePath); }}>
-                            <Eye className="w-3 h-3" />
+                          <Button size="xs" variant="secondary" className="bg-purple-600 text-white hover:bg-purple-700 w-6 h-6 p-0" title="View Full Resolution" onClick={(e) => { e.stopPropagation(); onViewFullRes(image.storagePath); }}>
+                            <Eye className="w-2.5 h-2.5" />
                           </Button>
                         )}
                         {onDownloadImage && (
-                          <Button size="sm" variant="secondary" className="bg-blue-600 text-white hover:bg-blue-700" title="Download Image" onClick={(e) => { e.stopPropagation(); onDownloadImage(image.storagePath, image.filename); }}>
-                            <Download className="w-3 h-3" />
+                          <Button size="xs" variant="secondary" className="bg-blue-600 text-white hover:bg-blue-700 w-6 h-6 p-0" title="Download Image" onClick={(e) => { e.stopPropagation(); onDownloadImage(image.storagePath, image.filename); }}>
+                            <Download className="w-2.5 h-2.5" />
                           </Button>
                         )}
                         {onCoverChange && (
-                          <Button size="sm" variant="secondary" className="bg-salmon text-white hover:bg-salmon-muted" title="Make Cover" onClick={(e) => { e.stopPropagation(); const newCover = selectedCover === image.id ? null : image.id; onCoverChange(newCover); if (saveAppearanceMutation) { saveAppearanceMutation.mutate({ bannerImageId: newCover, gallerySettings, imageSequences: {} }); } }}>
-                            <Crown className="w-3 h-3" />
+                          <Button size="xs" variant="secondary" className="bg-salmon text-white hover:bg-salmon-muted w-6 h-6 p-0" title="Make Cover" onClick={(e) => { e.stopPropagation(); const newCover = selectedCover === image.id ? null : image.id; onCoverChange(newCover); if (saveAppearanceMutation) { saveAppearanceMutation.mutate({ bannerImageId: newCover, gallerySettings, imageSequences: {} }); } }}>
+                            <Crown className="w-2.5 h-2.5" />
+                          </Button>
+                        )}
+                        {onReplaceImage && (
+                          <Button size="xs" variant="secondary" className="bg-green-600 text-white hover:bg-green-700 w-6 h-6 p-0" title="Replace Image" onClick={(e) => { e.stopPropagation(); onReplaceImage(image.id); }}>
+                            <RotateCcw className="w-2.5 h-2.5" />
                           </Button>
                         )}
                         {onRemoveImage && (
-                          <Button size="sm" variant="secondary" className="bg-yellow-600 text-white hover:bg-yellow-700" title="Remove from Album" onClick={(e) => { e.stopPropagation(); onRemoveImage(image.id); }}>
-                            <X className="w-3 h-3" />
+                          <Button size="xs" variant="secondary" className="bg-yellow-600 text-white hover:bg-yellow-700 w-6 h-6 p-0" title="Remove from Album" onClick={(e) => { e.stopPropagation(); onRemoveImage(image.id); }}>
+                            <X className="w-2.5 h-2.5" />
                           </Button>
                         )}
                         {onDeleteImage && (
-                          <Button size="sm" variant="destructive" title="Delete from Database" onClick={(e) => { e.stopPropagation(); onDeleteImage(image.id); }}>
-                            <Trash2 className="w-3 h-3" />
+                          <Button size="xs" variant="destructive" className="w-6 h-6 p-0" title="Delete from Database" onClick={(e) => { e.stopPropagation(); onDeleteImage(image.id); }}>
+                            <Trash2 className="w-2.5 h-2.5" />
                           </Button>
                         )}
                       </div>
@@ -525,29 +559,39 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
                     </div>
                   )}
                   
+                  {/* Spinner Overlay for Replacing Images */}
+                  {replacingImages.has(image.id) && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+                      <div className="bg-white rounded-lg p-4 shadow-lg flex items-center gap-2">
+                        <Loader2 className="w-5 h-5 animate-spin text-salmon" />
+                        <span className="text-sm font-medium text-gray-700">Replacing...</span>
+                      </div>
+                    </div>
+                  )}
+                  
                   {/* Same hover buttons as masonry */}
                   <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
                       {/* Same buttons implementation as masonry layout */}
                       {onViewFullRes && (
                         <Button
-                          size="sm"
+                          size="xs"
                           variant="secondary"
-                          className="bg-purple-600 text-white hover:bg-purple-700"
+                          className="bg-purple-600 text-white hover:bg-purple-700 w-6 h-6 p-0"
                           title="View Full Resolution"
                           onClick={(e) => {
                             e.stopPropagation();
                             onViewFullRes(image.storagePath);
                           }}
                         >
-                          <Eye className="w-3 h-3" />
+                          <Eye className="w-2.5 h-2.5" />
                         </Button>
                       )}
                       {onCoverChange && (
                         <Button
-                          size="sm"
+                          size="xs"
                           variant="secondary"
-                          className="bg-salmon text-white hover:bg-salmon-muted"
+                          className="bg-salmon text-white hover:bg-salmon-muted w-6 h-6 p-0"
                           title="Make Cover"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -563,34 +607,49 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
                             }
                           }}
                         >
-                          <Crown className="w-3 h-3" />
+                          <Crown className="w-2.5 h-2.5" />
+                        </Button>
+                      )}
+                      {onReplaceImage && (
+                        <Button
+                          size="xs"
+                          variant="secondary"
+                          className="bg-green-600 text-white hover:bg-green-700 w-6 h-6 p-0"
+                          title="Replace Image"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onReplaceImage(image.id);
+                          }}
+                        >
+                          <RotateCcw className="w-2.5 h-2.5" />
                         </Button>
                       )}
                       {onRemoveImage && (
                         <Button
-                          size="sm"
+                          size="xs"
                           variant="secondary" 
-                          className="bg-yellow-600 text-white hover:bg-yellow-700"
+                          className="bg-yellow-600 text-white hover:bg-yellow-700 w-6 h-6 p-0"
                           title="Remove from Album"
                           onClick={(e) => {
                             e.stopPropagation();
                             onRemoveImage(image.id);
                           }}
                         >
-                          <X className="w-3 h-3" />
+                          <X className="w-2.5 h-2.5" />
                         </Button>
                       )}
                       {onDeleteImage && (
                         <Button
-                          size="sm"
+                          size="xs"
                           variant="destructive"
+                          className="w-6 h-6 p-0"
                           title="Delete from Database"
                           onClick={(e) => {
                             e.stopPropagation();
                             onDeleteImage(image.id);
                           }}
                         >
-                          <Trash2 className="w-3 h-3" />
+                          <Trash2 className="w-2.5 h-2.5" />
                         </Button>
                       )}
                     </div>

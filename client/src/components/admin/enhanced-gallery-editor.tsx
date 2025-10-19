@@ -77,8 +77,10 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [removeConfirmationOpen, setRemoveConfirmationOpen] = useState(false);
   const [imageToRemove, setImageToRemove] = useState<string | null>(null);
-  const [visibleImageCount, setVisibleImageCount] = useState(20); // Show 20 images initially (4 rows of 5)
+  const [visibleImageCount, setVisibleImageCount] = useState(50); // Show 50 images initially (10 rows of 5)
   const [imageToDelete, setImageToDelete] = useState<string | null>(null);
+  const [imageToReplace, setImageToReplace] = useState<string | null>(null);
+  const [replacingImages, setReplacingImages] = useState<Set<string>>(new Set());
   
   // Optimized auto-save hook for image sequences and cover selection
   const { debouncedSave: debouncedSaveImageOrder, saveStatus: imageOrderSaveStatus } = useAutoSaveImageOrder({
@@ -170,18 +172,39 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   });
 
   const uploadImagesMutation = useMutation({
-    mutationFn: async (files: File[]) => {
+    mutationFn: async ({ files, resolutions }: { files: File[]; resolutions?: any[] }) => {
+      console.log("🚀 Frontend uploadImagesMutation called with:", {
+        filesCount: files.length,
+        resolutionsCount: resolutions?.length || 0,
+        resolutions: resolutions
+      });
+      
       const uploadData = new FormData();
       uploadData.append('shootId', shootId);
-      files.forEach((file) => {
+      
+      // Add conflict resolutions if provided
+      if (resolutions && resolutions.length > 0) {
+        console.log("📋 Adding resolutions to FormData:", JSON.stringify(resolutions));
+        uploadData.append('resolutions', JSON.stringify(resolutions));
+      } else {
+        console.log("ℹ️ No resolutions provided - standard upload");
+      }
+      
+      files.forEach((file, index) => {
+        console.log(`📎 Adding file ${index + 1}: ${file.name}`);
         uploadData.append('images', file);
       });
+      
+      console.log("🌐 Sending request to /api/images/upload");
       const response = await fetch('/api/images/upload', {
         method: 'POST',
         body: uploadData,
       });
       if (!response.ok) throw new Error('Upload failed');
-      return response.json();
+      
+      const result = await response.json();
+      console.log("✅ Upload response received:", result);
+      return result;
     },
     onSuccess: (result) => {
       // Invalidate multiple query patterns to ensure UI updates
@@ -189,15 +212,18 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       queryClient.invalidateQueries({ queryKey: ['/api/images'] });
       queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
       
-      if (result.uploadedCount > 0) {
+      // Handle new detailed response format
+      const totalProcessed = result.totalProcessed || result.uploadedCount || 0;
+      
+      if (totalProcessed > 0) {
         toast({ 
-          title: "Upload Successful!", 
-          description: `${result.uploadedCount} image(s) uploaded successfully` 
+          title: "Upload Complete!", 
+          description: result.message || `${totalProcessed} file(s) processed successfully`
         });
       } else {
         toast({ 
           title: "Upload Error", 
-          description: "No images were uploaded. Please check the file format.", 
+          description: "No files were processed. Please check the file format.", 
           variant: "destructive" 
         });
       }
@@ -606,7 +632,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   };
 
   const loadMoreImages = () => {
-    setVisibleImageCount(prev => Math.min(prev + 20, 100)); // Load 20 more images, max 100 total
+    setVisibleImageCount(prev => Math.min(prev + 50, 200)); // Load 50 more images, max 200 total
   };
 
   // Always enable drag reordering for visible images (first 100)
@@ -712,13 +738,93 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     saveAdvancedSettingsMutation.mutate(data);
   };
 
-  const handleUploadImages = async (files: File[]) => {
+  const handleReplaceImage = (imageId: string) => {
+    console.log("🔄 Replace image triggered for:", imageId);
+    setImageToReplace(imageId);
+    
+    // Create hidden file input for image replacement
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) {
+        setImageToReplace(null);
+        return;
+      }
+      
+      console.log("📁 File selected for replacement:", file.name);
+      
+      // Find the target image details
+      const targetImage = images.find(img => img.id === imageId);
+      if (!targetImage) {
+        toast({
+          title: "Error",
+          description: "Target image not found",
+          variant: "destructive"
+        });
+        setImageToReplace(null);
+        return;
+      }
+      
+      // Add this image to the replacing set for spinner overlay
+      setReplacingImages(prev => new Set([...prev, imageId]));
+      
+      // Create resolution for direct replacement
+      const resolution = {
+        filename: file.name,
+        action: 'replace' as const,
+        keepPosition: true,
+        targetImageId: imageId
+      };
+      
+      console.log("🎯 Direct replacement resolution:", resolution);
+      
+      // Upload with automatic replacement
+      try {
+        await uploadImagesMutation.mutateAsync({ 
+          files: [file], 
+          resolutions: [resolution] 
+        });
+        
+        toast({
+          title: "Image Replaced",
+          description: `Successfully replaced ${targetImage.filename} with ${file.name}`,
+        });
+      } catch (error) {
+        console.error("Replace error:", error);
+        toast({
+          title: "Replacement Failed",
+          description: "Failed to replace image. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        // Remove from replacing set and clear state
+        setReplacingImages(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(imageId);
+          return newSet;
+        });
+        setImageToReplace(null);
+      }
+    };
+    
+    input.click();
+  };
+
+  const handleUploadImages = async (files: File[], resolutions?: any[]) => {
+    console.log("🎯 Frontend handleUploadImages called with:", {
+      filesCount: files.length,
+      resolutionsCount: resolutions?.length || 0,
+      resolutions: resolutions
+    });
+    
     if (files.length === 0) {
       toast({ title: "Error", description: "Please select images to upload", variant: "destructive" });
       return;
     }
 
-    uploadImagesMutation.mutate(files);
+    uploadImagesMutation.mutate({ files, resolutions });
   };
 
   const handleSaveAppearance = () => {
@@ -864,6 +970,8 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
               onViewFullRes={handleViewFullRes}
               onRemoveImage={handleRemoveImage}
               onDeleteImage={handleDeleteImage}
+              onReplaceImage={handleReplaceImage}
+              replacingImages={replacingImages}
               isDragReorderingEnabled={isDragReorderingEnabled}
               visibleImageCount={visibleImageCount}
               dragStartTime={dragStartTime}
@@ -873,14 +981,14 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
             />
             
             {/* Load More Button */}
-            {images.length > visibleImageCount && visibleImageCount < 100 && (
+            {images.length > visibleImageCount && visibleImageCount < 200 && (
               <div className="text-center mt-6 p-4">
                 <Button
                   variant="outline"
                   onClick={loadMoreImages}
                   className="px-8 py-2"
                 >
-                  Load More Images ({Math.min(20, Math.min(100, images.length) - visibleImageCount)} more)
+                  Load More Images ({Math.min(50, Math.min(200, images.length) - visibleImageCount)} more)
                 </Button>
               </div>
             )}

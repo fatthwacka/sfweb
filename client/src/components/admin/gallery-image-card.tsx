@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Eye, Crown, X, Trash2 } from 'lucide-react';
+import { Eye, Crown, X, Trash2, RotateCcw } from 'lucide-react';
 import { ImageUrl } from '@/lib/image-utils';
 
 interface GalleryImageCardProps {
@@ -21,6 +21,7 @@ interface GalleryImageCardProps {
   onMakeCover: (imageId: string) => void;
   onViewFullRes: (storagePath: string) => void;
   onDelete: (imageId: string) => void;
+  onReplace: (imageId: string) => void;
   toast: any;
 }
 
@@ -38,6 +39,7 @@ export function GalleryImageCard({
   onMakeCover,
   onViewFullRes,
   onDelete,
+  onReplace,
   toast
 }: GalleryImageCardProps) {
   return (
@@ -79,33 +81,45 @@ export function GalleryImageCard({
       <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
         <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
           <Button
-            size="sm"
+            size="xs"
             variant="secondary"
-            className="bg-purple-600 text-white hover:bg-purple-700"
+            className="bg-purple-600 text-white hover:bg-purple-700 w-6 h-6 p-0"
             title="View Full Resolution"
             onClick={(e) => {
               e.stopPropagation();
               onViewFullRes(image.storagePath);
             }}
           >
-            <Eye className="w-3 h-3" />
+            <Eye className="w-2.5 h-2.5" />
           </Button>
           <Button
-            size="sm"
+            size="xs"
             variant="secondary"
-            className="bg-salmon text-white hover:bg-salmon-muted"
+            className="bg-salmon text-white hover:bg-salmon-muted w-6 h-6 p-0"
             title="Make Cover"
             onClick={(e) => {
               e.stopPropagation();
               onMakeCover(image.id);
             }}
           >
-            <Crown className="w-3 h-3" />
+            <Crown className="w-2.5 h-2.5" />
           </Button>
           <Button
-            size="sm"
+            size="xs"
+            variant="secondary"
+            className="bg-blue-600 text-white hover:bg-blue-700 w-6 h-6 p-0"
+            title="Replace Image"
+            onClick={(e) => {
+              e.stopPropagation();
+              onReplace(image.id);
+            }}
+          >
+            <RotateCcw className="w-2.5 h-2.5" />
+          </Button>
+          <Button
+            size="xs"
             variant="secondary" 
-            className="bg-yellow-600 text-white hover:bg-yellow-700"
+            className="bg-yellow-600 text-white hover:bg-yellow-700 w-6 h-6 p-0"
             title="Remove from Album"
             onClick={(e) => {
               e.stopPropagation();
@@ -115,18 +129,19 @@ export function GalleryImageCard({
               });
             }}
           >
-            <X className="w-3 h-3" />
+            <X className="w-2.5 h-2.5" />
           </Button>
           <Button
-            size="sm"
+            size="xs"
             variant="destructive"
+            className="w-6 h-6 p-0"
             title="Delete from Database"
             onClick={(e) => {
               e.stopPropagation();
               onDelete(image.id);
             }}
           >
-            <Trash2 className="w-3 h-3" />
+            <Trash2 className="w-2.5 h-2.5" />
           </Button>
         </div>
       </div>

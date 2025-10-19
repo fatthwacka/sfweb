@@ -229,7 +229,14 @@ export class SupabaseStorage implements IStorage {
   }
 
   async updateImage(id: string, updates: Partial<InsertImage>): Promise<Image | undefined> {
-    const result = await db.update(images).set(updates).where(eq(images.id, id)).returning();
+    // Use Drizzle's built-in timestamp update
+    const result = await db.update(images)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(images.id, id))
+      .returning();
     return result[0];
   }
 
@@ -467,7 +474,14 @@ export class SupabaseStorage implements IStorage {
   }
 
   async updateImage(id: string, updates: Partial<InsertImage>): Promise<Image | undefined> {
-    const result = await db.update(images).set(updates).where(eq(images.id, id)).returning();
+    // Use Drizzle's built-in timestamp update
+    const result = await db.update(images)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(images.id, id))
+      .returning();
     return result[0];
   }
 

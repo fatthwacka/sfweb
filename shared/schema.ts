@@ -447,3 +447,33 @@ export const SELECTION_STATUS = ['none', 'favorite', 'like', 'dislike'] as const
 export type SelectionStatus = typeof SELECTION_STATUS[number];
 
 export type UpdateShootDetails = z.infer<typeof updateShootDetailsSchema>;
+
+// Filename conflict resolution types
+export interface ConflictInfo {
+  filename: string;
+  existingImage: {
+    id: string;
+    size: number;
+    createdAt: string;
+    sequence: number;
+    storagePath: string;
+  };
+  newFileSize: number;
+}
+
+export interface ConflictResolution {
+  filename: string;
+  action: 'replace' | 'skip' | 'add_new';
+  keepPosition?: boolean; // Maintain sequence number
+  targetImageId?: string; // ID of image to replace
+}
+
+export interface ConflictCheckRequest {
+  shootId: string;
+  filenames: string[];
+}
+
+export interface ConflictCheckResponse {
+  conflicts: ConflictInfo[];
+  safe: string[]; // Filenames with no conflicts
+}

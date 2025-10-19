@@ -1096,13 +1096,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Check for filename conflicts before upload
+  app.post("/api/images/check-conflicts", async (req, res) => {
+    try {
+      const { shootId, filenames }: { shootId: string; filenames: string[] } = req.body;
+
+      if (!shootId || !filenames || !Array.isArray(filenames)) {
+        return res.status(400).json({ 
+          message: "shootId and filenames array are required" 
+        });
+      }
+
+      // Get existing images for this shoot
+      const existingImages = await storage.getImagesByShoot(shootId);
+      
+      const conflicts: any[] = [];
+      const safe: string[] = [];
+
+      // Check each filename for conflicts
+      for (const filename of filenames) {
+        const existingImage = existingImages.find(img => img.filename === filename);
+        
+        if (existingImage) {
+          // Get file metadata from Supabase storage
+          let fileSize = 0;
+          let lastModified = existingImage.createdAt;
+          
+          try {
+            // Initialize Supabase client for storage metadata
+            const supabase = createClient(
+              process.env.VITE_SUPABASE_URL!,
+              process.env.SUPABASE_SERVICE_ROLE_KEY!
+            );
+
+            // Extract the storage path from the full URL
+            const urlParts = existingImage.storagePath.split('/');
+            const bucketIndex = urlParts.findIndex(part => part === 'gallery-images');
+            if (bucketIndex !== -1) {
+              const storagePath = urlParts.slice(bucketIndex + 1).join('/');
+              
+              // Get file metadata from Supabase storage
+              const { data: fileData, error } = await supabase.storage
+                .from('gallery-images')
+                .list(storagePath.split('/').slice(0, -1).join('/'), {
+                  search: storagePath.split('/').pop()
+                });
+
+              if (!error && fileData && fileData.length > 0) {
+                const file = fileData[0];
+                fileSize = file.metadata?.size || 0;
+                lastModified = file.updated_at || existingImage.createdAt;
+              }
+            }
+          } catch (error) {
+            console.warn('Failed to get file metadata:', error);
+            // Continue with defaults
+          }
+
+          conflicts.push({
+            filename,
+            existingImage: {
+              id: existingImage.id,
+              size: fileSize,
+              createdAt: lastModified,
+              sequence: existingImage.sequence,
+              storagePath: existingImage.storagePath
+            },
+            newFileSize: 0 // Will be filled by frontend
+          });
+        } else {
+          safe.push(filename);
+        }
+      }
+
+      res.json({
+        conflicts,
+        safe
+      });
+
+    } catch (error) {
+      console.error("Conflict check error:", error);
+      res.status(500).json({ 
+        message: "Failed to check for conflicts",
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
+  });
+
   // Image upload endpoint with Supabase storage
   // Supports up to 50 images per batch upload (10MB each max)
   // TODO: Implement proper upload manager with resumable uploads for larger batches
   app.post("/api/images/upload", upload.array('images', 50), async (req, res) => {
+    console.log("🚀 ENHANCED UPLOAD ENDPOINT CALLED - NEW VERSION ACTIVE!");
     try {
       const files = req.files as Express.Multer.File[];
-      const { shootId } = req.body;
+      const { shootId, resolutions } = req.body;
 
       if (!files || files.length === 0) {
         return res.status(400).json({ message: "No files provided" });
@@ -1112,6 +1200,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Shoot ID is required" });
       }
 
+      // Parse resolutions if provided (sent as JSON string from FormData)
+      let conflictResolutions: any[] = [];
+      console.log(`📋 Raw resolutions parameter:`, resolutions);
+      
+      if (resolutions) {
+        try {
+          conflictResolutions = JSON.parse(resolutions);
+          console.log(`✅ Parsed ${conflictResolutions.length} conflict resolutions:`, conflictResolutions);
+        } catch (error) {
+          console.warn('❌ Failed to parse resolutions:', error);
+        }
+      } else {
+        console.log(`ℹ️ No resolutions provided - standard upload mode`);
+      }
+
       // Initialize Supabase client
       const supabase = createClient(
         process.env.VITE_SUPABASE_URL!,
@@ -1119,9 +1222,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
 
       const uploadedImages = [];
+      const replacedImages = [];
+      const skippedFiles = [];
+
+      // Get existing images once for efficiency
+      const existingImages = await storage.getImagesByShoot(shootId);
 
       for (const file of files) {
-        // Generate unique filename
+        // Check if this file has a conflict resolution
+        const resolution = conflictResolutions.find(r => r.filename === file.originalname);
+        
+        if (resolution && resolution.action === 'skip') {
+          skippedFiles.push(file.originalname);
+          continue;
+        }
+
+        // Generate unique filename for storage
         const timestamp = Date.now();
         const randomId = Math.random().toString(36).substring(2);
         const fileExtension = file.originalname.split('.').pop();
@@ -1146,35 +1262,130 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .from('gallery-images')
           .getPublicUrl(storagePath);
 
-        // Get the next sequence number for this shoot
-        const existingImages = await storage.getImagesByShoot(shootId);
-        const nextSequence = existingImages.length + 1;
+        if (resolution && resolution.action === 'replace') {
+          // Handle replacement logic
+          const targetImage = existingImages.find(img => img.id === resolution.targetImageId);
+          
+          console.log(`🔄 REPLACE: File ${file.originalname} replacing image ${resolution.targetImageId}`);
+          console.log(`🎯 Target image found:`, !!targetImage);
+          console.log(`📍 Keep position:`, resolution.keepPosition);
+          
+          if (targetImage) {
+            console.log(`📦 Target image details:`, {
+              id: targetImage.id,
+              filename: targetImage.filename,
+              sequence: targetImage.sequence,
+              storagePath: targetImage.storagePath
+            });
 
-        // Create image record in database
-        const imageData = {
-          shootId: shootId,
-          filename: file.originalname,
-          storagePath: publicUrl,
-          originalPath: storagePath, // Store original path for future operations
-          thumbnailPath: null, // Could generate thumbnails in future
-          sequence: nextSequence,
-          title: file.originalname.replace(/\.[^/.]+$/, ""), // Remove extension
-          description: '',
-          isPrivate: false,
-          tags: [],
-          downloadCount: 0
-        };
+            // Delete old file from Supabase storage
+            try {
+              // Extract storage path from full URL
+              let oldStoragePath;
+              if (targetImage.storagePath.includes('supabase.co')) {
+                // Full URL format: extract path after /storage/v1/object/public/gallery-images/
+                const urlParts = targetImage.storagePath.split('/storage/v1/object/public/gallery-images/');
+                oldStoragePath = urlParts[1];
+              } else {
+                // Already just the storage path
+                oldStoragePath = targetImage.storagePath;
+              }
+              
+              console.log(`🗑️ Deleting old storage file:`, oldStoragePath);
+              const { error: deleteError } = await supabase.storage.from('gallery-images').remove([oldStoragePath]);
+              
+              if (deleteError) {
+                console.warn('❌ Failed to delete old file:', deleteError);
+              } else {
+                console.log('✅ Successfully deleted old storage file');
+              }
+            } catch (error) {
+              console.warn('❌ Exception deleting old file:', error);
+              // Continue with replacement even if deletion fails
+            }
 
-        const newImage = await storage.createImage(imageData);
-        uploadedImages.push(newImage);
+            // Update existing database record with new file
+            const updateData = {
+              filename: file.originalname,
+              storagePath: publicUrl,
+              originalName: file.originalname,
+              fileSize: file.size,
+              // Keep existing sequence if keepPosition is true, otherwise put at end
+              sequence: resolution.keepPosition ? targetImage.sequence : (existingImages.length + uploadedImages.length + 1)
+            };
+
+            console.log(`💾 Updating database record with:`, updateData);
+            const updatedImage = await storage.updateImage(targetImage.id, updateData);
+            console.log(`✅ Database update successful:`, !!updatedImage);
+            replacedImages.push(updatedImage);
+          } else {
+            console.warn(`Target image ${resolution.targetImageId} not found, creating new image`);
+            // Fallback to creating new image
+            const imageData = {
+              shootId: shootId,
+              filename: file.originalname,
+              storagePath: publicUrl,
+              sequence: existingImages.length + 1,
+              title: file.originalname.replace(/\.[^/.]+$/, ""),
+              description: '',
+              isPrivate: false,
+              tags: [],
+              downloadCount: 0
+            };
+            const newImage = await storage.createImage(imageData);
+            uploadedImages.push(newImage);
+          }
+        } else {
+          // Create new image (default behavior or 'add_new' action)
+          const nextSequence = existingImages.length + uploadedImages.length + 1;
+          
+          const imageData = {
+            shootId: shootId,
+            filename: file.originalname,
+            storagePath: publicUrl,
+            sequence: nextSequence,
+            title: file.originalname.replace(/\.[^/.]+$/, ""), // Remove extension
+            description: '',
+            isPrivate: false,
+            tags: [],
+            downloadCount: 0
+          };
+
+          const newImage = await storage.createImage(imageData);
+          uploadedImages.push(newImage);
+        }
       }
 
-      res.json({ 
-        success: true, 
-        uploadedCount: uploadedImages.length,
-        images: uploadedImages,
-        message: `Successfully uploaded ${uploadedImages.length} image(s)`
-      });
+      // Prepare detailed response
+      const totalProcessed = uploadedImages.length + replacedImages.length + skippedFiles.length;
+      const results = {
+        success: true,
+        totalProcessed,
+        uploaded: {
+          count: uploadedImages.length,
+          images: uploadedImages
+        },
+        replaced: {
+          count: replacedImages.length,
+          images: replacedImages
+        },
+        skipped: {
+          count: skippedFiles.length,
+          filenames: skippedFiles
+        }
+      };
+
+      // Generate summary message
+      const parts = [];
+      if (uploadedImages.length > 0) parts.push(`${uploadedImages.length} uploaded`);
+      if (replacedImages.length > 0) parts.push(`${replacedImages.length} replaced`);
+      if (skippedFiles.length > 0) parts.push(`${skippedFiles.length} skipped`);
+      
+      const message = parts.length > 0 
+        ? `Successfully processed ${totalProcessed} files: ${parts.join(', ')}`
+        : 'No files were processed';
+
+      res.json({ ...results, message });
 
     } catch (error) {
       console.error("Image upload error:", error);

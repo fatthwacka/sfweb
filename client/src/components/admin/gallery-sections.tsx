@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { GallerySettingsCard } from '@/components/gallery/gallery-settings-card';
 import { useAutoSaveGallerySettings } from '@/hooks/use-debounced-auto-save';
 import { useAutoSave } from '@/hooks/use-auto-save';
+import { ConflictResolutionDialog } from '@/components/admin/conflict-resolution-dialog';
+import type { ConflictInfo, ConflictResolution } from '@shared/schema';
 import { 
   Camera, 
   Settings, 
@@ -515,7 +517,7 @@ export function AdvancedSettingsSection({ editableShoot, setEditableShoot, shoot
 }
 
 interface AddImagesSectionProps {
-  onUpload: (files: File[]) => void;
+  onUpload: (files: File[], resolutions?: ConflictResolution[]) => void;
   isUploading: boolean;
   toast: any;
   shootId: string;
@@ -524,6 +526,10 @@ interface AddImagesSectionProps {
 export function AddImagesSection({ onUpload, isUploading, toast, shootId }: AddImagesSectionProps) {
   const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
   const [isExpanded, setIsExpanded] = React.useState(false);
+  const [isCheckingConflicts, setIsCheckingConflicts] = React.useState(false);
+  const [conflicts, setConflicts] = React.useState<ConflictInfo[]>([]);
+  const [conflictDialogOpen, setConflictDialogOpen] = React.useState(false);
+  const [pendingFiles, setPendingFiles] = React.useState<File[]>([]);
 
   // Status indicator for upload state
   const UploadStatusIndicator = () => {
@@ -532,6 +538,14 @@ export function AddImagesSection({ onUpload, isUploading, toast, shootId }: AddI
         <div className="flex items-center gap-2 text-blue-400">
           <Loader2 className="w-4 h-4 animate-spin" />
           <span className="text-sm">Uploading...</span>
+        </div>
+      );
+    }
+    if (isCheckingConflicts) {
+      return (
+        <div className="flex items-center gap-2 text-orange-400">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          <span className="text-sm">Checking conflicts...</span>
         </div>
       );
     }
@@ -555,11 +569,96 @@ export function AddImagesSection({ onUpload, isUploading, toast, shootId }: AddI
     });
   };
 
-  const handleUploadClick = () => {
-    if (selectedFiles.length > 0) {
-      onUpload(selectedFiles);
-      setSelectedFiles([]); // Clear selection after upload
+  const checkConflicts = async (files: File[]): Promise<{ conflicts: ConflictInfo[]; safe: string[] }> => {
+    const filenames = files.map(f => f.name);
+    const response = await fetch('/api/images/check-conflicts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ shootId, filenames })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to check for conflicts');
     }
+    
+    const result = await response.json();
+    
+    // Add file sizes to conflicts from selected files
+    result.conflicts = result.conflicts.map((conflict: ConflictInfo) => {
+      const file = files.find(f => f.name === conflict.filename);
+      return {
+        ...conflict,
+        newFileSize: file?.size || 0
+      };
+    });
+    
+    return result;
+  };
+
+  const handleUploadClick = async () => {
+    if (selectedFiles.length === 0) return;
+    
+    setIsCheckingConflicts(true);
+    
+    try {
+      const { conflicts: foundConflicts, safe } = await checkConflicts(selectedFiles);
+      
+      if (foundConflicts.length > 0) {
+        // Show conflict resolution dialog
+        setConflicts(foundConflicts);
+        setPendingFiles(selectedFiles);
+        setConflictDialogOpen(true);
+      } else {
+        // No conflicts, proceed with upload
+        onUpload(selectedFiles);
+        setSelectedFiles([]);
+      }
+    } catch (error) {
+      console.error('Error checking conflicts:', error);
+      toast({
+        title: "Error",
+        description: "Failed to check for conflicts. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsCheckingConflicts(false);
+    }
+  };
+
+  const handleConflictResolution = (resolutions: ConflictResolution[]) => {
+    // Filter files based on resolutions
+    const filesToUpload = pendingFiles.filter(file => {
+      const resolution = resolutions.find(r => r.filename === file.name);
+      return !resolution || resolution.action !== 'skip';
+    });
+    
+    if (filesToUpload.length > 0) {
+      // TODO: Pass resolutions to upload function for enhanced handling
+      onUpload(filesToUpload, resolutions);
+    }
+    
+    // Clean up state
+    setSelectedFiles([]);
+    setPendingFiles([]);
+    setConflicts([]);
+    setConflictDialogOpen(false);
+    
+    if (filesToUpload.length === 0) {
+      toast({
+        title: "Upload Cancelled",
+        description: "All files were skipped.",
+      });
+    }
+  };
+
+  const handleConflictCancel = () => {
+    setPendingFiles([]);
+    setConflicts([]);
+    setConflictDialogOpen(false);
+    toast({
+      title: "Upload Cancelled",
+      description: "No files were uploaded.",
+    });
   };
 
   return (
@@ -674,6 +773,15 @@ export function AddImagesSection({ onUpload, isUploading, toast, shootId }: AddI
         </div>
         </CardContent>
       )}
+      
+      {/* Conflict Resolution Dialog */}
+      <ConflictResolutionDialog
+        open={conflictDialogOpen}
+        onOpenChange={setConflictDialogOpen}
+        conflicts={conflicts}
+        onResolve={handleConflictResolution}
+        onCancel={handleConflictCancel}
+      />
     </Card>
   );
 }
