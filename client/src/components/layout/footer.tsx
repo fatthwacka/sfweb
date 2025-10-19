@@ -40,7 +40,7 @@ export function Footer() {
             </div>
             <p className="text-muted-foreground mb-6">
               Capturing life's beautiful moments through the lens of creativity
-              and passion in Durban, South Africa.
+              and passion. Based in Durban, South Africa.
             </p>
             <div className="flex space-x-4">
               {/* Instagram */}

@@ -54,7 +54,7 @@ export function BasicInfoSection({
   toast,
   images 
 }: BasicInfoSectionProps) {
-  const [isExpanded, setIsExpanded] = React.useState(false);
+  const [isExpanded, setIsExpanded] = React.useState(true);
   
   const { debouncedSave, saveImmediately, saveStatus, isSaving } = useAutoSave({
     shootId,
@@ -357,7 +357,7 @@ interface AdvancedSettingsSectionProps {
 }
 
 export function AdvancedSettingsSection({ editableShoot, setEditableShoot, shootId, toast }: AdvancedSettingsSectionProps) {
-  const [isExpanded, setIsExpanded] = React.useState(false);
+  const [isExpanded, setIsExpanded] = React.useState(true);
   
   const { debouncedSave, saveImmediately, saveStatus, isSaving } = useAutoSave({
     shootId,
@@ -525,7 +525,7 @@ interface AddImagesSectionProps {
 
 export function AddImagesSection({ onUpload, isUploading, toast, shootId }: AddImagesSectionProps) {
   const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
-  const [isExpanded, setIsExpanded] = React.useState(false);
+  const [isExpanded, setIsExpanded] = React.useState(true);
   const [isCheckingConflicts, setIsCheckingConflicts] = React.useState(false);
   const [conflicts, setConflicts] = React.useState<ConflictInfo[]>([]);
   const [conflictDialogOpen, setConflictDialogOpen] = React.useState(false);
@@ -803,7 +803,7 @@ export function GalleryAppearanceSection({
   imageOrder,
   shootId
 }: GalleryAppearanceSectionProps) {
-  const [isExpanded, setIsExpanded] = React.useState(false);
+  const [isExpanded, setIsExpanded] = React.useState(true);
   
   // Auto-save gallery settings hook  
   const { debouncedSave, saveImmediately, saveStatus, isSaving } = useAutoSaveGallerySettings({

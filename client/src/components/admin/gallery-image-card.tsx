@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Eye, Crown, X, Trash2, RotateCcw } from 'lucide-react';
+import { Eye, Crown, X, Trash2, RefreshCw } from 'lucide-react';
 import { ImageUrl } from '@/lib/image-utils';
 
 interface GalleryImageCardProps {
@@ -114,7 +114,7 @@ export function GalleryImageCard({
               onReplace(image.id);
             }}
           >
-            <RotateCcw className="w-2.5 h-2.5" />
+            <RefreshCw className="w-2.5 h-2.5" />
           </Button>
           <Button
             size="xs"

@@ -16,7 +16,6 @@ import { apiRequest } from "@/lib/queryClient";
 import { ImageUrl } from "@/lib/image-utils";
 import { SHOOT_TYPES } from "@shared/schema";
 import { EnhancedGalleryEditor } from "./enhanced-gallery-editor";
-import { PreviewSettingsCard } from "./preview-settings-card";
 import { StaffManagement } from "./staff-management";
 import { SimpleAssetsPanel } from "./simple-assets-panel";
 import { ContactSettings } from "./page-settings/contact-settings";
@@ -160,6 +159,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
   });
   const [editingShoot, setEditingShoot] = useState<Shoot | null>(null);
   const [selectedShoot, setSelectedShoot] = useState<string | null>(null);
+  const [selectedGalleryClient, setSelectedGalleryClient] = useState<string>('__all__');
   const [selectedClient, setSelectedClient] = useState<number | null>(null);
   const [newUserOpen, setNewUserOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
@@ -206,6 +206,17 @@ export function AdminContent({ userRole }: AdminContentProps) {
   const { data: images = [], isLoading: imagesLoading } = useQuery<Image[]>({
     queryKey: ["/api/images"]
   });
+  
+  // Filter shoots based on selected client for gallery management
+  const galleryFilteredShoots = selectedGalleryClient === '__all__' 
+    ? shoots 
+    : shoots.filter(shoot => shoot.clientId === selectedGalleryClient);
+
+  // Handler for client filter change - reset shoot selection when client changes
+  const handleGalleryClientChange = (clientId: string) => {
+    setSelectedGalleryClient(clientId);
+    setSelectedShoot(null); // Reset shoot selection when client filter changes
+  };
   
   // Clean up debugging logs since the issue is resolved
 
@@ -637,7 +648,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
     }
   });
 
-  const filteredShoots = shoots.filter(shoot =>
+  const searchFilteredShoots = shoots.filter(shoot =>
     shoot.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (shoot.description && shoot.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
@@ -1803,12 +1814,12 @@ export function AdminContent({ userRole }: AdminContentProps) {
               <div className="grid gap-4">
                 {shootsLoading ? (
                   <div className="text-center py-8">Loading shoots...</div>
-                ) : filteredShoots.length === 0 ? (
+                ) : searchFilteredShoots.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     {searchTerm ? 'No shoots found matching your search.' : 'No shoots yet. Add your first shoot!'}
                   </div>
                 ) : (
-                  filteredShoots.map(shoot => (
+                  searchFilteredShoots.map(shoot => (
                     <Card key={shoot.id} className="admin-gradient-card">
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start">
@@ -2462,34 +2473,60 @@ export function AdminContent({ userRole }: AdminContentProps) {
                   <CardTitle className="text-salmon">Select Gallery to Manage</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Select 
-                    value={selectedShoot || ""} 
-                    onValueChange={(value) => setSelectedShoot(value)}
-                  >
-                    <SelectTrigger className="w-full max-w-md">
-                      <SelectValue placeholder="Choose a shoot to manage its gallery" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {shoots.map(shoot => (
-                        <SelectItem key={shoot.id} value={shoot.id.toString()}>
-                          {shoot.title} - {(() => {
-                            try {
-                              if (!shoot.shootDate) return 'No date';
-                              const date = new Date(shoot.shootDate);
-                              return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleDateString();
-                            } catch {
-                              return 'Invalid Date';
-                            }
-                          })()} - {shoot.location || 'No location'}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Client Filter Dropdown */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-muted-foreground">Filter by Client</Label>
+                      <Select 
+                        value={selectedGalleryClient} 
+                        onValueChange={handleGalleryClientChange}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="All Clients" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__all__">All Clients</SelectItem>
+                          {clients.map(client => (
+                            <SelectItem key={client.id} value={client.email}>
+                              {client.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Gallery Dropdown */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-muted-foreground">
+                        Select Gallery {selectedGalleryClient !== '__all__' ? '(filtered)' : ''}
+                      </Label>
+                      <Select 
+                        value={selectedShoot || ""} 
+                        onValueChange={(value) => setSelectedShoot(value)}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Choose a gallery to manage" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {galleryFilteredShoots.map(shoot => (
+                            <SelectItem key={shoot.id} value={shoot.id.toString()}>
+                              {shoot.title} - {(() => {
+                                try {
+                                  if (!shoot.shootDate) return 'No date';
+                                  const date = new Date(shoot.shootDate);
+                                  return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleDateString();
+                                } catch {
+                                  return 'Invalid Date';
+                                }
+                              })()} - {shoot.location || 'No location'}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
-
-              {/* Preview Selection Settings */}
-              {selectedShoot && <PreviewSettingsCard shootId={selectedShoot} />}
 
               {/* Gallery Editor */}
               {selectedShoot && <EnhancedGalleryEditor shootId={selectedShoot} />}

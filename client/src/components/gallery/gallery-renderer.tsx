@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ImageUrl } from "@/lib/image-utils";
-import { Eye, Crown, X, Trash2, Download, RotateCcw, Loader2 } from "lucide-react";
+import { Eye, Crown, X, Trash2, Download, RefreshCw, Loader2 } from "lucide-react";
 import type { Image } from "@shared/schema";
 
 interface GallerySettings {
@@ -338,7 +338,7 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
                         )}
                         {onReplaceImage && (
                           <Button size="xs" variant="secondary" className="bg-green-600 text-white hover:bg-green-700 w-6 h-6 p-0" title="Replace Image" onClick={(e) => { e.stopPropagation(); onReplaceImage(image.id); }}>
-                            <RotateCcw className="w-2.5 h-2.5" />
+                            <RefreshCw className="w-2.5 h-2.5" />
                           </Button>
                         )}
                         {onRemoveImage && (
@@ -469,7 +469,7 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
                         )}
                         {onReplaceImage && (
                           <Button size="xs" variant="secondary" className="bg-green-600 text-white hover:bg-green-700 w-6 h-6 p-0" title="Replace Image" onClick={(e) => { e.stopPropagation(); onReplaceImage(image.id); }}>
-                            <RotateCcw className="w-2.5 h-2.5" />
+                            <RefreshCw className="w-2.5 h-2.5" />
                           </Button>
                         )}
                         {onRemoveImage && (
@@ -621,7 +621,7 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
                             onReplaceImage(image.id);
                           }}
                         >
-                          <RotateCcw className="w-2.5 h-2.5" />
+                          <RefreshCw className="w-2.5 h-2.5" />
                         </Button>
                       )}
                       {onRemoveImage && (

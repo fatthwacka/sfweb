@@ -295,7 +295,7 @@ export function GalleryDemo() {
                   
                   {/* Preview Label */}
                   <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 bg-cyan/20 backdrop-blur-sm px-4 py-1 rounded-full border border-cyan/30">
-                    <span className="text-cyan text-xs font-medium">Your Gallery Could Look Like This</span>
+                    <span className="text-cyan text-xs font-medium">Get a gallery like this</span>
                   </div>
                 </div>
               </div>

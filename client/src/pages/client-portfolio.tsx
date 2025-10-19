@@ -109,7 +109,7 @@ export default function ClientPortfolio() {
               {client.name}
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Your personal portfolio of memories captured by SlyFox Studio
+              Your portfolio of professional images captured by SlyFox Studio Group
             </p>
           </div>
 

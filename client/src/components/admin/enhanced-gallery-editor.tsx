@@ -50,6 +50,7 @@ import {
 } from './gallery-sections';
 import { GalleryImageCard } from './gallery-image-card';
 import { GalleryRenderer } from '@/components/gallery/gallery-renderer';
+import { GalleryManagementTabs } from './gallery-management-tabs';
 
 interface GalleryImage {
   id: string;
@@ -589,6 +590,16 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     window.open(ImageUrl.forDownload(storagePath), '_blank');
   };
 
+  const handleDownloadImage = (storagePath: string, filename: string) => {
+    const downloadUrl = ImageUrl.forDownload(storagePath);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const confirmDeleteImage = () => {
     if (imageToDelete) {
       deleteImageMutation.mutate(imageToDelete);
@@ -842,42 +853,43 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
   return (
     <div className="space-y-6">
-      {/* Basic Shoot Information */}
-      <BasicInfoSection
-        editableShoot={editableShoot}
-        setEditableShoot={setEditableShoot}
-        clients={clients as any[]}
-        clientReassignDialogOpen={clientReassignDialogOpen}
-        setClientReassignDialogOpen={setClientReassignDialogOpen}
-        shootId={shootId}
-        toast={toast}
+      {/* Gallery Management Tabs */}
+      <GalleryManagementTabs
         images={images}
-      />
-
-      {/* Advanced Settings */}
-      <AdvancedSettingsSection
+        clients={clients as any[]}
         editableShoot={editableShoot}
         setEditableShoot={setEditableShoot}
-        shootId={shootId}
-        toast={toast}
-      />
-
-      {/* Add Images */}
-      <AddImagesSection
-        onUpload={handleUploadImages}
-        isUploading={uploadImagesMutation.isPending}
-        toast={toast}
-        shootId={shootId}
-      />
-
-      {/* Gallery Appearance */}
-      <GalleryAppearanceSection
         gallerySettings={gallerySettings}
         setGallerySettings={setGallerySettings}
         selectedCover={selectedCover}
         setSelectedCover={setSelectedCover}
         imageOrder={imageOrder}
+        onUploadImages={handleUploadImages}
+        onSaveAppearance={handleSaveAppearance}
+        onViewFullRes={handleViewFullRes}
+        onDownloadImage={handleDownloadImage}
+        onRemoveImage={handleRemoveImage}
+        onDeleteImage={handleDeleteImage}
+        onReplaceImage={handleReplaceImage}
+        draggedImage={draggedImage}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        onImageClick={setSelectedImageModal}
+        replacingImages={replacingImages}
+        isDragReorderingEnabled={isDragReorderingEnabled}
+        visibleImageCount={visibleImageCount}
+        dragStartTime={dragStartTime}
+        onMouseDown={() => setDragStartTime(Date.now())}
         shootId={shootId}
+        clientReassignDialogOpen={clientReassignDialogOpen}
+        setClientReassignDialogOpen={setClientReassignDialogOpen}
+        isUploading={uploadImagesMutation.isPending}
+        saveAppearanceMutation={saveAppearanceMutation}
+        toast={toast}
+        shoot={shoot}
+        loadMoreImages={loadMoreImages}
       />
 
       {/* Live Preview Card */}
@@ -968,6 +980,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
               onDrop={handleDrop}
               onImageClick={setSelectedImageModal}
               onViewFullRes={handleViewFullRes}
+              onDownloadImage={handleDownloadImage}
               onRemoveImage={handleRemoveImage}
               onDeleteImage={handleDeleteImage}
               onReplaceImage={handleReplaceImage}
