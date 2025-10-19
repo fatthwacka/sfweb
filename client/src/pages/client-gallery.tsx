@@ -19,7 +19,7 @@ import {
   ThumbsUp,
   ThumbsDown,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface Shoot {
   id: string;
@@ -103,6 +103,27 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
   const [modalImageIndex, setModalImageIndex] = useState<number | null>(null);
   const [navbarVisible, setNavbarVisible] = useState(true);
   const [userInteractions, setUserInteractions] = useState<Map<string, 'heart' | 'like' | 'dislike'>>(new Map());
+  // Touch gesture state for modal
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  // Removed swipe hint - no longer needed
+  
+  // Use refs for touch tracking to avoid React state timing issues
+  const touchStartXRef = useRef(0);
+  const touchStartYRef = useRef(0);
+  const initialTimeRef = useRef(0);
+  const isValidSwipeRef = useRef(false);
+  const isDraggingRef = useRef(false);
+  const dragOffsetRef = useRef(0);
+  
+  // Debug modal state changes (simplified)
+  useEffect(() => {
+    if (modalImageIndex !== null) {
+      console.log('📱 Modal opened at index:', modalImageIndex);
+    }
+  }, [modalImageIndex]);
+  
   const slug = shootId || params.slug;
 
   // Load user interactions from localStorage on mount
@@ -145,6 +166,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
   // Modal navigation functions - defined before useEffect
   const openModal = (imageIndex: number) => {
+    console.log('🚪 openModal called with index:', imageIndex, 'total images:', images.length);
     setModalImageIndex(imageIndex);
     document.body.style.overflow = "hidden";
   };
@@ -152,20 +174,38 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
   const closeModal = () => {
     setModalImageIndex(null);
     document.body.style.overflow = "auto";
+    // Reset drag state when closing modal
+    setDragOffset(0);
+    dragOffsetRef.current = 0;
+    setIsDragging(false);
+    setIsTransitioning(false);
   };
 
   const navigateModal = (direction: "prev" | "next") => {
-    if (modalImageIndex === null || images.length === 0) return;
-
-    if (direction === "prev") {
-      setModalImageIndex(
-        modalImageIndex > 0 ? modalImageIndex - 1 : images.length - 1,
-      );
-    } else {
-      setModalImageIndex(
-        modalImageIndex < images.length - 1 ? modalImageIndex + 1 : 0,
-      );
+    if (modalImageIndex === null || images.length === 0) {
+      console.log('🚫 Navigation blocked - modalIndex:', modalImageIndex, 'imageCount:', images.length);
+      return;
     }
+
+    console.log('🧭 Navigate:', direction, 'from index:', modalImageIndex);
+
+    // Reset drag state when navigating
+    setDragOffset(0);
+    dragOffsetRef.current = 0;
+    setIsDragging(false);
+    setIsTransitioning(false);
+    isDraggingRef.current = false;
+    isValidSwipeRef.current = false;
+
+    let newIndex;
+    if (direction === "prev") {
+      newIndex = modalImageIndex > 0 ? modalImageIndex - 1 : images.length - 1;
+    } else {
+      newIndex = modalImageIndex < images.length - 1 ? modalImageIndex + 1 : 0;
+    }
+    
+    console.log('📱 Setting new modal index:', newIndex);
+    setModalImageIndex(newIndex);
   };
 
   // Keyboard navigation for modal - moved up to ensure consistent hook order
@@ -182,45 +222,146 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [modalImageIndex, images.length]);
 
-  // Touch/swipe navigation for mobile
+  // Enhanced touch/swipe navigation for mobile with visual feedback
   useEffect(() => {
+    // Only attach touch handlers when modal is actually open
     if (modalImageIndex === null) return;
 
-    let touchStartX = 0;
-    let touchEndX = 0;
-
     const handleTouchStart = (e: TouchEvent) => {
-      touchStartX = e.changedTouches[0].screenX;
+      // Only handle single touch events
+      if (e.touches.length !== 1) return;
+      
+      // Only handle touches on the image container (not on buttons)
+      const target = e.target as Element;
+      const isImageContainer = target.closest('.modal-image-container') || target.tagName === 'IMG';
+      if (!isImageContainer) return;
+      
+      console.log('👆 Touch start detected');
+      
+      // Reset all touch state properly
+      touchStartXRef.current = e.touches[0].clientX;
+      touchStartYRef.current = e.touches[0].clientY;
+      initialTimeRef.current = Date.now();
+      isValidSwipeRef.current = true;
+      isDraggingRef.current = true;
+      dragOffsetRef.current = 0;
+      setDragOffset(0);
+      setIsDragging(true);
+      setIsTransitioning(false);
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDraggingRef.current || !isValidSwipeRef.current || e.touches.length !== 1) return;
+
+      // Prevent all page scrolling immediately
+      e.preventDefault();
+
+      const currentX = e.touches[0].clientX;
+      const currentY = e.touches[0].clientY;
+      const deltaX = currentX - touchStartXRef.current;
+      const deltaY = currentY - touchStartYRef.current;
+
+      // Only cancel if we have significant movement and it's clearly vertical
+      if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 50 && Math.abs(deltaX) < 20) {
+        console.log('📱 Cancelled swipe - vertical scroll detected');
+        isValidSwipeRef.current = false;
+        isDraggingRef.current = false;
+        setDragOffset(0);
+        setIsDragging(false);
+        return;
+      }
+
+      // Apply light elastic resistance only at extreme distances
+      const screenWidth = window.innerWidth;
+      const freeZone = screenWidth * 0.6; // Free movement zone (60% of screen)
+      const maxDrag = screenWidth * 0.9; // Maximum drag distance (90% of screen)
+      
+      let adjustedDelta = deltaX;
+      
+      // Only apply resistance beyond the free zone
+      if (Math.abs(deltaX) > freeZone) {
+        const excess = Math.abs(deltaX) - freeZone;
+        const resistanceZone = maxDrag - freeZone;
+        const resistance = Math.min(excess / resistanceZone, 0.6); // Max 60% resistance, much lighter
+        adjustedDelta = deltaX > 0 
+          ? freeZone + excess * (1 - resistance)
+          : -freeZone - excess * (1 - resistance);
+      }
+
+      setDragOffset(adjustedDelta);
+      dragOffsetRef.current = adjustedDelta;
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
-      touchEndX = e.changedTouches[0].screenX;
-      handleSwipe();
-    };
+      if (!isDraggingRef.current) return;
 
-    const handleSwipe = () => {
-      const swipeThreshold = 50; // Minimum distance for a swipe
-      const diff = touchStartX - touchEndX;
+      const currentDragOffset = dragOffsetRef.current; // Use ref value
+      
+      console.log('👆 Touch end - dragOffset:', currentDragOffset, 'isValidSwipe:', isValidSwipeRef.current);
+      
+      isDraggingRef.current = false;
+      setIsDragging(false);
+      setIsTransitioning(true);
 
-      if (Math.abs(diff) > swipeThreshold) {
-        if (diff > 0) {
-          // Swiped left - show next image
-          navigateModal("next");
-        } else {
-          // Swiped right - show previous image
-          navigateModal("prev");
-        }
+      // Calculate velocity for more responsive navigation
+      const touchDuration = Date.now() - initialTimeRef.current;
+      const velocity = Math.abs(currentDragOffset) / touchDuration;
+
+      // Determine if we should navigate based on distance and velocity
+      const shouldNavigate = Math.abs(currentDragOffset) > 80 || velocity > 0.3;
+      
+      console.log('🧮 Navigation check - shouldNavigate:', shouldNavigate, 'velocity:', velocity.toFixed(3));
+
+      if (isValidSwipeRef.current && shouldNavigate) {
+        // Animate image sliding fully off screen before navigation
+        const screenWidth = window.innerWidth;
+        const direction = currentDragOffset > 0 ? 'prev' : 'next'; // Capture direction before state changes
+        const finalOffset = currentDragOffset > 0 ? screenWidth : -screenWidth;
+        
+        setDragOffset(finalOffset);
+        dragOffsetRef.current = finalOffset;
+
+        // Navigate after animation completes
+        setTimeout(() => {
+          navigateModal(direction);
+        }, 300); // Match transition duration
+      } else {
+        // No navigation - just snap back to center
+        setTimeout(() => {
+          setDragOffset(0);
+          dragOffsetRef.current = 0;
+          setIsTransitioning(false);
+        }, 150);
       }
     };
 
-    window.addEventListener("touchstart", handleTouchStart);
-    window.addEventListener("touchend", handleTouchEnd);
+    // Use a timeout to ensure modal DOM is ready
+    const timeoutId = setTimeout(() => {
+      // Use a more reliable selector - look for any modal container
+      const modalContainer = document.querySelector('.fixed.inset-0.z-\\[100\\]');
+      
+      if (modalContainer) {
+        modalContainer.addEventListener("touchstart", handleTouchStart, { passive: false });
+        modalContainer.addEventListener("touchmove", handleTouchMove, { passive: false });
+        modalContainer.addEventListener("touchend", handleTouchEnd, { passive: false });
+        console.log('✅ Touch listeners attached to modal');
+      } else {
+        console.log('❌ Modal container not found for touch listeners');
+      }
+    }, 10); // Small delay to ensure DOM is ready
 
     return () => {
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchend", handleTouchEnd);
+      clearTimeout(timeoutId);
+      // Clean up with the same selector
+      const modalContainer = document.querySelector('.fixed.inset-0.z-\\[100\\]');
+      if (modalContainer) {
+        modalContainer.removeEventListener("touchstart", handleTouchStart);
+        modalContainer.removeEventListener("touchmove", handleTouchMove);
+        modalContainer.removeEventListener("touchend", handleTouchEnd);
+        console.log('🧹 Touch listeners removed from modal');
+      }
     };
-  }, [modalImageIndex, images.length]);
+  }, [modalImageIndex]); // Only depend on modal state - images.length should be stable
 
   // Navbar hide/show on scroll
   useEffect(() => {
@@ -866,7 +1007,10 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                           marginBottom: getSpacingStyle(),
                           ...getBorderStyle()
                         }}
-                        onClick={() => openModal(actualIndex)}
+                        onClick={(e) => {
+                          console.log('🖱️ Gallery image clicked, opening modal at index:', actualIndex);
+                          openModal(actualIndex);
+                        }}
                       >
                         <img
                           src={ImageUrl.forViewing(image.storagePath)}
@@ -996,7 +1140,10 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                             ${selectedImages.has(image.id) ? "ring-2 ring-salmon" : ""}
                           `}
                           style={getBorderStyle()}
-                          onClick={() => openModal(actualIndex)}
+                          onClick={(e) => {
+                            console.log('🖱️ Gallery image clicked, opening modal at index:', actualIndex);
+                            openModal(actualIndex);
+                          }}
                         >
                           <img
                             src={ImageUrl.forViewing(image.storagePath)}
@@ -1144,7 +1291,11 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
       {/* Image Modal */}
       {modalImageIndex !== null && (
-        <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center">
+        <div 
+          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center overflow-hidden" 
+          style={{ touchAction: 'none' }}
+          data-modal-index={modalImageIndex}
+        >
           {/* Close button */}
           <button
             onClick={closeModal}
@@ -1172,20 +1323,32 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
           </button>
 
           {/* Modal image container - properly sized to fill available space */}
-          <div className="w-full h-full p-4 md:p-8 flex items-center justify-center">
-            <img
-              src={ImageUrl.forViewing(images[modalImageIndex]?.storagePath)}
-              alt={images[modalImageIndex]?.filename}
-              className="max-w-full max-h-full w-auto h-auto object-contain"
+          <div className="modal-image-container w-full h-full p-4 md:p-8 flex items-center justify-center">
+            <div 
+              className="w-auto h-auto max-w-full max-h-full flex items-center justify-center"
               style={{
-                maxWidth: 'calc(100vw - 2rem)',
-                maxHeight: 'calc(100vh - 8rem)'
+                transform: `translateX(${dragOffset}px)`,
+                transition: isTransitioning ? 'transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)' : 'none',
+                willChange: 'transform'
               }}
-            />
+            >
+              <img
+                src={ImageUrl.forViewing(images[modalImageIndex]?.storagePath)}
+                alt={images[modalImageIndex]?.filename}
+                className="max-w-full max-h-full w-auto h-auto object-contain select-none"
+                style={{
+                  maxWidth: 'calc(100vw - 2rem)',
+                  maxHeight: 'calc(100vh - 8rem)',
+                  touchAction: 'none'
+                }}
+                draggable={false}
+              />
+            </div>
           </div>
 
           {/* Image info bar with interaction buttons */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-3 bg-black/50 backdrop-blur-sm px-4 py-3 rounded-full text-white text-sm z-20">
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-sm px-4 py-3 rounded-full text-white text-sm z-20">
+            <div className="flex items-center gap-3 whitespace-nowrap">
             {/* Image counter */}
             <span>
               {modalImageIndex + 1} of {images.length}
@@ -1259,7 +1422,9 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
             >
               <Download className="w-4 h-4" />
             </button>
+            </div>
           </div>
+
         </div>
       )}
     </div>
