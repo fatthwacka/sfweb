@@ -18,6 +18,7 @@ import {
   Heart,
   ThumbsUp,
   ThumbsDown,
+  Play,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
@@ -874,6 +875,23 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                 </button>
                 <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-black/90 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
                   View Album
+                </div>
+              </div>
+
+              {/* Start Slideshow Button */}
+              <div className="relative group flex items-center justify-center">
+                <button
+                  onClick={() => {
+                    console.log('🎬 Starting slideshow from first image');
+                    openModal(0);
+                  }}
+                  className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 hover:scale-110 transition-all duration-300 p-2 rounded-full flex items-center justify-center"
+                  title="Start Slideshow"
+                >
+                  <Play className="w-5 h-5" />
+                </button>
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-black/90 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
+                  Start Slideshow
                 </div>
               </div>
 
