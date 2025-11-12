@@ -517,6 +517,137 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk download endpoint - download entire gallery as ZIP (≤50 images)
+  app.get("/api/gallery/:slug/download", async (req, res) => {
+    console.log(`🔽 Bulk download request for: ${req.params.slug}`);
+    
+    try {
+      const { slug } = req.params;
+      
+      // Get the shoot details first
+      const shoot = await storage.getShootBySlug(slug);
+      if (!shoot) {
+        console.log(`❌ Shoot not found: ${slug}`);
+        return res.status(404).json({ message: "Gallery not found" });
+      }
+
+      // Check if gallery is private
+      if (shoot.isPrivate) {
+        console.log(`❌ Gallery is private: ${slug}`);
+        return res.status(403).json({ message: "Private gallery", type: "private" });
+      }
+
+      // Get all images for this shoot
+      const images = await storage.getImagesByShoot(shoot.id);
+      if (!images || images.length === 0) {
+        console.log(`❌ No images found for: ${slug}`);
+        return res.status(404).json({ message: "No images found" });
+      }
+
+      // Limit to albums with ≤65 images for reliable downloads
+      if (images.length > 65) {
+        console.log(`❌ Album too large: ${images.length} images (max 65 for now)`);
+        return res.status(413).json({ 
+          message: "Album too large", 
+          details: `This album has ${images.length} images. Currently only albums with 65 images or fewer can be downloaded.`
+        });
+      }
+
+      console.log(`📦 Preparing ZIP download for ${images.length} images`);
+      
+      // Create ZIP using JSZip (now properly installed!)
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+
+      // Track progress
+      let processedImages = 0;
+      
+      // Add each image to the ZIP
+      for (const image of images.sort((a, b) => a.sequence - b.sequence)) {
+        try {
+          console.log(`📄 Processing image ${processedImages + 1}/${images.length}: ${image.filename}`);
+          
+          // Extract the storage path for Supabase
+          let storagePath;
+          if (image.storagePath.includes('supabase.co')) {
+            // Full URL format: extract path after /storage/v1/object/public/gallery-images/
+            const urlParts = image.storagePath.split('/storage/v1/object/public/gallery-images/');
+            storagePath = urlParts[1];
+          } else {
+            // Already just the storage path
+            storagePath = image.storagePath;
+          }
+
+          if (!storagePath) {
+            console.warn(`⚠️ Invalid storage path for image: ${image.id}`);
+            continue;
+          }
+
+          // Download image from Supabase Storage
+          const supabase = createClient(
+            process.env.VITE_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+          );
+
+          const { data: fileData, error: downloadError } = await supabase.storage
+            .from('gallery-images')
+            .download(storagePath);
+
+          if (downloadError || !fileData) {
+            console.warn(`⚠️ Failed to download image ${image.id}:`, downloadError);
+            continue;
+          }
+
+          // Convert blob to buffer
+          const buffer = Buffer.from(await fileData.arrayBuffer());
+
+          // Generate consistent sequential filename using loop index
+          const extension = image.filename.split('.').pop() || 'jpg';
+          const sequentialFilename = `image-${String(processedImages + 1).padStart(3, '0')}.${extension}`;
+
+          // Add to ZIP
+          zip.file(sequentialFilename, buffer);
+
+          processedImages++;
+          console.log(`✅ Added to ZIP: ${sequentialFilename} (${processedImages}/${images.length})`);
+          
+        } catch (imageError) {
+          console.warn(`⚠️ Error processing image ${image.id}:`, imageError);
+          continue;
+        }
+      }
+
+      if (processedImages === 0) {
+        console.log(`❌ No images could be processed`);
+        return res.status(500).json({ message: "No images could be downloaded" });
+      }
+
+      console.log(`🎉 ZIP creation complete: ${processedImages}/${images.length} images processed`);
+      
+      // Generate ZIP file
+      const zipBuffer = await zip.generateAsync({ 
+        type: 'nodebuffer',
+        compression: 'DEFLATE',
+        compressionOptions: { level: 6 }
+      });
+
+      // Set response headers for ZIP download
+      const zipFilename = `${shoot.customTitle || shoot.title || 'gallery'}-${new Date().toISOString().split('T')[0]}.zip`;
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', `attachment; filename="${zipFilename}"`);
+      res.setHeader('Content-Length', zipBuffer.length);
+
+      // Send the ZIP file
+      res.send(zipBuffer);
+      
+    } catch (error) {
+      console.error("❌ Bulk download error:", error);
+      if (!res.headersSent) {
+        return res.status(500).json({ message: "Failed to create download" });
+      }
+    }
+  });
+
   app.get("/api/clients/:slug", async (req, res) => {
     try {
       const { slug } = req.params;

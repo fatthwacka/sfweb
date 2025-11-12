@@ -19,6 +19,7 @@ import {
   ThumbsUp,
   ThumbsDown,
   Play,
+  Package,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
@@ -56,6 +57,7 @@ interface Image {
   filename: string;
   storagePath: string;
   originalName: string;
+  fileSize: number | null;
   sequence: number;
   downloadCount: number;
   createdAt: string;
@@ -104,6 +106,13 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
   const [modalImageIndex, setModalImageIndex] = useState<number | null>(null);
   const [navbarVisible, setNavbarVisible] = useState(true);
   const [userInteractions, setUserInteractions] = useState<Map<string, 'heart' | 'like' | 'dislike'>>(new Map());
+  const [bulkDownloadModal, setBulkDownloadModal] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState<{
+    isDownloading: boolean;
+    progress: number;
+    status: string;
+    currentFile?: string;
+  }>({ isDownloading: false, progress: 0, status: '' });
   // Touch gesture state for modal
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
@@ -555,6 +564,212 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     }
   };
 
+  // Handle bulk download initiation
+  const handleBulkDownload = () => {
+    setBulkDownloadModal(true);
+  };
+
+  // Calculate bulk download size estimate
+  const getBulkDownloadEstimate = () => {
+    const imageCount = images.length;
+    // Calculate total size from database file sizes (default to 4MB if not available)
+    // Add 50% safety margin for ZIP overhead and any missing metadata
+    const totalBytes = images.reduce((sum, img) => sum + (img.fileSize || 4000000), 0);
+    const estimatedBytes = Math.round(totalBytes * 1.5);
+    const estimatedMB = Math.round(estimatedBytes / (1024 * 1024));
+    const estimatedGB = estimatedMB > 1000 ? (estimatedMB / 1000).toFixed(1) : null;
+
+    return {
+      count: imageCount,
+      sizeMB: estimatedMB,
+      sizeGB: estimatedGB,
+      sizeText: estimatedGB ? `${estimatedGB}GB` : `${estimatedMB}MB`,
+      isLargeAlbum: imageCount > 65
+    };
+  };
+
+  // Execute bulk download
+  const executeBulkDownload = async () => {
+    const estimate = getBulkDownloadEstimate();
+
+    // Calculate real total size from images data
+    const totalBytes = images.reduce((sum, img) => sum + (img.fileSize || 3000000), 0);
+    const totalMB = totalBytes / (1024 * 1024);
+
+    // Dynamic timing based on actual file size
+    // Server processing (fetching + building) is ~90% of total time: ~500ms per MB (min 15s, max 60s)
+    // This represents the time before response starts streaming
+    const serverProcessingDuration = Math.max(15000, Math.min(totalMB * 500, 60000));
+
+    setDownloadProgress({
+      isDownloading: true,
+      progress: 0,
+      status: 'Preparing download...'
+    });
+
+    // Track interval for cleanup
+    let serverProcessingInterval: NodeJS.Timeout | null = null;
+
+    try {
+      setDownloadProgress({
+        isDownloading: true,
+        progress: 10,
+        status: 'Contacting server...'
+      });
+
+      // Stage 1: Smooth progress from 10% → 85% during server processing
+      // This represents fetching images from Supabase + building ZIP (90% of total time)
+      let currentProgress = 10;
+      const serverProcessingIncrement = 75 / (serverProcessingDuration / 200); // 75% over dynamic duration
+      serverProcessingInterval = setInterval(() => {
+        currentProgress += serverProcessingIncrement;
+        if (currentProgress < 85) {
+          setDownloadProgress({
+            isDownloading: true,
+            progress: Math.floor(currentProgress),
+            status: 'Server processing images and building ZIP...'
+          });
+        }
+      }, 200);
+
+      const response = await fetch(`/api/gallery/${slug}/download`);
+
+      // Clear server processing interval
+      if (serverProcessingInterval) {
+        clearInterval(serverProcessingInterval);
+        serverProcessingInterval = null;
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Download failed' }));
+        throw new Error(errorData.message || `Server error: ${response.status}`);
+      }
+
+      // Jump to 85% - server processing complete
+      currentProgress = Math.max(currentProgress, 85);
+
+      // Get response data with real progress tracking
+      const contentLength = response.headers.get('Content-Length');
+      const total = parseInt(contentLength || '0', 10);
+
+      setDownloadProgress({
+        isDownloading: true,
+        progress: 85,
+        status: `Downloading ZIP (${(total / (1024 * 1024)).toFixed(1)}MB)...`
+      });
+
+      // Stage 2: Real streaming progress from 85% → 98%
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('Unable to read response body');
+      }
+
+      const chunks: Uint8Array[] = [];
+      let receivedLength = 0;
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) break;
+
+        chunks.push(value);
+        receivedLength += value.length;
+
+        // Update progress from 85% to 98% based on actual download progress
+        if (total > 0) {
+          const downloadProgress = (receivedLength / total);
+          const progressPercent = 85 + Math.floor(downloadProgress * 13); // 85% to 98%
+          const receivedMB = (receivedLength / (1024 * 1024)).toFixed(1);
+          const totalMB = (total / (1024 * 1024)).toFixed(1);
+
+          setDownloadProgress({
+            isDownloading: true,
+            progress: progressPercent,
+            status: `Downloading ${receivedMB}MB / ${totalMB}MB...`
+          });
+        }
+      }
+
+      // Create blob from chunks
+      const blob = new Blob(chunks);
+
+      // Stage 3: Preparing file 98% → 99%
+      setDownloadProgress({
+        isDownloading: true,
+        progress: 98,
+        status: 'Preparing file...'
+      });
+
+      // Create download URL and trigger download
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+
+      // Extract filename from Content-Disposition header or use default
+      const contentDisposition = response.headers.get('Content-Disposition');
+      const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
+      const filename = filenameMatch?.[1] || `${slug}-gallery.zip`;
+
+      link.download = filename;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+
+      // Stage 4: Ready to download 99%
+      setDownloadProgress({
+        isDownloading: true,
+        progress: 99,
+        status: 'Starting download...'
+      });
+
+      // Trigger the download
+      link.click();
+
+      // Clean up
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+
+      // Stage 5: Complete 100%
+      setDownloadProgress({
+        isDownloading: true,
+        progress: 100,
+        status: 'Download started!'
+      });
+
+      // Close modal and show completion
+      setBulkDownloadModal(false);
+
+      setTimeout(() => {
+        setDownloadProgress({
+          isDownloading: false,
+          progress: 0,
+          status: ''
+        });
+      }, 2000);
+
+      toast({
+        title: "Download successful!",
+        description: `ZIP file ready: ${estimate.count} images (${estimate.sizeText})`,
+        duration: 5000,
+      });
+      
+    } catch (error) {
+      // Clean up interval on error
+      if (serverProcessingInterval) clearInterval(serverProcessingInterval);
+
+      setDownloadProgress({
+        isDownloading: false,
+        progress: 0,
+        status: ''
+      });
+
+      toast({
+        title: "Download failed",
+        description: "Could not start bulk download. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (shootLoading) {
     return (
       <div className="min-h-screen bg-background text-foreground">
@@ -814,12 +1029,24 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
           {/* Vertical Stack Layout */}
           <div className="flex flex-col items-center text-center space-y-4">
             
-            {/* Main Title (Shoot Type) */}
-            <h2 className="font-barlow font-bold text-3xl text-white uppercase tracking-wide" style={{ color: '#ffffff', opacity: 1 }}>
-              {shoot.customTitle || shoot.title || (shoot.shootType ? 
-                shoot.shootType.charAt(0).toUpperCase() + shoot.shootType.slice(1) 
-                : "Portfolio")}
-            </h2>
+            {/* Main Title (Shoot Type) with Info Tooltip */}
+            <div className="relative group">
+              <h2 className="font-barlow font-bold text-3xl text-white uppercase tracking-wide cursor-default" style={{ color: '#ffffff', opacity: 1 }}>
+                {shoot.customTitle || shoot.title || (shoot.shootType ? 
+                  shoot.shootType.charAt(0).toUpperCase() + shoot.shootType.slice(1) 
+                  : "Portfolio")}
+              </h2>
+              {/* Shoot info tooltip */}
+              {(shoot.location || shoot.description) && (
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-4 py-3 bg-black/90 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none max-w-lg z-50">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="font-semibold">{shoot.customTitle || shoot.title}</div>
+                    {shoot.location && <div className="text-gray-300">{shoot.location}</div>}
+                    {shoot.description && <div className="text-gray-400 break-words">{shoot.description}</div>}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Shoot Date */}
             {shoot.shootDate && (
@@ -895,15 +1122,17 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                 </div>
               </div>
 
-              {/* Shoot Info Icon */}
+              {/* Download Album Icon */}
               <div className="relative group flex items-center justify-center">
-                <Info className="w-7 h-7 text-white cursor-default hover:scale-110 transition-all duration-300" />
-                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-4 py-3 bg-black/90 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none max-w-lg">
-                  <div className="flex flex-col gap-1.5">
-                    <div className="font-semibold">{shoot.customTitle || shoot.title}</div>
-                    {shoot.location && <div className="text-gray-300">{shoot.location}</div>}
-                    {shoot.description && <div className="text-gray-400 break-words">{shoot.description}</div>}
-                  </div>
+                <button
+                  onClick={handleBulkDownload}
+                  className="bg-transparent text-white hover:scale-110 transition-all duration-300 p-0 flex items-center justify-center"
+                  title="Download entire album"
+                >
+                  <Package className="w-7 h-7" />
+                </button>
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-black/90 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
+                  Download entire album
                 </div>
               </div>
 
@@ -1443,6 +1672,91 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
             </div>
           </div>
 
+        </div>
+      )}
+
+      {/* Bulk Download Confirmation Modal */}
+      {bulkDownloadModal && (
+        <div className="fixed inset-0 z-[110] bg-black/70 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 max-w-md mx-4">
+            <h3 className="text-xl font-semibold mb-4 text-gray-900">Download Entire Album</h3>
+            <div className="space-y-3 mb-6">
+              <p className="text-gray-700">
+                You are about to download <strong>{getBulkDownloadEstimate().count} images</strong>
+              </p>
+              <p className="text-gray-600 text-sm">
+                Estimated size: <strong>{getBulkDownloadEstimate().sizeText}</strong>
+              </p>
+              {getBulkDownloadEstimate().isLargeAlbum ? (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                  <p className="text-yellow-800 text-sm">
+                    <strong>Large Album Notice:</strong> This album has more than 65 images. 
+                    Currently, only albums with 65 images or fewer can be downloaded at once.
+                  </p>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-xs">
+                  Files will be downloaded as a ZIP archive to your Downloads folder.
+                </p>
+              )}
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setBulkDownloadModal(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={executeBulkDownload}
+                disabled={getBulkDownloadEstimate().isLargeAlbum}
+                className={`px-6 py-2 rounded-md transition-colors ${
+                  getBulkDownloadEstimate().isLargeAlbum
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-salmon text-white hover:bg-salmon-muted'
+                }`}
+              >
+                {getBulkDownloadEstimate().isLargeAlbum ? 'Album Too Large' : 'Download Album'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Download Progress Modal */}
+      {downloadProgress.isDownloading && (
+        <div className="fixed inset-0 z-[110] bg-black/70 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 w-[420px] mx-4">
+            <h3 className="text-xl font-semibold mb-4 text-gray-900">Downloading Album</h3>
+            <div className="space-y-4">
+              <div className="w-full bg-gray-200 rounded-full h-3">
+                <div
+                  className="bg-salmon h-3 rounded-full transition-all duration-500"
+                  style={{ width: `${downloadProgress.progress}%` }}
+                ></div>
+              </div>
+              <p className="text-gray-600 text-sm text-center min-h-[20px]">
+                {downloadProgress.status}
+              </p>
+              {downloadProgress.currentFile && (
+                <p className="text-gray-500 text-xs text-center truncate">
+                  {downloadProgress.currentFile}
+                </p>
+              )}
+            </div>
+            {downloadProgress.progress < 100 && (
+              <button
+                onClick={() => setDownloadProgress({ 
+                  isDownloading: false, 
+                  progress: 0, 
+                  status: '' 
+                })}
+                className="mt-4 w-full px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                Cancel Download
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>
