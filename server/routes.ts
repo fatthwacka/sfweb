@@ -1314,11 +1314,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Image upload endpoint with Supabase storage
+  // Image upload endpoint with Supabase storage + pre-processing
   // Supports up to 50 images per batch upload (10MB each max)
-  // TODO: Implement proper upload manager with resumable uploads for larger batches
+  // Processes each image into 3 versions: original, optimized, thumbnail
   app.post("/api/images/upload", upload.array('images', 50), async (req, res) => {
-    console.log("🚀 ENHANCED UPLOAD ENDPOINT CALLED - NEW VERSION ACTIVE!");
+    console.log("🚀 PRE-PROCESSING UPLOAD ENDPOINT - PROCESSING 3 VERSIONS PER IMAGE!");
     try {
       const files = req.files as Express.Multer.File[];
       const { shootId, resolutions } = req.body;
@@ -1334,7 +1334,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Parse resolutions if provided (sent as JSON string from FormData)
       let conflictResolutions: any[] = [];
       console.log(`📋 Raw resolutions parameter:`, resolutions);
-      
+
       if (resolutions) {
         try {
           conflictResolutions = JSON.parse(resolutions);
@@ -1362,45 +1362,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const file of files) {
         // Check if this file has a conflict resolution
         const resolution = conflictResolutions.find(r => r.filename === file.originalname);
-        
+
         if (resolution && resolution.action === 'skip') {
           skippedFiles.push(file.originalname);
           continue;
         }
 
-        // Generate unique filename for storage
+        console.log(`\n🔄 Processing ${file.originalname}...`);
+
+        // STEP 1: Process image into 3 versions using Sharp
+        const { processImage } = await import('./services/image-processing-service.js');
+        const processedImage = await processImage(file);
+
+        // Generate base filename (timestamp_randomId) - NO VERSION SUFFIX
         const timestamp = Date.now();
         const randomId = Math.random().toString(36).substring(2);
         const fileExtension = file.originalname.split('.').pop();
-        const filename = `${timestamp}_${randomId}.${fileExtension}`;
-        const storagePath = `shoots/${shootId}/${filename}`;
-        
-        // Upload to Supabase Storage
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('gallery-images')
-          .upload(storagePath, file.buffer, {
-            contentType: file.mimetype,
-            upsert: false
-          });
+        const baseFilename = `${timestamp}_${randomId}.${fileExtension}`;
 
-        if (uploadError) {
-          console.error('Supabase upload error:', uploadError);
-          continue; // Skip this file but continue with others
+        // STEP 2: Upload all 3 versions to Supabase Storage
+        // Original: {base}.{ext} (NO suffix)
+        // Optimized: {base}_optimized.{ext}
+        // Thumbnail: {base}_thumbnail.{ext}
+        const uploadTasks = [
+          { version: 'original', filename: baseFilename, buffer: processedImage.original.buffer },
+          { version: 'optimized', filename: baseFilename.replace(`.${fileExtension}`, `_optimized.${fileExtension}`), buffer: processedImage.optimized.buffer },
+          { version: 'thumbnail', filename: baseFilename.replace(`.${fileExtension}`, `_thumbnail.${fileExtension}`), buffer: processedImage.thumbnail.buffer },
+        ];
+
+        let originalPublicUrl = '';
+
+        for (const task of uploadTasks) {
+          const storagePath = `shoots/${shootId}/${task.filename}`;
+
+          console.log(`   📤 Uploading ${task.version} version (${(task.buffer.length / 1024).toFixed(0)}KB)...`);
+
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('gallery-images')
+            .upload(storagePath, task.buffer, {
+              contentType: file.mimetype,
+              upsert: false
+            });
+
+          if (uploadError) {
+            console.error(`❌ Failed to upload ${task.version} version:`, uploadError);
+            throw new Error(`Failed to upload ${task.version} version: ${uploadError.message}`);
+          }
+
+          // Get public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('gallery-images')
+            .getPublicUrl(storagePath);
+
+          if (task.version === 'original') {
+            originalPublicUrl = publicUrl; // Store original URL for database
+          }
+
+          console.log(`   ✅ ${task.version} uploaded successfully`);
         }
 
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-          .from('gallery-images')
-          .getPublicUrl(storagePath);
+        // STEP 3: Store original URL in database (other versions accessed via path replacement)
 
+        // STEP 4: Handle replacement or new image creation
         if (resolution && resolution.action === 'replace') {
           // Handle replacement logic
           const targetImage = existingImages.find(img => img.id === resolution.targetImageId);
-          
+
           console.log(`🔄 REPLACE: File ${file.originalname} replacing image ${resolution.targetImageId}`);
           console.log(`🎯 Target image found:`, !!targetImage);
           console.log(`📍 Keep position:`, resolution.keepPosition);
-          
+
           if (targetImage) {
             console.log(`📦 Target image details:`, {
               id: targetImage.id,
@@ -1409,9 +1440,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               storagePath: targetImage.storagePath
             });
 
-            // Delete old file from Supabase storage
+            // Delete all 3 old versions from Supabase storage
             try {
-              // Extract storage path from full URL
+              // Extract base storage path from full URL
               let oldStoragePath;
               if (targetImage.storagePath.includes('supabase.co')) {
                 // Full URL format: extract path after /storage/v1/object/public/gallery-images/
@@ -1421,26 +1452,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 // Already just the storage path
                 oldStoragePath = targetImage.storagePath;
               }
-              
-              console.log(`🗑️ Deleting old storage file:`, oldStoragePath);
-              const { error: deleteError } = await supabase.storage.from('gallery-images').remove([oldStoragePath]);
-              
+
+              // Generate paths for all 3 versions to delete
+              // Original: {base}.{ext} (no suffix)
+              // Optimized: {base}_optimized.{ext}
+              // Thumbnail: {base}_thumbnail.{ext}
+              const oldVersions = [
+                oldStoragePath, // Original (no modification needed)
+                oldStoragePath.replace(/\.([^.]+)$/, '_optimized.$1'), // Add _optimized
+                oldStoragePath.replace(/\.([^.]+)$/, '_thumbnail.$1'), // Add _thumbnail
+              ];
+
+              console.log(`🗑️ Deleting old storage files (3 versions):`, oldVersions);
+              const { error: deleteError } = await supabase.storage
+                .from('gallery-images')
+                .remove(oldVersions);
+
               if (deleteError) {
-                console.warn('❌ Failed to delete old file:', deleteError);
+                console.warn('❌ Failed to delete old files:', deleteError);
               } else {
-                console.log('✅ Successfully deleted old storage file');
+                console.log('✅ Successfully deleted all 3 old storage versions');
               }
             } catch (error) {
-              console.warn('❌ Exception deleting old file:', error);
+              console.warn('❌ Exception deleting old files:', error);
               // Continue with replacement even if deletion fails
             }
 
             // Update existing database record with new file
             const updateData = {
               filename: file.originalname,
-              storagePath: publicUrl,
+              storagePath: originalPublicUrl, // Store original version URL
               originalName: file.originalname,
-              fileSize: file.size,
+              fileSize: processedImage.original.size,
               // Keep existing sequence if keepPosition is true, otherwise put at end
               sequence: resolution.keepPosition ? targetImage.sequence : (existingImages.length + uploadedImages.length + 1)
             };
@@ -1455,7 +1498,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const imageData = {
               shootId: shootId,
               filename: file.originalname,
-              storagePath: publicUrl,
+              storagePath: originalPublicUrl,
               sequence: existingImages.length + 1,
               title: file.originalname.replace(/\.[^/.]+$/, ""),
               description: '',
@@ -1469,11 +1512,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else {
           // Create new image (default behavior or 'add_new' action)
           const nextSequence = existingImages.length + uploadedImages.length + 1;
-          
+
           const imageData = {
             shootId: shootId,
             filename: file.originalname,
-            storagePath: publicUrl,
+            storagePath: originalPublicUrl, // Store original version URL
             sequence: nextSequence,
             title: file.originalname.replace(/\.[^/.]+$/, ""), // Remove extension
             description: '',
@@ -1485,6 +1528,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const newImage = await storage.createImage(imageData);
           uploadedImages.push(newImage);
         }
+
+        console.log(`✅ ${file.originalname} processed successfully (3 versions uploaded)\n`);
       }
 
       // Prepare detailed response

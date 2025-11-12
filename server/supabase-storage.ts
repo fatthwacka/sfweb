@@ -329,18 +329,28 @@ export class SupabaseStorage implements IStorage {
       console.log(`🗄️ deleteImage: Database deletion completed - assuming SUCCESS (Drizzle delete doesn't provide count)`);
       console.log(`🗄️ deleteImage: Delete result object:`, result);
 
-      // If database deletion successful and we have storage path, delete from Supabase storage
+      // If database deletion successful and we have storage path, delete all 3 versions from Supabase storage
       if (deletedFromDb && storagePath) {
-        console.log(`🗂️ deleteImage: Deleting from storage: ${storagePath}`);
+        // Generate paths for all 3 versions
+        // Original: {base}.{ext} (no suffix)
+        // Optimized: {base}_optimized.{ext}
+        // Thumbnail: {base}_thumbnail.{ext}
+        const versions = [
+          storagePath, // Original (no modification)
+          storagePath.replace(/\.([^.]+)$/, '_optimized.$1'), // Add _optimized
+          storagePath.replace(/\.([^.]+)$/, '_thumbnail.$1'), // Add _thumbnail
+        ];
+
+        console.log(`🗂️ deleteImage: Deleting all 3 versions from storage:`, versions);
         const { error: storageError } = await supabase.storage
           .from('gallery-images')
-          .remove([storagePath]);
+          .remove(versions);
 
         if (storageError) {
           console.error('❌ Supabase storage deletion error:', storageError);
           // Continue even if storage deletion fails - database record is already deleted
         } else {
-          console.log(`✅ deleteImage: Storage deletion successful for ${storagePath}`);
+          console.log(`✅ deleteImage: All 3 storage versions deleted successfully`);
         }
       } else if (deletedFromDb && !storagePath) {
         console.log(`⚠️ deleteImage: Database deleted but no storage path found`);

@@ -14,6 +14,7 @@ This is a full-stack photography studio website (SlyFox Studios) built with mode
 - **Database**: PostgreSQL with Drizzle ORM
 - **Authentication**: Supabase Auth
 - **Storage**: Supabase Storage for images
+- **File Processing**: JSZip for server-side ZIP archive generation
 - **Styling**: Tailwind CSS + shadcn/ui components
 - **Routing**: Wouter (client-side)
 
@@ -59,6 +60,38 @@ This is a full-stack photography studio website (SlyFox Studios) built with mode
 - Supabase integration for both auth and storage operations
 - Database seeding and admin initialization utilities
 
+## API Endpoints
+
+**Gallery Management**:
+- `GET /api/gallery/:slug` - Fetch gallery metadata and images by custom slug
+- `GET /api/gallery/:slug/download` - Bulk download all gallery images as ZIP file
+  - **Technology**: JSZip library for server-side ZIP generation
+  - **Limit**: Maximum 65 images per download (enforced on frontend with warning message)
+  - **File Naming**: Sequential naming (image-001.jpg, image-002.jpg, etc.) based on database sequence order
+  - **Process Flow**:
+    1. Validates shoot access and retrieves ordered images from database
+    2. Fetches each image from Supabase Storage in parallel batches
+    3. Generates ZIP archive using JSZip with sequential filenames
+    4. Streams ZIP buffer to client with appropriate headers
+  - **Performance**: ~500ms per MB for server-side processing (fetching + building)
+  - **Response Headers**: `Content-Type: application/zip`, `Content-Disposition: attachment; filename="{shoot-name}.zip"`
+  - **Error Handling**: Returns 404 if shoot not found, 500 for storage errors
+
+**Image Management**:
+- `POST /api/upload` - Upload images with Multer validation (10MB limit)
+- `PATCH /api/images/:id` - Update image metadata
+- `DELETE /api/images/:id` - Delete image from database and storage
+
+**Client Management**:
+- `GET /api/clients` - List all clients (admin only)
+- `POST /api/clients` - Create new client with email validation
+- `GET /api/clients/:id/shoots` - Fetch all shoots for specific client
+
+**Site Configuration**:
+- `GET /api/site-config` - Fetch merged site configuration
+- `PATCH /api/site-config` - Update specific configuration section
+- `PATCH /api/site-config/bulk` - Bulk update multiple configuration sections
+
 ## Component Structure Analysis
 
 **Component Organization**:
@@ -74,6 +107,18 @@ This is a full-stack photography studio website (SlyFox Studios) built with mode
 - Automatic mode uses browser Image API to analyze collection and select optimal aspect ratio
 - Real-time color picker with popover interface (non-blocking preview)
 - Pixel-precise border radius and image spacing controls (0-40px range)
+
+**Bulk Download System**:
+- Fixed-width progress modal (420px) prevents resizing during progress updates
+- Three-stage progress tracking:
+  - Stage 1: 10% → 85% (server processing: fetching images + building ZIP, ~90% of total time)
+  - Stage 2: 85% → 98% (downloading: real streaming progress with byte tracking)
+  - Stage 3: 98% → 100% (finalization and file save)
+- Dynamic timing based on actual file sizes from database (~500ms per MB for server processing)
+- Size estimation with 50% safety margin (1.5x multiplier) accounting for ZIP overhead
+- Smooth animations using setInterval with proper cleanup to prevent memory leaks
+- Real-time download progress with MB/total display during streaming phase
+- 65 image limit enforcement with warning message for larger albums
 
 **Component Relationships**:
 - Layout components (`Navigation`, `Footer`) wrap page content

@@ -1,6 +1,7 @@
 /**
- * Supabase Image Transformation Utilities
- * Handles automatic image resizing and optimization using Supabase's built-in transformations
+ * Image URL Utilities - Pre-Processed Versions
+ * Handles routing to pre-processed image versions (original/optimized/thumbnail)
+ * eliminating reliance on Supabase transformation API
  */
 
 export interface ImageTransformOptions {
@@ -12,74 +13,95 @@ export interface ImageTransformOptions {
 }
 
 /**
- * Transform a Supabase storage URL with optimization parameters
+ * Convert an original image URL to a specific version (optimized or thumbnail)
+ *
+ * Path structure:
+ * - Original: {timestamp}_{randomId}.{ext}  (unchanged)
+ * - Optimized: {timestamp}_{randomId}_optimized.{ext}
+ * - Thumbnail: {timestamp}_{randomId}_thumbnail.{ext}
+ *
+ * Example: 1699564800_abc123.jpg -> 1699564800_abc123_optimized.jpg
  */
-export function getOptimizedImageUrl(
-  originalUrl: string, 
-  options: ImageTransformOptions = {}
+export function getVersionedImageUrl(
+  originalUrl: string,
+  version: 'original' | 'optimized' | 'thumbnail'
 ): string {
   if (!originalUrl) return originalUrl;
 
-  // Check if it's a Supabase storage URL
+  // If not a Supabase URL, return as-is
   if (!originalUrl.includes('supabase') || !originalUrl.includes('/storage/v1/object/public/')) {
     return originalUrl;
   }
 
-  // If no transformations specified, return original
-  if (Object.keys(options).length === 0) return originalUrl;
+  // Original version - return unchanged
+  if (version === 'original') {
+    return originalUrl;
+  }
 
-  // Extract the path after /storage/v1/object/public/
-  const publicPathMatch = originalUrl.match(/\/storage\/v1\/object\/public\/(.+)$/);
-  if (!publicPathMatch) return originalUrl;
-  
-  const imagePath = publicPathMatch[1];
-  const baseUrl = originalUrl.replace(/\/storage\/v1\/object\/public\/.+$/, '');
-  
-  // Build transformation parameters
-  const params = new URLSearchParams();
-  if (options.width) params.append('width', options.width.toString());
-  if (options.height) params.append('height', options.height.toString());
-  if (options.quality) params.append('quality', options.quality.toString());
-  if (options.format) params.append('format', options.format);
-  if (options.resize) params.append('resize', options.resize);
+  // Insert version suffix before file extension
+  // Pattern: .{ext} -> _{version}.{ext}
+  // Example: "image.jpg" -> "image_optimized.jpg"
+  const versionSuffix = version === 'optimized' ? '_optimized' : '_thumbnail';
 
-  // Use Supabase render API for transformations
-  return `${baseUrl}/storage/v1/render/image/public/${imagePath}?${params.toString()}`;
+  // Match the file extension (last dot and everything after)
+  return originalUrl.replace(/\.([^.]+)$/, `${versionSuffix}.$1`);
 }
 
 /**
- * Predefined image size presets for consistent usage across the app
+ * Legacy function - now redirects to versioned URLs
+ * Kept for backward compatibility during migration
+ */
+export function getOptimizedImageUrl(
+  originalUrl: string,
+  options: ImageTransformOptions = {}
+): string {
+  // If no transformations specified, return original
+  if (Object.keys(options).length === 0) return originalUrl;
+
+  // Route to optimized version (pre-processed)
+  return getVersionedImageUrl(originalUrl, 'optimized');
+}
+
+/**
+ * Predefined image size presets - now points to pre-processed versions
  */
 export const IMAGE_PRESETS = {
-  // Optimized viewing size for all interfaces (targeting 500-600KB as requested)
-  optimized: { width: 2400, height: 2400, quality: 80, resize: 'contain' as const },
-  
-  // Modal viewing - maintains aspect ratio, optimized for modal display
-  modal: { width: 2400, height: 2400, quality: 80, resize: 'contain' as const },
-  
-  // Full size for downloads and detailed inspection (no transformation)
+  // Optimized viewing size (~400-600KB, 2400px max dimension, 85% quality)
+  optimized: {} as ImageTransformOptions, // No longer used, kept for compatibility
+
+  // Modal viewing - same as optimized
+  modal: {} as ImageTransformOptions,
+
+  // Full size for downloads and detailed inspection
   fullSize: {} as ImageTransformOptions,
 } as const;
 
 /**
- * Get optimized image URL using preset configurations
+ * Get image URL using preset configurations (legacy)
+ * Now routes to pre-processed versions
  */
 export function getImageUrl(originalUrl: string, preset: keyof typeof IMAGE_PRESETS): string {
-  return getOptimizedImageUrl(originalUrl, IMAGE_PRESETS[preset]);
+  if (preset === 'optimized' || preset === 'modal') {
+    return getVersionedImageUrl(originalUrl, 'optimized');
+  }
+  return getVersionedImageUrl(originalUrl, 'original');
 }
 
 /**
  * Get image URL for different contexts
- * Simplified to just two use cases: optimized viewing and full resolution
+ * Routes to appropriate pre-processed version
  */
 export const ImageUrl = {
-  // For all viewing contexts (admin, galleries, client portal) - ~364KB optimized
-  forViewing: (url: string) => getImageUrl(url, 'optimized'),
-  
-  // For modal viewing - maintains aspect ratio, optimized size
-  forModal: (url: string) => getImageUrl(url, 'modal'),
-  
-  // For downloads and full resolution inspection (original 4.4MB)
-  forFullSize: (url: string) => url,
-  forDownload: (url: string) => url,
+  // For all viewing contexts (admin, galleries, client portal) - ~400-600KB optimized
+  forViewing: (url: string) => getVersionedImageUrl(url, 'optimized'),
+
+  // For modal viewing - same as viewing (optimized version)
+  forModal: (url: string) => getVersionedImageUrl(url, 'optimized'),
+
+  // For thumbnail grids - ~50-100KB thumbnail version
+  forThumbnail: (url: string) => getVersionedImageUrl(url, 'thumbnail'),
+
+  // For downloads and full resolution inspection (original file)
+  forFullSize: (url: string) => getVersionedImageUrl(url, 'original'),
+  forDownload: (url: string) => getVersionedImageUrl(url, 'original'),
 } as const;
