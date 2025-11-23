@@ -5,6 +5,7 @@ import { apiRequest } from '@/lib/queryClient';
 
 interface UseAutoSaveImageOrderOptions {
   shootId: string;
+  mediaType?: 'photo' | 'video';
   debounceMs?: number;
 }
 
@@ -14,7 +15,7 @@ interface SaveStatus {
   error?: string;
 }
 
-export function useAutoSaveImageOrder({ shootId, debounceMs = 1500 }: UseAutoSaveImageOrderOptions) {
+export function useAutoSaveImageOrder({ shootId, mediaType = 'photo', debounceMs = 1500 }: UseAutoSaveImageOrderOptions) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [saveStatus, setSaveStatus] = useState<SaveStatus>({ status: 'idle' });
@@ -24,8 +25,9 @@ export function useAutoSaveImageOrder({ shootId, debounceMs = 1500 }: UseAutoSav
 
   const saveImageOrderMutation = useMutation({
     mutationFn: (data: any) => {
+      const sequenceKey = mediaType === 'video' ? 'videoSequences' : 'imageSequences';
       console.log('🌐 mutationFn called, sending PATCH to /api/shoots/' + shootId, data);
-      console.log(`📤 Sending ${Object.keys(data.imageSequences || {}).length} sequence updates to server`);
+      console.log(`📤 Sending ${Object.keys(data[sequenceKey] || {}).length} ${mediaType} sequence updates to server`);
 
       // DON'T abort previous requests - let all saves complete
       // The debounce ensures we only send the final accumulated state
@@ -44,7 +46,9 @@ export function useAutoSaveImageOrder({ shootId, debounceMs = 1500 }: UseAutoSav
       const previousShootData = queryClient.getQueryData(['/api/shoots', shootId]);
 
       if (previousShootData) {
-        console.log('📦 Updating cache with', Object.keys(data.imageSequences || {}).length, 'sequence changes');
+        const sequenceKey = mediaType === 'video' ? 'videoSequences' : 'imageSequences';
+        const mediaKey = mediaType === 'video' ? 'videos' : 'images';
+        console.log('📦 Updating cache with', Object.keys(data[sequenceKey] || {}).length, 'sequence changes');
         queryClient.setQueryData(['/api/shoots', shootId], (old: any) => {
           if (!old?.shoot) return old;
 
@@ -54,10 +58,10 @@ export function useAutoSaveImageOrder({ shootId, debounceMs = 1500 }: UseAutoSav
               ...old.shoot,
               bannerImageId: data.bannerImageId,
             },
-            // Update image sequences in the images array
-            images: old.images?.map((img: any) => ({
-              ...img,
-              sequence: data.imageSequences?.[img.id] ?? img.sequence
+            // Update media sequences in the appropriate array
+            [mediaKey]: old[mediaKey]?.map((item: any) => ({
+              ...item,
+              sequence: data[sequenceKey]?.[item.id] ?? item.sequence
             })) || []
           };
         });
@@ -167,9 +171,10 @@ export function useAutoSaveImageOrder({ shootId, debounceMs = 1500 }: UseAutoSav
       return;
     }
 
+    const sequenceKey = mediaType === 'video' ? 'videoSequences' : 'imageSequences';
     const data = {
       bannerImageId: selectedCover,
-      imageSequences: newSequences
+      [sequenceKey]: newSequences
     };
 
     console.log(`💡 Optimized save: ${Object.keys(newSequences).length} changed sequences out of ${imageOrder.length} total images`);
@@ -196,13 +201,14 @@ export function useAutoSaveImageOrder({ shootId, debounceMs = 1500 }: UseAutoSav
       clearTimeout(timeoutRef.current);
     }
     
-    const imageSequences = imageOrder.length > 0 
+    const sequences = imageOrder.length > 0 
       ? Object.fromEntries(imageOrder.map((id, index) => [id, index + 1]))
       : {};
+    const sequenceKey = mediaType === 'video' ? 'videoSequences' : 'imageSequences';
 
     const data = {
       bannerImageId: selectedCover,
-      imageSequences
+      [sequenceKey]: sequences
     };
     
     pendingDataRef.current = data;

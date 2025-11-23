@@ -1,7 +1,7 @@
 import React, { useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SHOOT_TYPES } from '@shared/schema';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,8 @@ import { GallerySettingsCard } from '@/components/gallery/gallery-settings-card'
 import { useAutoSaveGallerySettings } from '@/hooks/use-debounced-auto-save';
 import { useAutoSave } from '@/hooks/use-auto-save';
 import { ConflictResolutionDialog } from '@/components/admin/conflict-resolution-dialog';
-import type { ConflictInfo, ConflictResolution } from '@shared/schema';
+import { VideoConflictResolutionDialog } from '@/components/admin/video-conflict-resolution-dialog';
+import type { ConflictInfo, ConflictResolution, VideoConflictInfo, VideoConflictResolution } from '@shared/schema';
 import { 
   Camera, 
   Settings, 
@@ -117,7 +118,8 @@ export function BasicInfoSection({
         shootType: newShoot.shootType,
         isPrivate: newShoot.isPrivate,
         notes: newShoot.notes?.trim(),
-        seoTags: newShoot.seoTags?.trim()
+        seoTags: newShoot.seoTags?.trim(),
+        groupName: newShoot.groupName?.trim() || null
       };
       
       // Check if shootType changed for classification update
@@ -256,6 +258,12 @@ export function BasicInfoSection({
               </SelectContent>
             </Select>
           </div>
+          
+          {/* Portfolio Group Management */}
+          <PortfolioGroupSection 
+            editableShoot={editableShoot}
+            setEditableShootWithAutoSave={setEditableShootWithAutoSave}
+          />
         </div>
         
         <div>
@@ -521,15 +529,21 @@ interface AddImagesSectionProps {
   isUploading: boolean;
   toast: any;
   shootId: string;
+  mediaType?: 'photo' | 'video';
 }
 
-export function AddImagesSection({ onUpload, isUploading, toast, shootId }: AddImagesSectionProps) {
+export function AddImagesSection({ onUpload, isUploading, toast, shootId, mediaType = 'photo' }: AddImagesSectionProps) {
   const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
   const [isExpanded, setIsExpanded] = React.useState(true);
   const [isCheckingConflicts, setIsCheckingConflicts] = React.useState(false);
   const [conflicts, setConflicts] = React.useState<ConflictInfo[]>([]);
+  const [videoConflicts, setVideoConflicts] = React.useState<VideoConflictInfo[]>([]);
   const [conflictDialogOpen, setConflictDialogOpen] = React.useState(false);
+  const [videoConflictDialogOpen, setVideoConflictDialogOpen] = React.useState(false);
   const [pendingFiles, setPendingFiles] = React.useState<File[]>([]);
+
+  // Determine if this is a video album based on mediaType prop
+  const isVideo = mediaType === 'video';
 
   // Status indicator for upload state
   const UploadStatusIndicator = () => {
@@ -564,8 +578,8 @@ export function AddImagesSection({ onUpload, isUploading, toast, shootId }: AddI
     console.log('handleFileSelect called with:', files.length, 'files');
     setSelectedFiles(files);
     toast({
-      title: "Images Selected",
-      description: `${files.length} image(s) ready for upload. Click "Upload Images" to proceed.`,
+      title: isVideo ? "Videos Selected" : "Images Selected",
+      description: `${files.length} ${isVideo ? 'video(s)' : 'image(s)'} ready for upload. Click "Upload ${isVideo ? 'Videos' : 'Images'}" to proceed.`,
     });
   };
 
@@ -595,29 +609,73 @@ export function AddImagesSection({ onUpload, isUploading, toast, shootId }: AddI
     return result;
   };
 
+  const checkVideoConflicts = async (files: File[]): Promise<{ conflicts: VideoConflictInfo[]; safe: string[] }> => {
+    const filenames = files.map(f => f.name);
+    const response = await fetch('/api/videos/check-conflicts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ shootId, filenames })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to check for video conflicts');
+    }
+    
+    const result = await response.json();
+    
+    // Add file sizes and duration to conflicts from selected files
+    result.conflicts = result.conflicts.map((conflict: VideoConflictInfo) => {
+      const file = files.find(f => f.name === conflict.filename);
+      return {
+        ...conflict,
+        newFileSize: file?.size || 0,
+        newDuration: 0 // Will be updated when video metadata is available
+      };
+    });
+    
+    return result;
+  };
+
   const handleUploadClick = async () => {
     if (selectedFiles.length === 0) return;
-    
+
     setIsCheckingConflicts(true);
-    
+
     try {
-      const { conflicts: foundConflicts, safe } = await checkConflicts(selectedFiles);
-      
-      if (foundConflicts.length > 0) {
-        // Show conflict resolution dialog
-        setConflicts(foundConflicts);
-        setPendingFiles(selectedFiles);
-        setConflictDialogOpen(true);
+      if (isVideo) {
+        // Check for video conflicts
+        const { conflicts: foundConflicts, safe } = await checkVideoConflicts(selectedFiles);
+
+        if (foundConflicts.length > 0) {
+          // Show video conflict resolution dialog
+          setVideoConflicts(foundConflicts);
+          setPendingFiles(selectedFiles);
+          setVideoConflictDialogOpen(true);
+        } else {
+          // No conflicts, proceed with upload
+          onUpload(selectedFiles);
+          setSelectedFiles([]);
+        }
       } else {
-        // No conflicts, proceed with upload
-        onUpload(selectedFiles);
-        setSelectedFiles([]);
+        // Check for image conflicts
+        const { conflicts: foundConflicts, safe } = await checkConflicts(selectedFiles);
+
+        if (foundConflicts.length > 0) {
+          // Show conflict resolution dialog
+          setConflicts(foundConflicts);
+          setPendingFiles(selectedFiles);
+          setConflictDialogOpen(true);
+        } else {
+          // No conflicts, proceed with upload
+          onUpload(selectedFiles);
+          setSelectedFiles([]);
+        }
       }
     } catch (error) {
       console.error('Error checking conflicts:', error);
       toast({
         title: "Error",
-        description: "Failed to check for conflicts. Please try again.",
+        description: `Failed to check for ${isVideo ? 'video' : 'image'} conflicts. Please try again.`,
         variant: "destructive"
       });
     } finally {
@@ -651,6 +709,38 @@ export function AddImagesSection({ onUpload, isUploading, toast, shootId }: AddI
     }
   };
 
+  const handleVideoConflictResolution = (resolutions: VideoConflictResolution[]) => {
+    // Filter files based on resolutions
+    const filesToUpload = pendingFiles.filter(file => {
+      const resolution = resolutions.find(r => r.filename === file.name);
+      return !resolution || resolution.action !== 'skip';
+    });
+    
+    if (filesToUpload.length > 0) {
+      // Convert video resolutions to the format expected by the upload handler
+      const convertedResolutions = resolutions.map(res => ({
+        filename: res.filename,
+        action: res.action,
+        keepPosition: res.keepPosition,
+        targetImageId: res.targetVideoId // Use the video ID but keep the same field name for compatibility
+      }));
+      onUpload(filesToUpload, convertedResolutions);
+    }
+    
+    // Clean up state
+    setSelectedFiles([]);
+    setPendingFiles([]);
+    setVideoConflicts([]);
+    setVideoConflictDialogOpen(false);
+    
+    if (filesToUpload.length === 0) {
+      toast({
+        title: "Upload Cancelled",
+        description: "All video files were skipped.",
+      });
+    }
+  };
+
   const handleConflictCancel = () => {
     setPendingFiles([]);
     setConflicts([]);
@@ -661,16 +751,26 @@ export function AddImagesSection({ onUpload, isUploading, toast, shootId }: AddI
     });
   };
 
+  const handleVideoConflictCancel = () => {
+    setPendingFiles([]);
+    setVideoConflicts([]);
+    setVideoConflictDialogOpen(false);
+    toast({
+      title: "Upload Cancelled",
+      description: "No video files were uploaded.",
+    });
+  };
+
   return (
     <Card className="admin-gradient-card">
-      <CardHeader 
+      <CardHeader
         className="cursor-pointer"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center justify-between">
           <CardTitle className="text-salmon flex items-center gap-2">
             <Upload className="w-5 h-5" />
-            Add Images
+            Add {isVideo ? 'Videos' : 'Images'}
           </CardTitle>
           <div className="flex items-center gap-3">
             {isExpanded && <UploadStatusIndicator />}
@@ -685,7 +785,7 @@ export function AddImagesSection({ onUpload, isUploading, toast, shootId }: AddI
                   className="bg-salmon text-white hover:bg-salmon-muted"
                 >
                   <Upload className="w-4 h-4 mr-2" />
-                  {isUploading ? 'Uploading...' : `Upload ${selectedFiles.length > 0 ? `${selectedFiles.length} ` : ''}Images`}
+                  {isUploading ? 'Uploading...' : `Upload ${selectedFiles.length > 0 ? `${selectedFiles.length} ` : ''}${isVideo ? 'Videos' : 'Images'}`}
                 </Button>
               </div>
             )}
@@ -719,19 +819,23 @@ export function AddImagesSection({ onUpload, isUploading, toast, shootId }: AddI
             e.preventDefault();
             e.stopPropagation();
             e.currentTarget.classList.remove('border-salmon', 'bg-salmon/10');
-            
+
             // Get files from dataTransfer
             const files = Array.from(e.dataTransfer.files);
-            const imageFiles = files.filter(file => file.type.startsWith('image/'));
-            
-            console.log('Dropped files:', files.length, 'Image files:', imageFiles.length);
-            
-            if (imageFiles.length > 0) {
-              handleFileSelect(imageFiles);
+            const validFiles = files.filter(file =>
+              isVideo ? file.type.startsWith('video/') : file.type.startsWith('image/')
+            );
+
+            console.log('Dropped files:', files.length, `Valid ${isVideo ? 'video' : 'image'} files:`, validFiles.length);
+
+            if (validFiles.length > 0) {
+              handleFileSelect(validFiles);
             } else if (files.length > 0) {
               toast({
                 title: "Invalid Files",
-                description: "Please drop image files only (JPG, PNG, WEBP)",
+                description: isVideo
+                  ? "Please drop video files only (MP4, MOV, AVI, WEBM)"
+                  : "Please drop image files only (JPG, PNG, WEBP)",
                 variant: "destructive"
               });
             }
@@ -739,12 +843,12 @@ export function AddImagesSection({ onUpload, isUploading, toast, shootId }: AddI
         >
           <Upload className="w-12 h-12 text-salmon mx-auto mb-4" />
           <p className="text-muted-foreground mb-4">
-            Drag and drop images here, or click to browse
+            Drag and drop {isVideo ? 'videos' : 'images'} here, or click to browse
           </p>
           <input
             type="file"
             multiple
-            accept="image/*"
+            accept={isVideo ? "video/*" : "image/*"}
             className="hidden"
             id="imageUploadInput"
             onChange={(e) => {
@@ -754,21 +858,23 @@ export function AddImagesSection({ onUpload, isUploading, toast, shootId }: AddI
               }
             }}
           />
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="border-salmon text-salmon hover:bg-salmon hover:text-white"
             onClick={() => document.getElementById('imageUploadInput')?.click()}
           >
             <Plus className="w-4 h-4 mr-2" />
-            Select Images to Upload
+            Select {isVideo ? 'Videos' : 'Images'} to Upload
           </Button>
           {selectedFiles.length > 0 && (
             <div className="mt-4 text-sm text-muted-foreground">
-              {selectedFiles.length} image(s) selected: {selectedFiles.map(f => f.name).join(', ')}
+              {selectedFiles.length} {isVideo ? 'video(s)' : 'image(s)'} selected: {selectedFiles.map(f => f.name).join(', ')}
             </div>
           )}
           <p className="text-xs text-muted-foreground mt-2">
-            Supports: JPG, PNG, WEBP • Max 10MB per image • Up to 50 images per batch
+            {isVideo
+              ? 'Supports: MP4, MOV, AVI, WEBM • Max 500MB per video • Up to 20 videos per batch'
+              : 'Supports: JPG, PNG, WEBP • Max 10MB per image • Up to 50 images per batch'}
           </p>
         </div>
         </CardContent>
@@ -781,6 +887,15 @@ export function AddImagesSection({ onUpload, isUploading, toast, shootId }: AddI
         conflicts={conflicts}
         onResolve={handleConflictResolution}
         onCancel={handleConflictCancel}
+      />
+      
+      {/* Video Conflict Resolution Dialog */}
+      <VideoConflictResolutionDialog
+        open={videoConflictDialogOpen}
+        onOpenChange={setVideoConflictDialogOpen}
+        conflicts={videoConflicts}
+        onResolve={handleVideoConflictResolution}
+        onCancel={handleVideoConflictCancel}
       />
     </Card>
   );
@@ -952,5 +1067,218 @@ export function GalleryAppearanceSection({
         </CardContent>
       )}
     </Card>
+  );
+}
+
+// Portfolio Group Management Component
+interface PortfolioGroupSectionProps {
+  editableShoot: any;
+  setEditableShootWithAutoSave: (updateFn: (prev: any) => any, immediate?: boolean) => void;
+}
+
+function PortfolioGroupSection({ editableShoot, setEditableShootWithAutoSave }: PortfolioGroupSectionProps) {
+  const [showCreateNew, setShowCreateNew] = React.useState(false);
+  const [newGroupName, setNewGroupName] = React.useState('');
+  const [customSlug, setCustomSlug] = React.useState('');
+  const [slugError, setSlugError] = React.useState('');
+  
+  // Fetch existing group names for dropdown
+  const { data: existingGroups = [] } = useQuery<string[]>({
+    queryKey: ['portfolio-groups'],
+    queryFn: async () => {
+      const response = await fetch('/api/portfolio/groups');
+      if (!response.ok) return [];
+      return response.json();
+    }
+  });
+
+  // Generate slug from group name
+  const generateSlug = (name: string) => {
+    return name.toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+  };
+
+  // Auto-generate slug when group name changes
+  React.useEffect(() => {
+    if (newGroupName) {
+      const generatedSlug = generateSlug(newGroupName);
+      setCustomSlug(generatedSlug);
+    }
+  }, [newGroupName]);
+
+  const validateSlug = async (slug: string) => {
+    if (!slug) {
+      setSlugError('Slug is required');
+      return false;
+    }
+    
+    if (!/^[a-z0-9-]+$/.test(slug)) {
+      setSlugError('Slug can only contain lowercase letters, numbers, and hyphens');
+      return false;
+    }
+
+    // Check if slug already exists
+    const existingSlugs = existingGroups.map(name => generateSlug(name));
+    if (existingSlugs.includes(slug)) {
+      setSlugError('This slug is already in use');
+      return false;
+    }
+
+    setSlugError('');
+    return true;
+  };
+
+  const handleGroupChange = (value: string) => {
+    if (value === 'create-new') {
+      setShowCreateNew(true);
+    } else if (value === 'none') {
+      setEditableShootWithAutoSave(prev => ({ ...prev, groupName: null }));
+      setShowCreateNew(false);
+    } else {
+      setEditableShootWithAutoSave(prev => ({ ...prev, groupName: value }));
+      setShowCreateNew(false);
+    }
+  };
+
+  const handleCreateNewGroup = async () => {
+    if (newGroupName.trim() && await validateSlug(customSlug)) {
+      setEditableShootWithAutoSave(prev => ({ ...prev, groupName: newGroupName.trim() }));
+      setNewGroupName('');
+      setCustomSlug('');
+      setShowCreateNew(false);
+      setSlugError('');
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <Label className="flex items-center gap-2">
+          <Settings className="w-4 h-4" />
+          Portfolio Group
+          <span className="text-xs text-muted-foreground">(Bundle related galleries)</span>
+        </Label>
+      </div>
+      
+      {/* Current Group Display */}
+      <div className="text-sm">
+        <span className="text-muted-foreground">Currently assigned to: </span>
+        {editableShoot.groupName ? (
+          <span className="text-green-400 font-medium bg-green-900/20 px-2 py-1 rounded text-xs">
+            {editableShoot.groupName}
+          </span>
+        ) : (
+          <span className="text-gray-400 italic">No group assigned</span>
+        )}
+      </div>
+      
+      <div className="space-y-3">
+        <Select 
+          value={editableShoot.groupName || 'none'} 
+          onValueChange={handleGroupChange}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="No portfolio group" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">No portfolio group</SelectItem>
+            {existingGroups.map(groupName => (
+              <SelectItem key={groupName} value={groupName}>
+                {groupName}
+              </SelectItem>
+            ))}
+            <SelectItem value="create-new">
+              <div className="flex items-center gap-2">
+                <Plus className="w-3 h-3" />
+                Create New Group...
+              </div>
+            </SelectItem>
+          </SelectContent>
+        </Select>
+
+        {showCreateNew && (
+          <div className="bg-background/50 p-3 rounded-lg border border-salmon/20 space-y-3">
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="newGroupName" className="text-sm font-medium">
+                  Portfolio Group Name
+                </Label>
+                <Input
+                  id="newGroupName"
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  placeholder="e.g., POCAS Bubble Tea Party Kit"
+                  className="mt-1"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="customSlug" className="text-sm font-medium">
+                  URL Slug
+                </Label>
+                <Input
+                  id="customSlug"
+                  value={customSlug}
+                  onChange={(e) => {
+                    setCustomSlug(e.target.value);
+                    validateSlug(e.target.value);
+                  }}
+                  placeholder="e.g., pocas-bubble-tea-party-kit"
+                  className={`mt-1 ${slugError ? 'border-red-500' : ''}`}
+                />
+                {slugError && (
+                  <p className="text-xs text-red-500 mt-1">{slugError}</p>
+                )}
+                {customSlug && !slugError && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Will be accessible at: <code>/portfolio/{customSlug}</code>
+                  </p>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button 
+                size="sm" 
+                onClick={handleCreateNewGroup}
+                disabled={!newGroupName.trim() || !customSlug.trim() || !!slugError}
+                className="bg-salmon hover:bg-salmon/90"
+              >
+                <Check className="w-3 h-3 mr-1" />
+                Create Group
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => {
+                  setShowCreateNew(false);
+                  setNewGroupName('');
+                  setCustomSlug('');
+                  setSlugError('');
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+            
+            <p className="text-xs text-muted-foreground">
+              Galleries with the same group name will be bundled together in the portfolio page.
+            </p>
+          </div>
+        )}
+
+        {editableShoot.groupName && (
+          <div className="bg-green-900/20 border border-green-700/30 p-2 rounded text-sm">
+            <div className="flex items-center gap-2 text-green-400">
+              <Check className="w-3 h-3" />
+              <span>This gallery will be bundled with other "{editableShoot.groupName}" galleries</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

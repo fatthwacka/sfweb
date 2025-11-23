@@ -31,7 +31,7 @@ RUN npm run build
 
 # Development image
 FROM base AS development
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat ffmpeg
 WORKDIR /app
 
 # Copy package files and install all dependencies (including dev)
@@ -50,6 +50,9 @@ CMD ["npm", "run", "dev"]
 # Production image
 FROM base AS runner
 WORKDIR /app
+
+# Install FFmpeg for video processing
+RUN apk add --no-cache ffmpeg
 
 # Don't run production as root
 RUN addgroup --system --gid 1001 nodejs

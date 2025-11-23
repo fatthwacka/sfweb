@@ -1,13 +1,14 @@
 import { db } from "./db";
 import crypto from 'crypto';
-import { 
-  profiles, users, clients, shoots, images, packages, analytics, favorites, bookings,
+import {
+  profiles, users, clients, shoots, images, videos, packages, analytics, favorites, bookings,
   shootPreviews, clientSelections, selectionPackages, previewImages,
   type Profile, type InsertProfile,
-  type User, type InsertUser, 
+  type User, type InsertUser,
   type Client, type InsertClient,
   type Shoot, type InsertShoot,
   type Image, type InsertImage,
+  type Video, type InsertVideo,
   type Package, type InsertPackage,
   type Analytics, type InsertAnalytics,
   type Favorite, type InsertFavorite,
@@ -18,7 +19,7 @@ import {
   type SelectionPackage, type InsertSelectionPackage,
   type PreviewImage, type InsertPreviewImage
 } from "@shared/schema";
-import { eq, and, desc, sql, not } from "drizzle-orm";
+import { eq, and, desc, sql, not, isNotNull, asc, inArray } from "drizzle-orm";
 import type { IStorage } from "./storage";
 
 export class SupabaseStorage implements IStorage {
@@ -191,6 +192,16 @@ export class SupabaseStorage implements IStorage {
     return await db.select().from(shoots).orderBy(desc(shoots.createdAt));
   }
 
+  async getPortfolioGroups(): Promise<string[]> {
+    const result = await db
+      .selectDistinct({ groupName: shoots.groupName })
+      .from(shoots)
+      .where(isNotNull(shoots.groupName))
+      .orderBy(asc(shoots.groupName));
+    
+    return result.map(row => row.groupName).filter((name): name is string => name !== null);
+  }
+
   async createShoot(insertShoot: InsertShoot): Promise<Shoot> {
     console.log('Supabase createShoot called with:', insertShoot);
     const result = await db.insert(shoots).values(insertShoot).returning();
@@ -221,6 +232,32 @@ export class SupabaseStorage implements IStorage {
 
   async getImagesByShoot(shootId: string): Promise<Image[]> {
     return await db.select().from(images).where(eq(images.shootId, shootId)).orderBy(images.uploadOrder);
+  }
+  
+  // Optimized batch method to get images for multiple shoots at once
+  async getImagesForShoots(shootIds: string[]): Promise<Map<string, Image[]>> {
+    if (shootIds.length === 0) {
+      return new Map();
+    }
+    
+    const allImages = await db.select().from(images)
+      .where(inArray(images.shootId, shootIds))
+      .orderBy(images.uploadOrder);
+    
+    // Group images by shootId
+    const imagesByShoot = new Map<string, Image[]>();
+    for (const shootId of shootIds) {
+      imagesByShoot.set(shootId, []);
+    }
+    
+    for (const image of allImages) {
+      const shootImages = imagesByShoot.get(image.shootId);
+      if (shootImages) {
+        shootImages.push(image);
+      }
+    }
+    
+    return imagesByShoot;
   }
 
   async createImage(insertImage: InsertImage): Promise<Image> {
@@ -342,15 +379,42 @@ export class SupabaseStorage implements IStorage {
         ];
 
         console.log(`🗂️ deleteImage: Deleting all 3 versions from storage:`, versions);
-        const { error: storageError } = await supabase.storage
+        const { data: deleteData, error: storageError } = await supabase.storage
           .from('gallery-images')
           .remove(versions);
 
         if (storageError) {
           console.error('❌ Supabase storage deletion error:', storageError);
+          console.error('Storage error details:', {
+            message: storageError.message,
+            statusCode: storageError.statusCode,
+            error: storageError.error,
+            details: storageError.details
+          });
           // Continue even if storage deletion fails - database record is already deleted
         } else {
-          console.log(`✅ deleteImage: All 3 storage versions deleted successfully`);
+          console.log(`✅ deleteImage: Supabase API returned success`);
+          console.log('Delete response data:', deleteData);
+          
+          // Verify deletion by checking if files still exist (same as video deletion)
+          for (const version of versions) {
+            const { data: checkData, error: checkError } = await supabase.storage
+              .from('gallery-images')
+              .list(version.split('/')[0], {
+                limit: 100,
+                offset: 0,
+                search: version.split('/').pop()
+              });
+            
+            if (!checkError && checkData) {
+              const fileStillExists = checkData.some(file => version.endsWith(file.name));
+              if (fileStillExists) {
+                console.error(`❌ VERIFICATION FAILED: Image file still exists after deletion: ${version}`);
+              } else {
+                console.log(`✅ VERIFIED: Image file successfully deleted: ${version}`);
+              }
+            }
+          }
         }
       } else if (deletedFromDb && !storagePath) {
         console.log(`⚠️ deleteImage: Database deleted but no storage path found`);
@@ -362,6 +426,260 @@ export class SupabaseStorage implements IStorage {
       console.error('Delete image error:', error);
       return false;
     }
+  }
+
+  // Video methods (mirror image methods)
+  async getVideo(id: string): Promise<Video | undefined> {
+    const result = await db.select().from(videos).where(eq(videos.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getVideosByShoot(shootId: string): Promise<Video[]> {
+    return await db.select().from(videos).where(eq(videos.shootId, shootId)).orderBy(videos.sequence);
+  }
+  
+  // Optimized batch method to get videos for multiple shoots at once
+  async getVideosForShoots(shootIds: string[]): Promise<Map<string, Video[]>> {
+    if (shootIds.length === 0) {
+      return new Map();
+    }
+    
+    const allVideos = await db.select().from(videos)
+      .where(inArray(videos.shootId, shootIds))
+      .orderBy(videos.sequence);
+    
+    // Group videos by shootId
+    const videosByShoot = new Map<string, Video[]>();
+    for (const shootId of shootIds) {
+      videosByShoot.set(shootId, []);
+    }
+    
+    for (const video of allVideos) {
+      const shootVideos = videosByShoot.get(video.shootId);
+      if (shootVideos) {
+        shootVideos.push(video);
+      }
+    }
+    
+    return videosByShoot;
+  }
+
+  async createVideo(insertVideo: InsertVideo): Promise<Video> {
+    const result = await db.insert(videos).values(insertVideo).returning();
+    return result[0];
+  }
+
+  async updateVideo(id: string, updates: Partial<InsertVideo>): Promise<Video | undefined> {
+    const result = await db.update(videos)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(videos.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async updateVideoSequence(videoId: string, sequence: number): Promise<void> {
+    await db.update(videos).set({ sequence }).where(eq(videos.id, videoId));
+  }
+
+  // PERFORMANCE: Batch update multiple video sequences in a single SQL statement (ultra-optimized)
+  async batchUpdateVideoSequences(videoSequences: Record<string, number>): Promise<void> {
+    const entries = Object.entries(videoSequences);
+    if (entries.length === 0) return;
+
+    console.log(`🚀 Starting SINGLE SQL batch update for ${entries.length} videos`);
+    const startTime = Date.now();
+
+    try {
+      // ULTRA OPTIMIZATION: Single SQL UPDATE with CASE statement for all videos at once
+      const videoIds = entries.map(([id]) => id);
+      const caseStatement = entries.map(([id, sequence]) =>
+        `WHEN '${id}' THEN ${sequence}`
+      ).join(' ');
+
+      // Build the raw SQL query with proper array casting for PostgreSQL ANY()
+      const updateQuery = sql`
+        UPDATE ${videos}
+        SET sequence = CASE id ${sql.raw(caseStatement)} END
+        WHERE id = ANY(ARRAY[${sql.join(videoIds.map(id => sql`${id}`), sql`, `)}]::uuid[])
+      `;
+
+      await db.execute(updateQuery);
+
+      const duration = Date.now() - startTime;
+      console.log(`✅ SINGLE SQL batch update completed in ${duration}ms for ${entries.length} videos`);
+    } catch (error) {
+      console.error('❌ Single SQL batch update failed, falling back to chunked approach:', error);
+
+      // FALLBACK: Use the previous chunked approach if single SQL fails
+      const chunkSize = 20;
+      for (let i = 0; i < entries.length; i += chunkSize) {
+        const chunk = entries.slice(i, i + chunkSize);
+
+        await db.transaction(async (tx) => {
+          for (const [videoId, sequence] of chunk) {
+            await tx.update(videos).set({ sequence }).where(eq(videos.id, videoId));
+          }
+        });
+      }
+
+      const duration = Date.now() - startTime;
+      console.log(`✅ Fallback batch update completed in ${duration}ms for ${entries.length} videos`);
+    }
+  }
+
+  async deleteVideo(id: string): Promise<boolean> {
+    try {
+      console.log(`🔍 deleteVideo: Looking for video with ID: ${id}`);
+
+      // First get the video to extract storage paths for deletion
+      const video = await this.getVideo(id);
+      console.log(`🔍 deleteVideo: Found video:`, video ? 'YES' : 'NO');
+
+      if (!video) {
+        console.log(`❌ deleteVideo: Video ${id} not found in database, returning false`);
+        return false;
+      }
+
+      // Initialize Supabase client for storage operations
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
+      // Extract storage paths from public URLs
+      let videoStoragePath: string | null = null;
+      let optimizedStoragePath: string | null = null;
+      let thumbnailStoragePath: string | null = null;
+
+      if (video.storagePath) {
+        const urlParts = video.storagePath.split('/storage/v1/object/public/gallery-videos/');
+        if (urlParts.length > 1) {
+          videoStoragePath = urlParts[1];
+        }
+      }
+
+      if (video.optimizedPath) {
+        const urlParts = video.optimizedPath.split('/storage/v1/object/public/gallery-videos/');
+        if (urlParts.length > 1) {
+          optimizedStoragePath = urlParts[1];
+        }
+      }
+
+      if (video.thumbnailPath) {
+        const urlParts = video.thumbnailPath.split('/storage/v1/object/public/gallery-videos/');
+        if (urlParts.length > 1) {
+          thumbnailStoragePath = urlParts[1];
+        }
+      }
+
+      // Delete from database first
+      console.log(`🗄️ deleteVideo: Attempting database deletion for ${id}`);
+      const result = await db.delete(videos).where(eq(videos.id, id));
+      const deletedFromDb = result && Object.keys(result).length >= 0;
+      console.log(`🗄️ deleteVideo: Database deletion completed - assuming SUCCESS`);
+
+      // If database deletion successful and we have storage paths, delete from Supabase storage
+      if (deletedFromDb) {
+        const pathsToDelete: string[] = [];
+        if (videoStoragePath) pathsToDelete.push(videoStoragePath);
+        if (optimizedStoragePath) pathsToDelete.push(optimizedStoragePath);
+        if (thumbnailStoragePath) pathsToDelete.push(thumbnailStoragePath);
+
+        if (pathsToDelete.length > 0) {
+          console.log(`🗂️ deleteVideo: Deleting ${pathsToDelete.length} files from storage:`, pathsToDelete);
+          const { data: deleteData, error: storageError } = await supabase.storage
+            .from('gallery-videos')
+            .remove(pathsToDelete);
+
+          if (storageError) {
+            console.error('❌ Supabase storage deletion error:', storageError);
+            console.error('Storage error details:', {
+              message: storageError.message,
+              statusCode: storageError.statusCode,
+              error: storageError.error,
+              details: storageError.details
+            });
+            // Continue even if storage deletion fails - database record is already deleted
+          } else {
+            console.log(`✅ deleteVideo: Supabase API returned success`);
+            console.log('Delete response data:', deleteData);
+            
+            // Verify deletion by checking if files still exist
+            for (const path of pathsToDelete) {
+              const { data: checkData, error: checkError } = await supabase.storage
+                .from('gallery-videos')
+                .list(path.split('/')[0], {
+                  limit: 100,
+                  offset: 0,
+                  search: path.split('/').pop()
+                });
+              
+              if (!checkError && checkData) {
+                const fileStillExists = checkData.some(file => path.endsWith(file.name));
+                if (fileStillExists) {
+                  console.error(`❌ VERIFICATION FAILED: File still exists after deletion: ${path}`);
+                } else {
+                  console.log(`✅ VERIFIED: File successfully deleted: ${path}`);
+                }
+              }
+            }
+          }
+        } else {
+          console.log(`⚠️ deleteVideo: Database deleted but no storage paths found`);
+        }
+      }
+
+      console.log(`🏁 deleteVideo: Final result for ${id}:`, deletedFromDb ? 'SUCCESS' : 'FAILED');
+      return deletedFromDb;
+    } catch (error) {
+      console.error('Delete video error:', error);
+      return false;
+    }
+  }
+
+  // Featured Videos Management methods
+  async getFeaturedVideos(): Promise<Video[]> {
+    return await db.select().from(videos).where(eq(videos.featuredVideo, true));
+  }
+
+  async updateVideoFeaturedStatus(videoIds: string[], featured: boolean): Promise<Video[]> {
+    if (videoIds.length === 0) return [];
+    
+    const result = await db.update(videos)
+      .set({ featuredVideo: featured, updatedAt: sql`now()` })
+      .where(sql`${videos.id} = ANY(ARRAY[${sql.join(videoIds.map(id => sql`${id}`), sql`, `)}]::uuid[])`)
+      .returning();
+    
+    return result;
+  }
+
+  async setShootCoverVideo(shootId: string, videoId: string): Promise<Video | undefined> {
+    // First, remove featured status from all videos in this shoot
+    await db.update(videos)
+      .set({ featuredVideo: false, updatedAt: sql`now()` })
+      .where(eq(videos.shootId, shootId));
+    
+    // Then set the selected video as featured
+    const result = await db.update(videos)
+      .set({ featuredVideo: true, updatedAt: sql`now()` })
+      .where(and(eq(videos.id, videoId), eq(videos.shootId, shootId)))
+      .returning();
+    
+    return result[0];
+  }
+
+  async getVideosByShoot(shootId: string): Promise<Video[]> {
+    return await db.select().from(videos)
+      .where(eq(videos.shootId, shootId))
+      .orderBy(videos.sequence);
+  }
+
+  async getAllVideos(): Promise<Video[]> {
+    return await db.select().from(videos).orderBy(desc(videos.createdAt));
   }
 
   // Package methods
@@ -428,6 +746,7 @@ export class SupabaseStorage implements IStorage {
 
   async getShoot(id: string): Promise<Shoot | undefined> {
     const result = await db.select().from(shoots).where(eq(shoots.id, id)).limit(1);
+    console.log(`🔍 SupabaseStorage.getShoot(${id}) raw result:`, JSON.stringify(result[0], null, 2));
     return result[0];
   }
 
@@ -441,7 +760,9 @@ export class SupabaseStorage implements IStorage {
   }
 
   async updateShoot(id: string, updates: Partial<InsertShoot>): Promise<Shoot | undefined> {
+    console.log(`🔄 SupabaseStorage.updateShoot(${id}) updates:`, JSON.stringify(updates, null, 2));
     const result = await db.update(shoots).set(updates).where(eq(shoots.id, id)).returning();
+    console.log(`📥 SupabaseStorage.updateShoot(${id}) result:`, JSON.stringify(result[0], null, 2));
     return result[0];
   }
 

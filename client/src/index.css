@@ -1602,6 +1602,39 @@
     padding: 2rem;
     transition: all 0.3s ease;
   }
+
+  /* Portfolio card design - matches site standard */
+  .portfolio-card {
+    @apply relative overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 rounded-lg cursor-pointer;
+  }
+
+  .portfolio-card-image {
+    @apply relative aspect-[3/2] bg-gray-800;
+  }
+
+  .portfolio-card-image img {
+    @apply w-full h-full object-cover transition-transform duration-500 group-hover:scale-105;
+  }
+
+  .portfolio-card-overlay {
+    @apply absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300;
+  }
+
+  .portfolio-card-footer {
+    @apply bg-slate-900 p-4;
+  }
+
+  .portfolio-card-title {
+    @apply text-white font-medium text-base mb-1;
+  }
+
+  .portfolio-card-subtitle {
+    @apply text-gray-400 text-sm;
+  }
+
+  .portfolio-card-meta {
+    @apply text-salmon text-xs mt-2;
+  }
   
   /* Card button styling - alternating colors */
   .card-button-salmon {

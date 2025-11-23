@@ -69,8 +69,9 @@ import Contact from "@/pages/contact";
 import SocialMedia from "@/pages/social-media";
 import WebApps from "@/pages/web-apps";
 import ClientGallery from "@/pages/client-gallery";
-import ClientPortfolio from "@/pages/client-portfolio";
 import { GalleryDemo } from "@/pages/gallery-demo";
+import { Portfolio } from "@/pages/portfolio";
+import { PortfolioGroup } from "@/pages/portfolio-group";
 import Dashboard from "@/pages/dashboard";
 import ClientDashboard from "@/pages/client-dashboard";
 import Login from "@/pages/login";
@@ -102,7 +103,8 @@ function Router() {
       <Route path="/pricing" component={Pricing} />
       <Route path="/contact" component={Contact} />
       <Route path="/gallery-demo" component={GalleryDemo} />
-      <Route path="/portfolio/:slug" component={ClientPortfolio} />
+      <Route path="/portfolio" component={Portfolio} />
+      <Route path="/project/:groupName" component={PortfolioGroup} />
       <Route path="/gallery/:slug">
         {(params) => <ClientGallery shootId={params.slug} />}
       </Route>
@@ -110,7 +112,15 @@ function Router() {
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/client-portal" component={ClientDashboard} />
       <Route path="/admin" component={Admin} />
-      {/* Removed old demo galleries - use /client-portal for client access */}
+      {/* Portfolio client slug route - /portfolio/client-slug */}
+      <Route path="/portfolio/:slug">
+        {(params) => {
+          // This route handles client portfolios at /portfolio/client-slug
+          // The PortfolioGroup component will handle both group and client slugs
+          return React.createElement(PortfolioGroup);
+        }}
+      </Route>
+      {/* Default catch-all */}
       <Route component={NotFound} />
     </Switch>
   );

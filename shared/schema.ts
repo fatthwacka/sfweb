@@ -60,6 +60,8 @@ export const shoots = pgTable("shoots", {
   customSlug: text("custom_slug"),
   customTitle: text("custom_title"),
   gallerySettings: jsonb("gallery_settings"),
+  mediaType: text("media_type").default("photo").notNull(), // 'photo' or 'video'
+  groupName: text("group_name"), // For bundling related shoots (e.g., "POCAS Bubble Tea Party Kit")
   createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
 });
@@ -81,6 +83,24 @@ export const images = pgTable("images", {
   lastInteractionAt: timestamp("last_interaction_at", { withTimezone: true }),
   classification: varchar("classification", { length: 50 }).default("portrait").notNull(),
   featuredImage: boolean("featured_image").default(false).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
+});
+
+export const videos = pgTable("videos", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  shootId: uuid("shoot_id").references(() => shoots.id).notNull(),
+  filename: text("filename").notNull(),
+  storagePath: text("storage_path").notNull(), // Original full-resolution video
+  optimizedPath: text("optimized_path"), // Web-optimized 1080p version for streaming
+  thumbnailPath: text("thumbnail_path").notNull(), // 1200px JPEG thumbnail
+  fileSize: integer("file_size").notNull(),
+  sequence: integer("sequence").default(0).notNull(),
+  duration: integer("duration"), // video duration in seconds
+  width: integer("width"), // video resolution width
+  height: integer("height"), // video resolution height
+  downloadCount: integer("download_count").default(0).notNull(),
+  featuredVideo: boolean("featured_video").default(false).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
 });
@@ -181,6 +201,8 @@ export const insertShootSchema = createInsertSchema(shoots).omit({
   clientId: z.string(),
   // CreatedBy is required - ensure it's included
   createdBy: z.string().uuid(),
+  // Media type for photos or videos
+  mediaType: z.enum(['photo', 'video']).optional().default('photo'),
   // Make optional fields properly optional
   customSlug: z.string().optional(),
   customTitle: z.string().optional(),
@@ -196,6 +218,13 @@ export const insertShootSchema = createInsertSchema(shoots).omit({
 });
 
 export const insertImageSchema = createInsertSchema(images).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  downloadCount: true,
+});
+
+export const insertVideoSchema = createInsertSchema(videos).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
@@ -254,6 +283,9 @@ export type InsertShoot = z.infer<typeof insertShootSchema>;
 
 export type Image = typeof images.$inferSelect;
 export type InsertImage = z.infer<typeof insertImageSchema>;
+
+export type Video = typeof videos.$inferSelect;
+export type InsertVideo = z.infer<typeof insertVideoSchema>;
 
 export type Package = typeof packages.$inferSelect;
 export type InsertPackage = z.infer<typeof insertPackageSchema>;
@@ -468,6 +500,28 @@ export interface ConflictResolution {
   targetImageId?: string; // ID of image to replace
 }
 
+// Video conflict resolution types (mirrors image system)
+export interface VideoConflictInfo {
+  filename: string;
+  existingVideo: {
+    id: string;
+    size: number;
+    createdAt: string;
+    sequence: number;
+    storagePath: string;
+    duration?: number;
+  };
+  newFileSize: number;
+  newDuration?: number;
+}
+
+export interface VideoConflictResolution {
+  filename: string;
+  action: 'replace' | 'skip' | 'add_new';
+  keepPosition?: boolean; // Maintain sequence number
+  targetVideoId?: string; // ID of video to replace
+}
+
 export interface ConflictCheckRequest {
   shootId: string;
   filenames: string[];
@@ -475,5 +529,15 @@ export interface ConflictCheckRequest {
 
 export interface ConflictCheckResponse {
   conflicts: ConflictInfo[];
+  safe: string[]; // Filenames with no conflicts
+}
+
+export interface VideoConflictCheckRequest {
+  shootId: string;
+  filenames: string[];
+}
+
+export interface VideoConflictCheckResponse {
+  conflicts: VideoConflictInfo[];
   safe: string[]; // Filenames with no conflicts
 }

@@ -1,11 +1,12 @@
 import { 
-  profiles, users, clients, shoots, images, packages, analytics, favorites, bookings, localSiteAssets,
+  profiles, users, clients, shoots, images, videos, packages, analytics, favorites, bookings, localSiteAssets,
   shootPreviews, clientSelections, selectionPackages, previewImages,
   type Profile, type InsertProfile,
   type User, type InsertUser, 
   type Client, type InsertClient,
   type Shoot, type InsertShoot,
   type Image, type InsertImage,
+  type Video, type InsertVideo,
   type Package, type InsertPackage,
   type Analytics, type InsertAnalytics,
   type Favorite, type InsertFavorite,
@@ -49,6 +50,7 @@ export interface IStorage {
   getShootsByClientEmail(email: string): Promise<Shoot[]>;
   getPublicShoots(): Promise<Shoot[]>;
   getAllShoots(): Promise<Shoot[]>;
+  getPortfolioGroups(): Promise<string[]>;
   createShoot(shoot: InsertShoot): Promise<Shoot>;
   updateShoot(id: string, updates: Partial<InsertShoot>): Promise<Shoot | undefined>;
   updateShootCustomization(id: string, data: UpdateShootCustomization): Promise<Shoot | undefined>;
@@ -60,6 +62,7 @@ export interface IStorage {
   // Images (UUIDs)
   getImage(id: string): Promise<Image | undefined>;
   getImagesByShoot(shootId: string): Promise<Image[]>;
+  getImagesForShoots?(shootIds: string[]): Promise<Map<string, Image[]>>; // Optimized batch method
   getFeaturedImages(): Promise<Image[]>;
   getFeaturedClassifications(): Promise<string[]>;
   createImage(image: InsertImage): Promise<Image>;
@@ -99,6 +102,14 @@ export interface IStorage {
   updateImageClassification(imageId: string, classification: ImageClassification): Promise<Image | undefined>;
   updateShootImagesClassification(shootId: string, classification: ImageClassification): Promise<Image[]>;
   bulkUpdateImageClassification(imageIds: string[], classification: ImageClassification): Promise<Image[]>;
+  
+  // Featured Videos Management
+  getFeaturedVideos(): Promise<Video[]>;
+  updateVideoFeaturedStatus(videoIds: string[], featured: boolean): Promise<Video[]>;
+  setShootCoverVideo(shootId: string, videoId: string): Promise<Video | undefined>;
+  getVideosByShoot(shootId: string): Promise<Video[]>;
+  getVideosForShoots?(shootIds: string[]): Promise<Map<string, Video[]>>; // Optimized batch method
+  getAllVideos(): Promise<Video[]>;
   
   // Preview Selection System
   getShootPreviewSettings(shootId: string): Promise<ShootPreview | undefined>;
@@ -967,6 +978,58 @@ export class MemStorage implements IStorage {
     }
     
     return updatedImages;
+  }
+
+  // Featured Videos Management methods
+  async getFeaturedVideos(): Promise<Video[]> {
+    return Array.from(this.videos.values()).filter(video => video.featuredVideo === true);
+  }
+
+  async updateVideoFeaturedStatus(videoIds: string[], featured: boolean): Promise<Video[]> {
+    const updatedVideos: Video[] = [];
+    
+    for (const videoId of videoIds) {
+      const video = this.videos.get(videoId);
+      if (video) {
+        const updatedVideo = { ...video, featuredVideo: featured, updatedAt: new Date() };
+        this.videos.set(videoId, updatedVideo);
+        updatedVideos.push(updatedVideo);
+      }
+    }
+    
+    return updatedVideos;
+  }
+
+  async setShootCoverVideo(shootId: string, videoId: string): Promise<Video | undefined> {
+    // First, remove featured status from all videos in this shoot
+    const shootVideos = Array.from(this.videos.values()).filter(video => video.shootId === shootId);
+    for (const video of shootVideos) {
+      if (video.featuredVideo) {
+        const updatedVideo = { ...video, featuredVideo: false, updatedAt: new Date() };
+        this.videos.set(video.id, updatedVideo);
+      }
+    }
+    
+    // Then set the selected video as featured
+    const selectedVideo = this.videos.get(videoId);
+    if (selectedVideo && selectedVideo.shootId === shootId) {
+      const updatedVideo = { ...selectedVideo, featuredVideo: true, updatedAt: new Date() };
+      this.videos.set(videoId, updatedVideo);
+      return updatedVideo;
+    }
+    
+    return undefined;
+  }
+
+  async getVideosByShoot(shootId: string): Promise<Video[]> {
+    return Array.from(this.videos.values())
+      .filter(video => video.shootId === shootId)
+      .sort((a, b) => a.sequence - b.sequence);
+  }
+
+  async getAllVideos(): Promise<Video[]> {
+    return Array.from(this.videos.values())
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 
   async updateImageSequence(imageId: string, sequence: number): Promise<void> {

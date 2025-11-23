@@ -214,14 +214,21 @@ Before any development work:
 1. ✅ Read [`DEV_SERVER_STARTUP.md`](./DEV_SERVER_STARTUP.md)
 2. ✅ Ensure Docker Desktop is running
 3. ✅ Use `npm run docker:dev` (never `npm run dev`)
-4. ✅ Start Adminer for database access: `docker-compose --profile dev up adminer -d`
+4. ✅ Wait for "express serving on port 5000" message (2-4 minutes)
 5. ✅ Verify http://localhost:3000 responds with HTTP 200 OK
-6. ✅ Verify http://localhost:8080 shows Adminer interface
+6. ✅ Start Adminer for database access: `docker-compose --profile dev up adminer -d` (optional)
+
+**⚠️ Important Startup Notes:**
+- **Total startup time**: 3-4 minutes on first run, 30-60 seconds when cached
+- **Silent period**: After "express serving on port 5000", output may pause for 1-2 minutes while Vite initializes - this is NORMAL
+- **Server ready**: Application is accessible immediately at http://localhost:3000 (don't wait for Vite messages)
+- **Vite integration**: Vite runs as Express middleware (no separate server message)
+- **HMR activation**: Hot reload becomes active when first [vite] log appears
 
 **⚠️ ARM-based Apple Silicon Note (M1/M2/M3 Macs):**
 - Docker containers automatically build for both ARM64 and AMD64 architectures
+- Expect longer build times: 3-5 minutes (first run) vs 2-3 minutes on Intel
 - No special steps required - the multi-platform build handles compatibility
-- Expect slightly longer initial build times compared to Intel Macs
 - Total local storage requirement: ~1.1GB (see DEV_SERVER_STARTUP.md for breakdown)
 
 ---

@@ -14,6 +14,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { ImageUrl } from '@/lib/image-utils';
+import { VideoUrl } from '@/lib/video-utils';
+import { generateVideoThumbnails } from '@/lib/video-thumbnail-utils';
 import { useAutoSaveImageOrder } from '@/hooks/use-auto-save-image-order';
 import {
   Settings,
@@ -38,7 +40,6 @@ import {
   Edit,
   Upload,
   Plus,
-  X,
   Trash2,
   MousePointer
 } from 'lucide-react';
@@ -60,6 +61,20 @@ interface GalleryImage {
   sequence: number;
 }
 
+interface GalleryVideo {
+  id: string;
+  filename: string;
+  storagePath: string;
+  thumbnailPath: string;
+  downloadCount: number;
+  sequence: number;
+  duration?: number;
+  width?: number;
+  height?: number;
+}
+
+type MediaItem = GalleryImage | GalleryVideo;
+
 interface EnhancedGalleryEditorProps {
   shootId: string;
 }
@@ -72,7 +87,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   const [selectedCover, setSelectedCover] = useState<string | null>(null);
   const [draggedImage, setDraggedImage] = useState<string | null>(null);
   const [imageOrder, setImageOrder] = useState<string[]>([]);
-  const [selectedImageModal, setSelectedImageModal] = useState<string | null>(null);
+  const [selectedMediaModal, setSelectedMediaModal] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartTime, setDragStartTime] = useState<number>(0);
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
@@ -82,16 +97,6 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   const [imageToDelete, setImageToDelete] = useState<string | null>(null);
   const [imageToReplace, setImageToReplace] = useState<string | null>(null);
   const [replacingImages, setReplacingImages] = useState<Set<string>>(new Set());
-  
-  // Optimized auto-save hook for image sequences and cover selection
-  const { debouncedSave: debouncedSaveImageOrder, saveStatus: imageOrderSaveStatus } = useAutoSaveImageOrder({
-    shootId
-  });
-
-  // Function to trigger auto-save for image order and cover
-  const triggerImageOrderAutoSave = useCallback(() => {
-    debouncedSaveImageOrder(imageOrder, selectedCover);
-  }, [imageOrder, selectedCover, debouncedSaveImageOrder]);
   
   // All editable shoot parameters
   const [editableShoot, setEditableShoot] = useState({
@@ -105,7 +110,8 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     shootType: '',
     isPrivate: false,
     notes: '',
-    seoTags: ''
+    seoTags: '',
+    groupName: ''
   });
 
   // Track original shoot type to detect changes
@@ -174,35 +180,70 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
   const uploadImagesMutation = useMutation({
     mutationFn: async ({ files, resolutions }: { files: File[]; resolutions?: any[] }) => {
-      console.log("🚀 Frontend uploadImagesMutation called with:", {
+      const currentMediaType = shoot?.mediaType || 'photo';
+      const isVideo = currentMediaType === 'video';
+
+      console.log(`🚀 Frontend upload${isVideo ? 'Videos' : 'Images'}Mutation called with:`, {
         filesCount: files.length,
         resolutionsCount: resolutions?.length || 0,
-        resolutions: resolutions
+        resolutions: resolutions,
+        mediaType: currentMediaType
       });
-      
+
       const uploadData = new FormData();
       uploadData.append('shootId', shootId);
-      
-      // Add conflict resolutions if provided
+
+      // Add conflict resolutions if provided (both images and videos)
       if (resolutions && resolutions.length > 0) {
-        console.log("📋 Adding resolutions to FormData:", JSON.stringify(resolutions));
+        console.log(`📋 Adding ${isVideo ? 'video' : 'image'} resolutions to FormData:`, JSON.stringify(resolutions));
         uploadData.append('resolutions', JSON.stringify(resolutions));
       } else {
         console.log("ℹ️ No resolutions provided - standard upload");
       }
-      
-      files.forEach((file, index) => {
-        console.log(`📎 Adding file ${index + 1}: ${file.name}`);
-        uploadData.append('images', file);
-      });
-      
-      console.log("🌐 Sending request to /api/images/upload");
-      const response = await fetch('/api/images/upload', {
+
+      // Generate thumbnails for videos before uploading
+      if (isVideo) {
+        console.log("🎬 Generating video thumbnails...");
+        try {
+          const thumbnails = await generateVideoThumbnails(files);
+          console.log(`✅ Generated ${thumbnails.length} thumbnails`);
+
+          // Add videos and their thumbnails to FormData
+          files.forEach((file, index) => {
+            console.log(`📎 Adding video ${index + 1}: ${file.name} (index: ${index})`);
+
+            uploadData.append('videos', file);
+
+            // Add thumbnail and metadata using index-based keys
+            const thumbnail = thumbnails[index];
+            if (thumbnail) {
+              uploadData.append(`thumbnail_${index}`, thumbnail.thumbnailDataUrl);
+              uploadData.append(`duration_${index}`, thumbnail.metadata.duration.toString());
+              uploadData.append(`width_${index}`, thumbnail.metadata.width.toString());
+              uploadData.append(`height_${index}`, thumbnail.metadata.height.toString());
+              console.log(`  📸 Thumbnail: ${thumbnail.metadata.width}x${thumbnail.metadata.height}, ${thumbnail.metadata.duration}s`);
+            }
+          });
+        } catch (error) {
+          console.error("❌ Failed to generate video thumbnails:", error);
+          throw new Error('Failed to generate video thumbnails');
+        }
+      } else {
+        // Add images (no thumbnail generation needed)
+        files.forEach((file, index) => {
+          console.log(`📎 Adding file ${index + 1}: ${file.name}`);
+          uploadData.append('images', file);
+        });
+      }
+
+      const endpoint = isVideo ? '/api/videos/upload' : '/api/images/upload';
+      console.log(`🌐 Sending request to ${endpoint}`);
+      const response = await fetch(endpoint, {
         method: 'POST',
         body: uploadData,
       });
       if (!response.ok) throw new Error('Upload failed');
-      
+
       const result = await response.json();
       console.log("✅ Upload response received:", result);
       return result;
@@ -210,7 +251,8 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     onSuccess: (result) => {
       // Invalidate multiple query patterns to ensure UI updates
       queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/images'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/images', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/videos', shootId] });
       queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
       
       // Handle new detailed response format
@@ -255,31 +297,43 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   });
 
   const deleteImageMutation = useMutation({
-    mutationFn: (imageId: string) => {
-      console.log('Attempting to delete image with ID:', imageId);
-      console.log('Full API URL:', `/api/images/${imageId}`);
-      return apiRequest('DELETE', `/api/images/${imageId}`);
+    mutationFn: (mediaId: string) => {
+      const currentMediaType = shoot?.mediaType || 'photo';
+      const isVideo = currentMediaType === 'video';
+      const endpoint = isVideo ? `/api/videos/${mediaId}` : `/api/images/${mediaId}`;
+
+      console.log(`Attempting to delete ${isVideo ? 'video' : 'image'} with ID:`, mediaId);
+      console.log('Full API URL:', endpoint);
+      return apiRequest('DELETE', endpoint);
     },
     onSuccess: (data) => {
+      const currentMediaType = shoot?.mediaType || 'photo';
+      const isVideo = currentMediaType === 'video';
+
       queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/images'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/images', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/videos', shootId] });
       queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
-      toast({ 
-        title: "Image deleted permanently", 
-        description: "Removed from database and storage" 
+      toast({
+        title: `${isVideo ? 'Video' : 'Image'} deleted permanently`,
+        description: "Removed from database and storage"
       });
     },
     onError: (error: any) => {
+      const currentMediaType = shoot?.mediaType || 'photo';
+      const isVideo = currentMediaType === 'video';
+
       console.error("Frontend received delete error:", error);
-      
+
       // The delete operation actually succeeds server-side but triggers frontend error
       // This is likely due to API response parsing issues - refresh data regardless
       queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/images'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/images', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/videos', shootId] });
       queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
-      
-      toast({ 
-        title: "Image deleted", 
+
+      toast({
+        title: `${isVideo ? 'Video' : 'Image'} deleted`,
         description: "Removed from database (refreshing gallery)",
         variant: "default"
       });
@@ -287,14 +341,27 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   });
 
   const updateImageSequencesMutation = useMutation({
-    mutationFn: (imageSequences: Record<string, number>) => 
-      apiRequest('PATCH', `/api/shoots/${shootId}`, { imageSequences }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/images'] });
-      toast({ title: "Image order updated!" });
+    mutationFn: (sequences: Record<string, number>) => {
+      const currentMediaType = shoot?.mediaType || 'photo';
+      const isVideo = currentMediaType === 'video';
+      const payload = isVideo ? { videoSequences: sequences } : { imageSequences: sequences };
+
+      return apiRequest('PATCH', `/api/shoots/${shootId}`, payload);
     },
-    onError: () => toast({ title: "Error", description: "Failed to update image order", variant: "destructive" })
+    onSuccess: () => {
+      const currentMediaType = shoot?.mediaType || 'photo';
+      const isVideo = currentMediaType === 'video';
+
+      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/images', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/videos', shootId] });
+      toast({ title: `${isVideo ? 'Video' : 'Image'} order updated!` });
+    },
+    onError: () => {
+      const currentMediaType = shoot?.mediaType || 'photo';
+      const isVideo = currentMediaType === 'video';
+      toast({ title: "Error", description: `Failed to update ${isVideo ? 'video' : 'image'} order`, variant: "destructive" });
+    }
   });
   
   // Fetch shoot data
@@ -309,20 +376,62 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   });
 
   const shoot = (shootData as any)?.shoot || null;
-  const images: GalleryImage[] = (shootData as any)?.images ? ((shootData as any).images as GalleryImage[]) : [];
+  const mediaType = shoot?.mediaType || 'photo'; // Default to 'photo' for backwards compatibility
+  
+  // Optimized auto-save hook for media sequences and cover selection
+  const { debouncedSave: debouncedSaveImageOrder, saveStatus: imageOrderSaveStatus } = useAutoSaveImageOrder({
+    shootId,
+    mediaType
+  });
+
+  // Function to trigger auto-save for image order and cover
+  const triggerImageOrderAutoSave = useCallback(() => {
+    debouncedSaveImageOrder(imageOrder, selectedCover);
+  }, [imageOrder, selectedCover, debouncedSaveImageOrder])
+
+  // Conditionally query images or videos based on shoot's mediaType
+  const { data: mediaData } = useQuery({
+    queryKey: mediaType === 'video' ? ['/api/videos', shootId] : ['/api/images', shootId],
+    queryFn: async () => {
+      const endpoint = mediaType === 'video' ? `/api/videos?shootId=${shootId}` : `/api/images?shootId=${shootId}`;
+      const response = await fetch(endpoint);
+      if (!response.ok) throw new Error('Failed to fetch media');
+      return response.json();
+    },
+    enabled: !!shootId && !!shoot
+  });
+
+  const mediaItems: MediaItem[] = mediaData || [];
+
+  // Backwards compatibility: also extract images from shootData for existing code
+  const images: GalleryImage[] = mediaType === 'photo' ? mediaItems as GalleryImage[] : [];
+  const videos: any[] = mediaType === 'video' ? mediaItems : [];
 
   // Initialize all settings from shoot data when shoot changes
   useEffect(() => {
     if (shoot && shoot.id) {
       setCustomSlug(shoot.customSlug || '');
       
-      // Set cover: use bannerImageId if valid, otherwise use first image as fallback
-      if (shoot.bannerImageId && images.some(img => img.id === shoot.bannerImageId)) {
-        setSelectedCover(shoot.bannerImageId);
-      } else if (images.length > 0) {
-        setSelectedCover(images[0].id);
+      // Set cover: conditional logic based on media type
+      if (mediaType === 'video') {
+        // For video albums, check for featured video or use first video
+        const featuredVideo = videos.find(video => video.featuredVideo === true);
+        if (featuredVideo) {
+          setSelectedCover(featuredVideo.id);
+        } else if (videos.length > 0) {
+          setSelectedCover(videos[0].id);
+        } else {
+          setSelectedCover(null);
+        }
       } else {
-        setSelectedCover(null);
+        // For photo albums, use bannerImageId if valid, otherwise use first image as fallback
+        if (shoot.bannerImageId && images.some(img => img.id === shoot.bannerImageId)) {
+          setSelectedCover(shoot.bannerImageId);
+        } else if (images.length > 0) {
+          setSelectedCover(images[0].id);
+        } else {
+          setSelectedCover(null);
+        }
       }
       
       // Initialize gallery settings from shoot data (provide defaults for null gallerySettings)
@@ -348,31 +457,33 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
         shootType: shoot.shootType || '',
         isPrivate: shoot.isPrivate || false,
         notes: shoot.notes || '',
-        seoTags: Array.isArray(shoot.seoTags) ? shoot.seoTags.join(', ') : (shoot.seoTags || '')
+        seoTags: Array.isArray(shoot.seoTags) ? shoot.seoTags.join(', ') : (shoot.seoTags || ''),
+        groupName: shoot.groupName || ''
       });
       
       // Track the original shoot type for change detection
       setOriginalShootType(shoot.shootType || '');
     }
-  }, [shoot?.id, images.length]);
+  }, [shoot?.id, images.length, videos.length, videos.map(v => v.featuredVideo).join(',')]);
 
-  // Initialize image order from sequence - fix blank gaps issue
+  // Initialize media order from sequence - works for both images and videos
   useEffect(() => {
-    if (images.length > 0) {
-      const sortedImages = [...images].sort((a, b) => a.sequence - b.sequence);
-      const newOrder = sortedImages.map(img => img.id);
+    const media = mediaType === 'video' ? videos : images;
+    if (media.length > 0) {
+      const sortedMedia = [...media].sort((a, b) => a.sequence - b.sequence);
+      const newOrder = sortedMedia.map(item => item.id);
       
       // Only update if the order actually changed to prevent unnecessary re-renders
       if (JSON.stringify(newOrder) !== JSON.stringify(imageOrder)) {
         setImageOrder(newOrder);
       }
     } else {
-      // Clear order when no images
+      // Clear order when no media
       if (imageOrder.length > 0) {
         setImageOrder([]);
       }
     }
-  }, [images.length, images.map(img => `${img.id}-${img.sequence}`).join(',')]);
+  }, [mediaType === 'video' ? videos.length : images.length, (mediaType === 'video' ? videos : images).map(item => `${item.id}-${item.sequence}`).join(',')]);
 
   // Drag and drop handlers
   const handleDragStart = useCallback((e: React.DragEvent, imageId: string) => {
@@ -427,23 +538,24 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     setDraggedImage(null);
   }, []);
 
-  // Get ordered images for display
+  // Get ordered media for display (works for both images and videos)
   const getOrderedImages = useCallback(() => {
+    const media = mediaType === 'video' ? videos : images;
     // Defensive checks for empty or undefined data
-    if (!images || images.length === 0) return [];
-    if (!imageOrder || imageOrder.length === 0) return images;
+    if (!media || media.length === 0) return [];
+    if (!imageOrder || imageOrder.length === 0) return media;
     
-    const imageMap = new Map(images.map(img => [img.id, img]));
-    const orderedImages = imageOrder
-      .map(id => imageMap.get(id))
-      .filter(Boolean) as GalleryImage[];
+    const mediaMap = new Map(media.map(item => [item.id, item]));
+    const orderedMedia = imageOrder
+      .map(id => mediaMap.get(id))
+      .filter(Boolean) as any[];
     
-    // Add any new images not in order yet
+    // Add any new media items not in order yet
     const orderedIds = new Set(imageOrder);
-    const newImages = images.filter(img => !orderedIds.has(img.id));
+    const newMedia = media.filter(item => !orderedIds.has(item.id));
     
-    return [...orderedImages, ...newImages];
-  }, [images, imageOrder]);
+    return [...orderedMedia, ...newMedia];
+  }, [mediaType === 'video' ? videos : images, imageOrder]);
   
   // Removed auto-calculate dominant aspect ratio - using "automatic" layoutStyle instead
 
@@ -453,7 +565,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
       queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/images'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/images', shootId] });
       setEditMode(false);
       toast({ title: "All changes saved successfully!" });
     },
@@ -534,10 +646,11 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
         fileInput.value = '';
       }
 
-      // Update image sequences based on current order
-      const imageSequences = imageOrder.length > 0 
+      // Update media sequences based on current order (images or videos)
+      const sequences = imageOrder.length > 0 
         ? Object.fromEntries(imageOrder.map((id, index) => [id, index + 1]))
         : {};
+      const sequenceKey = mediaType === 'video' ? 'videoSequences' : 'imageSequences';
 
       // Prepare comprehensive shoot update data
       const updateData = {
@@ -557,7 +670,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
         customSlug: editableShoot.customSlug.trim() || null,
         bannerImageId: selectedCover,
         gallerySettings: gallerySettings,
-        imageSequences
+        [sequenceKey]: sequences
       };
 
       // Save all changes
@@ -616,12 +729,12 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     onSuccess: () => {
       // Invalidate all relevant queries to refresh the UI immediately
       queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/images'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/images', shootId] });
       queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
-      
+
       // Also refetch the current shoot data immediately
       queryClient.refetchQueries({ queryKey: ['/api/shoots', shootId] });
-      
+
       toast({ title: "Success", description: "Image moved to SlyFox archive" });
     },
     onError: () => {
@@ -718,7 +831,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
           });
           
           // Refresh image data to show updated classifications
-          queryClient.invalidateQueries({ queryKey: ['/api/images'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/images', shootId] });
           queryClient.invalidateQueries({ queryKey: ['/api/images/featured'] });
         }
       } else {
@@ -749,14 +862,32 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     saveAdvancedSettingsMutation.mutate(data);
   };
 
-  const handleReplaceImage = (imageId: string) => {
-    console.log("🔄 Replace image triggered for:", imageId);
-    setImageToReplace(imageId);
+  const handleReplaceImage = (mediaId: string) => {
+    console.log(`🔄 Replace ${mediaType === 'video' ? 'video' : 'image'} triggered for:`, mediaId);
+    console.log(`🎬 Current shoot mediaType:`, shoot?.mediaType);
+    console.log(`🎯 Media ID to replace:`, mediaId);
+    setImageToReplace(mediaId);
     
-    // Create hidden file input for image replacement
+    // Determine if we're replacing a video or image
+    const isVideoReplacement = mediaType === 'video';
+    const targetMedia = isVideoReplacement 
+      ? videos.find(vid => vid.id === mediaId)
+      : images.find(img => img.id === mediaId);
+    
+    if (!targetMedia) {
+      toast({
+        title: "Error",
+        description: `Target ${isVideoReplacement ? 'video' : 'image'} not found`,
+        variant: "destructive"
+      });
+      setImageToReplace(null);
+      return;
+    }
+    
+    // Create hidden file input for media replacement
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = 'image/*';
+    input.accept = isVideoReplacement ? 'video/*' : 'image/*';
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) {
@@ -764,56 +895,72 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
         return;
       }
       
-      console.log("📁 File selected for replacement:", file.name);
+      console.log(`📁 ${isVideoReplacement ? 'Video' : 'Image'} file selected for replacement:`, file.name);
       
-      // Find the target image details
-      const targetImage = images.find(img => img.id === imageId);
-      if (!targetImage) {
-        toast({
-          title: "Error",
-          description: "Target image not found",
-          variant: "destructive"
-        });
-        setImageToReplace(null);
-        return;
-      }
-      
-      // Add this image to the replacing set for spinner overlay
-      setReplacingImages(prev => new Set([...prev, imageId]));
-      
-      // Create resolution for direct replacement
-      const resolution = {
-        filename: file.name,
-        action: 'replace' as const,
-        keepPosition: true,
-        targetImageId: imageId
-      };
-      
-      console.log("🎯 Direct replacement resolution:", resolution);
+      // Add this media to the replacing set for spinner overlay
+      setReplacingImages(prev => new Set([...prev, mediaId]));
       
       // Upload with automatic replacement
       try {
-        await uploadImagesMutation.mutateAsync({ 
-          files: [file], 
-          resolutions: [resolution] 
-        });
-        
-        toast({
-          title: "Image Replaced",
-          description: `Successfully replaced ${targetImage.filename} with ${file.name}`,
-        });
+        if (isVideoReplacement) {
+          // Create resolution for video replacement
+          // IMPORTANT: Must clean filename same way server does to ensure matching
+          const cleanFilename = file.name.replace(/[^a-z0-9.-]/gi, '_');
+          const resolution = {
+            filename: cleanFilename, // Use cleaned filename to match server processing
+            action: 'replace' as const,
+            keepPosition: true,
+            targetVideoId: mediaId
+          };
+          
+          console.log("🎯 Direct video replacement resolution:", resolution);
+          console.log(`🧹 Original filename: "${file.name}" → Cleaned: "${cleanFilename}"`);
+          
+          await uploadImagesMutation.mutateAsync({ 
+            files: [file], 
+            resolutions: [resolution] 
+          });
+          
+          toast({
+            title: "Video Replaced",
+            description: `Successfully replaced ${targetMedia.filename} with ${file.name}`,
+          });
+        } else {
+          // Create resolution for image replacement
+          // IMPORTANT: Must clean filename same way server does to ensure matching
+          const cleanFilename = file.name.replace(/[^a-z0-9.-]/gi, '_');
+          const resolution = {
+            filename: cleanFilename, // Use cleaned filename to match server processing
+            action: 'replace' as const,
+            keepPosition: true,
+            targetImageId: mediaId
+          };
+          
+          console.log("🎯 Direct image replacement resolution:", resolution);
+          console.log(`🧹 Original filename: "${file.name}" → Cleaned: "${cleanFilename}"`);
+          
+          await uploadImagesMutation.mutateAsync({ 
+            files: [file], 
+            resolutions: [resolution] 
+          });
+          
+          toast({
+            title: "Image Replaced",
+            description: `Successfully replaced ${targetMedia.filename} with ${file.name}`,
+          });
+        }
       } catch (error) {
         console.error("Replace error:", error);
         toast({
           title: "Replacement Failed",
-          description: "Failed to replace image. Please try again.",
+          description: `Failed to replace ${isVideoReplacement ? 'video' : 'image'}. Please try again.`,
           variant: "destructive"
         });
       } finally {
         // Remove from replacing set and clear state
         setReplacingImages(prev => {
           const newSet = new Set(prev);
-          newSet.delete(imageId);
+          newSet.delete(mediaId);
           return newSet;
         });
         setImageToReplace(null);
@@ -839,14 +986,15 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   };
 
   const handleSaveAppearance = () => {
-    const imageSequences = imageOrder.length > 0 
+    const sequences = imageOrder.length > 0 
       ? Object.fromEntries(imageOrder.map((id, index) => [id, index + 1]))
       : {};
+    const sequenceKey = mediaType === 'video' ? 'videoSequences' : 'imageSequences';
 
     const data = {
       bannerImageId: selectedCover,
       gallerySettings: gallerySettings,
-      imageSequences
+      [sequenceKey]: sequences
     };
     saveAppearanceMutation.mutate(data);
   };
@@ -876,7 +1024,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
         onDragEnd={handleDragEnd}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        onImageClick={setSelectedImageModal}
+        onImageClick={setSelectedMediaModal}
         replacingImages={replacingImages}
         isDragReorderingEnabled={isDragReorderingEnabled}
         visibleImageCount={visibleImageCount}
@@ -924,9 +1072,13 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
           >
             {/* Cover Image Strip */}
             {selectedCover && (() => {
-              const orderedImages = getOrderedImages();
-              const coverImage = orderedImages.find(img => img.id === selectedCover);
-              const coverImageUrl = coverImage?.storagePath ? ImageUrl.forViewing(coverImage.storagePath) : null;
+              const orderedMedia = mediaType === 'video' ? videos : images;
+              const coverMedia = orderedMedia.find(item => item.id === selectedCover);
+              const coverImageUrl = coverMedia?.storagePath ? 
+                (mediaType === 'video' ? 
+                  VideoUrl.forThumbnail(coverMedia as any) : 
+                  ImageUrl.forViewing(coverMedia.storagePath)
+                ) : null;
               
               return coverImageUrl ? (
                 <div 
@@ -971,6 +1123,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
             <GalleryRenderer
               images={getOrderedImages()}
               gallerySettings={gallerySettings}
+              mediaType={mediaType}
               selectedCover={selectedCover}
               onCoverChange={setSelectedCover}
               draggedImage={draggedImage}
@@ -978,7 +1131,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
               onDragEnd={handleDragEnd}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
-              onImageClick={setSelectedImageModal}
+              onImageClick={setSelectedMediaModal}
               onViewFullRes={handleViewFullRes}
               onDownloadImage={handleDownloadImage}
               onRemoveImage={handleRemoveImage}
@@ -994,27 +1147,27 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
             />
             
             {/* Load More Button */}
-            {images.length > visibleImageCount && visibleImageCount < 200 && (
+            {(mediaType === 'video' ? videos.length : images.length) > visibleImageCount && visibleImageCount < 200 && (
               <div className="text-center mt-6 p-4">
                 <Button
                   variant="outline"
                   onClick={loadMoreImages}
                   className="px-8 py-2"
                 >
-                  Load More Images ({Math.min(50, Math.min(200, images.length) - visibleImageCount)} more)
+                  Load More {mediaType === 'video' ? 'Videos' : 'Images'} ({Math.min(50, Math.min(200, (mediaType === 'video' ? videos.length : images.length)) - visibleImageCount)} more)
                 </Button>
               </div>
             )}
             
             {/* Large Album Notice */}
-            {images.length > 100 && (
+            {(mediaType === 'video' ? videos.length : images.length) > 100 && (
               <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mt-4 mx-4">
                 <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
                   <AlertTriangle className="w-4 h-4" />
                   <span className="font-medium">Large Album Notice</span>
                 </div>
                 <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                  This album has {images.length} images. For performance, only the first 100 images are shown in the preview. You can still reorder the visible images.
+                  This album has {mediaType === 'video' ? videos.length : images.length} {mediaType === 'video' ? 'videos' : 'images'}. For performance, only the first 100 {mediaType === 'video' ? 'videos' : 'images'} are shown in the preview. You can still reorder the visible {mediaType === 'video' ? 'videos' : 'images'}.
                 </p>
               </div>
             )}
@@ -1022,32 +1175,43 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
         </CardContent>
       </Card>
 
-      {/* Image Modal */}
-      {selectedImageModal && (
-        <Dialog open={!!selectedImageModal} onOpenChange={() => setSelectedImageModal(null)}>
-          <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-            <DialogHeader className="sr-only">
-              <DialogTitle>Image Preview</DialogTitle>
-              <DialogDescription>Gallery-optimized image preview</DialogDescription>
-            </DialogHeader>
-            <div className="relative">
-              <img
-                src={ImageUrl.forViewing(getOrderedImages().find(img => img.id === selectedImageModal)?.storagePath || '')}
-                alt="Gallery preview"
-                className="w-full h-auto max-h-[85vh] object-contain"
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 right-2 bg-black/50 text-white hover:bg-black/70"
-                onClick={() => setSelectedImageModal(null)}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+      {/* Media Modal (Images & Videos) */}
+      {selectedMediaModal && (() => {
+        const selectedMedia = getOrderedImages().find(item => item.id === selectedMediaModal);
+        const isVideo = mediaType === 'video';
+        
+        return (
+          <Dialog open={!!selectedMediaModal} onOpenChange={() => setSelectedMediaModal(null)}>
+            <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+              <DialogHeader className="sr-only">
+                <DialogTitle>{isVideo ? 'Video' : 'Image'} Preview</DialogTitle>
+                <DialogDescription>Gallery-optimized {isVideo ? 'video' : 'image'} preview</DialogDescription>
+              </DialogHeader>
+              <div className="relative">
+                {isVideo ? (
+                  <video
+                    src={VideoUrl.forStreaming(selectedMedia as any)}
+                    className="w-full h-auto max-h-[85vh] object-contain"
+                    controls
+                    autoPlay
+                    playsInline
+                    preload="metadata"
+                    poster={VideoUrl.forThumbnail(selectedMedia as any)}
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                ) : (
+                  <img
+                    src={ImageUrl.forViewing(selectedMedia?.storagePath || '')}
+                    alt="Gallery preview"
+                    className="w-full h-auto max-h-[85vh] object-contain"
+                  />
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        );
+      })()}
 
       {/* Remove Confirmation Dialog */}
       <AlertDialog open={removeConfirmationOpen} onOpenChange={setRemoveConfirmationOpen}>

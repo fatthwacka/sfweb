@@ -27,6 +27,101 @@ docker-compose --profile dev up adminer -d
 - **Site Management**: http://localhost:3000/admin → Site Management tab
 - **Database Admin**: http://localhost:8080 (if Adminer started)
 
+## ⏱️ What to Expect During Startup
+
+**Total Time**: 3-4 minutes (first run) | 30-60 seconds (cached)
+
+### Startup Timeline
+
+```
+Phase 1: Docker Build (2-3 minutes on first run)
+├─ Loading base image (node:20-alpine)
+├─ Installing system dependencies
+├─ npm install (600 packages) ← LONGEST STEP
+├─ Copying application files
+└─ Exporting Docker image
+
+Phase 2: Express Server Startup (5-10 seconds)
+├─ Container starts
+├─ Database connection verified
+├─ Routes registered
+├─ Config overrides loaded
+└─ ✅ "express serving on port 5000" ← SERVER READY
+
+Phase 3: Vite Integration (1-2 minutes, SILENT)
+├─ Vite middleware initializes
+├─ Frontend build preparation
+├─ No visible output (NORMAL BEHAVIOR)
+└─ First [vite] warnings appear when ready
+
+Phase 4: Fully Ready
+├─ ✅ Backend API: Ready at Phase 2
+├─ ✅ Frontend pages: Ready at Phase 2
+└─ ✅ Hot Module Reload: Ready at Phase 3
+```
+
+### When Is the Server Ready?
+
+**Quick Answer**: As soon as you see `"express serving on port 5000"`
+
+**Details**:
+- ✅ **API & Backend**: Ready immediately when Express starts
+- ✅ **Frontend Pages**: Accessible immediately via http://localhost:3000
+- ⏳ **Hot Module Reload (HMR)**: Takes additional 1-2 minutes (Vite initialization)
+- 💡 **Tip**: Don't wait for Vite messages - start testing immediately!
+
+### Expected Log Messages
+
+**✅ Key Success Indicators:**
+
+1. **Docker Build Complete**:
+   ```
+   #10 DONE 124.4s
+   #11 DONE 2.6s
+   #12 DONE 19.7s
+   ```
+
+2. **Express Server Ready** (most important):
+   ```
+   sfweb-app  | 11:38:32 AM [express] serving on port 5000
+   ```
+
+3. **Configuration Loaded**:
+   ```
+   sfweb-app  | 🔄 Loaded config overrides from disk: [
+   sfweb-app  |   'contact', 'home', 'portfolio', 'categoryPages', 'gradients', 'about'
+   sfweb-app  | ]
+   ```
+
+4. **Vite Active** (appears 1-2 minutes later):
+   ```
+   sfweb-app  | 11:39:54 AM [vite] warning: ...
+   ```
+
+**⚠️ Silent Period After Express Starts:**
+- Output may pause for 1-2 minutes after "express serving on port 5000"
+- This silence is **NORMAL** - Vite is initializing as Express middleware
+- Do NOT stop the process during this silent period
+- Server is already accessible - verify with: `curl -I http://localhost:3000`
+
+### Vite Integration Behavior
+
+**Important**: Vite runs integrated into Express, not as a standalone server.
+
+**What this means**:
+- ❌ NO separate "Vite dev server running at..." message
+- ❌ NO standalone Vite process in logs
+- ✅ Vite initializes silently as Express middleware
+- ✅ First Vite output appears 1-2 minutes after Express starts
+- ✅ Usually shows as [vite] warnings or compilation messages
+- ✅ HMR works once you see any [vite] log output
+
+**Why the integration**:
+- Single server serves both frontend and backend (port 3000)
+- Simplified development experience
+- Vite proxies API requests to Express backend automatically
+- Hot reload works seamlessly across full stack
+
 ## ✅ Verification Steps
 
 After startup, verify everything is working:
@@ -35,8 +130,11 @@ After startup, verify everything is working:
 # Check containers are running
 docker ps
 
-# Test API endpoints
+# Test API endpoints (works immediately after Express starts)
 curl http://localhost:3000/api/site-config | jq '.contact.business.name'
+
+# Test frontend (works immediately, no need to wait for Vite)
+curl -I http://localhost:3000
 
 # Check configuration persistence
 ls -la server/data/site-config-overrides.json
@@ -45,6 +143,7 @@ ls -la server/data/site-config-overrides.json
 **Expected Output:**
 - Containers: `sfweb-app` and `sfweb-postgres` running
 - API returns: `"SlyFox Studio Group"` (or your custom name)
+- HTTP response: `HTTP/1.1 200 OK`
 - Config file exists with your customizations
 
 ## ⚠️ Common Startup Issues & Solutions
@@ -59,7 +158,7 @@ Error: Cannot connect to the Docker daemon
 ```
 Error: bind: address already in use
 ```
-**Solution**: 
+**Solution**:
 ```bash
 # Stop all project containers
 docker-compose down
@@ -67,6 +166,18 @@ docker-compose down
 # Find and kill conflicting processes
 lsof -i :3000 :5432 :8080
 kill -9 <PID>
+```
+
+### Startup Seems Stuck (Silent Period)
+**Symptoms**: No output after "express serving on port 5000" for 1-2 minutes
+**Solution**: This is NORMAL - Vite is initializing. Verify server is ready:
+```bash
+# Test if server responds (should work immediately)
+curl -I http://localhost:3000
+# Expected: HTTP/1.1 200 OK
+
+# Check container is still running
+docker ps | grep sfweb-app
 ```
 
 ### Config Changes Not Persisting
@@ -110,7 +221,7 @@ The SlyFox Studios project is designed for seamless cross-device development wit
 /Volumes/KLEANDOC/Origin Dropbox/SLYFOX/ADMIN/WEBSITE/2025/sfweb/
 ├── 📁 Complete application source code
 ├── 📁 client/                    # React frontend
-├── 📁 server/                    # Express backend  
+├── 📁 server/                    # Express backend
 ├── 📁 shared/                    # TypeScript schemas
 ├── 📁 public/                    # Static assets
 ├── 📁 scripts/                   # Build scripts
@@ -144,7 +255,7 @@ sfweb/.npm-cache/                           # NPM cache (excluded from Dropbox)
 
 **Per Device:**
 - **Dropbox Project Folder**: ~50MB (source code only)
-- **Docker Overhead**: ~422MB (images + volumes + config persistence)  
+- **Docker Overhead**: ~422MB (images + volumes + config persistence)
 - **Node Dependencies**: ~344MB (auto-downloaded)
 - **IDE Configuration**: ~255MB (Windsurf)
 - **Total Local Storage**: ~1.1GB per device
@@ -160,7 +271,7 @@ sfweb/.npm-cache/                           # NPM cache (excluded from Dropbox)
 ### Prerequisites (All Platforms)
 
 1. **Docker Desktop** - Install and ensure it's running
-2. **Node.js 20+** - For npm commands  
+2. **Node.js 20+** - For npm commands
 3. **Dropbox** - Ensure project folder is synced
 4. **Windsurf IDE** (optional) - Will need reconfiguration on new devices
 
@@ -168,7 +279,7 @@ sfweb/.npm-cache/                           # NPM cache (excluded from Dropbox)
 
 **⚠️ Apple Silicon (M1/M2/M3) Note:**
 - Docker multi-platform builds automatically handle ARM64 architecture
-- Expect 2-3x longer initial build times compared to Intel Macs
+- Expect longer initial build times: 3-5 minutes vs 2-3 minutes on Intel
 - Configuration persistence works identically across architectures
 
 ```bash
@@ -185,11 +296,15 @@ docker --version
 # 4. Start development environment
 npm run docker:dev
 
-# 5. Wait for containers to build and start
-# Look for: "express serving on port 5000"
-# Look for: "🔄 Loaded config overrides from disk"
+# 5. Wait for server ready message (2-4 minutes)
+# Look for: "express serving on port 5000" ← SERVER IS READY
+# Note: 1-2 minute silent period after this is normal (Vite initializing)
 
-# 6. Start Adminer for database management
+# 6. Verify server is accessible (optional)
+curl -I http://localhost:3000
+# Expected: HTTP/1.1 200 OK
+
+# 7. Start Adminer for database management (optional)
 docker-compose --profile dev up adminer -d
 ```
 
@@ -269,7 +384,7 @@ docker exec sfweb-app ls -la /app/server/data/
 
 ### ✅ Development Features Verification
 
-- **Hot Reload**: Edit a file and check browser auto-refreshes
+- **Hot Reload**: Edit a file and check browser auto-refreshes (after Vite is ready)
 - **Database**: Access http://localhost:8080 (Adminer)
 - **API Endpoints**: Test API routes work correctly
 - **Site Management**: Access admin panel at http://localhost:3000/admin
@@ -431,9 +546,10 @@ npm run db:push
 ```bash
 # 1. Start development environment
 npm run docker:dev
-# Wait for: "🔄 Loaded config overrides from disk"
+# Wait for: "express serving on port 5000" (2-4 minutes)
+# Note: Silent period after this is normal
 
-# 2. Test application
+# 2. Test application (don't wait for Vite messages)
 curl -I http://localhost:3000
 # Expected: HTTP/1.1 200 OK
 

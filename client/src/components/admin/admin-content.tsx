@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { ImageUrl } from "@/lib/image-utils";
+import { VideoUrl } from "@/lib/video-utils";
 import { SHOOT_TYPES } from "@shared/schema";
 import { EnhancedGalleryEditor } from "./enhanced-gallery-editor";
 import { StaffManagement } from "./staff-management";
@@ -51,7 +52,10 @@ import {
   Heart,
   ThumbsUp,
   ThumbsDown,
-  ArrowUpDown
+  ArrowUpDown,
+  Video,
+  Play,
+  Image
 } from "lucide-react";
 
 interface Client {
@@ -112,11 +116,11 @@ export function AdminContent({ userRole }: AdminContentProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'shoots' | 'images' | 'galleries' | 'site-management' | 'staff' | 'users'>('overview');
+  const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
   const [activePageSettings, setActivePageSettings] = useState<'contact' | 'homepage' | 'photography' | 'videography' | 'about' | 'web-apps' | 'social-media' | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState<'alphabetical' | 'alphabetical-reverse' | 'date-newest' | 'date-oldest'>('date-newest');
   const [newClientOpen, setNewClientOpen] = useState(false);
-  const [newShootOpen, setNewShootOpen] = useState(false);
   const [clientShootDialogOpen, setClientShootDialogOpen] = useState<string | null>(null);
 
   // Generate SEO keywords based on shoot type and location
@@ -203,8 +207,18 @@ export function AdminContent({ userRole }: AdminContentProps) {
     queryKey: ["/api/shoots"]
   });
 
-  const { data: images = [], isLoading: imagesLoading } = useQuery<Image[]>({
-    queryKey: ["/api/images"]
+  // Dynamic media fetching based on selected type
+  const { data: mediaItems = [], isLoading: mediaLoading, error: mediaError } = useQuery<any[]>({
+    queryKey: [mediaType === 'video' ? '/api/videos' : '/api/images']
+  });
+  
+  // Separate queries for stats - always fetch both image and video counts
+  const { data: images = [] } = useQuery<any[]>({
+    queryKey: ['/api/images']
+  });
+  
+  const { data: videos = [] } = useQuery<any[]>({
+    queryKey: ['/api/videos']
   });
   
   // Filter shoots based on selected client for gallery management
@@ -236,38 +250,46 @@ export function AdminContent({ userRole }: AdminContentProps) {
     setSelectedImages(newSelected);
   };
 
-  // Get filtered and sorted images based on current filters
-  const getFilteredImages = () => {
-    const filtered = images.filter(image => {
+  // Get filtered and sorted media items based on current filters and type
+  const getFilteredMediaItems = () => {
+    // Safety check: ensure mediaItems is always an array
+    if (!Array.isArray(mediaItems)) {
+      console.warn('mediaItems is not an array:', mediaItems);
+      return [];
+    }
+    
+    const filtered = mediaItems.filter(item => {
       // Search term filter
-      if (searchTerm && !image.filename.toLowerCase().includes(searchTerm.toLowerCase())) {
+      if (searchTerm && !item.filename.toLowerCase().includes(searchTerm.toLowerCase())) {
         return false;
       }
 
       // Client filter
       if (selectedClientFilter && selectedClientFilter !== '__all__') {
-        const imageShoot = shoots.find(shoot => shoot.id === image.shootId);
-        if (!imageShoot || imageShoot.clientId !== selectedClientFilter) {
+        const itemShoot = shoots.find(shoot => shoot.id === item.shootId);
+        if (!itemShoot || itemShoot.clientId !== selectedClientFilter) {
           return false;
         }
       }
 
       // Shoot filter
-      if (selectedShootFilter && selectedShootFilter !== '__all__' && image.shootId !== selectedShootFilter) {
+      if (selectedShootFilter && selectedShootFilter !== '__all__' && item.shootId !== selectedShootFilter) {
         return false;
       }
 
-      // Engagement filters - if any filter is active, image must match at least one
-      const hasActiveFilters = Object.values(engagementFilters).some(Boolean);
-      if (hasActiveFilters) {
-        const matchesFilter = (
-          (engagementFilters.hearts && (image.heartsCount || 0) > 0) ||
-          (engagementFilters.likes && (image.likesCount || 0) > 0) ||
-          (engagementFilters.dislikes && (image.dislikesCount || 0) > 0) ||
-          (engagementFilters.featured && image.featuredImage)
-        );
-        if (!matchesFilter) {
-          return false;
+      // Engagement filters - only apply to images, skip for videos
+      if (mediaType === 'image') {
+        const hasActiveFilters = Object.values(engagementFilters).some(Boolean);
+        if (hasActiveFilters) {
+          const matchesFilter = (
+            (engagementFilters.hearts && (item.heartsCount || 0) > 0) ||
+            (engagementFilters.likes && (item.likesCount || 0) > 0) ||
+            (engagementFilters.dislikes && (item.dislikesCount || 0) > 0) ||
+            (engagementFilters.featured && item.featuredImage)
+          );
+          if (!matchesFilter) {
+            return false;
+          }
         }
       }
 
@@ -287,8 +309,8 @@ export function AdminContent({ userRole }: AdminContentProps) {
   };
 
   const selectAllImages = () => {
-    const filteredImages = getFilteredImages();
-    setSelectedImages(new Set(filteredImages.map(img => img.id)));
+    const filteredItems = getFilteredMediaItems();
+    setSelectedImages(new Set(filteredItems.map(item => item.id)));
   };
 
   const clearSelection = () => {
@@ -296,12 +318,23 @@ export function AdminContent({ userRole }: AdminContentProps) {
   };
 
   const getSelectedImagesData = () => {
-    return images.filter(image => selectedImages.has(image.id));
+    return mediaItems.filter(item => selectedImages.has(item.id));
   };
 
   const { data: users = [], isLoading: usersLoading } = useQuery<any[]>({
     queryKey: ["/api/users"],
-    enabled: userRole === 'super_admin'
+    enabled: false, // Disabled until user management is implemented
+    queryFn: async () => {
+      try {
+        const response = await apiRequest('GET', '/api/users');
+        const result = await response.json();
+        return Array.isArray(result) ? result : [];
+      } catch (error) {
+        console.warn('Users API not available - user management disabled');
+        return [];
+      }
+    },
+    retry: false
   });
 
   // Mutations
@@ -472,40 +505,6 @@ export function AdminContent({ userRole }: AdminContentProps) {
     createClientMutation.mutate(data);
   };
 
-  const handleCreateShoot = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    
-    // Generate slug if not provided
-    const customSlug = formData.get('customSlug') as string;
-    const title = formData.get('title') as string;
-    const autoSlug = title
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
-    
-    const data = {
-      clientId: formData.get('clientEmail') as string, // Use email as clientId for email-based matching
-      title: title,
-      description: formData.get('description') as string || '',
-      shootType: formData.get('shootType') as string,
-      shootDate: formData.get('shootDate') as string,
-      location: formData.get('location') as string,
-      notes: formData.get('notes') as string || '',
-      customSlug: customSlug || `${autoSlug}-slyfox-${new Date().getFullYear()}`,
-      customTitle: formData.get('customTitle') as string || title,
-      seoTags: formData.get('seoTags') as string || '',
-      isPrivate: formData.get('isPrivate') === 'on',
-      albumCoverId: null,
-      bannerImageId: null,
-      viewCount: 0
-    };
-    
-    createShootMutation.mutate(data);
-  };
-
   const handleUpdateShoot = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!editingShoot) return;
@@ -653,20 +652,22 @@ export function AdminContent({ userRole }: AdminContentProps) {
     (shoot.description && shoot.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // Bulk delete images mutation
+  // Bulk delete media mutation (works for both images and videos)
   const deleteImagesMutation = useMutation({
-    mutationFn: async (imageIds: string[]) => {
-      console.log('Bulk deleting images:', imageIds);
+    mutationFn: async (mediaIds: string[]) => {
+      const mediaTypeName = mediaType === 'video' ? 'videos' : 'images';
+      const apiEndpoint = mediaType === 'video' ? '/api/videos' : '/api/images';
+      console.log(`Bulk deleting ${mediaTypeName}:`, mediaIds);
       
       const results = [];
-      for (const imageId of imageIds) {
+      for (const mediaId of mediaIds) {
         try {
-          console.log(`Deleting image ${imageId} (type: ${typeof imageId})`);
-          const result = await apiRequest("DELETE", `/api/images/${imageId}`);
-          results.push({ id: imageId, success: true });
+          console.log(`Deleting ${mediaType} ${mediaId} (type: ${typeof mediaId})`);
+          const result = await apiRequest("DELETE", `${apiEndpoint}/${mediaId}`);
+          results.push({ id: mediaId, success: true });
         } catch (error) {
-          console.error(`Failed to delete image ${imageId}:`, error);
-          results.push({ id: imageId, success: false, error });
+          console.error(`Failed to delete ${mediaType} ${mediaId}:`, error);
+          results.push({ id: mediaId, success: false, error });
         }
       }
       return results;
@@ -674,48 +675,56 @@ export function AdminContent({ userRole }: AdminContentProps) {
     onSuccess: (results) => {
       const successful = results.filter(r => r.success);
       const failed = results.filter(r => !r.success);
+      const mediaTypeName = mediaType === 'video' ? 'videos' : 'images';
+      const apiEndpoint = mediaType === 'video' ? '/api/videos' : '/api/images';
       
-      queryClient.invalidateQueries({ queryKey: ["/api/images"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/images/featured"] });
+      queryClient.invalidateQueries({ queryKey: [apiEndpoint] });
+      if (mediaType === 'image') {
+        queryClient.invalidateQueries({ queryKey: ["/api/images/featured"] });
+      }
       clearSelection();
       
       if (successful.length > 0) {
         toast({
           title: "Success",
-          description: `${successful.length} images deleted successfully${failed.length > 0 ? ` (${failed.length} failed)` : ''}`
+          description: `${successful.length} ${mediaTypeName} deleted successfully${failed.length > 0 ? ` (${failed.length} failed)` : ''}`
         });
       }
       
       if (failed.length > 0 && successful.length === 0) {
         toast({
           title: "Error", 
-          description: `Failed to delete ${failed.length} images`,
+          description: `Failed to delete ${failed.length} ${mediaTypeName}`,
           variant: "destructive"
         });
       }
     },
     onError: (error) => {
+      const mediaTypeName = mediaType === 'video' ? 'videos' : 'images';
       console.error('Bulk delete error:', error);
       toast({
         title: "Error", 
-        description: "Failed to delete images",
+        description: `Failed to delete ${mediaTypeName}`,
         variant: "destructive"
       });
     }
   });
 
-  // Bulk mark as featured images mutation
+  // Bulk mark as featured media mutation (images only for now)
   const markAsFeaturedMutation = useMutation({
-    mutationFn: async (imageIds: string[]) => {
-      console.log('Bulk marking as featured:', imageIds);
+    mutationFn: async (mediaIds: string[]) => {
+      console.log('Bulk marking as featured:', mediaIds);
       const results = [];
-      for (const imageId of imageIds) {
+      for (const mediaId of mediaIds) {
         try {
-          await apiRequest("PATCH", `/api/images/${imageId}`, { featuredImage: true });
-          results.push({ id: imageId, success: true });
+          // For now, featured functionality only applies to images
+          if (mediaType === 'image') {
+            await apiRequest("PATCH", `/api/images/${mediaId}`, { featuredImage: true });
+          }
+          results.push({ id: mediaId, success: true });
         } catch (error) {
-          console.error(`Failed to mark image ${imageId} as featured:`, error);
-          results.push({ id: imageId, success: false, error });
+          console.error(`Failed to mark ${mediaType} ${mediaId} as featured:`, error);
+          results.push({ id: mediaId, success: false, error });
         }
       }
       return results;
@@ -723,48 +732,55 @@ export function AdminContent({ userRole }: AdminContentProps) {
     onSuccess: (results) => {
       const successful = results.filter(r => r.success);
       const failed = results.filter(r => !r.success);
+      const mediaTypeName = mediaType === 'video' ? 'videos' : 'images';
       
-      queryClient.invalidateQueries({ queryKey: ["/api/images"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/images/featured"] });
+      queryClient.invalidateQueries({ queryKey: [mediaType === 'video' ? '/api/videos' : '/api/images'] });
+      if (mediaType === 'image') {
+        queryClient.invalidateQueries({ queryKey: ["/api/images/featured"] });
+      }
       clearSelection();
       
       if (successful.length > 0) {
         toast({
           title: "Success",
-          description: `${successful.length} images marked as featured${failed.length > 0 ? ` (${failed.length} failed)` : ''}`
+          description: `${successful.length} ${mediaTypeName} marked as featured${failed.length > 0 ? ` (${failed.length} failed)` : ''}`
         });
       }
       
       if (failed.length > 0 && successful.length === 0) {
         toast({
           title: "Error", 
-          description: `Failed to mark ${failed.length} images as featured`,
+          description: `Failed to mark ${failed.length} ${mediaTypeName} as featured`,
           variant: "destructive"
         });
       }
     },
     onError: (error) => {
+      const mediaTypeName = mediaType === 'video' ? 'videos' : 'images';
       console.error('Bulk mark as featured error:', error);
       toast({
         title: "Error", 
-        description: "Failed to mark images as featured",
+        description: `Failed to mark ${mediaTypeName} as featured`,
         variant: "destructive"
       });
     }
   });
 
-  // Bulk unmark featured images mutation
+  // Bulk unmark featured media mutation (images only for now)
   const unmarkFeaturedMutation = useMutation({
-    mutationFn: async (imageIds: string[]) => {
-      console.log('Bulk unmarking featured:', imageIds);
+    mutationFn: async (mediaIds: string[]) => {
+      console.log('Bulk unmarking featured:', mediaIds);
       const results = [];
-      for (const imageId of imageIds) {
+      for (const mediaId of mediaIds) {
         try {
-          await apiRequest("PATCH", `/api/images/${imageId}`, { featuredImage: false });
-          results.push({ id: imageId, success: true });
+          // For now, featured functionality only applies to images
+          if (mediaType === 'image') {
+            await apiRequest("PATCH", `/api/images/${mediaId}`, { featuredImage: false });
+          }
+          results.push({ id: mediaId, success: true });
         } catch (error) {
-          console.error(`Failed to unmark image ${imageId} as featured:`, error);
-          results.push({ id: imageId, success: false, error });
+          console.error(`Failed to unmark ${mediaType} ${mediaId} as featured:`, error);
+          results.push({ id: mediaId, success: false, error });
         }
       }
       return results;
@@ -772,44 +788,55 @@ export function AdminContent({ userRole }: AdminContentProps) {
     onSuccess: (results) => {
       const successful = results.filter(r => r.success);
       const failed = results.filter(r => !r.success);
+      const mediaTypeName = mediaType === 'video' ? 'videos' : 'images';
       
-      queryClient.invalidateQueries({ queryKey: ["/api/images"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/images/featured"] });
+      queryClient.invalidateQueries({ queryKey: [mediaType === 'video' ? '/api/videos' : '/api/images'] });
+      if (mediaType === 'image') {
+        queryClient.invalidateQueries({ queryKey: ["/api/images/featured"] });
+      }
       clearSelection();
       
       if (successful.length > 0) {
         toast({
           title: "Success",
-          description: `${successful.length} images unmarked as featured${failed.length > 0 ? ` (${failed.length} failed)` : ''}`
+          description: `${successful.length} ${mediaTypeName} unmarked as featured${failed.length > 0 ? ` (${failed.length} failed)` : ''}`
         });
       }
       
       if (failed.length > 0 && successful.length === 0) {
         toast({
           title: "Error", 
-          description: `Failed to unmark ${failed.length} images as featured`,
+          description: `Failed to unmark ${failed.length} ${mediaTypeName} as featured`,
           variant: "destructive"
         });
       }
     },
     onError: (error) => {
+      const mediaTypeName = mediaType === 'video' ? 'videos' : 'images';
       console.error('Bulk unmark featured error:', error);
       toast({
         title: "Error", 
-        description: "Failed to unmark images as featured",
+        description: `Failed to unmark ${mediaTypeName} as featured`,
         variant: "destructive"
       });
     }
   });
 
-  // Individual toggle featured status mutation
+  // Individual toggle featured status mutation (images only for now)
   const toggleFeaturedMutation = useMutation({
     mutationFn: async ({ imageId, featured }: { imageId: string; featured: boolean }) => {
-      return apiRequest("PATCH", `/api/images/${imageId}`, { featuredImage: featured });
+      // For now, featured functionality only applies to images
+      if (mediaType === 'image') {
+        return apiRequest("PATCH", `/api/images/${imageId}`, { featuredImage: featured });
+      }
+      // Videos don't support featured yet - just return success to avoid errors
+      return Promise.resolve({});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/images"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/images/featured"] });
+      queryClient.invalidateQueries({ queryKey: [mediaType === 'video' ? '/api/videos' : '/api/images'] });
+      if (mediaType === 'image') {
+        queryClient.invalidateQueries({ queryKey: ["/api/images/featured"] });
+      }
     },
     onError: (error) => {
       console.error('Toggle featured error:', error);
@@ -1024,7 +1051,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
           { id: 'overview', label: 'Overview', icon: BarChart3 },
           { id: 'clients', label: 'Clients', icon: Users },
           { id: 'shoots', label: 'Shoots', icon: Camera },
-          { id: 'images', label: 'Images', icon: FileImage },
+          { id: 'images', label: 'Media', icon: FileImage },
           { id: 'galleries', label: 'Gallery Management', icon: Palette },
           ...(userRole === 'super_admin' || userRole === 'staff' ? [
             { id: 'site-management', label: 'Site Management', icon: Home }
@@ -1058,7 +1085,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
           {activeTab === 'overview' && (
             <div className="space-y-8">
               {/* Stats Grid */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
                 <Card className="admin-gradient-card">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -1092,6 +1119,18 @@ export function AdminContent({ userRole }: AdminContentProps) {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-salmon">{images.length}</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="admin-gradient-card">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      <Video className="w-4 h-4 icon-purple" />
+                      Total Videos
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-salmon">{videos.length}</div>
                   </CardContent>
                 </Card>
                 
@@ -1147,224 +1186,6 @@ export function AdminContent({ userRole }: AdminContentProps) {
                           </div>
                           <Button type="submit" disabled={createClientMutation.isPending} className="bg-salmon text-white hover:bg-salmon-muted">
                             {createClientMutation.isPending ? 'Creating...' : 'Create Client'}
-                          </Button>
-                        </form>
-                      </DialogContent>
-                    </Dialog>
-
-                    <Dialog open={newShootOpen} onOpenChange={setNewShootOpen}>
-                      <DialogTrigger asChild>
-                        <Button className="h-20 flex-col gap-2 bg-salmon text-white hover:bg-salmon-muted">
-                          <Camera className="w-6 h-6 icon-cyan" />
-                          <span className="text-sm">Add Shoot</span>
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="bg-cyan-dark border border-cyan/30 shadow-lg max-w-4xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle className="text-salmon">Add New Shoot</DialogTitle>
-                        </DialogHeader>
-                        <form onSubmit={handleCreateShoot} className="space-y-6">
-                          {/* Basic Information */}
-                          <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-salmon">Basic Information</h3>
-                            <div className="grid md:grid-cols-2 gap-4">
-                              <div>
-                                <Label htmlFor="clientEmail">Client Email *</Label>
-                                <Select name="clientEmail" required onValueChange={(value) => {
-                                  // Auto-populate SEO fields when client changes
-                                  const shootTypeSelect = document.querySelector('[name="shootType"]') as HTMLInputElement;
-                                  const locationInput = document.querySelector('[name="location"]') as HTMLInputElement;
-                                  const seoInput = document.querySelector('[name="seoTags"]') as HTMLInputElement;
-                                  const descriptionInput = document.querySelector('[name="description"]') as HTMLTextAreaElement;
-                                  
-                                  if (value && shootTypeSelect?.value && locationInput?.value) {
-                                    const selectedClient = clients.find(c => c.email === value);
-                                    if (selectedClient && seoInput) {
-                                      const keywords = generateSEOKeywords(shootTypeSelect.value, locationInput.value, selectedClient.name);
-                                      seoInput.value = keywords;
-                                      
-                                      if (descriptionInput && !descriptionInput.value) {
-                                        const description = generateDescription(selectedClient.name, shootTypeSelect.value, locationInput.value);
-                                        descriptionInput.value = description;
-                                      }
-                                    }
-                                  }
-                                }}>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select client" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {clients.map(client => (
-                                      <SelectItem key={client.id} value={client.email}>
-                                        {client.name} ({client.email})
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <div>
-                                <Label htmlFor="shootType">Shoot Type *</Label>
-                                <Select name="shootType" required onValueChange={(value) => {
-                                  // Auto-populate SEO fields when shoot type changes
-                                  const clientSelect = document.querySelector('[name="clientEmail"]') as HTMLInputElement;
-                                  const locationInput = document.querySelector('[name="location"]') as HTMLInputElement;
-                                  const seoInput = document.querySelector('[name="seoTags"]') as HTMLInputElement;
-                                  const descriptionInput = document.querySelector('[name="description"]') as HTMLTextAreaElement;
-                                  
-                                  if (value && locationInput?.value) {
-                                    const selectedClient = clients.find(c => c.email === clientSelect?.value);
-                                    if (selectedClient && seoInput) {
-                                      const keywords = generateSEOKeywords(value, locationInput.value, selectedClient.name);
-                                      seoInput.value = keywords;
-                                      
-                                      if (descriptionInput && !descriptionInput.value) {
-                                        const description = generateDescription(selectedClient.name, value, locationInput.value);
-                                        descriptionInput.value = description;
-                                      }
-                                    }
-                                  }
-                                }}>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select shoot type" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {SHOOT_TYPES.map(type => (
-                                      <SelectItem key={type} value={type}>
-                                        {type.charAt(0).toUpperCase() + type.slice(1)}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            </div>
-                            <div>
-                              <Label htmlFor="title">Shoot Title *</Label>
-                              <Input 
-                                id="title" 
-                                name="title" 
-                                placeholder="e.g., Sarah & Michael's Wedding"
-                                required 
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="description">Description</Label>
-                              <Textarea 
-                                id="description" 
-                                name="description" 
-                                placeholder="Brief description of the shoot..."
-                                rows={3}
-                              />
-                            </div>
-                          </div>
-
-                          {/* Shoot Details */}
-                          <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-salmon">Shoot Details</h3>
-                            <div className="grid md:grid-cols-2 gap-4">
-                              <div>
-                                <Label htmlFor="shootDate">Shoot Date *</Label>
-                                <div 
-                                  className="relative bg-background border border-input rounded-md cursor-pointer hover:border-salmon transition-colors"
-                                  onClick={() => {
-                                    const input = document.getElementById('shootDate') as HTMLInputElement;
-                                    input?.focus();
-                                    // Safely call showPicker - may fail in iframe environments
-                                    try {
-                                      input?.showPicker?.();
-                                    } catch (error) {
-                                      // Silently ignore cross-origin restrictions - input focus still works
-                                    }
-                                  }}
-                                >
-                                  <Input 
-                                    id="shootDate" 
-                                    name="shootDate" 
-                                    type="date" 
-                                    required 
-                                    className="bg-transparent border-0 cursor-pointer pr-10 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                                  />
-                                  <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-salmon pointer-events-none" />
-                                </div>
-                              </div>
-                              <div>
-                                <Label htmlFor="location">Location *</Label>
-                                <Input 
-                                  id="location" 
-                                  name="location" 
-                                  defaultValue="La Lucia, Durban"
-                                  required 
-                                />
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Gallery Settings */}
-                          <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-salmon">Gallery Settings</h3>
-                            <div className="grid md:grid-cols-2 gap-4">
-                              <div>
-                                <Label htmlFor="customTitle">Custom Gallery Title</Label>
-                                <Input 
-                                  id="customTitle" 
-                                  name="customTitle" 
-                                  placeholder="Leave empty to use shoot title"
-                                />
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  This will be displayed as the main gallery heading
-                                </p>
-                              </div>
-                              <div>
-                                <Label htmlFor="customSlug">Custom URL Slug</Label>
-                                <Input 
-                                  id="customSlug" 
-                                  name="customSlug" 
-                                  placeholder="e.g., sarah-michael-wedding-2024"
-                                />
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  URL: /gallery/[slug] - leave empty for auto-generation
-                                </p>
-                              </div>
-                            </div>
-                            <div>
-                              <Label htmlFor="seoTags">SEO Tags</Label>
-                              <Input 
-                                id="seoTags" 
-                                name="seoTags" 
-                                placeholder="photography durban, professional photographer, wedding photography"
-                              />
-                              <p className="text-xs text-muted-foreground mt-1">
-                                Auto-generated based on shoot type and location, edit as needed
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Privacy & Settings */}
-                          <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-salmon">Privacy & Settings</h3>
-                            <div className="flex items-center space-x-2">
-                              <input 
-                                type="checkbox" 
-                                id="isPrivate" 
-                                name="isPrivate" 
-                                className="rounded border-border"
-                              />
-                              <Label htmlFor="isPrivate" className="text-sm">
-                                Make gallery private (requires login to view)
-                              </Label>
-                            </div>
-                            <div>
-                              <Label htmlFor="notes">Internal Notes</Label>
-                              <Textarea 
-                                id="notes" 
-                                name="notes" 
-                                placeholder="Internal notes for staff reference..."
-                                rows={3}
-                              />
-                            </div>
-                          </div>
-
-                          <Button type="submit" disabled={createShootMutation.isPending} className="w-full bg-salmon text-white hover:bg-salmon-muted">
-                            {createShootMutation.isPending ? 'Creating Shoot...' : 'Create Shoot'}
                           </Button>
                         </form>
                       </DialogContent>
@@ -1623,7 +1444,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                       .replace(/\s+/g, '-')
                                       .replace(/-+/g, '-')
                                       .trim();
-                                    
+
                                     const data = {
                                       clientId: client.email, // Use email instead of numeric ID
                                       title: title,
@@ -1635,9 +1456,10 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                       customSlug: `${autoSlug}-${new Date().getFullYear()}`,
                                       customTitle: formData.get('customTitle') as string || title,
                                       seoTags: formData.get('seoTags') as string || '',
-                                      isPrivate: formData.get('isPrivate') === 'on'
+                                      isPrivate: formData.get('isPrivate') === 'on',
+                                      mediaType: (formData.get('mediaType') as string) || 'photo'
                                     };
-                                    
+
                                     createShootMutation.mutate(data);
                                   }} className="space-y-4">
                                     <div className="grid md:grid-cols-2 gap-4">
@@ -1672,6 +1494,33 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                         </select>
                                       </div>
                                     </div>
+
+                                    {/* Media Type Selector */}
+                                    <div>
+                                      <Label>Media Type *</Label>
+                                      <div className="flex gap-4 mt-2">
+                                        <label className="flex items-center gap-2 cursor-pointer">
+                                          <input
+                                            type="radio"
+                                            name="mediaType"
+                                            value="photo"
+                                            defaultChecked
+                                            className="w-4 h-4 text-salmon focus:ring-salmon"
+                                          />
+                                          <span className="text-sm">📷 Photo Album</span>
+                                        </label>
+                                        <label className="flex items-center gap-2 cursor-pointer">
+                                          <input
+                                            type="radio"
+                                            name="mediaType"
+                                            value="video"
+                                            className="w-4 h-4 text-salmon focus:ring-salmon"
+                                          />
+                                          <span className="text-sm">🎬 Video Album</span>
+                                        </label>
+                                      </div>
+                                    </div>
+
                                     <div>
                                       <Label htmlFor={`description-${client.id}`}>Description</Label>
                                       <Textarea id={`description-${client.id}`} name="description" placeholder="Brief description of the shoot..." rows={2} />
@@ -1920,12 +1769,39 @@ export function AdminContent({ userRole }: AdminContentProps) {
           {activeTab === 'images' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-saira font-bold text-salmon">Images Management</h2>
+                <div className="flex items-center gap-4">
+                  <h2 className="text-2xl font-saira font-bold text-salmon">Media Management</h2>
+                  <div className="flex items-center gap-2">
+                    <Label className="text-sm font-medium">Show:</Label>
+                    <Select value={mediaType} onValueChange={(value) => {
+                      setMediaType(value as 'image' | 'video');
+                      clearSelection(); // Clear selections when switching media types
+                    }}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="image">
+                          <div className="flex items-center gap-2">
+                            <Image className="w-4 h-4" />
+                            Images
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="video">
+                          <div className="flex items-center gap-2">
+                            <Video className="w-4 h-4" />
+                            Videos
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
                 <div className="flex gap-4">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input
-                      placeholder="Search images..."
+                      placeholder={`Search ${mediaType === 'video' ? 'videos' : 'images'}...`}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10"
@@ -1935,14 +1811,14 @@ export function AdminContent({ userRole }: AdminContentProps) {
                     <DialogTrigger asChild>
                       <Button className="bg-salmon text-white hover:bg-salmon-muted">
                         <Plus className="w-4 h-4 mr-2" />
-                        Upload Images
+                        Upload {mediaType === 'video' ? 'Videos' : 'Images'}
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="admin-gradient-card max-w-2xl">
                       <DialogHeader>
-                        <DialogTitle className="text-salmon">Upload Images</DialogTitle>
+                        <DialogTitle className="text-salmon">Upload {mediaType === 'video' ? 'Videos' : 'Images'}</DialogTitle>
                         <DialogDescription className="text-muted-foreground">
-                          Select images to upload to a specific shoot gallery.
+                          Select {mediaType === 'video' ? 'videos' : 'images'} to upload to a specific shoot gallery.
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4">
@@ -1963,23 +1839,27 @@ export function AdminContent({ userRole }: AdminContentProps) {
                         </div>
                         
                         <div>
-                          <Label htmlFor="imageFiles">Select Images *</Label>
+                          <Label htmlFor="mediaFiles">Select {mediaType === 'video' ? 'Videos' : 'Images'} *</Label>
                           <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                            <FileImage className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                            {mediaType === 'video' ? (
+                              <Video className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                            ) : (
+                              <FileImage className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                            )}
                             <p className="text-muted-foreground mb-2">
-                              Drag and drop images here, or click to browse
+                              Drag and drop {mediaType === 'video' ? 'videos' : 'images'} here, or click to browse
                             </p>
                             <input
                               type="file"
                               multiple
-                              accept="image/*"
+                              accept={mediaType === 'video' ? 'video/*' : 'image/*'}
                               className="hidden"
-                              id="imageFiles"
+                              id="mediaFiles"
                             />
                             <Button 
                               variant="outline" 
                               className="border-salmon text-salmon hover:bg-salmon hover:text-white"
-                              onClick={() => document.getElementById('imageFiles')?.click()}
+                              onClick={() => document.getElementById('mediaFiles')?.click()}
                             >
                               Browse Files
                             </Button>
@@ -1989,7 +1869,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                         <div className="flex items-center space-x-2">
                           <input type="checkbox" id="uploadPrivate" className="rounded border-border" />
                           <Label htmlFor="uploadPrivate" className="text-sm">
-                            Mark uploaded images as private
+                            Mark uploaded {mediaType === 'video' ? 'videos' : 'images'} as private
                           </Label>
                         </div>
                         
@@ -1999,12 +1879,12 @@ export function AdminContent({ userRole }: AdminContentProps) {
                             onClick={() => {
                               toast({
                                 title: "Feature In Development",
-                                description: "Image upload functionality will be available in the next release.",
+                                description: `${mediaType === 'video' ? 'Video' : 'Image'} upload functionality will be available in the next release.`,
                               });
                               setUploadDialogOpen(false);
                             }}
                           >
-                            Upload Images
+                            Upload {mediaType === 'video' ? 'Videos' : 'Images'}
                           </Button>
                           <Button 
                             variant="outline" 
@@ -2020,22 +1900,26 @@ export function AdminContent({ userRole }: AdminContentProps) {
                 </div>
               </div>
 
-              {imagesLoading ? (
-                <div className="text-center py-8">Loading images...</div>
-              ) : images.length === 0 ? (
+              {mediaLoading ? (
+                <div className="text-center py-8">Loading {mediaType === 'video' ? 'videos' : 'images'}...</div>
+              ) : mediaItems.length === 0 ? (
                 <Card className="admin-gradient-card">
                   <CardContent className="p-8 text-center">
-                    <FileImage className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">No Images Yet</h3>
+                    {mediaType === 'video' ? (
+                      <Video className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                    ) : (
+                      <FileImage className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                    )}
+                    <h3 className="text-xl font-semibold mb-2">No {mediaType === 'video' ? 'Videos' : 'Images'} Yet</h3>
                     <p className="text-muted-foreground mb-4">
-                      Upload your first images to get started with gallery management.
+                      Upload your first {mediaType === 'video' ? 'videos' : 'images'} to get started with gallery management.
                     </p>
                     <Button 
                       className="bg-salmon text-white hover:bg-salmon-muted"
                       onClick={() => setUploadDialogOpen(true)}
                     >
                       <Plus className="w-4 h-4 mr-2" />
-                      Upload Images
+                      Upload {mediaType === 'video' ? 'Videos' : 'Images'}
                     </Button>
                   </CardContent>
                 </Card>
@@ -2184,7 +2068,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-4">
                       <p className="text-muted-foreground">
-                        Showing {getFilteredImages().length} of {images.length} images
+                        Showing {getFilteredMediaItems().length} of {mediaItems.length} {mediaType === 'video' ? 'videos' : 'images'}
                       </p>
                       {selectedImages.size > 0 && (
                         <div className="flex items-center gap-2">
@@ -2228,9 +2112,9 @@ export function AdminContent({ userRole }: AdminContentProps) {
                             </DialogTrigger>
                             <DialogContent className="admin-gradient-card">
                               <DialogHeader>
-                                <DialogTitle className="text-salmon">Delete Selected Images</DialogTitle>
+                                <DialogTitle className="text-salmon">Delete Selected {mediaType === 'video' ? 'Videos' : 'Images'}</DialogTitle>
                                 <DialogDescription className="text-muted-foreground">
-                                  Are you sure you want to permanently delete {selectedImages.size} selected images from the database? This action cannot be undone.
+                                  Are you sure you want to permanently delete {selectedImages.size} selected {mediaType === 'video' ? 'videos' : 'images'} from the database? This action cannot be undone.
                                 </DialogDescription>
                               </DialogHeader>
                               <div className="flex justify-end gap-3 pt-4">
@@ -2242,7 +2126,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                   onClick={() => deleteImagesMutation.mutate(Array.from(selectedImages))}
                                   disabled={deleteImagesMutation.isPending}
                                 >
-                                  {deleteImagesMutation.isPending ? 'Deleting...' : 'Delete Images'}
+                                  {deleteImagesMutation.isPending ? 'Deleting...' : `Delete ${mediaType === 'video' ? 'Videos' : 'Images'}`}
                                 </Button>
                               </div>
                             </DialogContent>
@@ -2296,16 +2180,17 @@ export function AdminContent({ userRole }: AdminContentProps) {
                   </div>
                   
                   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    {getFilteredImages().map((image) => {
-                        const associatedShoot = shoots.find(s => s.id === image.shootId);
-                        const isSelected = selectedImages.has(image.id);
+                    {getFilteredMediaItems().map((item) => {
+                        const associatedShoot = shoots.find(s => s.id === item.shootId);
+                        const isSelected = selectedImages.has(item.id);
+                        const isVideo = mediaType === 'video';
                         return (
                           <Card 
-                            key={image.id} 
+                            key={item.id} 
                             className={`admin-gradient-card group hover:border-salmon/60 transition-colors cursor-pointer relative ${
                               isSelected ? 'border-salmon/80 ring-2 ring-salmon/30' : ''
                             }`}
-                            onClick={() => toggleImageSelection(image.id)}
+                            onClick={() => toggleImageSelection(item.id)}
                           >
                             <CardContent className="p-3">
                               <div className="space-y-2">
@@ -2329,22 +2214,47 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                   </div>
                                 </div>
                                 
-                                {/* Image Preview */}
-                                <div className="aspect-square bg-background rounded-md flex items-center justify-center overflow-hidden">
-                                  <img
-                                    src={ImageUrl.forViewing(image.storagePath)}
-                                    alt={image.filename}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                      e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiMzNzM3MzciLz48cGF0aCBkPSJNMTIgMTVIMjhWMjVIMTJWMTVaIiBzdHJva2U9IiM5CA0OVM5IiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4K';
-                                    }}
-                                  />
+                                {/* Media Preview */}
+                                <div className="aspect-square bg-background rounded-md flex items-center justify-center overflow-hidden relative">
+                                  {isVideo ? (
+                                    <>
+                                      <img
+                                        src={VideoUrl.forThumbnail(item)}
+                                        alt={item.filename}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                          e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiMzNzM3MzciLz48cGF0aCBkPSJNMTIgMTVIMjhWMjVIMTJWMTVaIiBzdHJva2U9IiM5CA0OVM5IiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4K';
+                                        }}
+                                      />
+                                      {/* Video Play Icon Overlay */}
+                                      <div className="absolute inset-0 flex items-center justify-center">
+                                        <div className="bg-black/50 rounded-full p-2">
+                                          <Play className="w-6 h-6 text-white" />
+                                        </div>
+                                      </div>
+                                      {/* Video Duration Badge */}
+                                      {item.duration && (
+                                        <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                                          {Math.floor(item.duration / 60)}:{(item.duration % 60).toString().padStart(2, '0')}
+                                        </div>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <img
+                                      src={ImageUrl.forViewing(item.storagePath)}
+                                      alt={item.filename}
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiMzNzM3MzciLz48cGF0aCBkPSJNMTIgMTVIMjhWMjVIMTJWMTVaIiBzdHJva2U9IiM5CA0OVM5IiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4K';
+                                      }}
+                                    />
+                                  )}
                                 </div>
                                 
-                                {/* Image Info */}
+                                {/* Media Info */}
                                 <div className="space-y-1">
                                   <p className="text-sm font-medium text-salmon truncate">
-                                    {image.filename}
+                                    {item.filename}
                                   </p>
                                   {associatedShoot && (
                                     <p className="text-xs text-muted-foreground truncate">
@@ -2352,39 +2262,39 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                     </p>
                                   )}
                                   <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                    <span>{image.downloadCount} downloads</span>
-                                    <span className={`px-2 py-1 rounded ${image.isPrivate ? 'bg-red-900/20 text-red-300' : 'bg-green-900/20 text-green-300'}`}>
-                                      {image.isPrivate ? 'Private' : 'Public'}
+                                    <span>{item.downloadCount || 0} downloads</span>
+                                    <span className={`px-2 py-1 rounded ${item.isPrivate ? 'bg-red-900/20 text-red-300' : 'bg-green-900/20 text-green-300'}`}>
+                                      {item.isPrivate ? 'Private' : 'Public'}
                                     </span>
                                   </div>
                                 </div>
 
                                 {/* Featured Status and Action Buttons */}
                                 <div className="flex gap-1 items-center">
-                                  {/* Interaction Counts with notification bubbles */}
+                                  {/* Interaction Counts with notification bubbles - Both media types */}
                                   <div className="relative" title="Hearts">
                                     <Heart className="w-4 h-4 text-gray-400" />
-                                    {(image.heartsCount || 0) > 0 && (
+                                    {(item.heartsCount || 0) > 0 && (
                                       <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center">
-                                        {image.heartsCount > 9 ? '9+' : image.heartsCount}
+                                        {item.heartsCount > 9 ? '9+' : item.heartsCount}
                                       </span>
                                     )}
                                   </div>
 
                                   <div className="relative" title="Likes">
                                     <ThumbsUp className="w-4 h-4 text-gray-400" />
-                                    {(image.likesCount || 0) > 0 && (
+                                    {(item.likesCount || 0) > 0 && (
                                       <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[9px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center">
-                                        {image.likesCount > 9 ? '9+' : image.likesCount}
+                                        {item.likesCount > 9 ? '9+' : item.likesCount}
                                       </span>
                                     )}
                                   </div>
 
                                   <div className="relative" title="Dislikes">
                                     <ThumbsDown className="w-4 h-4 text-gray-400" />
-                                    {(image.dislikesCount || 0) > 0 && (
+                                    {(item.dislikesCount || 0) > 0 && (
                                       <span className="absolute -top-1 -right-1 bg-yellow-500 text-white text-[9px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center">
-                                        {image.dislikesCount > 9 ? '9+' : image.dislikesCount}
+                                        {item.dislikesCount > 9 ? '9+' : item.dislikesCount}
                                       </span>
                                     )}
                                   </div>
@@ -2392,26 +2302,26 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                   {/* Divider */}
                                   <div className="w-px h-4 bg-border mx-0.5"></div>
 
-                                  {/* Featured Toggle Button - Always visible */}
+                                  {/* Featured Toggle Button - Both media types */}
                                   <Button 
                                     size="sm" 
                                     variant="outline" 
                                     className={`w-8 h-8 p-0 border-2 transition-all ${
-                                      image.featuredImage 
+                                      item.featuredImage 
                                         ? 'border-green-500 bg-green-500/20 text-green-400 shadow-lg shadow-green-500/25' 
                                         : 'border-gray-500 text-gray-400 hover:border-green-500 hover:text-green-400'
                                     }`}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       toggleFeaturedMutation.mutate({ 
-                                        imageId: image.id, 
-                                        featured: !image.featuredImage 
+                                        imageId: item.id, 
+                                        featured: !item.featuredImage 
                                       });
                                     }}
                                     disabled={toggleFeaturedMutation.isPending}
-                                    title={image.featuredImage ? "Remove from featured" : "Mark as featured"}
+                                    title={item.featuredImage ? "Remove from featured" : "Mark as featured"}
                                   >
-                                    <Star className={`w-3 h-3 ${image.featuredImage ? 'fill-current' : ''}`} />
+                                    <Star className={`w-3 h-3 ${item.featuredImage ? 'fill-current' : ''}`} />
                                   </Button>
                                   
                                   {/* Other action buttons - appear on hover */}

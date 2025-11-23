@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUrl } from "@/lib/image-utils";
+import { VideoUrl } from "@/lib/video-utils";
 import { Link } from "wouter";
 import {
   Download,
@@ -60,6 +61,33 @@ interface Image {
   fileSize: number | null;
   sequence: number;
   downloadCount: number;
+  createdAt: string;
+}
+
+interface Video {
+  id: string;
+  shootId: string;
+  filename: string;
+  storagePath: string;
+  optimizedPath: string | null;
+  thumbnailPath: string;
+  fileSize: number;
+  sequence: number;
+  duration: number;
+  width: number;
+  height: number;
+  downloadCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface MediaItem extends Partial<Image>, Partial<Video> {
+  mediaType: 'image' | 'video';
+  id: string;
+  shootId: string;
+  filename: string;
+  storagePath: string;
+  sequence: number;
   createdAt: string;
 }
 
@@ -156,9 +184,9 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     enabled: !!slug,
   });
 
-  // Fetch shoot images
-  const { data: images = [], isLoading: imagesLoading } = useQuery<Image[]>({
-    queryKey: ["/api/shoots", shoot?.id, "images"],
+  // Fetch shoot media (images and videos)
+  const { data: mediaItems = [], isLoading: mediaLoading } = useQuery<MediaItem[]>({
+    queryKey: ["/api/gallery", shoot?.id, "images"],
     enabled: !!shoot?.id,
   });
 
@@ -176,7 +204,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
   // Modal navigation functions - defined before useEffect
   const openModal = (imageIndex: number) => {
-    console.log('🚪 openModal called with index:', imageIndex, 'total images:', images.length);
+    console.log('🚪 openModal called with index:', imageIndex, 'total images:', mediaItems.length);
     setModalImageIndex(imageIndex);
     document.body.style.overflow = "hidden";
   };
@@ -192,8 +220,8 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
   };
 
   const navigateModal = (direction: "prev" | "next") => {
-    if (modalImageIndex === null || images.length === 0) {
-      console.log('🚫 Navigation blocked - modalIndex:', modalImageIndex, 'imageCount:', images.length);
+    if (modalImageIndex === null || mediaItems.length === 0) {
+      console.log('🚫 Navigation blocked - modalIndex:', modalImageIndex, 'imageCount:', mediaItems.length);
       return;
     }
 
@@ -209,9 +237,9 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
     let newIndex;
     if (direction === "prev") {
-      newIndex = modalImageIndex > 0 ? modalImageIndex - 1 : images.length - 1;
+      newIndex = modalImageIndex > 0 ? modalImageIndex - 1 : mediaItems.length - 1;
     } else {
-      newIndex = modalImageIndex < images.length - 1 ? modalImageIndex + 1 : 0;
+      newIndex = modalImageIndex < mediaItems.length - 1 ? modalImageIndex + 1 : 0;
     }
     
     console.log('📱 Setting new modal index:', newIndex);
@@ -230,7 +258,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [modalImageIndex, images.length]);
+  }, [modalImageIndex, mediaItems.length]);
 
   // Enhanced touch/swipe navigation for mobile with visual feedback
   useEffect(() => {
@@ -371,7 +399,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
         console.log('🧹 Touch listeners removed from modal');
       }
     };
-  }, [modalImageIndex]); // Only depend on modal state - images.length should be stable
+  }, [modalImageIndex]); // Only depend on modal state - mediaItems.length should be stable
 
   // Navbar hide/show on scroll
   useEffect(() => {
@@ -571,10 +599,10 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
   // Calculate bulk download size estimate
   const getBulkDownloadEstimate = () => {
-    const imageCount = images.length;
+    const imageCount = mediaItems.length;
     // Calculate total size from database file sizes (default to 4MB if not available)
     // Add 50% safety margin for ZIP overhead and any missing metadata
-    const totalBytes = images.reduce((sum, img) => sum + (img.fileSize || 4000000), 0);
+    const totalBytes = mediaItems.reduce((sum, img) => sum + (img.fileSize || 4000000), 0);
     const estimatedBytes = Math.round(totalBytes * 1.5);
     const estimatedMB = Math.round(estimatedBytes / (1024 * 1024));
     const estimatedGB = estimatedMB > 1000 ? (estimatedMB / 1000).toFixed(1) : null;
@@ -593,7 +621,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     const estimate = getBulkDownloadEstimate();
 
     // Calculate real total size from images data
-    const totalBytes = images.reduce((sum, img) => sum + (img.fileSize || 3000000), 0);
+    const totalBytes = mediaItems.reduce((sum, img) => sum + (img.fileSize || 3000000), 0);
     const totalMB = totalBytes / (1024 * 1024);
 
     // Dynamic timing based on actual file size
@@ -855,11 +883,36 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
   // Apply gallery settings from the shoot
   const { gallerySettings } = shoot;
-  const coverImage = images.find((img) => img.id === shoot.bannerImageId);
+  const coverImage = mediaItems.find((img) => img.id === shoot.bannerImageId);
+  
+  // Get cover video for video albums
+  const getCoverVideo = () => {
+    if (shoot.mediaType !== 'video') return null;
+    
+    // Find featured video first
+    const featuredVideo = mediaItems.find((item) => 
+      item.mediaType === 'video' && (item as Video).featuredVideo === true
+    );
+    if (featuredVideo) return featuredVideo as Video;
+    
+    // Fallback to first video by sequence
+    const firstVideo = mediaItems
+      .filter(item => item.mediaType === 'video')
+      .sort((a, b) => a.sequence - b.sequence)[0];
+    
+    return firstVideo as Video || null;
+  };
+  
+  const coverVideo = getCoverVideo();
 
   // Gallery layout helper functions
   const getGalleryLayoutClasses = () => {
-    const layoutStyle = gallerySettings?.layoutStyle || 'automatic';
+    let layoutStyle = gallerySettings?.layoutStyle || 'automatic';
+    
+    // For video albums, force 'automatic' to 'square' for better video thumbnail display
+    if (layoutStyle === 'automatic' && shoot.mediaType === 'video') {
+      layoutStyle = 'square';
+    }
     
     switch (layoutStyle) {
       case 'masonry':
@@ -874,7 +927,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
         return "grid gallery-grid-square"; // Use standard grid for aspect ratio layouts
       case 'automatic':
       default:
-        // For automatic mode, use masonry as default until images load and determine aspect ratio
+        // For automatic mode on photo albums, use masonry as default until images load and determine aspect ratio
         return "gallery-grid-masonry";
     }
   };
@@ -896,7 +949,13 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
   };
 
   const getImageClasses = () => {
-    const layoutStyle = gallerySettings?.layoutStyle || 'automatic';
+    let layoutStyle = gallerySettings?.layoutStyle || 'automatic';
+    
+    // For video albums, force 'automatic' to 'square' for better video thumbnail display
+    if (layoutStyle === 'automatic' && shoot.mediaType === 'video') {
+      layoutStyle = 'square';
+    }
+    
     if (layoutStyle === 'masonry' || layoutStyle === 'automatic') {
       return 'gallery-image overflow-hidden gallery-masonry-item gallery-image-auto';
     } else {
@@ -905,7 +964,12 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
   };
 
   const getAspectRatioClass = () => {
-    const layoutStyle = gallerySettings?.layoutStyle || 'automatic';
+    let layoutStyle = gallerySettings?.layoutStyle || 'automatic';
+    
+    // For video albums, force 'automatic' to 'square' for better video thumbnail display
+    if (layoutStyle === 'automatic' && shoot.mediaType === 'video') {
+      layoutStyle = 'square';
+    }
     
     switch (layoutStyle) {
       case 'square': return 'aspect-square';
@@ -1188,19 +1252,44 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
         </div>
       </nav>
 
-      {/* Hero Section with Cover Image - Dynamic height */}
+      {/* Hero Section with Cover Media - Dynamic height */}
       <section
-        className="relative bg-gradient-to-br from-black via-charcoal to-black flex items-center"
+        className="relative bg-gradient-to-br from-black via-charcoal to-black flex items-center overflow-hidden"
         style={{
           height: getCoverPicSize(),
           ...getBackgroundStyle(),
-          ...(coverImage && {
-            backgroundImage: `url(${ImageUrl.forViewing(coverImage.storagePath)})`,
-            backgroundSize: "cover",
-            backgroundPosition: getCoverImageAlignment(),
-          }),
         }}
       >
+        {/* Video Background for Video Albums */}
+        {coverVideo && shoot.mediaType === 'video' ? (
+          <video
+            src={VideoUrl.forStreaming(coverVideo)}
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{
+              objectPosition: getCoverImageAlignment(),
+            }}
+            autoPlay
+            loop
+            muted
+            playsInline
+            poster={VideoUrl.forThumbnail(coverVideo)}
+          >
+            Your browser does not support the video tag.
+          </video>
+        ) : coverImage ? (
+          /* Image Background for Photo Albums */
+          <div
+            className="absolute inset-0 w-full h-full bg-cover"
+            style={{
+              backgroundImage: `url(${ImageUrl.forViewing(coverImage.storagePath)})`,
+              backgroundPosition: getCoverImageAlignment(),
+            }}
+          />
+        ) : null}
+        
+        {/* Optional dark overlay for better text contrast */}
+        <div className="absolute inset-0 bg-black/20" />
+        
         {/* Hero content removed - titles now in navbar */}
       </section>
 
@@ -1211,7 +1300,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
         paddingBottom: getSpacingStyle()
       }}>
         <div className="gallery-container-public">
-          {imagesLoading ? (
+          {mediaLoading ? (
             <div 
               className={getGalleryLayoutClasses()}
               style={{ gap: getSpacingStyle() }}
@@ -1222,7 +1311,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                 </div>
               ))}
             </div>
-          ) : images.length === 0 ? (
+          ) : mediaItems.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-gray-400">No images found in this gallery.</p>
             </div>
@@ -1237,41 +1326,65 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                   widows: 1
                 }}
               >
-                {images
+                {mediaItems
                   .sort((a, b) => a.sequence - b.sequence)
                   .slice(0, visibleImageCount)
-                  .map((image, actualIndex) => {
+                  .map((item, actualIndex) => {
                     // actualIndex is now the correct index in the sorted array
 
                     return (
                       <div
-                        key={image.id}
+                        key={item.id}
                         className={`
                           relative group cursor-pointer break-inside-avoid inline-block w-full masonry-item
-                          ${selectedImages.has(image.id) ? "ring-2 ring-salmon" : ""}
+                          ${selectedImages.has(item.id) ? "ring-2 ring-salmon" : ""}
                         `}
                         style={{ 
                           marginBottom: getSpacingStyle(),
                           ...getBorderStyle()
                         }}
                         onClick={(e) => {
-                          console.log('🖱️ Gallery image clicked, opening modal at index:', actualIndex);
+                          console.log('🖱️ Gallery item clicked, opening modal at index:', actualIndex);
                           openModal(actualIndex);
                         }}
                       >
-                        <img
-                          src={ImageUrl.forViewing(image.storagePath)}
-                          alt={image.filename}
-                          className="w-full h-auto object-cover block transition-all duration-300 group-hover:brightness-[0.97]"
-                          style={{ verticalAlign: 'top', ...getBorderStyle() }}
-                          loading="lazy"
-                        />
+                        {item.mediaType === 'video' ? (
+                          <div className="relative">
+                            <img
+                              src={VideoUrl.forThumbnail(item as Video)}
+                              alt={item.filename}
+                              className="w-full h-auto object-cover block transition-all duration-300 group-hover:brightness-[0.97]"
+                              style={{ verticalAlign: 'top', ...getBorderStyle() }}
+                              loading="lazy"
+                            />
+                            {/* Video play overlay */}
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="bg-black/70 rounded-full p-4 backdrop-blur-sm">
+                                <Play className="w-8 h-8 text-white fill-current" />
+                              </div>
+                            </div>
+                            {/* Video duration badge */}
+                            {item.duration && (
+                              <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
+                                {Math.floor(item.duration / 60)}:{(item.duration % 60).toString().padStart(2, '0')}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <img
+                            src={ImageUrl.forViewing(item.storagePath)}
+                            alt={item.filename}
+                            className="w-full h-auto object-cover block transition-all duration-300 group-hover:brightness-[0.97]"
+                            style={{ verticalAlign: 'top', ...getBorderStyle() }}
+                            loading="lazy"
+                          />
+                        )}
 
                         {/* Gallery image overlay */}
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/[0.03] transition-colors duration-300" />
 
                         {/* Selection indicator */}
-                        {selectedImages.has(image.id) && (
+                        {selectedImages.has(item.id) && (
                           <div className="absolute top-2 right-2 w-6 h-6 bg-salmon rounded-full flex items-center justify-center z-10">
                             <div className="w-3 h-3 bg-white rounded-full"></div>
                           </div>
@@ -1283,46 +1396,46 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                             {/* Left side - Interaction buttons */}
                             <div className="flex gap-2">
                               <button
-                                onClick={(e) => handleImageInteraction(image.id, 'heart', e)}
+                                onClick={(e) => handleImageInteraction(item.id, 'heart', e)}
                                 className={`backdrop-blur-sm p-2 rounded-full hover:bg-red-500 transition-colors ${
-                                  userInteractions.get(image.id) === 'heart'
+                                  userInteractions.get(item.id) === 'heart'
                                     ? 'bg-red-500'
                                     : 'bg-white/20'
                                 }`}
                                 title="Love"
                               >
                                 <Heart className={`w-4 h-4 ${
-                                  userInteractions.get(image.id) === 'heart'
+                                  userInteractions.get(item.id) === 'heart'
                                     ? 'fill-white text-white'
                                     : 'text-white'
                                 }`} />
                               </button>
                               <button
-                                onClick={(e) => handleImageInteraction(image.id, 'like', e)}
+                                onClick={(e) => handleImageInteraction(item.id, 'like', e)}
                                 className={`backdrop-blur-sm p-2 rounded-full hover:bg-green-500 transition-colors ${
-                                  userInteractions.get(image.id) === 'like'
+                                  userInteractions.get(item.id) === 'like'
                                     ? 'bg-green-500'
                                     : 'bg-white/20'
                                 }`}
                                 title="Like"
                               >
                                 <ThumbsUp className={`w-4 h-4 ${
-                                  userInteractions.get(image.id) === 'like'
+                                  userInteractions.get(item.id) === 'like'
                                     ? 'fill-white text-white'
                                     : 'text-white'
                                 }`} />
                               </button>
                               <button
-                                onClick={(e) => handleImageInteraction(image.id, 'dislike', e)}
+                                onClick={(e) => handleImageInteraction(item.id, 'dislike', e)}
                                 className={`backdrop-blur-sm p-2 rounded-full hover:bg-yellow-500 transition-colors ${
-                                  userInteractions.get(image.id) === 'dislike'
+                                  userInteractions.get(item.id) === 'dislike'
                                     ? 'bg-yellow-500'
                                     : 'bg-white/20'
                                 }`}
                                 title="Dislike"
                               >
                                 <ThumbsDown className={`w-4 h-4 ${
-                                  userInteractions.get(image.id) === 'dislike'
+                                  userInteractions.get(item.id) === 'dislike'
                                     ? 'fill-white text-white'
                                     : 'text-white'
                                 }`} />
@@ -1335,8 +1448,8 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   downloadImage(
-                                    image.storagePath,
-                                    image.originalName,
+                                    item.storagePath,
+                                    item.originalName,
                                   );
                                 }}
                                 className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
@@ -1352,7 +1465,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                                 <Share2 className="w-4 h-4 text-white" />
                               </button>
                               <a
-                                href={ImageUrl.forFullSize(image.storagePath)}
+                                href={ImageUrl.forFullSize(item.storagePath)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
@@ -1373,38 +1486,62 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                   className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
                   style={{ gap: getSpacingStyle() }}
                 >
-                  {images
+                  {mediaItems
                     .sort((a, b) => a.sequence - b.sequence)
                     .slice(0, visibleImageCount)
-                    .map((image, actualIndex) => {
+                    .map((item, actualIndex) => {
                       // actualIndex is now the correct index in the sorted array
 
                       return (
                         <div
-                          key={image.id}
+                          key={item.id}
                           className={`
                             relative ${getAspectRatioClass()} group cursor-pointer
-                            ${selectedImages.has(image.id) ? "ring-2 ring-salmon" : ""}
+                            ${selectedImages.has(item.id) ? "ring-2 ring-salmon" : ""}
                           `}
                           style={getBorderStyle()}
                           onClick={(e) => {
-                            console.log('🖱️ Gallery image clicked, opening modal at index:', actualIndex);
+                            console.log('🖱️ Gallery item clicked, opening modal at index:', actualIndex);
                             openModal(actualIndex);
                           }}
                         >
-                          <img
-                            src={ImageUrl.forViewing(image.storagePath)}
-                            alt={image.filename}
-                            className="w-full h-full object-cover transition-all duration-300 group-hover:brightness-[0.97]"
-                            style={getBorderStyle()}
-                            loading="lazy"
-                          />
+                          {item.mediaType === 'video' ? (
+                            <div className={`relative w-full h-full ${getAspectRatioClass()}`}>
+                              <img
+                                src={VideoUrl.forThumbnail(item as Video)}
+                                alt={item.filename}
+                                className="absolute inset-0 w-full h-full object-cover transition-all duration-300 group-hover:brightness-[0.97]"
+                                style={getBorderStyle()}
+                                loading="lazy"
+                              />
+                              {/* Video play overlay */}
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="bg-black/70 rounded-full p-3 backdrop-blur-sm">
+                                  <Play className="w-6 h-6 text-white fill-current" />
+                                </div>
+                              </div>
+                              {/* Video duration badge */}
+                              {item.duration && (
+                                <div className="absolute bottom-1 right-1 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded text-[10px]">
+                                  {Math.floor(item.duration / 60)}:{(item.duration % 60).toString().padStart(2, '0')}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <img
+                              src={ImageUrl.forViewing(item.storagePath)}
+                              alt={item.filename}
+                              className="w-full h-full object-cover transition-all duration-300 group-hover:brightness-[0.97]"
+                              style={getBorderStyle()}
+                              loading="lazy"
+                            />
+                          )}
 
                           {/* Gallery image overlay */}
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/[0.03] transition-colors duration-300" />
 
                           {/* Selection indicator */}
-                          {selectedImages.has(image.id) && (
+                          {selectedImages.has(item.id) && (
                             <div className="absolute top-2 right-2 w-6 h-6 bg-salmon rounded-full flex items-center justify-center z-10">
                               <div className="w-3 h-3 bg-white rounded-full"></div>
                             </div>
@@ -1416,46 +1553,46 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                               {/* Left side - Interaction buttons */}
                               <div className="flex gap-2">
                                 <button
-                                  onClick={(e) => handleImageInteraction(image.id, 'heart', e)}
+                                  onClick={(e) => handleImageInteraction(item.id, 'heart', e)}
                                   className={`backdrop-blur-sm p-2 rounded-full hover:bg-red-500 transition-colors ${
-                                    userInteractions.get(image.id) === 'heart'
+                                    userInteractions.get(item.id) === 'heart'
                                       ? 'bg-red-500'
                                       : 'bg-white/20'
                                   }`}
                                   title="Love"
                                 >
                                   <Heart className={`w-4 h-4 ${
-                                    userInteractions.get(image.id) === 'heart'
+                                    userInteractions.get(item.id) === 'heart'
                                       ? 'fill-white text-white'
                                       : 'text-white'
                                   }`} />
                                 </button>
                                 <button
-                                  onClick={(e) => handleImageInteraction(image.id, 'like', e)}
+                                  onClick={(e) => handleImageInteraction(item.id, 'like', e)}
                                   className={`backdrop-blur-sm p-2 rounded-full hover:bg-green-500 transition-colors ${
-                                    userInteractions.get(image.id) === 'like'
+                                    userInteractions.get(item.id) === 'like'
                                       ? 'bg-green-500'
                                       : 'bg-white/20'
                                   }`}
                                   title="Like"
                                 >
                                   <ThumbsUp className={`w-4 h-4 ${
-                                    userInteractions.get(image.id) === 'like'
+                                    userInteractions.get(item.id) === 'like'
                                       ? 'fill-white text-white'
                                       : 'text-white'
                                   }`} />
                                 </button>
                                 <button
-                                  onClick={(e) => handleImageInteraction(image.id, 'dislike', e)}
+                                  onClick={(e) => handleImageInteraction(item.id, 'dislike', e)}
                                   className={`backdrop-blur-sm p-2 rounded-full hover:bg-yellow-500 transition-colors ${
-                                    userInteractions.get(image.id) === 'dislike'
+                                    userInteractions.get(item.id) === 'dislike'
                                       ? 'bg-yellow-500'
                                       : 'bg-white/20'
                                   }`}
                                   title="Dislike"
                                 >
                                   <ThumbsDown className={`w-4 h-4 ${
-                                    userInteractions.get(image.id) === 'dislike'
+                                    userInteractions.get(item.id) === 'dislike'
                                       ? 'fill-white text-white'
                                       : 'text-white'
                                   }`} />
@@ -1468,8 +1605,8 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     downloadImage(
-                                      image.storagePath,
-                                      image.originalName,
+                                      item.storagePath,
+                                      item.originalName,
                                     );
                                   }}
                                   className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
@@ -1485,7 +1622,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                                   <Share2 className="w-4 h-4 text-white" />
                                 </button>
                                 <a
-                                  href={ImageUrl.forFullSize(image.storagePath)}
+                                  href={ImageUrl.forFullSize(item.storagePath)}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   onClick={(e) => e.stopPropagation()}
@@ -1505,18 +1642,18 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
             )}
 
           {/* Load More Button */}
-          {visibleImageCount < images.length && (
+          {visibleImageCount < mediaItems.length && (
             <div className="text-center mt-8">
               <Button
                 onClick={() =>
                   setVisibleImageCount((prev) =>
-                    Math.min(prev + 30, images.length),
+                    Math.min(prev + 30, mediaItems.length),
                   )
                 }
                 variant="outline"
                 className="border-salmon text-salmon hover:bg-salmon hover:text-white"
               >
-                Load More ({images.length - visibleImageCount} remaining)
+                Load More ({mediaItems.length - visibleImageCount} remaining)
               </Button>
             </div>
           )}
@@ -1536,7 +1673,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
         </div>
       </section>
 
-      {/* Image Modal */}
+      {/* Media Modal (Images & Videos) */}
       {modalImageIndex !== null && (
         <div 
           className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center overflow-hidden" 
@@ -1555,7 +1692,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
           <button
             onClick={() => navigateModal("prev")}
             className="absolute left-0 top-1/2 transform -translate-y-1/2 h-1/3 w-16 md:w-24 flex items-center justify-center text-white hover:bg-white/10 transition-all z-10 group"
-            aria-label="Previous image"
+            aria-label="Previous media"
           >
             <ChevronLeft className="w-8 h-8 md:w-12 md:h-12 group-hover:scale-110 transition-transform" />
           </button>
@@ -1564,7 +1701,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
           <button
             onClick={() => navigateModal("next")}
             className="absolute right-0 top-1/2 transform -translate-y-1/2 h-1/3 w-16 md:w-24 flex items-center justify-center text-white hover:bg-white/10 transition-all z-10 group"
-            aria-label="Next image"
+            aria-label="Next media"
           >
             <ChevronRight className="w-8 h-8 md:w-12 md:h-12 group-hover:scale-110 transition-transform" />
           </button>
@@ -1579,17 +1716,36 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                 willChange: 'transform'
               }}
             >
-              <img
-                src={ImageUrl.forViewing(images[modalImageIndex]?.storagePath)}
-                alt={images[modalImageIndex]?.filename}
-                className="max-w-full max-h-full w-auto h-auto object-contain select-none"
-                style={{
-                  maxWidth: 'calc(100vw - 2rem)',
-                  maxHeight: 'calc(100vh - 8rem)',
-                  touchAction: 'none'
-                }}
-                draggable={false}
-              />
+              {mediaItems[modalImageIndex]?.mediaType === 'video' ? (
+                <video
+                  src={VideoUrl.forStreaming(mediaItems[modalImageIndex] as Video)}
+                  className="max-w-full max-h-full w-auto h-auto object-contain select-none"
+                  style={{
+                    maxWidth: 'calc(100vw - 2rem)',
+                    maxHeight: 'calc(100vh - 8rem)',
+                    touchAction: 'none'
+                  }}
+                  controls
+                  autoPlay
+                  playsInline
+                  preload="metadata"
+                  poster={VideoUrl.forThumbnail(mediaItems[modalImageIndex] as Video)}
+                >
+                  Your browser does not support the video tag.
+                </video>
+              ) : (
+                <img
+                  src={ImageUrl.forViewing(mediaItems[modalImageIndex]?.storagePath)}
+                  alt={mediaItems[modalImageIndex]?.filename}
+                  className="max-w-full max-h-full w-auto h-auto object-contain select-none"
+                  style={{
+                    maxWidth: 'calc(100vw - 2rem)',
+                    maxHeight: 'calc(100vh - 8rem)',
+                    touchAction: 'none'
+                  }}
+                  draggable={false}
+                />
+              )}
             </div>
           </div>
 
@@ -1598,57 +1754,57 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
             <div className="flex items-center gap-3 whitespace-nowrap">
             {/* Image counter */}
             <span>
-              {modalImageIndex + 1} of {images.length}
+              {modalImageIndex + 1} of {mediaItems.length}
             </span>
             
             {/* Filename (hidden on mobile for space) */}
             <span className="hidden md:inline">•</span>
-            <span className="hidden md:inline truncate max-w-32">{images[modalImageIndex]?.originalName}</span>
+            <span className="hidden md:inline truncate max-w-32">{mediaItems[modalImageIndex]?.originalName}</span>
             
             {/* Interaction buttons */}
             <span className="hidden sm:inline">•</span>
             <div className="flex items-center gap-2">
               <button
-                onClick={(e) => handleImageInteraction(images[modalImageIndex]?.id, 'heart', e)}
+                onClick={(e) => handleImageInteraction(mediaItems[modalImageIndex]?.id, 'heart', e)}
                 className={`p-2 rounded-full hover:bg-red-500/80 transition-colors ${
-                  userInteractions.get(images[modalImageIndex]?.id) === 'heart'
+                  userInteractions.get(mediaItems[modalImageIndex]?.id) === 'heart'
                     ? 'bg-red-500'
                     : 'bg-white/20'
                 }`}
                 title="Love"
               >
                 <Heart className={`w-4 h-4 ${
-                  userInteractions.get(images[modalImageIndex]?.id) === 'heart'
+                  userInteractions.get(mediaItems[modalImageIndex]?.id) === 'heart'
                     ? 'fill-white text-white'
                     : 'text-white'
                 }`} />
               </button>
               <button
-                onClick={(e) => handleImageInteraction(images[modalImageIndex]?.id, 'like', e)}
+                onClick={(e) => handleImageInteraction(mediaItems[modalImageIndex]?.id, 'like', e)}
                 className={`p-2 rounded-full hover:bg-green-500/80 transition-colors ${
-                  userInteractions.get(images[modalImageIndex]?.id) === 'like'
+                  userInteractions.get(mediaItems[modalImageIndex]?.id) === 'like'
                     ? 'bg-green-500'
                     : 'bg-white/20'
                 }`}
                 title="Like"
               >
                 <ThumbsUp className={`w-4 h-4 ${
-                  userInteractions.get(images[modalImageIndex]?.id) === 'like'
+                  userInteractions.get(mediaItems[modalImageIndex]?.id) === 'like'
                     ? 'fill-white text-white'
                     : 'text-white'
                 }`} />
               </button>
               <button
-                onClick={(e) => handleImageInteraction(images[modalImageIndex]?.id, 'dislike', e)}
+                onClick={(e) => handleImageInteraction(mediaItems[modalImageIndex]?.id, 'dislike', e)}
                 className={`p-2 rounded-full hover:bg-yellow-500/80 transition-colors ${
-                  userInteractions.get(images[modalImageIndex]?.id) === 'dislike'
+                  userInteractions.get(mediaItems[modalImageIndex]?.id) === 'dislike'
                     ? 'bg-yellow-500'
                     : 'bg-white/20'
                 }`}
                 title="Dislike"
               >
                 <ThumbsDown className={`w-4 h-4 ${
-                  userInteractions.get(images[modalImageIndex]?.id) === 'dislike'
+                  userInteractions.get(mediaItems[modalImageIndex]?.id) === 'dislike'
                     ? 'fill-white text-white'
                     : 'text-white'
                 }`} />
@@ -1660,8 +1816,8 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
             <button
               onClick={() =>
                 downloadImage(
-                  images[modalImageIndex]?.storagePath,
-                  images[modalImageIndex]?.originalName,
+                  mediaItems[modalImageIndex]?.storagePath,
+                  mediaItems[modalImageIndex]?.originalName,
                 )
               }
               className="p-2 rounded-full hover:bg-white/30 bg-white/20 transition-colors"

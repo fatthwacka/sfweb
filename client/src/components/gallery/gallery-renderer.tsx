@@ -2,7 +2,8 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ImageUrl } from "@/lib/image-utils";
-import { Eye, Crown, X, Trash2, Download, RefreshCw, Loader2 } from "lucide-react";
+import { VideoUrl } from "@/lib/video-utils";
+import { Eye, Crown, X, Trash2, Download, RefreshCw, Loader2, PlayCircle } from "lucide-react";
 import type { Image } from "@shared/schema";
 
 interface GallerySettings {
@@ -20,6 +21,7 @@ interface GallerySettings {
 interface GalleryRendererProps {
   images: Image[];
   gallerySettings: GallerySettings;
+  mediaType?: 'photo' | 'video'; // NEW: Determine whether rendering photos or videos
   selectedCover?: string | null;
   onCoverChange?: (imageId: string | null) => void;
   draggedImage?: string | null;
@@ -46,6 +48,7 @@ interface GalleryRendererProps {
 export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
   images,
   gallerySettings,
+  mediaType = 'photo', // Default to 'photo' for backwards compatibility
   selectedCover,
   onCoverChange,
   draggedImage,
@@ -67,6 +70,8 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
   isAdminMode = false,
   saveAppearanceMutation
 }) => {
+  const isVideo = mediaType === 'video';
+  
   const getOrderedImages = () => images.slice(0, visibleImageCount);
 
   const getSpacingStyle = () => {
@@ -115,27 +120,41 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
   const [imageDimensions, setImageDimensions] = React.useState<Record<string, {width: number, height: number}>>({});
   const [dimensionsLoaded, setDimensionsLoaded] = React.useState(false);
 
-  // Load image dimensions dynamically
+  // Load image/video thumbnail dimensions dynamically
   React.useEffect(() => {
     if (images.length === 0) return;
     
     const loadImageDimensions = async () => {
-      console.log('Loading dimensions for', images.length, 'images');
       const dimensionsMap: Record<string, {width: number, height: number}> = {};
       
-      const loadPromises = images.slice(0, 10).map((image) => { // Limit to first 10 for performance
+      const loadPromises = images.slice(0, 10).map((item) => { // Limit to first 10 for performance
         return new Promise<void>((resolve) => {
           const img = new Image();
           img.onload = () => {
-            dimensionsMap[image.id] = { width: img.naturalWidth, height: img.naturalHeight };
-            console.log(`Loaded ${image.filename}: ${img.naturalWidth}x${img.naturalHeight}`);
+            dimensionsMap[item.id] = { width: img.naturalWidth, height: img.naturalHeight };
             resolve();
           };
           img.onerror = () => {
-            console.warn(`Failed to load dimensions for ${image.filename}`);
+            console.warn(`Failed to load dimensions for ${item.filename}`);
             resolve();
           };
-          img.src = ImageUrl.forViewing(image.storagePath);
+          // For videos, use thumbnail path directly (already a complete URL)
+          // For images, use storage path with ImageUrl transformation
+          if (isVideo) {
+            const thumbnailPath = (item as any).thumbnailPath;
+            // Only load dimensions if we have a valid thumbnail (ends with .jpg)
+            if (thumbnailPath && thumbnailPath.endsWith('.jpg')) {
+              img.src = thumbnailPath;
+            } else {
+              // No valid thumbnail, skip dimension loading
+              resolve();
+              return;
+            }
+          } else if (item.storagePath) {
+            img.src = ImageUrl.forViewing(item.storagePath);
+          } else {
+            img.src = '';
+          }
         });
       });
       
@@ -145,12 +164,11 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
     };
     
     loadImageDimensions();
-  }, [images]);
+  }, [images, isVideo]);
 
   const getAutomaticAspectRatio = () => {
     // Wait for dimensions to load
     if (!dimensionsLoaded || Object.keys(imageDimensions).length === 0) {
-      console.log('Dimensions not loaded yet, defaulting to square');
       return 'aspect-square';
     }
     
@@ -169,7 +187,6 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
     
     Object.entries(imageDimensions).forEach(([imageId, dimensions]) => {
       const ratio = dimensions.width / dimensions.height;
-      console.log(`Image ${imageId}: ${dimensions.width}x${dimensions.height} = ${ratio.toFixed(2)}`);
       
       if (ratio >= 0.9 && ratio <= 1.1) ratioGroups.square++;
       else if (ratio >= 0.6 && ratio <= 0.7) ratioGroups.portrait_2_3++;
@@ -193,8 +210,6 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
       }
     });
     
-    console.log('Ratio groups:', ratioGroups);
-    console.log('Most common ratio:', mostCommonRatio, 'with count:', maxCount);
     
     // Map to CSS aspect ratio classes
     const result = (() => {
@@ -212,7 +227,6 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
       }
     })();
     
-    console.log('Automatic mode selected aspect ratio:', result);
     return result;
   };
 
@@ -248,10 +262,19 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
               style={{ gap: getSpacingStyle() }}
             >
               {getOrderedImages().map((image, index) => {
-                const imageUrl = image?.storagePath ? ImageUrl.forViewing(image.storagePath) : null;
-                
+                // Use appropriate URL utility for videos vs images
+                let displayUrl = null;
+                if (isVideo) {
+                  // Use VideoUrl utility for proper 3-tier video handling
+                  displayUrl = VideoUrl.forThumbnail(image as any);
+                  if (index === 0) console.log(`🎬 VideoUrl.forThumbnail: ${displayUrl}`);
+                } else {
+                  displayUrl = image?.storagePath ? ImageUrl.forViewing(image.storagePath) : null;
+                  if (index === 0) console.log(`📸 ImageUrl.forViewing: ${displayUrl}`);
+                }
+
                 return (
-                  <div 
+                  <div
                     key={image.id}
                     className={`
                       relative group w-full
@@ -260,7 +283,7 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
                       ${draggedImage === image.id ? 'opacity-50 scale-95' : ''}
                       cursor-pointer transition-all duration-200
                     `}
-                    style={{ 
+                    style={{
                       transform: draggedImage === image.id ? 'scale(0.95)' : 'scale(1)',
                       transition: 'transform 0.2s ease, opacity 0.2s ease',
                       ...getBorderStyle()
@@ -284,27 +307,47 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
                       }
                     }}
                   >
-                    {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt={image.filename}
-                        className="w-full h-auto object-cover block"
-                        style={{ verticalAlign: 'top', ...getBorderStyle() }}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          const parent = target.parentElement;
-                          if (parent && !parent.querySelector('.image-error-placeholder')) {
-                            const placeholder = document.createElement('div');
-                            placeholder.className = 'image-error-placeholder flex items-center justify-center h-32 bg-gray-800 text-gray-400 text-sm';
-                            placeholder.innerHTML = 'Image unavailable';
-                            parent.appendChild(placeholder);
-                          }
-                        }}
-                      />
+                    {displayUrl ? (
+                      <>
+                        <img
+                          src={displayUrl}
+                          alt={image.filename}
+                          className="w-full h-auto object-cover block"
+                          style={{ verticalAlign: 'top', ...getBorderStyle() }}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const parent = target.parentElement;
+                            if (parent && !parent.querySelector('.image-error-placeholder')) {
+                              const placeholder = document.createElement('div');
+                              placeholder.className = 'image-error-placeholder flex items-center justify-center h-32 bg-gray-800 text-gray-400 text-sm';
+                              placeholder.innerHTML = isVideo ? 'Video thumbnail unavailable' : 'Image unavailable';
+                              parent.appendChild(placeholder);
+                            }
+                          }}
+                        />
+                        {/* Play icon overlay for videos */}
+                        {isVideo && (
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div className="bg-black/50 rounded-full p-3">
+                              <PlayCircle className="w-12 h-12 text-white" />
+                            </div>
+                          </div>
+                        )}
+                      </>
                     ) : (
-                      <div className="flex items-center justify-center h-32 bg-gray-800 text-gray-400 text-sm">
-                        Loading...
+                      <div className="flex items-center justify-center h-32 bg-gray-800 text-gray-400 text-sm relative">
+                        {isVideo ? (
+                          <>
+                            <div className="text-center">
+                              <PlayCircle className="w-8 h-8 mx-auto mb-2 text-gray-500" />
+                              <div className="text-xs">Video thumbnail unavailable</div>
+                              <div className="text-xs text-gray-500 mt-1">{image.filename}</div>
+                            </div>
+                          </>
+                        ) : (
+                          'Loading...'
+                        )}
                       </div>
                     )}
                   
@@ -332,12 +375,31 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
                           </Button>
                         )}
                         {onCoverChange && (
-                          <Button size="xs" variant="secondary" className="bg-salmon text-white hover:bg-salmon-muted w-6 h-6 p-0" title="Make Cover" onClick={(e) => { e.stopPropagation(); const newCover = selectedCover === image.id ? null : image.id; onCoverChange(newCover); if (saveAppearanceMutation) { saveAppearanceMutation.mutate({ bannerImageId: newCover, gallerySettings, imageSequences: {} }); } }}>
+                          <Button size="xs" variant="secondary" className="bg-salmon text-white hover:bg-salmon-muted w-6 h-6 p-0" title={isVideo ? "Make Cover Video" : "Make Cover"} onClick={async (e) => { 
+                            e.stopPropagation(); 
+                            const newCover = selectedCover === image.id ? null : image.id; 
+                            onCoverChange(newCover); 
+                            
+                            if (saveAppearanceMutation && isVideo && newCover) {
+                              // For videos, call the cover video API
+                              try {
+                                await fetch(`/api/shoots/${(image as any).shootId}/cover-video`, {
+                                  method: 'PATCH',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ videoId: newCover })
+                                });
+                              } catch (error) {
+                                console.error('Failed to set cover video:', error);
+                              }
+                            } else if (saveAppearanceMutation) { 
+                              saveAppearanceMutation.mutate({ bannerImageId: newCover, gallerySettings, imageSequences: {} }); 
+                            } 
+                          }}>
                             <Crown className="w-2.5 h-2.5" />
                           </Button>
                         )}
                         {onReplaceImage && (
-                          <Button size="xs" variant="secondary" className="bg-green-600 text-white hover:bg-green-700 w-6 h-6 p-0" title="Replace Image" onClick={(e) => { e.stopPropagation(); onReplaceImage(image.id); }}>
+                          <Button size="xs" variant="secondary" className="bg-green-600 text-white hover:bg-green-700 w-6 h-6 p-0" title={`Replace ${isVideo ? 'Video' : 'Image'}`} onClick={(e) => { e.stopPropagation(); onReplaceImage(image.id); }}>
                             <RefreshCw className="w-2.5 h-2.5" />
                           </Button>
                         )}
@@ -376,7 +438,14 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
               } as React.CSSProperties}
             >
               {getOrderedImages().map((image, index) => {
-                const imageUrl = image?.storagePath ? ImageUrl.forViewing(image.storagePath) : null;
+                // Use appropriate URL utility for videos vs images
+                let imageUrl = null;
+                if (isVideo) {
+                  // Use VideoUrl utility for proper 3-tier video handling
+                  imageUrl = VideoUrl.forThumbnail(image as any);
+                } else {
+                  imageUrl = image?.storagePath ? ImageUrl.forViewing(image.storagePath) : null;
+                }
                 
                 return (
                   <div 
@@ -463,12 +532,31 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
                           </Button>
                         )}
                         {onCoverChange && (
-                          <Button size="xs" variant="secondary" className="bg-salmon text-white hover:bg-salmon-muted w-6 h-6 p-0" title="Make Cover" onClick={(e) => { e.stopPropagation(); const newCover = selectedCover === image.id ? null : image.id; onCoverChange(newCover); if (saveAppearanceMutation) { saveAppearanceMutation.mutate({ bannerImageId: newCover, gallerySettings, imageSequences: {} }); } }}>
+                          <Button size="xs" variant="secondary" className="bg-salmon text-white hover:bg-salmon-muted w-6 h-6 p-0" title={isVideo ? "Make Cover Video" : "Make Cover"} onClick={async (e) => { 
+                            e.stopPropagation(); 
+                            const newCover = selectedCover === image.id ? null : image.id; 
+                            onCoverChange(newCover); 
+                            
+                            if (saveAppearanceMutation && isVideo && newCover) {
+                              // For videos, call the cover video API
+                              try {
+                                await fetch(`/api/shoots/${(image as any).shootId}/cover-video`, {
+                                  method: 'PATCH',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ videoId: newCover })
+                                });
+                              } catch (error) {
+                                console.error('Failed to set cover video:', error);
+                              }
+                            } else if (saveAppearanceMutation) { 
+                              saveAppearanceMutation.mutate({ bannerImageId: newCover, gallerySettings, imageSequences: {} }); 
+                            } 
+                          }}>
                             <Crown className="w-2.5 h-2.5" />
                           </Button>
                         )}
                         {onReplaceImage && (
-                          <Button size="xs" variant="secondary" className="bg-green-600 text-white hover:bg-green-700 w-6 h-6 p-0" title="Replace Image" onClick={(e) => { e.stopPropagation(); onReplaceImage(image.id); }}>
+                          <Button size="xs" variant="secondary" className="bg-green-600 text-white hover:bg-green-700 w-6 h-6 p-0" title={`Replace ${isVideo ? 'Video' : 'Image'}`} onClick={(e) => { e.stopPropagation(); onReplaceImage(image.id); }}>
                             <RefreshCw className="w-2.5 h-2.5" />
                           </Button>
                         )}
@@ -503,7 +591,16 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
             }}
           >
             {getOrderedImages().map((image, index) => {
-              const imageUrl = image?.storagePath ? ImageUrl.forViewing(image.storagePath) : null;
+              // Use appropriate URL utility for videos vs images
+              let imageUrl = null;
+              if (isVideo) {
+                // Use VideoUrl utility for proper 3-tier video handling
+                imageUrl = VideoUrl.forThumbnail(image as any);
+                if (index === 0) console.log(`🎬 Grid mode - VideoUrl.forThumbnail: ${imageUrl}`);
+              } else {
+                imageUrl = image?.storagePath ? ImageUrl.forViewing(image.storagePath) : null;
+                if (index === 0) console.log(`📸 Grid mode - ImageUrl.forViewing: ${imageUrl}`);
+              }
               
               return (
                 <div 
@@ -592,13 +689,24 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
                           size="xs"
                           variant="secondary"
                           className="bg-salmon text-white hover:bg-salmon-muted w-6 h-6 p-0"
-                          title="Make Cover"
-                          onClick={(e) => {
+                          title={isVideo ? "Make Cover Video" : "Make Cover"}
+                          onClick={async (e) => {
                             e.stopPropagation();
                             const newCover = selectedCover === image.id ? null : image.id;
                             onCoverChange(newCover);
                             
-                            if (saveAppearanceMutation) {
+                            if (saveAppearanceMutation && isVideo && newCover) {
+                              // For videos, call the cover video API
+                              try {
+                                await fetch(`/api/shoots/${(image as any).shootId}/cover-video`, {
+                                  method: 'PATCH',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ videoId: newCover })
+                                });
+                              } catch (error) {
+                                console.error('Failed to set cover video:', error);
+                              }
+                            } else if (saveAppearanceMutation) {
                               saveAppearanceMutation.mutate({
                                 bannerImageId: newCover,
                                 gallerySettings,
@@ -683,7 +791,17 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
             widows: 1
           }}
         >
-          {images.map((image, index) => (
+          {images.map((image, index) => {
+            // Use appropriate URL utility for videos vs images
+            let displayUrl;
+            if (isVideo) {
+              // Use VideoUrl utility for proper 3-tier video handling
+              displayUrl = VideoUrl.forThumbnail(image as any);
+            } else {
+              displayUrl = image?.storagePath ? ImageUrl.forViewing(image.storagePath) : null;
+            }
+
+            return (
             <div
               key={image.id}
               className={`relative group cursor-pointer break-inside-avoid masonry-item ${getBorderClass()}`}
@@ -693,39 +811,83 @@ export const GalleryRenderer: React.FC<GalleryRendererProps> = ({
                 ...getBorderStyle()
               }}
             >
-              <img
-                src={ImageUrl.forViewing(image.storagePath)}
-                alt={`Gallery image ${index + 1}`}
-                className="w-full h-auto object-cover transition-all duration-300 group-hover:brightness-95"
-                loading="lazy"
-                style={getBorderStyle()}
-              />
+              {displayUrl ? (
+                <>
+                  <img
+                    src={displayUrl}
+                    alt={`Gallery image ${index + 1}`}
+                    className="w-full h-auto object-cover transition-all duration-300 group-hover:brightness-95"
+                    loading="lazy"
+                    style={getBorderStyle()}
+                  />
+                  {/* Play icon overlay for videos */}
+                  {isVideo && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="bg-black/50 rounded-full p-3">
+                        <PlayCircle className="w-12 h-12 text-white" />
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex items-center justify-center h-32 bg-gray-800 text-gray-400 text-sm">
+                  {isVideo ? 'Video thumbnail unavailable' : 'Image unavailable'}
+                </div>
+              )}
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
             </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div 
           className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
           style={{ gap: getSpacingStyle() }}
         >
-          {images.map((image, index) => (
+          {images.map((image, index) => {
+            // Use appropriate URL utility for videos vs images
+            let displayUrl;
+            if (isVideo) {
+              // Use VideoUrl utility for proper 3-tier video handling
+              displayUrl = VideoUrl.forThumbnail(image as any);
+            } else {
+              displayUrl = image?.storagePath ? ImageUrl.forViewing(image.storagePath) : null;
+            }
+
+            return (
             <div
               key={image.id}
               className={`relative ${getAspectRatioClass()} group cursor-pointer ${getBorderClass()}`}
               onClick={() => onImageClick?.(image.id)}
               style={getBorderStyle()}
             >
-              <img
-                src={ImageUrl.forViewing(image.storagePath)}
-                alt={`Gallery image ${index + 1}`}
-                className="w-full h-full object-cover transition-all duration-300 group-hover:brightness-95"
-                loading="lazy"
-                style={getBorderStyle()}
-              />
+              {displayUrl ? (
+                <>
+                  <img
+                    src={displayUrl}
+                    alt={`Gallery image ${index + 1}`}
+                    className="w-full h-full object-cover transition-all duration-300 group-hover:brightness-95"
+                    loading="lazy"
+                    style={getBorderStyle()}
+                  />
+                  {/* Play icon overlay for videos */}
+                  {isVideo && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="bg-black/50 rounded-full p-3">
+                        <PlayCircle className="w-12 h-12 text-white" />
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex items-center justify-center w-full h-full bg-gray-800 text-gray-400 text-sm">
+                  {isVideo ? 'Video thumbnail unavailable' : 'Image unavailable'}
+                </div>
+              )}
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

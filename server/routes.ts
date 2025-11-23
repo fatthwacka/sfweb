@@ -18,13 +18,15 @@ import pricingPackagesRouter from './pricing-packages-api';
 import { sendContactEmail, validateEmailConfig, sendAlbumReadyEmail } from './email-service';
 import { verifyRecaptcha } from './recaptcha-service';
 import { eq, and, sql } from 'drizzle-orm';
+// Import video processing functions for 3-tier FFmpeg processing
+import { processVideo, shouldTranscodeVideo, validateVideoForProcessing, formatFileSize, formatDuration } from './video-processing';
 import {
   insertUserSchema, insertClientSchema, insertShootSchema,
-  insertImageSchema, insertBookingSchema, insertAnalyticsSchema,
+  insertImageSchema, insertVideoSchema, insertBookingSchema, insertAnalyticsSchema,
   updateImageSequenceSchema, updateAlbumCoverSchema, updateShootDetailsSchema,
   updateShootCustomizationSchema, insertShootPreviewSchema, insertClientSelectionSchema,
   insertSelectionPackageSchema,
-  clientSelections, selectionPackages, analytics, previewImages, shootPreviews, images
+  clientSelections, selectionPackages, analytics, previewImages, shootPreviews, images, videos
 } from "@shared/schema";
 import { dropboxService } from './services/dropbox-service';
 import { z } from "zod";
@@ -660,15 +662,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use email-based matching for shoots
       const shoots = client.email ? await storage.getShootsByClientEmail(client.email) : [];
 
-      // Fetch images for each shoot to get cover images
-      const shootsWithImages = await Promise.all(
+      // Fetch images and videos for each shoot to get cover images
+      const shootsWithMedia = await Promise.all(
         shoots.map(async (shoot) => {
           const images = await storage.getImagesByShoot(shoot.id);
-          return { ...shoot, images };
+          const videos = await storage.getVideosByShoot(shoot.id);
+          return { ...shoot, images, videos };
         })
       );
 
-      res.json({ client, shoots: shootsWithImages });
+      res.json({ client, shoots: shootsWithMedia });
     } catch (error) {
       console.error("Client fetch error:", error);
       res.status(500).json({ message: "Failed to fetch client" });
@@ -847,11 +850,232 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Public galleries endpoint for demo page and public showcases
   app.get("/api/galleries/public", async (req, res) => {
     try {
+      const startTime = Date.now();
+      console.log("[PERF] Starting /api/galleries/public");
+      
       const publicShoots = await storage.getPublicShoots();
-      res.json(publicShoots);
+      console.log(`[PERF] Got ${publicShoots.length} public shoots in ${Date.now() - startTime}ms`);
+      
+      // Get all shoot IDs
+      const photoShootIds = publicShoots.filter(s => s.mediaType === 'photo').map(s => s.id);
+      const videoShootIds = publicShoots.filter(s => s.mediaType === 'video').map(s => s.id);
+      
+      // Check if storage has optimized batch methods (Supabase does, in-memory mock doesn't)
+      let imagesByShoot: Map<string, any[]>;
+      let videosByShoot: Map<string, any[]>;
+      
+      if (storage.getImagesForShoots && storage.getVideosForShoots) {
+        // Use optimized batch methods - just 2 database queries total!
+        console.log(`[PERF] Using optimized batch methods for ${photoShootIds.length} photo shoots and ${videoShootIds.length} video shoots`);
+        const batchStartTime = Date.now();
+        const [imagesMap, videosMap] = await Promise.all([
+          photoShootIds.length > 0 ? storage.getImagesForShoots(photoShootIds) : Promise.resolve(new Map()),
+          videoShootIds.length > 0 ? storage.getVideosForShoots(videoShootIds) : Promise.resolve(new Map())
+        ]);
+        console.log(`[PERF] Batch fetched all media in ${Date.now() - batchStartTime}ms`);
+        imagesByShoot = imagesMap;
+        videosByShoot = videosMap;
+      } else {
+        console.log(`[PERF] Using fallback individual queries`);
+        // Fallback to individual queries for in-memory storage
+        const allImagesPromise = photoShootIds.length > 0 
+          ? Promise.all(photoShootIds.map(id => storage.getImagesByShoot(id)))
+          : Promise.resolve([]);
+        
+        const allVideosPromise = videoShootIds.length > 0
+          ? Promise.all(videoShootIds.map(id => storage.getVideosByShoot(id)))
+          : Promise.resolve([]);
+        
+        const [allImages, allVideos] = await Promise.all([allImagesPromise, allVideosPromise]);
+        
+        // Create maps for quick lookup
+        imagesByShoot = new Map();
+        photoShootIds.forEach((id, index) => {
+          imagesByShoot.set(id, allImages[index] || []);
+        });
+        
+        videosByShoot = new Map();
+        videoShootIds.forEach((id, index) => {
+          videosByShoot.set(id, allVideos[index] || []);
+        });
+      }
+      
+      // Now enhance shoots with cover media using the pre-fetched data
+      const shootsWithCoverMedia = publicShoots.map((shoot) => {
+        let coverImageUrl = '';
+        let coverVideoInfo = null;
+        
+        if (shoot.mediaType === 'video') {
+          // For video albums, get cover video from pre-fetched data
+          const videos = videosByShoot.get(shoot.id) || [];
+          const coverVideo = videos.find(video => video.featuredVideo === true) || videos[0];
+          
+          if (coverVideo) {
+            coverVideoInfo = {
+              id: coverVideo.id,
+              storagePath: coverVideo.storagePath,
+              optimizedPath: coverVideo.optimizedPath,
+              thumbnailPath: coverVideo.thumbnailPath,
+              duration: coverVideo.duration,
+              filename: coverVideo.filename
+            };
+            // Use the 1200px thumbnail for portfolio cards
+            coverImageUrl = coverVideo.thumbnailPath;
+          }
+        } else {
+          // For photo albums, prioritize bannerImageId, then featuredImage, then first image
+          const images = imagesByShoot.get(shoot.id) || [];
+          let coverImage = null;
+          
+          // 1st priority: bannerImageId (designated album cover)
+          if (shoot.bannerImageId) {
+            coverImage = images.find(img => img.id === shoot.bannerImageId);
+          }
+          
+          // 2nd priority: featuredImage
+          if (!coverImage) {
+            coverImage = images.find(img => img.featuredImage === true);
+          }
+          
+          // 3rd priority: first image
+          if (!coverImage) {
+            coverImage = images[0];
+          }
+          
+          if (coverImage && coverImage.storagePath) {
+            coverImageUrl = coverImage.storagePath.includes('supabase') 
+              ? coverImage.storagePath.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=600&height=400&resize=cover&quality=85'
+              : coverImage.storagePath;
+          }
+        }
+        
+        return {
+          ...shoot,
+          coverImageUrl,
+          coverVideoInfo
+        };
+      });
+      
+      // Group shoots by groupName for portfolio bundling
+      const portfolioItems = [];
+      const groupedShoots = new Map();
+      
+      // First pass: group shoots that have groupName
+      for (const shoot of shootsWithCoverMedia) {
+        if (shoot.groupName) {
+          if (!groupedShoots.has(shoot.groupName)) {
+            groupedShoots.set(shoot.groupName, []);
+          }
+          groupedShoots.get(shoot.groupName).push(shoot);
+        } else {
+          // Shoots without groupName remain individual
+          portfolioItems.push(shoot);
+        }
+      }
+      
+      // Second pass: create bundled cards for grouped shoots
+      for (const [groupName, shoots] of groupedShoots) {
+        // Use the first shoot as the representative for the group
+        const primaryShoot = shoots[0];
+        const bundledCard = {
+          ...primaryShoot,
+          id: `group-${groupName.toLowerCase().replace(/\s+/g, '-')}`, // Create group ID from name
+          title: groupName, // Use group name as title
+          description: `${shoots.length} galleries`, // Show count
+          isGroup: true,
+          groupName: groupName,
+          shootCount: shoots.length,
+          shoots: shoots.map(s => ({ 
+            id: s.id, 
+            title: s.title, 
+            mediaType: s.mediaType,
+            customSlug: s.customSlug 
+          })) // Include individual shoot references
+        };
+        portfolioItems.push(bundledCard);
+      }
+      
+      res.json(portfolioItems);
     } catch (error) {
       console.error("Fetch public galleries error:", error);
       res.status(500).json({ message: "Failed to fetch public galleries" });
+    }
+  });
+
+  // Get existing portfolio group names for admin dropdown
+  app.get("/api/portfolio/groups", async (req, res) => {
+    try {
+      const groups = await storage.getPortfolioGroups();
+      res.json(groups);
+    } catch (error) {
+      console.error("Fetch portfolio groups error:", error);
+      res.status(500).json({ message: "Failed to fetch portfolio groups" });
+    }
+  });
+
+  // Get portfolio group details (shoots grouped by groupName)
+  app.get("/api/portfolio/groups/:groupName", async (req, res) => {
+    try {
+      const { groupName } = req.params;
+      const decodedGroupName = decodeURIComponent(groupName.replace(/-/g, ' '));
+      
+      const publicShoots = await storage.getPublicShoots();
+      const groupShoots = publicShoots.filter(shoot => 
+        shoot.groupName?.toLowerCase() === decodedGroupName.toLowerCase()
+      );
+      
+      if (groupShoots.length === 0) {
+        return res.status(404).json({ message: "Portfolio group not found" });
+      }
+      
+      // Enhance shoots with cover media information
+      const shootsWithCoverMedia = await Promise.all(
+        groupShoots.map(async (shoot) => {
+          let coverImageUrl = '';
+          let coverVideoInfo = null;
+          
+          if (shoot.mediaType === 'video') {
+            const videos = await storage.getVideosByShoot(shoot.id);
+            const coverVideo = videos.find(video => video.featuredVideo === true) || videos[0];
+            
+            if (coverVideo) {
+              coverVideoInfo = {
+                id: coverVideo.id,
+                storagePath: coverVideo.storagePath,
+                optimizedPath: coverVideo.optimizedPath,
+                thumbnailPath: coverVideo.thumbnailPath,
+                duration: coverVideo.duration,
+                filename: coverVideo.filename
+              };
+              coverImageUrl = coverVideo.thumbnailPath;
+            }
+          } else {
+            const images = await storage.getImagesByShoot(shoot.id);
+            const coverImage = images.find(img => img.featuredImage === true) || images[0];
+            
+            if (coverImage && coverImage.storagePath) {
+              coverImageUrl = coverImage.storagePath.includes('supabase') 
+                ? coverImage.storagePath.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=600&height=400&resize=cover&quality=85'
+                : coverImage.storagePath;
+            }
+          }
+          
+          return {
+            ...shoot,
+            coverImageUrl,
+            coverVideoInfo
+          };
+        })
+      );
+      
+      res.json({
+        groupName: decodedGroupName,
+        shoots: shootsWithCoverMedia,
+        shootCount: shootsWithCoverMedia.length
+      });
+    } catch (error) {
+      console.error("Fetch portfolio group error:", error);
+      res.status(500).json({ message: "Failed to fetch portfolio group" });
     }
   });
 
@@ -864,6 +1088,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Shoot not found" });
       }
 
+      console.log(`📤 GET shoot ${shootId} result:`, { id: shoot?.id, groupName: shoot?.groupName });
       const images = await storage.getImagesByShoot(shootId);
       res.json({ shoot, images });
     } catch (error) {
@@ -924,18 +1149,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (updates.imageSequences) {
         const imageSequences = updates.imageSequences;
         console.log(`🚀 Batch updating ${Object.keys(imageSequences).length} image sequences`);
-        
+
         // Use batch update for much better performance
         await storage.batchUpdateImageSequences(imageSequences);
-        
+
         // Remove imageSequences from shoot updates since it's not a shoot field
         delete updates.imageSequences;
+      }
+
+      // Handle video sequence updates if provided - PERFORMANCE OPTIMIZED
+      if (updates.videoSequences) {
+        const videoSequences = updates.videoSequences;
+        console.log(`🎬 Batch updating ${Object.keys(videoSequences).length} video sequences`);
+
+        // Use batch update for much better performance
+        await storage.batchUpdateVideoSequences(videoSequences);
+
+        // Remove videoSequences from shoot updates since it's not a shoot field
+        delete updates.videoSequences;
       }
       
       // Only update shoot if there are other fields to update
       let shoot;
       if (Object.keys(updates).length > 0) {
+        console.log(`🔄 Updating shoot ${shootId} with:`, updates);
         shoot = await storage.updateShoot(shootId, updates);
+        console.log(`📥 Updated shoot result:`, { id: shoot?.id, groupName: shoot?.groupName });
         if (!shoot) {
           return res.status(404).json({ message: "Shoot not found" });
         }
@@ -1194,10 +1433,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/images", async (req, res) => {
     try {
-      // Use the direct getAllImages method for better performance and consistency
-      const allImages = await storage.getAllImages();
-      console.log(`Fetched ${allImages.length} images for admin panel`);
-      res.json(allImages);
+      const { shootId } = req.query;
+
+      if (shootId && typeof shootId === 'string') {
+        // Fetch images for a specific shoot
+        const images = await storage.getImagesByShoot(shootId);
+        console.log(`Fetched ${images.length} images for shoot ${shootId}`);
+        res.json(images);
+      } else {
+        // Fetch all images (for admin panel overview)
+        const allImages = await storage.getAllImages();
+        console.log(`Fetched ${allImages.length} images for admin panel`);
+        res.json(allImages);
+      }
     } catch (error) {
       console.error("Fetch images error:", error);
       res.status(500).json({ message: "Failed to fetch images" });
@@ -1309,6 +1557,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Conflict check error:", error);
       res.status(500).json({ 
         message: "Failed to check for conflicts",
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
+  });
+
+  // Check for video filename conflicts before upload
+  app.post("/api/videos/check-conflicts", async (req, res) => {
+    try {
+      const { shootId, filenames }: { shootId: string; filenames: string[] } = req.body;
+
+      if (!shootId || !filenames || !Array.isArray(filenames)) {
+        return res.status(400).json({ 
+          message: "shootId and filenames array are required" 
+        });
+      }
+
+      // Get existing videos for this shoot
+      const existingVideos = await storage.getVideosByShoot(shootId);
+      
+      const conflicts: any[] = [];
+      const safe: string[] = [];
+
+      // Check each filename for conflicts
+      for (const filename of filenames) {
+        const existingVideo = existingVideos.find(vid => vid.filename === filename);
+        
+        if (existingVideo) {
+          // Get file metadata from Supabase storage
+          let fileSize = existingVideo.fileSize || 0;
+          let lastModified = existingVideo.createdAt;
+          
+          try {
+            // Initialize Supabase client for storage metadata
+            const supabase = createClient(
+              process.env.VITE_SUPABASE_URL!,
+              process.env.SUPABASE_SERVICE_ROLE_KEY!
+            );
+
+            // Extract the storage path from the full URL
+            const urlParts = existingVideo.storagePath.split('/');
+            const bucketIndex = urlParts.findIndex(part => part === 'gallery-videos');
+            if (bucketIndex !== -1) {
+              const storagePath = urlParts.slice(bucketIndex + 1).join('/');
+              
+              // Get file metadata from Supabase storage
+              const { data: fileData, error } = await supabase.storage
+                .from('gallery-videos')
+                .list(storagePath.split('/').slice(0, -1).join('/'), {
+                  search: storagePath.split('/').pop()
+                });
+
+              if (!error && fileData && fileData.length > 0) {
+                const file = fileData[0];
+                fileSize = file.metadata?.size || existingVideo.fileSize || 0;
+                lastModified = file.updated_at || existingVideo.createdAt;
+              }
+            }
+          } catch (error) {
+            console.warn('Failed to get video file metadata:', error);
+            // Continue with defaults
+          }
+
+          conflicts.push({
+            filename,
+            existingVideo: {
+              id: existingVideo.id,
+              size: fileSize,
+              createdAt: lastModified,
+              sequence: existingVideo.sequence,
+              storagePath: existingVideo.storagePath,
+              duration: existingVideo.duration
+            },
+            newFileSize: 0, // Will be filled by frontend
+            newDuration: 0 // Will be filled by frontend
+          });
+        } else {
+          safe.push(filename);
+        }
+      }
+
+      res.json({
+        conflicts,
+        safe
+      });
+
+    } catch (error) {
+      console.error("Video conflict check error:", error);
+      res.status(500).json({ 
+        message: "Failed to check for video conflicts",
         error: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }
@@ -1825,6 +2162,531 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Video endpoints (mirror image endpoints)
+  app.post("/api/videos", async (req, res) => {
+    try {
+      const data = insertVideoSchema.parse(req.body);
+      const video = await storage.createVideo(data);
+      res.json(video);
+    } catch (error) {
+      console.error("Create video error:", error);
+      res.status(400).json({ message: "Invalid video data" });
+    }
+  });
+
+  app.get("/api/videos", async (req, res) => {
+    try {
+      const { shootId } = req.query;
+
+      if (shootId && typeof shootId === 'string') {
+        // Get videos for specific shoot
+        const videos = await storage.getVideosByShoot(shootId);
+        console.log(`Fetched ${videos.length} videos for shoot ${shootId}`);
+        res.json(videos);
+      } else {
+        // Get all videos (admin use) - NEW: Support admin panel
+        const allVideos = await storage.getAllVideos();
+        console.log(`Fetched ${allVideos.length} videos for admin panel`);
+        res.json(allVideos);
+      }
+    } catch (error) {
+      console.error("Fetch videos error:", error);
+      res.status(500).json({ message: "Failed to fetch videos" });
+    }
+  });
+
+  app.patch("/api/videos/:id", async (req, res) => {
+    try {
+      const videoId = req.params.id;
+      const updates = req.body;
+
+      const video = await storage.updateVideo(videoId, updates);
+      if (!video) {
+        return res.status(404).json({ message: "Video not found" });
+      }
+
+      res.json(video);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update video" });
+    }
+  });
+
+  app.delete("/api/videos/:id", async (req, res) => {
+    try {
+      const videoId = req.params.id;
+      console.log(`Attempting to delete video: ${videoId}`);
+
+      const deleted = await storage.deleteVideo(videoId);
+
+      if (!deleted) {
+        console.log(`Video not found in database: ${videoId}`);
+        return res.status(404).json({ message: "Video not found or already deleted" });
+      }
+
+      console.log(`Successfully deleted video: ${videoId}`);
+      res.json({ success: true, message: "Video deleted successfully" });
+    } catch (error) {
+      console.error("Delete video error:", error);
+      res.status(500).json({
+        message: "Failed to delete video",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Video upload endpoint with 500MB limit
+  const videoUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 500 * 1024 * 1024, // 500MB limit
+    },
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith('video/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only video files are allowed'));
+      }
+    }
+  });
+
+  app.post("/api/videos/upload", videoUpload.array('videos', 50), async (req, res) => {
+    console.log("🎬 VIDEO UPLOAD ENDPOINT - Enhanced 3-Tier Processing");
+    try {
+      const files = req.files as Express.Multer.File[];
+      const { shootId, resolutions } = req.body;
+
+      if (!files || files.length === 0) {
+        return res.status(400).json({ message: "No video files provided" });
+      }
+
+      if (!shootId) {
+        return res.status(400).json({ message: "shootId is required" });
+      }
+
+      // Parse resolutions if provided (sent as JSON string from FormData)
+      let conflictResolutions = null;
+      console.log(`📋 Raw resolutions parameter:`, resolutions);
+      
+      if (resolutions) {
+        try {
+          conflictResolutions = JSON.parse(resolutions);
+          console.log(`✅ Parsed ${conflictResolutions.length} conflict resolutions:`, conflictResolutions);
+        } catch (error) {
+          console.warn('❌ Failed to parse resolutions:', error);
+        }
+      } else {
+        console.log(`ℹ️ No resolutions provided - standard upload mode`);
+      }
+
+      // Get existing videos for replacement logic (always needed for replacements)
+      const existingVideos = await storage.getVideosByShoot(shootId);
+      console.log(`📋 Found ${existingVideos.length} existing videos for shoot ${shootId}`);
+      console.log(`📋 Existing video IDs:`, existingVideos.map(v => `${v.id} (${v.filename})`));
+
+      console.log(`🎬 Processing ${files.length} video(s) for shoot ${shootId} with 3-tier optimization`);
+
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
+      const uploadedVideos = [];
+      const replacedVideos = [];
+      const skippedFiles = [];
+      const errors = [];
+      const processingResults = [];
+
+      for (let fileIndex = 0; fileIndex < files.length; fileIndex++) {
+        const file = files[fileIndex];
+        try {
+          console.log(`\n🎬 Processing video ${fileIndex + 1}/${files.length}: ${file.originalname}`);
+          console.log(`📏 Size: ${formatFileSize(file.size)}`);
+
+          // Step 1: Validate video file
+          const validation = validateVideoForProcessing(file.buffer, file.originalname);
+          if (!validation.valid) {
+            console.error(`❌ Validation failed: ${validation.error}`);
+            errors.push({ filename: file.originalname, error: validation.error });
+            continue;
+          }
+
+          const timestamp = Date.now();
+          const cleanFilename = file.originalname.replace(/[^a-z0-9.-]/gi, '_');
+
+          // Step 2: Process ALL videos with FFmpeg for consistent 3-tier optimization
+          console.log(`⚙️ Processing all videos for 3-tier optimization (size: ${formatFileSize(file.size)})`);
+
+          // Step 3: Process video with FFmpeg (generate optimized + thumbnail)
+          let optimizedBuffer: Buffer | null = null;
+          let serverThumbnailBuffer: Buffer | null = null;
+          let videoMetadata: any = null;
+
+          // Always process videos for 3-tier system
+          try {
+            console.log(`⚙️ Starting FFmpeg processing for ${cleanFilename}...`);
+            try {
+              const processingResult = await processVideo({
+                inputBuffer: file.buffer,
+                originalFilename: cleanFilename,
+                maxWidth: 1920, // 1080p max
+                quality: 'medium'
+              });
+
+              optimizedBuffer = processingResult.optimizedBuffer;
+              serverThumbnailBuffer = processingResult.thumbnailBuffer;
+              videoMetadata = processingResult.metadata;
+
+              console.log(`✅ FFmpeg processing complete:`);
+              console.log(`   📹 Compression: ${videoMetadata.compressionRatio.toFixed(1)}% smaller`);
+              console.log(`   🎞️ Resolution: ${videoMetadata.originalDimensions.width}x${videoMetadata.originalDimensions.height} → ${videoMetadata.optimizedDimensions.width}x${videoMetadata.optimizedDimensions.height}`);
+              console.log(`   ⏱️ Duration: ${formatDuration(videoMetadata.duration)}`);
+
+              processingResults.push({
+                filename: cleanFilename,
+                processing: 'ffmpeg_complete',
+                originalSize: videoMetadata.originalSize,
+                optimizedSize: videoMetadata.optimizedSize,
+                compressionRatio: videoMetadata.compressionRatio
+              });
+            } catch (processingError) {
+              console.error(`❌ FFmpeg processing failed for ${cleanFilename}:`, processingError);
+              // Continue without optimization - use original file
+              console.log(`⚠️ Falling back to original file without optimization`);
+              processingResults.push({
+                filename: cleanFilename,
+                processing: 'ffmpeg_failed_fallback_to_original',
+                error: processingError instanceof Error ? processingError.message : 'Unknown error'
+              });
+            }
+          } catch (outerError) {
+            console.error(`❌ Unexpected error during video processing for ${cleanFilename}:`, outerError);
+            processingResults.push({
+              filename: cleanFilename,
+              processing: 'processing_error',
+              error: outerError instanceof Error ? outerError.message : 'Unknown error'
+            });
+          }
+
+          // Step 4: Upload files to Supabase Storage
+          
+          // 4a: Upload original video
+          const videoPath = `${shootId}/${timestamp}-${cleanFilename}`;
+          console.log(`📤 Uploading original video: ${videoPath}`);
+
+          const { data: videoData, error: videoError } = await supabase.storage
+            .from('gallery-videos')
+            .upload(videoPath, file.buffer, {
+              contentType: file.mimetype,
+              upsert: false
+            });
+
+          if (videoError) {
+            console.error(`❌ Failed to upload original video ${cleanFilename}:`, videoError);
+            errors.push({ filename: cleanFilename, error: videoError.message });
+            continue;
+          }
+
+          const { data: { publicUrl: videoPublicUrl } } = supabase.storage
+            .from('gallery-videos')
+            .getPublicUrl(videoPath);
+
+          // 4b: Upload optimized video (if we have one)
+          let optimizedPublicUrl = null;
+          if (optimizedBuffer) {
+            const optimizedPath = `${shootId}/${timestamp}-${cleanFilename}-optimized.mp4`;
+            console.log(`📤 Uploading optimized video: ${optimizedPath}`);
+
+            const { error: optimizedError } = await supabase.storage
+              .from('gallery-videos')
+              .upload(optimizedPath, optimizedBuffer, {
+                contentType: 'video/mp4',
+                upsert: false
+              });
+
+            if (!optimizedError) {
+              const { data: { publicUrl } } = supabase.storage
+                .from('gallery-videos')
+                .getPublicUrl(optimizedPath);
+              optimizedPublicUrl = publicUrl;
+              console.log(`✅ Optimized video uploaded: ${optimizedPath}`);
+            } else {
+              console.error(`⚠️ Failed to upload optimized video: ${optimizedError.message}`);
+            }
+          }
+
+          // 4c: Upload thumbnail (prefer server-generated, fallback to client-generated)
+          let thumbnailPublicUrl = videoPublicUrl; // Ultimate fallback
+
+          if (serverThumbnailBuffer) {
+            // Use server-generated high-quality thumbnail
+            const thumbnailPath = `${shootId}/${timestamp}-${cleanFilename}-thumbnail.jpg`;
+            console.log(`📤 Uploading server-generated thumbnail: ${thumbnailPath}`);
+
+            const { error: thumbnailError } = await supabase.storage
+              .from('gallery-videos')
+              .upload(thumbnailPath, serverThumbnailBuffer, {
+                contentType: 'image/jpeg',
+                upsert: false
+              });
+
+            if (!thumbnailError) {
+              const { data: { publicUrl } } = supabase.storage
+                .from('gallery-videos')
+                .getPublicUrl(thumbnailPath);
+              thumbnailPublicUrl = publicUrl;
+              console.log(`✅ Server thumbnail uploaded: ${thumbnailPath}`);
+            } else {
+              console.error(`⚠️ Failed to upload server thumbnail: ${thumbnailError.message}`);
+            }
+          } else {
+            // Fallback to client-generated thumbnail
+            const thumbnailBase64 = req.body[`thumbnail_${fileIndex}`];
+            if (thumbnailBase64) {
+              console.log(`📤 Uploading client-generated thumbnail (fallback)`);
+              const thumbnailBuffer = Buffer.from(thumbnailBase64.split(',')[1], 'base64');
+              const thumbnailPath = `${shootId}/${timestamp}-${cleanFilename}-thumbnail.jpg`;
+
+              const { error: thumbnailError } = await supabase.storage
+                .from('gallery-videos')
+                .upload(thumbnailPath, thumbnailBuffer, {
+                  contentType: 'image/jpeg',
+                  upsert: false
+                });
+
+              if (!thumbnailError) {
+                const { data: { publicUrl } } = supabase.storage
+                  .from('gallery-videos')
+                  .getPublicUrl(thumbnailPath);
+                thumbnailPublicUrl = publicUrl;
+                console.log(`✅ Client thumbnail uploaded: ${thumbnailPath}`);
+              }
+            }
+          }
+
+          // Step 5: Handle replacement, skip, or new video creation
+          const resolution = conflictResolutions?.find(r => r.filename === cleanFilename);
+          console.log(`🎯 Resolution for ${cleanFilename}:`, resolution);
+          if (resolution) {
+            console.log(`   📝 Action: ${resolution.action}`);
+            console.log(`   🎯 Target Video ID: ${resolution.targetVideoId}`);
+            console.log(`   📌 Keep Position: ${resolution.keepPosition}`);
+          }
+          
+          if (resolution && resolution.action === 'skip') {
+            skippedFiles.push(cleanFilename);
+            console.log(`⏭️ SKIPPED: File ${cleanFilename} marked as skip`);
+            continue;
+          }
+          
+          if (resolution && resolution.action === 'replace') {
+            // Handle replacement logic
+            const targetVideo = existingVideos.find(vid => vid.id === resolution.targetVideoId);
+
+            console.log(`🔄 REPLACE: File ${cleanFilename} replacing video ${resolution.targetVideoId}`);
+            console.log(`🎯 Target video found:`, !!targetVideo);
+            console.log(`📍 Keep position:`, resolution.keepPosition);
+
+            if (targetVideo) {
+              console.log(`📦 Target video details:`, {
+                id: targetVideo.id,
+                filename: targetVideo.filename,
+                sequence: targetVideo.sequence,
+                storagePath: targetVideo.storagePath,
+                optimizedPath: targetVideo.optimizedPath,
+                thumbnailPath: targetVideo.thumbnailPath
+              });
+
+              // Delete all 3 old versions from Supabase storage
+              try {
+                const oldVersions = [];
+                
+                // Extract storage paths and add to deletion list
+                if (targetVideo.storagePath) {
+                  let oldStoragePath = targetVideo.storagePath.includes('supabase.co') 
+                    ? targetVideo.storagePath.split('/storage/v1/object/public/gallery-videos/')[1]
+                    : targetVideo.storagePath;
+                  oldVersions.push(oldStoragePath);
+                }
+                
+                if (targetVideo.optimizedPath) {
+                  let oldOptimizedPath = targetVideo.optimizedPath.includes('supabase.co')
+                    ? targetVideo.optimizedPath.split('/storage/v1/object/public/gallery-videos/')[1]
+                    : targetVideo.optimizedPath;
+                  oldVersions.push(oldOptimizedPath);
+                }
+                
+                if (targetVideo.thumbnailPath) {
+                  let oldThumbnailPath = targetVideo.thumbnailPath.includes('supabase.co')
+                    ? targetVideo.thumbnailPath.split('/storage/v1/object/public/gallery-videos/')[1]
+                    : targetVideo.thumbnailPath;
+                  oldVersions.push(oldThumbnailPath);
+                }
+
+                console.log(`🗑️ Deleting old storage files (${oldVersions.length} versions):`, oldVersions);
+                if (oldVersions.length > 0) {
+                  const { error: deleteError } = await supabase.storage
+                    .from('gallery-videos')
+                    .remove(oldVersions);
+
+                  if (deleteError) {
+                    console.warn('❌ Failed to delete old video files:', deleteError);
+                  } else {
+                    console.log('✅ Successfully deleted all old video storage versions');
+                  }
+                }
+              } catch (error) {
+                console.warn('❌ Exception deleting old video files:', error);
+                // Continue with replacement even if deletion fails
+              }
+
+              // Update existing database record with new file
+              const updateData = {
+                filename: cleanFilename,
+                storagePath: videoPublicUrl,        // Original video
+                optimizedPath: optimizedPublicUrl,  // Web-optimized version (may be null)
+                thumbnailPath: thumbnailPublicUrl,  // High-quality thumbnail
+                fileSize: file.size,
+                // Keep existing sequence if keepPosition is true, otherwise put at end
+                sequence: resolution.keepPosition ? targetVideo.sequence : (existingVideos.length + uploadedVideos.length + replacedVideos.length + 1),
+                duration: videoMetadata?.duration ? Math.round(videoMetadata.duration) : (req.body[`duration_${fileIndex}`] ? parseInt(req.body[`duration_${fileIndex}`]) : null),
+                width: videoMetadata?.originalDimensions?.width || (req.body[`width_${fileIndex}`] ? parseInt(req.body[`width_${fileIndex}`]) : null),
+                height: videoMetadata?.originalDimensions?.height || (req.body[`height_${fileIndex}`] ? parseInt(req.body[`height_${fileIndex}`]) : null),
+              };
+
+              console.log(`💾 Updating database record with:`, updateData);
+              const updatedVideo = await storage.updateVideo(targetVideo.id, updateData);
+              console.log(`✅ Database update successful:`, !!updatedVideo);
+              
+              // For replacement, add to replacedVideos array instead of uploadedVideos
+              replacedVideos.push(updatedVideo);
+            } else {
+              console.warn(`⚠️ Target video ${resolution.targetVideoId} not found in existing videos!`);
+              console.warn(`⚠️ Available video IDs:`, existingVideos.map(v => v.id));
+              console.warn(`⚠️ Falling back to creating new video instead of replacing`);
+              // Fallback to creating new video
+              const videoRecord = await storage.createVideo({
+                shootId,
+                filename: cleanFilename,
+                storagePath: videoPublicUrl,
+                optimizedPath: optimizedPublicUrl,
+                thumbnailPath: thumbnailPublicUrl,
+                fileSize: file.size,
+                sequence: existingVideos.length + uploadedVideos.length + replacedVideos.length + 1,
+                duration: videoMetadata?.duration ? Math.round(videoMetadata.duration) : (req.body[`duration_${fileIndex}`] ? parseInt(req.body[`duration_${fileIndex}`]) : null),
+                width: videoMetadata?.originalDimensions?.width || (req.body[`width_${fileIndex}`] ? parseInt(req.body[`width_${fileIndex}`]) : null),
+                height: videoMetadata?.originalDimensions?.height || (req.body[`height_${fileIndex}`] ? parseInt(req.body[`height_${fileIndex}`]) : null),
+              });
+              uploadedVideos.push(videoRecord);
+            }
+          } else if (resolution && resolution.action === 'add_new') {
+            // Explicitly create new video even if conflict exists
+            console.log(`➕ ADD_NEW: Creating new video for ${cleanFilename}`);
+            const videoRecord = await storage.createVideo({
+              shootId,
+              filename: cleanFilename,
+              storagePath: videoPublicUrl,
+              optimizedPath: optimizedPublicUrl,
+              thumbnailPath: thumbnailPublicUrl,
+              fileSize: file.size,
+              sequence: existingVideos.length + uploadedVideos.length + replacedVideos.length + 1,
+              duration: videoMetadata?.duration ? Math.round(videoMetadata.duration) : (req.body[`duration_${fileIndex}`] ? parseInt(req.body[`duration_${fileIndex}`]) : null),
+              width: videoMetadata?.originalDimensions?.width || (req.body[`width_${fileIndex}`] ? parseInt(req.body[`width_${fileIndex}`]) : null),
+              height: videoMetadata?.originalDimensions?.height || (req.body[`height_${fileIndex}`] ? parseInt(req.body[`height_${fileIndex}`]) : null),
+            });
+            uploadedVideos.push(videoRecord);
+          } else {
+            // Create new video (default behavior or 'add_new' action)
+            const videoRecord = await storage.createVideo({
+              shootId,
+              filename: cleanFilename,
+              storagePath: videoPublicUrl,        // Original video
+              optimizedPath: optimizedPublicUrl,  // Web-optimized version (may be null)
+              thumbnailPath: thumbnailPublicUrl,  // High-quality thumbnail
+              fileSize: file.size,
+              sequence: existingVideos.length + uploadedVideos.length + replacedVideos.length + 1,
+              duration: videoMetadata?.duration ? Math.round(videoMetadata.duration) : (req.body[`duration_${fileIndex}`] ? parseInt(req.body[`duration_${fileIndex}`]) : null),
+              width: videoMetadata?.originalDimensions?.width || (req.body[`width_${fileIndex}`] ? parseInt(req.body[`width_${fileIndex}`]) : null),
+              height: videoMetadata?.originalDimensions?.height || (req.body[`height_${fileIndex}`] ? parseInt(req.body[`height_${fileIndex}`]) : null),
+            });
+            uploadedVideos.push(videoRecord);
+          }
+          console.log(`✅ Successfully processed video: ${cleanFilename}`);
+          console.log(`   🗂️ Original: ${videoPublicUrl}`);
+          console.log(`   ⚡ Optimized: ${optimizedPublicUrl || 'None'}`);
+          console.log(`   📸 Thumbnail: ${thumbnailPublicUrl}`);
+        
+        } catch (error) {
+          console.error(`Error processing video ${file.originalname}:`, error);
+          errors.push({
+            filename: file.originalname,
+            error: error instanceof Error ? error.message : "Unknown error"
+          });
+        }
+      }
+
+      // Prepare enhanced response with processing details
+      const totalProcessed = uploadedVideos.length + replacedVideos.length;
+      const totalOptimized = processingResults.filter(r => r.processing === 'ffmpeg_complete').length;
+      const totalSize = processingResults.reduce((sum, r) => sum + (r.originalSize || 0), 0);
+      const optimizedSize = processingResults.reduce((sum, r) => sum + (r.optimizedSize || 0), 0);
+      const avgCompressionRatio = totalOptimized > 0 
+        ? processingResults.filter(r => r.compressionRatio).reduce((sum, r) => sum + r.compressionRatio, 0) / totalOptimized 
+        : 0;
+
+      console.log(`\n📊 Upload Summary:`);
+      console.log(`   📁 Total videos: ${files.length}`);
+      console.log(`   ✅ Successfully processed: ${totalProcessed}`);
+      console.log(`   📤 New uploads: ${uploadedVideos.length}`);
+      console.log(`   🔄 Replaced: ${replacedVideos.length}`);
+      console.log(`   ⏭️ Skipped: ${skippedFiles.length}`);
+      console.log(`   ⚡ Optimized: ${totalOptimized}`);
+      console.log(`   ❌ Errors: ${errors.length}`);
+      if (totalOptimized > 0) {
+        console.log(`   💾 Original size: ${formatFileSize(totalSize)}`);
+        console.log(`   💾 Optimized size: ${formatFileSize(optimizedSize)}`);
+        console.log(`   📉 Avg compression: ${avgCompressionRatio.toFixed(1)}%`);
+      }
+
+      const message = totalProcessed > 0
+        ? `Successfully processed ${totalProcessed} video(s)${replacedVideos.length > 0 ? `, ${replacedVideos.length} replaced` : ''}${skippedFiles.length > 0 ? `, ${skippedFiles.length} skipped` : ''}${totalOptimized > 0 ? `, ${totalOptimized} optimized` : ''}`
+        : 'No videos were processed';
+
+      res.json({
+        success: true,
+        totalProcessed,
+        uploadedCount: uploadedVideos.length,
+        uploaded: {
+          count: uploadedVideos.length,
+          videos: uploadedVideos
+        },
+        replaced: {
+          count: replacedVideos.length,
+          videos: replacedVideos
+        },
+        skipped: {
+          count: skippedFiles.length,
+          filenames: skippedFiles
+        },
+        processing: {
+          totalOptimized,
+          avgCompressionRatio: avgCompressionRatio || null,
+          totalOriginalSize: totalSize,
+          totalOptimizedSize: optimizedSize,
+          details: processingResults
+        },
+        errors: errors.length > 0 ? errors : undefined,
+        message
+      });
+
+    } catch (error) {
+      console.error("Video upload error:", error);
+      res.status(500).json({
+        message: "Failed to upload videos",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Analytics endpoint
   app.post("/api/analytics", async (req, res) => {
     try {
@@ -1891,24 +2753,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/gallery/:shootId/images", async (req, res) => {
     try {
-      const shootId = parseInt(req.params.shootId);
-      if (isNaN(shootId)) {
-        return res.status(400).json({ message: "Invalid shoot ID" });
+      const { shootId } = req.params;
+      console.log(`🎬 Fetching media for public gallery: ${shootId}`);
+      
+      // Validate that shootId is a valid UUID format
+      if (!shootId || typeof shootId !== 'string') {
+        return res.status(400).json({ message: "Invalid shoot ID format" });
       }
       
-      // TODO: Implement in storage - for now return demo data
-      const demoImages = [
-        { id: 1, shootId, filename: "wedding-1.jpg", storagePath: "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 1, downloadCount: 5, createdAt: new Date().toISOString() },
-        { id: 2, shootId, filename: "wedding-2.jpg", storagePath: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 2, downloadCount: 3, createdAt: new Date().toISOString() },
-        { id: 3, shootId, filename: "wedding-3.jpg", storagePath: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 3, downloadCount: 8, createdAt: new Date().toISOString() },
-        { id: 4, shootId, filename: "wedding-4.jpg", storagePath: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 4, downloadCount: 2, createdAt: new Date().toISOString() },
-        { id: 5, shootId, filename: "wedding-5.jpg", storagePath: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 5, downloadCount: 6, createdAt: new Date().toISOString() },
-        { id: 6, shootId, filename: "wedding-6.jpg", storagePath: "https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", thumbnailPath: null, sequence: 6, downloadCount: 4, createdAt: new Date().toISOString() },
-      ];
+      // Fetch both images and videos for the shoot
+      const [images, videos] = await Promise.all([
+        storage.getImagesByShoot(shootId),
+        storage.getVideosByShoot(shootId)
+      ]);
       
-      res.json(demoImages);
+      console.log(`📸 Found ${images.length} images and ${videos.length} videos for public gallery ${shootId}`);
+      
+      // Combine and sort by sequence/upload order
+      const mediaItems = [
+        ...images.map(img => ({ ...img, mediaType: 'image' })),
+        ...videos.map(vid => ({ ...vid, mediaType: 'video' }))
+      ].sort((a, b) => {
+        // Sort by sequence first, then by creation date as fallback
+        const aSeq = a.sequence || 0;
+        const bSeq = b.sequence || 0;
+        if (aSeq !== bSeq) return aSeq - bSeq;
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      });
+      
+      res.json(mediaItems);
     } catch (error) {
-      console.error("Get gallery images error:", error);
+      console.error("🚨 Get gallery media error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
@@ -2516,6 +3391,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error updating featured status:', error);
       res.status(500).json({ message: 'Failed to update featured status' });
+    }
+  });
+
+  // ===================================
+  // FEATURED VIDEOS API ROUTES
+  // ===================================
+
+  // GET /api/videos/featured - Get featured videos
+  app.get("/api/videos/featured", async (req, res) => {
+    try {
+      const featuredVideos = await storage.getFeaturedVideos();
+      res.json(featuredVideos);
+    } catch (error) {
+      console.error('Error fetching featured videos:', error);
+      res.status(500).json({ message: 'Failed to fetch featured videos' });
+    }
+  });
+
+  // PATCH /api/videos/bulk-featured - Bulk update featured status
+  app.patch("/api/videos/bulk-featured", async (req, res) => {
+    try {
+      const { videoIds, featured } = req.body;
+      
+      if (!Array.isArray(videoIds) || typeof featured !== 'boolean') {
+        return res.status(400).json({ message: 'Invalid request body' });
+      }
+      
+      const updatedVideos = await storage.updateVideoFeaturedStatus(videoIds, featured);
+      
+      res.json({ 
+        message: `${videoIds.length} videos ${featured ? 'added to' : 'removed from'} featured`,
+        updatedVideos 
+      });
+    } catch (error) {
+      console.error('Error updating video featured status:', error);
+      res.status(500).json({ message: 'Failed to update video featured status' });
+    }
+  });
+
+  // PATCH /api/shoots/:shootId/cover-video - Set cover video for shoot
+  app.patch("/api/shoots/:shootId/cover-video", async (req, res) => {
+    try {
+      const { shootId } = req.params;
+      const { videoId } = req.body;
+      
+      if (!videoId) {
+        return res.status(400).json({ message: 'Video ID is required' });
+      }
+      
+      const updatedVideo = await storage.setShootCoverVideo(shootId, videoId);
+      
+      if (!updatedVideo) {
+        return res.status(404).json({ message: 'Video not found or does not belong to this shoot' });
+      }
+      
+      res.json({ 
+        message: 'Cover video set successfully',
+        coverVideo: updatedVideo 
+      });
+    } catch (error) {
+      console.error('Error setting cover video:', error);
+      res.status(500).json({ message: 'Failed to set cover video' });
     }
   });
 
@@ -3465,6 +4402,150 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/ping", (req, res) => {
     res.json({ status: 'ok', timestamp: Date.now() });
+  });
+
+  // TEST ENDPOINT: Direct storage bucket verification (for deletion testing)
+  app.get("/api/test/storage-verification", async (req, res) => {
+    try {
+      console.log('🔍 STORAGE VERIFICATION: Starting direct bucket inspection...');
+      
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
+      // List ALL files in gallery-videos bucket recursively
+      const { data: allFiles, error: listError } = await supabase.storage
+        .from('gallery-videos')
+        .list('', { limit: 1000, sortBy: { column: 'created_at', order: 'desc' } });
+
+      if (listError) {
+        console.error('❌ Storage listing error:', listError);
+        return res.status(500).json({ error: listError.message });
+      }
+
+      // Also check specific folder that contained our test video
+      const { data: folderContents, error: folderError } = await supabase.storage
+        .from('gallery-videos')
+        .list('1defa09b-1de1-442c-8943-f0e0131c6b70', { limit: 100 });
+
+      const results = {
+        total_files_in_bucket: allFiles?.length || 0,
+        root_level_files: allFiles?.map(f => ({ name: f.name, size: f.metadata?.size, created: f.created_at })) || [],
+        test_folder_files: folderContents?.length || 0,
+        test_folder_contents: folderContents?.map(f => ({ name: f.name, size: f.metadata?.size, created: f.created_at })) || [],
+        verification: {
+          files_should_be_deleted: folderContents?.length === 0,
+          possible_orphaned_files: allFiles?.filter(f => f.name.includes('Kid_shoot10')) || []
+        }
+      };
+
+      console.log(`📊 STORAGE VERIFICATION COMPLETE:`);
+      console.log(`- Total files in bucket: ${results.total_files_in_bucket}`);
+      console.log(`- Test folder (should be empty): ${results.test_folder_files} files`);
+      console.log(`- Deletion successful: ${results.verification.files_should_be_deleted ? 'YES ✅' : 'NO ❌'}`);
+
+      if (results.verification.possible_orphaned_files.length > 0) {
+        console.log(`⚠️ POSSIBLE ORPHANED FILES:`, results.verification.possible_orphaned_files.map(f => f.name));
+      }
+
+      res.json(results);
+
+    } catch (error) {
+      console.error('❌ Storage verification failed:', error);
+      res.status(500).json({ error: 'Storage verification failed', details: error.message });
+    }
+  });
+
+  // TEST ENDPOINT: Clean orphaned storage files
+  app.delete("/api/test/cleanup-orphaned", async (req, res) => {
+    try {
+      console.log('🧹 CLEANUP: Starting orphaned file removal...');
+      
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
+      // Get the orphaned file we found
+      const orphanedPath = '1defa09b-1de1-442c-8943-f0e0131c6b70/1763800934540-Kid_shoot6.mp4-optimized.mp4';
+      
+      console.log(`🗑️ Attempting to delete orphaned file: ${orphanedPath}`);
+      
+      const { data: deleteData, error: deleteError } = await supabase.storage
+        .from('gallery-videos')
+        .remove([orphanedPath]);
+
+      if (deleteError) {
+        console.error('❌ Orphaned file deletion error:', deleteError);
+        return res.status(500).json({ error: deleteError.message });
+      }
+
+      console.log('✅ Orphaned file deleted:', deleteData);
+      
+      // Verify it's gone
+      const { data: verifyData } = await supabase.storage
+        .from('gallery-videos')
+        .list('1defa09b-1de1-442c-8943-f0e0131c6b70', { limit: 10 });
+
+      res.json({
+        deleted_file: orphanedPath,
+        delete_response: deleteData,
+        verification_remaining_files: verifyData?.length || 0,
+        cleanup_successful: (verifyData?.length || 0) === 0
+      });
+
+    } catch (error) {
+      console.error('❌ Cleanup failed:', error);
+      res.status(500).json({ error: 'Cleanup failed', details: error.message });
+    }
+  });
+
+  // TEST ENDPOINT: Image storage verification
+  app.get("/api/test/image-storage-verification", async (req, res) => {
+    try {
+      console.log('🔍 IMAGE STORAGE VERIFICATION: Starting...');
+      
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
+      // List ALL files in gallery-images bucket
+      const { data: allFiles, error: listError } = await supabase.storage
+        .from('gallery-images')
+        .list('', { limit: 1000, sortBy: { column: 'created_at', order: 'desc' } });
+
+      if (listError) {
+        console.error('❌ Image storage listing error:', listError);
+        return res.status(500).json({ error: listError.message });
+      }
+
+      // Count database images
+      const dbImages = await db.select().from(images);
+
+      const results = {
+        storage_total_files: allFiles?.length || 0,
+        database_total_images: dbImages.length,
+        storage_folders: allFiles?.map(f => f.name) || [],
+        potential_storage_bloat: (allFiles?.length || 0) > dbImages.length ? 'POSSIBLE' : 'NONE',
+        verification_status: 'Image storage appears healthy'
+      };
+
+      console.log(`📊 IMAGE STORAGE VERIFICATION:`);
+      console.log(`- Storage files: ${results.storage_total_files}`);
+      console.log(`- Database records: ${results.database_total_images}`);
+      console.log(`- Storage bloat: ${results.potential_storage_bloat}`);
+
+      res.json(results);
+
+    } catch (error) {
+      console.error('❌ Image storage verification failed:', error);
+      res.status(500).json({ error: 'Image storage verification failed', details: error.message });
+    }
   });
 
   const httpServer = createServer(app);
