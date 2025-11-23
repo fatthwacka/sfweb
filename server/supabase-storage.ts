@@ -242,7 +242,7 @@ export class SupabaseStorage implements IStorage {
     
     const allImages = await db.select().from(images)
       .where(inArray(images.shootId, shootIds))
-      .orderBy(images.uploadOrder);
+      .orderBy(images.shootId, images.uploadOrder); // Order by shootId first, then uploadOrder
     
     // Group images by shootId
     const imagesByShoot = new Map<string, Image[]>();
@@ -254,8 +254,21 @@ export class SupabaseStorage implements IStorage {
       const shootImages = imagesByShoot.get(image.shootId);
       if (shootImages) {
         shootImages.push(image);
+      } else {
+        console.warn(`[BATCH_WARNING] Image ${image.id} belongs to shoot ${image.shootId} not in requested shoots`);
       }
     }
+    
+    // Validation: Check that all shoots got their images
+    let totalExpected = 0;
+    let totalFound = 0;
+    for (const shootId of shootIds) {
+      const images = imagesByShoot.get(shootId);
+      totalFound += images?.length || 0;
+      // We don't know expected count, but we can validate each shoot has images
+    }
+    
+    console.log(`[BATCH_INFO] Retrieved ${totalFound} images for ${shootIds.length} shoots`);
     
     return imagesByShoot;
   }

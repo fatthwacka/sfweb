@@ -62,10 +62,20 @@ export function UnifiedCard({ shoot }: UnifiedCardProps) {
     return 'Portfolio Gallery';
   };
 
-  // Get the thumbnail URL (cover image or video thumbnail)
+  // Get the thumbnail URL - ALWAYS prioritize photo covers over video thumbnails
   const getThumbnailUrl = () => {
-    return shoot.coverImageUrl || 
-      (shoot.coverVideoInfo ? shoot.coverVideoInfo.thumbnailPath : null);
+    // For individual albums: always use photo cover if available
+    if (!shoot.isGroup && shoot.coverImageUrl) {
+      return shoot.coverImageUrl;
+    }
+    
+    // For groups: prioritize photo gallery covers (this should already be handled by backend)
+    if (shoot.isGroup && shoot.coverImageUrl) {
+      return shoot.coverImageUrl;
+    }
+    
+    // Only use video thumbnail if no photo cover is available
+    return shoot.coverVideoInfo ? shoot.coverVideoInfo.thumbnailPath : null;
   };
 
   const thumbnailUrl = getThumbnailUrl();

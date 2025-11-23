@@ -358,20 +358,58 @@ export function AdminContent({ userRole }: AdminContentProps) {
   });
 
   const createShootMutation = useMutation({
-    mutationFn: (data: any) => apiRequest("POST", "/api/shoots", data),
-    onSuccess: () => {
+    mutationFn: async (data: any) => {
+      console.log("Create shoot mutation called with data:", data);
+      try {
+        const response = await apiRequest("POST", "/api/shoots", data);
+        console.log("API request successful, response status:", response.status);
+        
+        // Check if response has content
+        const responseText = await response.text();
+        console.log("Response text:", responseText);
+        
+        if (!responseText) {
+          throw new Error("Empty response from server");
+        }
+        
+        if (!responseText.trim().startsWith('{')) {
+          console.error("Response is not JSON:", responseText);
+          throw new Error(`Server returned non-JSON response: ${responseText.substring(0, 100)}`);
+        }
+        
+        try {
+          const result = JSON.parse(responseText);
+          console.log("JSON parsing successful:", result);
+          
+          // Validate that we got a shoot object back
+          if (!result.id) {
+            throw new Error("Server response missing shoot ID");
+          }
+          
+          return result;
+        } catch (jsonError) {
+          console.error("JSON parsing failed:", jsonError, "Response:", responseText);
+          throw new Error(`Invalid JSON response: ${responseText.substring(0, 100)}`);
+        }
+      } catch (error) {
+        console.error("Error in mutation function:", error);
+        throw error;
+      }
+    },
+    onSuccess: (data) => {
+      console.log("Create shoot mutation success:", data);
       queryClient.invalidateQueries({ queryKey: ["/api/shoots"] });
-      setNewShootOpen(false);
       setClientShootDialogOpen(null); // Close client-specific dialog
       toast({
         title: "Success",
         description: "Shoot created successfully"
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Create shoot mutation error:", error);
       toast({
         title: "Error",
-        description: "Failed to create shoot",
+        description: `Failed to create shoot: ${error?.message || 'Unknown error'}`,
         variant: "destructive"
       });
     }
@@ -971,7 +1009,8 @@ export function AdminContent({ userRole }: AdminContentProps) {
           isPrivate: false,
           albumCoverId: null,
           bannerImageId: null,
-          viewCount: 0
+          viewCount: 0,
+          mediaType: 'photo' // Add missing mediaType field
         });
 
         const shootResponse = await shootResponseRaw.json();

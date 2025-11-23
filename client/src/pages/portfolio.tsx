@@ -1,7 +1,6 @@
 import React from 'react';
 import { Navigation } from '@/components/layout/navigation';
 import { Footer } from '@/components/layout/footer';
-import { GradientBackground } from '@/components/common/gradient-background';
 import { PortfolioGrid } from '@/components/portfolio/portfolio-grid';
 import { Star, Camera, Video } from 'lucide-react';
 
@@ -11,7 +10,7 @@ export function Portfolio() {
       <Navigation />
       
       {/* Hero Section */}
-      <GradientBackground section="portfolio" className="pt-20 pb-16">
+      <div className="pt-20 pb-16" style={{ background: 'linear-gradient(to bottom, #1e293b 0%, #334155 50%, #475569 100%)' }}>
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h1 className="text-white text-5xl lg:text-6xl mb-6 font-light">
@@ -40,7 +39,7 @@ export function Portfolio() {
             </div>
           </div>
         </div>
-      </GradientBackground>
+      </div>
 
       {/* Portfolio Grid Section */}
       <div className="py-20" style={{ background: 'linear-gradient(to bottom, #64748b 0%, #334155 50%, #1e293b 100%)' }}>

@@ -35,11 +35,11 @@ interface PortfolioGridProps {
 
 export function PortfolioGrid({ portfolioItems: propItems }: PortfolioGridProps = {}) {
   const { data: fetchedItems = [], isLoading, error } = useQuery<Shoot[]>({
-    queryKey: ['galleries', 'public'],
+    queryKey: ['portfolio', 'cards'],
     queryFn: async () => {
-      const response = await fetch('/api/galleries/public');
+      const response = await fetch('/api/portfolio/cards');
       if (!response.ok) {
-        throw new Error('Failed to fetch galleries');
+        throw new Error('Failed to fetch portfolio cards');
       }
       return response.json();
     },
