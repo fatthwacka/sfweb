@@ -111,23 +111,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/register", async (req, res) => {
     try {
-      const { email, password } = req.body;
-      
-      if (!email || !password) {
-        return res.status(400).json({ message: "Email and password required" });
+      const { email, password, fullName } = req.body;
+
+      // Validation
+      if (!email || !password || !fullName) {
+        return res.status(400).json({ message: "Email, password, and full name are required" });
       }
 
-      // Simple registration for clients
+      // Email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: "Invalid email format" });
+      }
+
+      // Password strength validation (minimum 8 characters)
+      if (password.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters long" });
+      }
+
+      // Full name validation
+      if (fullName.trim().length < 2) {
+        return res.status(400).json({ message: "Please enter your full name" });
+      }
+
+      // Import createSupabaseUser dynamically to avoid circular imports
+      const { createSupabaseUser } = await import("./supabase-auth");
+
+      // Create user with Supabase (clients only for public signup)
+      const result = await createSupabaseUser({
+        email: email.toLowerCase().trim(),
+        password,
+        fullName: fullName.trim(),
+        role: 'client',
+        themePreference: 'light'
+      });
+
+      console.log(`✅ New client registered: ${email}`);
+
+      // Return user data for auto-login
       const user = {
-        id: Math.floor(Math.random() * 1000) + 1000,
-        email,
-        role: "client" as const
+        id: result.authUser.id,
+        email: result.authUser.email,
+        role: result.profile?.role || 'client',
+        fullName: result.profile?.full_name || fullName,
+        themePreference: result.profile?.theme_preference || 'light'
       };
-      
-      res.json({ user });
+
+      res.status(201).json({ user, message: "Account created successfully" });
     } catch (error) {
       console.error("Registration error:", error);
-      res.status(500).json({ message: "Internal server error" });
+      const errorMessage = error instanceof Error ? error.message : "Registration failed";
+
+      // Handle specific error cases
+      if (errorMessage.includes("already exists") || errorMessage.includes("already registered")) {
+        return res.status(409).json({ message: "An account with this email already exists" });
+      }
+
+      res.status(500).json({ message: errorMessage });
     }
   });
 

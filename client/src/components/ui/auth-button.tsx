@@ -16,7 +16,7 @@ interface AuthButtonProps {
 }
 
 export function AuthButton({ buttonText = "Account", className }: AuthButtonProps) {
-  const { user, login, logout } = useAuth();
+  const { user, login, register, logout } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
@@ -24,7 +24,16 @@ export function AuthButton({ buttonText = "Account", className }: AuthButtonProp
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const resetForm = () => {
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    setFullName("");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,23 +43,35 @@ export function AuthButton({ buttonText = "Account", className }: AuthButtonProp
       if (!isSignUp) {
         await login(email, password);
         setIsOpen(false);
-        setEmail("");
-        setPassword("");
+        resetForm();
         toast({
           title: "Success",
           description: "Signed in successfully!"
         });
       } else {
+        // Validate signup fields
+        if (!fullName.trim()) {
+          throw new Error("Please enter your full name");
+        }
+        if (password.length < 8) {
+          throw new Error("Password must be at least 8 characters long");
+        }
+        if (password !== confirmPassword) {
+          throw new Error("Passwords do not match");
+        }
+
+        await register(email, password, fullName);
+        setIsOpen(false);
+        resetForm();
         toast({
-          title: "Sign Up",
-          description: "Sign up functionality not yet implemented",
-          variant: "destructive"
+          title: "Welcome!",
+          description: "Your account has been created successfully"
         });
       }
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Invalid credentials",
+        description: error.message || "Something went wrong",
         variant: "destructive"
       });
     } finally {
@@ -119,6 +140,19 @@ export function AuthButton({ buttonText = "Account", className }: AuthButtonProp
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {isSignUp && (
+            <div className="space-y-2">
+              <Label htmlFor="fullName">Full Name</Label>
+              <Input
+                id="fullName"
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Your full name"
+                required
+              />
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -137,28 +171,48 @@ export function AuthButton({ buttonText = "Account", className }: AuthButtonProp
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Your password"
+              placeholder={isSignUp ? "Minimum 8 characters" : "Your password"}
               required
+              minLength={isSignUp ? 8 : undefined}
             />
           </div>
-          <Button 
-            type="submit" 
+          {isSignUp && (
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm your password"
+                required
+              />
+            </div>
+          )}
+          <Button
+            type="submit"
             className={`w-full ${isSignUp ? "bg-cyan text-white hover:bg-cyan-muted" : "bg-salmon text-white hover:bg-salmon-muted"}`}
             disabled={loading}
           >
             {loading ? "Loading..." : (isSignUp ? "Create Account" : "Sign In")}
           </Button>
           <div className="text-center space-y-2">
+            {!isSignUp && (
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(!showForgotPassword)}
+                className="text-sm text-cyan hover:text-salmon transition-colors duration-300 block w-full"
+              >
+                Forgot your password?
+              </button>
+            )}
             <button
               type="button"
-              onClick={() => setShowForgotPassword(!showForgotPassword)}
-              className="text-sm text-cyan hover:text-salmon transition-colors duration-300 block w-full"
-            >
-              Forgot your password?
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                resetForm();
+                setShowForgotPassword(false);
+              }}
               className="text-sm text-cyan hover:text-salmon transition-colors duration-300"
             >
               {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}

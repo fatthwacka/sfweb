@@ -12,6 +12,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, fullName: string) => Promise<void>;
   logout: () => void;
   signOut: () => void;
   isLoading: boolean;
@@ -73,6 +74,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const register = async (email: string, password: string, fullName: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password, fullName }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Registration failed");
+      }
+
+      // Auto-login after successful registration
+      setUser(data.user);
+      localStorage.setItem("user", JSON.stringify(data.user));
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
@@ -83,7 +111,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signOut = logout; // Alias for consistency
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, signOut, isLoading: isLoading || !hasCheckedAuth }}>
+    <AuthContext.Provider value={{ user, login, register, logout, signOut, isLoading: isLoading || !hasCheckedAuth }}>
       {children}
     </AuthContext.Provider>
   );
