@@ -147,9 +147,24 @@ router.post('/posts', async (req, res) => {
 
     const validatedData = insertBlogPostSchema.parse(postData);
 
-    // Set published date if status is published
-    if (validatedData.status === 'published' && !validatedData.publishedAt) {
-      validatedData.publishedAt = new Date();
+    // Handle publishedAt field separately (not in schema validation)
+    let publishedAt = null;
+    if (req.body.publishedAt) {
+      if (typeof req.body.publishedAt === 'string') {
+        publishedAt = new Date(req.body.publishedAt);
+      } else if (req.body.publishedAt instanceof Date) {
+        publishedAt = req.body.publishedAt;
+      }
+    }
+
+    // Set published date if status is published and no custom date provided
+    if (validatedData.status === 'published' && !publishedAt) {
+      publishedAt = new Date();
+    }
+
+    // Add publishedAt to validated data if we have one
+    if (publishedAt) {
+      validatedData.publishedAt = publishedAt;
     }
 
     const [newPost] = await db
@@ -173,21 +188,36 @@ router.put('/posts/:id', async (req, res) => {
     const { id } = req.params;
     const validatedData = insertBlogPostSchema.partial().parse(req.body);
 
+    // Handle publishedAt field separately (not in schema validation)
+    let publishedAt = undefined;
+    if (req.body.publishedAt !== undefined) {
+      if (typeof req.body.publishedAt === 'string') {
+        publishedAt = new Date(req.body.publishedAt);
+      } else if (req.body.publishedAt instanceof Date) {
+        publishedAt = req.body.publishedAt;
+      }
+    }
+
     // Update slug if title changed and no custom slug provided
     if (validatedData.title && !validatedData.slug) {
       validatedData.slug = generateSlug(validatedData.title);
     }
 
-    // Set/update published date if changing to published
-    if (validatedData.status === 'published') {
+    // Set/update published date if changing to published and no custom date provided
+    if (validatedData.status === 'published' && publishedAt === undefined) {
       const [currentPost] = await db
         .select({ publishedAt: blogPosts.publishedAt })
         .from(blogPosts)
         .where(eq(blogPosts.id, id));
       
       if (!currentPost?.publishedAt) {
-        validatedData.publishedAt = new Date();
+        publishedAt = new Date();
       }
+    }
+
+    // Add publishedAt to validated data if we have one
+    if (publishedAt !== undefined) {
+      validatedData.publishedAt = publishedAt;
     }
 
     validatedData.updatedAt = new Date();

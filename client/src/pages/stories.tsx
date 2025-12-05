@@ -229,18 +229,21 @@ export function Stories({ params }: StoriesPageProps) {
                         {formatDate(post.publishedAt || post.createdAt)}
                       </p>
 
-                      {/* Category Badge */}
-                      <div className="flex flex-wrap gap-2">
+                      {/* Category Badge - Positioned bottom right */}
+                      <div className="flex flex-wrap gap-2 justify-end mt-auto">
                         {category && (
                           <Badge
                             variant="outline"
-                            className="border-border text-muted-foreground text-xs"
+                            className="border-border text-muted-foreground text-xs bg-gray-800 group-hover:bg-gray-200 group-hover:text-gray-800 transition-colors duration-200"
                           >
                             {category.name}
                           </Badge>
                         )}
                         {post.aiGenerated && (
-                          <Badge variant="outline" className="border-cyan/50 text-cyan text-xs">
+                          <Badge 
+                            variant="outline" 
+                            className="border-cyan/50 text-cyan text-xs bg-gray-800 group-hover:bg-cyan/20 group-hover:text-cyan transition-colors duration-200"
+                          >
                             <Sparkles className="w-3 h-3 mr-1" />
                             AI
                           </Badge>

@@ -540,6 +540,7 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
   createdAt: true,
   updatedAt: true,
   viewCount: true,
+  publishedAt: true, // Remove publishedAt from schema validation - handle in backend
 }).extend({
   slug: z.string().optional(), // Make slug optional - backend will auto-generate if not provided
   status: z.enum(['draft', 'published', 'scheduled']).optional().default('draft'),
@@ -548,6 +549,8 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
 export const insertBlogCategorySchema = createInsertSchema(blogCategories).omit({
   id: true,
   createdAt: true,
+}).extend({
+  slug: z.string().optional(), // Make slug optional - backend will auto-generate if not provided
 });
 
 export const insertBlogTagSchema = createInsertSchema(blogTags).omit({

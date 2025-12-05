@@ -344,29 +344,27 @@ export function Story() {
         {/* Article Header */}
         <div className="px-4 sm:px-6 lg:px-8 pb-8">
           <div className="max-w-6xl mx-auto">
-            {/* Category Badge */}
-            <div className="flex items-center gap-2 mb-4">
-              {category && (
-                <Badge
-                  style={{ backgroundColor: `${category.color}20`, color: category.color, borderColor: `${category.color}40` }}
-                >
-                  {category.name}
-                </Badge>
-              )}
-
-              {/* AI Generated Badge */}
-              {post.aiGenerated && (
+            {/* AI Generated Badge */}
+            {post.aiGenerated && (
+              <div className="flex items-center gap-2 mb-4">
                 <Badge variant="outline" className="border-cyan/50 text-cyan">
                   <Sparkles className="w-3 h-3 mr-1" />
                   AI Enhanced
                 </Badge>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Title */}
-            <h1 className="text-3xl lg:text-5xl font-thin text-stories-content-primary mb-6 leading-tight">
+            <h1 className="text-3xl lg:text-5xl font-thin text-stories-content-primary mb-4 leading-tight">
               {post.title}
             </h1>
+
+            {/* Subtitle */}
+            {post.excerpt && (
+              <p className="text-lg lg:text-xl text-stories-content-secondary mb-6 font-light leading-relaxed">
+                {post.excerpt}
+              </p>
+            )}
           </div>
         </div>
 

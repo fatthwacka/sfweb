@@ -45,13 +45,20 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
   const [newPostOpen, setNewPostOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'published' | 'scheduled'>('all');
+  const [categoryFilter, setCategoryFilter] = useState<'all' | string>('all');
+  const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month' | 'year'>('all');
+  
+  // New category state
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
   
   // Editor state
   const [editorPost, setEditorPost] = useState<Partial<InsertBlogPost>>({
     title: '',
     content: '',
     excerpt: '',
-    status: 'draft'
+    status: 'draft',
+    publishedAt: new Date().toISOString().split('T')[0] // Today's date in YYYY-MM-DD format
   });
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -129,6 +136,7 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
 
       const method = selectedPost?.id ? 'PUT' : 'POST';
 
+      console.log('Sending blog post data:', JSON.stringify(post, null, 2));
       return apiRequest(method, url, post);
     },
     onSuccess: () => {
@@ -136,7 +144,17 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
       queryClient.invalidateQueries({ queryKey: ['blog', 'posts'] });
       setNewPostOpen(false);
       setSelectedPost(null);
-      setEditorPost({ title: '', content: '', excerpt: '', status: 'draft', slug: '', coverImage: undefined, postImage1: undefined, postImage2: undefined });
+      setEditorPost({ 
+        title: '', 
+        content: '', 
+        excerpt: '', 
+        status: 'draft', 
+        slug: '', 
+        coverImage: undefined, 
+        postImage1: undefined, 
+        postImage2: undefined,
+        publishedAt: new Date().toISOString().split('T')[0] // Reset to today's date
+      });
       setContentSections({
         subtitle: '',
         introduction: '',
@@ -149,7 +167,8 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
         conclusion: { heading: '', content: '' }
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Blog post save error:', error);
       toast({ title: "Error", description: "Failed to save blog post", variant: "destructive" });
     }
   });
@@ -167,6 +186,44 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
       toast({ title: "Error", description: "Failed to delete blog post", variant: "destructive" });
     }
   });
+
+  // Create category mutation
+  const createCategoryMutation = useMutation({
+    mutationFn: async (categoryName: string) => {
+      console.log('Creating category with data:', { name: categoryName });
+      const response = await apiRequest('POST', '/api/blog/categories', { name: categoryName });
+      return response.json();
+    },
+    onSuccess: (newCategory) => {
+      toast({ title: "Success", description: "Category created successfully" });
+      queryClient.invalidateQueries({ queryKey: ['blog', 'categories'] });
+      // Set the newly created category as selected
+      setEditorPost(prev => ({ ...prev, categoryId: newCategory.id }));
+      setNewCategoryName('');
+      setIsAddingCategory(false);
+    },
+    onError: (error) => {
+      console.error('Category creation error:', error);
+      toast({ title: "Error", description: "Failed to create category", variant: "destructive" });
+    }
+  });
+
+  // Handle new category creation
+  const handleCreateCategory = () => {
+    if (newCategoryName.trim()) {
+      createCategoryMutation.mutate(newCategoryName.trim());
+    }
+  };
+
+  // Handle category selection change
+  const handleCategoryChange = (value: string) => {
+    if (value === 'add-new') {
+      setIsAddingCategory(true);
+      setNewCategoryName('');
+    } else {
+      setEditorPost(prev => ({ ...prev, categoryId: value }));
+    }
+  };
 
   // Slug helper functions
   const generateSlug = (text: string): string => {
@@ -747,7 +804,35 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
   const filteredPosts = posts.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || post.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesCategory = categoryFilter === 'all' || post.categoryId === categoryFilter;
+    
+    // Date filter logic
+    let matchesDate = true;
+    if (dateFilter !== 'all' && post.createdAt) {
+      const postDate = new Date(post.createdAt);
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      switch (dateFilter) {
+        case 'today':
+          matchesDate = postDate >= today;
+          break;
+        case 'week':
+          const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+          matchesDate = postDate >= weekAgo;
+          break;
+        case 'month':
+          const monthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+          matchesDate = postDate >= monthAgo;
+          break;
+        case 'year':
+          const yearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+          matchesDate = postDate >= yearAgo;
+          break;
+      }
+    }
+    
+    return matchesSearch && matchesStatus && matchesCategory && matchesDate;
   });
 
   // Handle edit post
@@ -764,7 +849,10 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
       postImage1: (post as any).postImage1 || undefined,
       postImage2: (post as any).postImage2 || undefined,
       status: post.status as 'draft' | 'published' | 'scheduled',
-      categoryId: post.categoryId || undefined
+      categoryId: post.categoryId || undefined,
+      publishedAt: post.publishedAt 
+        ? new Date(post.publishedAt).toISOString().split('T')[0] 
+        : new Date().toISOString().split('T')[0] // Fallback to today if no date
     });
 
     // Try to parse existing content into sections (handle h2 headings)
@@ -885,7 +973,17 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
   // Handle new post
   const handleNewPost = () => {
     setSelectedPost(null);
-    setEditorPost({ title: '', content: '', excerpt: '', status: 'draft', slug: '', coverImage: undefined, postImage1: undefined, postImage2: undefined });
+    setEditorPost({ 
+      title: '', 
+      content: '', 
+      excerpt: '', 
+      status: 'draft', 
+      slug: '', 
+      coverImage: undefined, 
+      postImage1: undefined, 
+      postImage2: undefined,
+      publishedAt: new Date().toISOString().split('T')[0] // Today's date for new posts
+    });
     setContentSections({
       subtitle: '',
       introduction: '',
@@ -948,12 +1046,32 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
               Back to Posts
             </Button>
             <Button
-              onClick={() => savePostMutation.mutate({
-                ...editorPost,
-                excerpt: contentSections.subtitle || editorPost.excerpt, // Map subtitle to excerpt
-                content: combineContentSections(),
-                status: 'draft'
-              })}
+              onClick={() => {
+                const postData = {
+                  ...editorPost,
+                  excerpt: contentSections.subtitle || editorPost.excerpt,
+                  content: combineContentSections(),
+                  status: 'draft'
+                };
+                
+                // Handle publishedAt date conversion
+                if (editorPost.publishedAt) {
+                  // Convert YYYY-MM-DD string to ISO string for backend
+                  const date = new Date(editorPost.publishedAt + 'T12:00:00.000Z'); // Use noon to avoid timezone issues
+                  postData.publishedAt = date.toISOString();
+                  console.log('Setting custom publishedAt:', postData.publishedAt);
+                } else {
+                  console.log('No publishedAt date provided, backend will set automatically');
+                }
+                
+                // Remove undefined/empty fields that might cause validation issues
+                Object.keys(postData).forEach(key => {
+                  if (postData[key as keyof typeof postData] === undefined || postData[key as keyof typeof postData] === '') {
+                    delete postData[key as keyof typeof postData];
+                  }
+                });
+                savePostMutation.mutate(postData);
+              }}
               disabled={savePostMutation.isPending}
               className="bg-gray-600 hover:bg-gray-700 text-white"
             >
@@ -961,12 +1079,32 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
               Save Draft
             </Button>
             <Button
-              onClick={() => savePostMutation.mutate({
-                ...editorPost,
-                excerpt: contentSections.subtitle || editorPost.excerpt, // Map subtitle to excerpt
-                content: combineContentSections(),
-                status: 'published'
-              })}
+              onClick={() => {
+                const postData = {
+                  ...editorPost,
+                  excerpt: contentSections.subtitle || editorPost.excerpt,
+                  content: combineContentSections(),
+                  status: 'published'
+                };
+                
+                // Handle publishedAt date conversion
+                if (editorPost.publishedAt) {
+                  // Convert YYYY-MM-DD string to ISO string for backend
+                  const date = new Date(editorPost.publishedAt + 'T12:00:00.000Z'); // Use noon to avoid timezone issues
+                  postData.publishedAt = date.toISOString();
+                  console.log('Setting custom publishedAt:', postData.publishedAt);
+                } else {
+                  console.log('No publishedAt date provided, backend will set automatically');
+                }
+                
+                // Remove undefined/empty fields that might cause validation issues
+                Object.keys(postData).forEach(key => {
+                  if (postData[key as keyof typeof postData] === undefined || postData[key as keyof typeof postData] === '') {
+                    delete postData[key as keyof typeof postData];
+                  }
+                });
+                savePostMutation.mutate(postData);
+              }}
               disabled={savePostMutation.isPending}
               className="bg-salmon hover:bg-salmon/90 text-white"
             >
@@ -1030,11 +1168,13 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
                   <Button
                     onClick={openAiBrief}
                     disabled={isGenerating}
-                    className="bg-cyan-600 hover:bg-cyan-700 text-white"
-                    title="Generate all content with AI"
+                    className="relative bg-gradient-to-r from-purple-700 to-blue-700 hover:from-purple-600 hover:to-blue-600 text-white font-medium px-5 py-2 shadow-md hover:shadow-lg transition-all duration-200 border border-purple-500/30"
+                    title="Generate article content with AI"
                   >
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    {isGenerating ? 'Generating...' : 'AI Generate All'}
+                    <Sparkles className="w-4 h-4 mr-2 text-yellow-400 animate-pulse drop-shadow-sm" />
+                    <span>
+                      {isGenerating ? 'Generating...' : 'Generate article with AI'}
+                    </span>
                   </Button>
                 </div>
               </CardHeader>
@@ -1269,6 +1409,20 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
                   </Select>
                 </div>
 
+                {/* Published Date */}
+                <div>
+                  <Label className="text-gray-300">Published Date</Label>
+                  <Input
+                    type="date"
+                    value={editorPost.publishedAt || ''}
+                    onChange={(e) => setEditorPost(prev => ({ ...prev, publishedAt: e.target.value }))}
+                    className="!bg-white !text-gray-900 border-gray-300"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    {editorPost.status === 'scheduled' ? 'Post will be published on this date' : 'Display date for this post'}
+                  </p>
+                </div>
+
                 {/* Slug */}
                 <div>
                   <Label className="text-gray-300">URL Slug</Label>
@@ -1306,21 +1460,77 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
                 {/* Category */}
                 <div>
                   <Label className="text-gray-300">Category</Label>
-                  <Select 
-                    value={editorPost.categoryId || ''}
-                    onValueChange={(value) => setEditorPost(prev => ({ ...prev, categoryId: value }))}
-                  >
-                    <SelectTrigger className="!bg-white !text-gray-900 border-gray-300">
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
+                  {isAddingCategory ? (
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter new category name"
+                          value={newCategoryName}
+                          onChange={(e) => setNewCategoryName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleCreateCategory();
+                            }
+                            if (e.key === 'Escape') {
+                              setIsAddingCategory(false);
+                              setNewCategoryName('');
+                            }
+                          }}
+                          className="!bg-white !text-gray-900 border-gray-300"
+                          autoFocus
+                        />
+                        <Button
+                          size="sm"
+                          onClick={handleCreateCategory}
+                          disabled={!newCategoryName.trim() || createCategoryMutation.isPending}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          {createCategoryMutation.isPending ? (
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            '✓'
+                          )}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setIsAddingCategory(false);
+                            setNewCategoryName('');
+                          }}
+                          className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                        >
+                          ✕
+                        </Button>
+                      </div>
+                      <p className="text-xs text-gray-400">
+                        Press Enter to create or Escape to cancel
+                      </p>
+                    </div>
+                  ) : (
+                    <Select 
+                      value={editorPost.categoryId || ''}
+                      onValueChange={handleCategoryChange}
+                    >
+                      <SelectTrigger className="!bg-white !text-gray-900 border-gray-300">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                        {categories.length > 0 && (
+                          <div className="border-t border-gray-200 my-1" />
+                        )}
+                        <SelectItem value="add-new" className="text-blue-600 font-medium">
+                          + Add New Category
                         </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
 
                 {/* Excerpt */}
@@ -1735,8 +1945,9 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-4">
-        <div className="flex-1">
+      <div className="flex gap-3">
+        {/* Search - Reduced width */}
+        <div className="w-80">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
@@ -1747,17 +1958,65 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
             />
           </div>
         </div>
+
+        {/* Status Filter */}
         <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
-          <SelectTrigger className="w-48 !bg-white !text-gray-900 border-gray-300">
+          <SelectTrigger className="w-40 !bg-white !text-gray-900 border-gray-300">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Posts</SelectItem>
+            <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="draft">Drafts</SelectItem>
             <SelectItem value="published">Published</SelectItem>
             <SelectItem value="scheduled">Scheduled</SelectItem>
           </SelectContent>
         </Select>
+
+        {/* Category Filter */}
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-44 !bg-white !text-gray-900 border-gray-300">
+            <SelectValue placeholder="All Categories" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                {category.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Date Filter */}
+        <Select value={dateFilter} onValueChange={(value) => setDateFilter(value as any)}>
+          <SelectTrigger className="w-36 !bg-white !text-gray-900 border-gray-300">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Time</SelectItem>
+            <SelectItem value="today">Today</SelectItem>
+            <SelectItem value="week">This Week</SelectItem>
+            <SelectItem value="month">This Month</SelectItem>
+            <SelectItem value="year">This Year</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Clear Filters */}
+        {(searchTerm || statusFilter !== 'all' || categoryFilter !== 'all' || dateFilter !== 'all') && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setSearchTerm('');
+              setStatusFilter('all');
+              setCategoryFilter('all');
+              setDateFilter('all');
+            }}
+            className="px-3 border-gray-600 text-gray-300 hover:bg-gray-700"
+          >
+            Clear
+          </Button>
+        )}
       </div>
 
       {/* Posts List */}
@@ -1772,12 +2031,12 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
           </div>
         ) : (
           filteredPosts.map((post) => (
-            <Card key={post.id} className="admin-gradient-card">
-              <CardContent className="p-6">
+            <Card key={post.id} className="admin-gradient-card hover:bg-gray-700/50 transition-colors cursor-pointer">
+              <CardContent className="p-6" onClick={() => handleEditPost(post)}>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-semibold text-white">{post.title}</h3>
+                      <h3 className="text-lg font-semibold text-white hover:text-cyan-400 transition-colors">{post.title}</h3>
                       <Badge 
                         variant={post.status === 'published' ? 'default' : 'secondary'}
                         className={`${
@@ -1811,15 +2070,23 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
                         <Eye className="w-3 h-3" />
                         {post.viewCount} views
                       </span>
+                      {/* Show category if available */}
+                      {post.categoryId && categories.find(c => c.id === post.categoryId) && (
+                        <span className="flex items-center gap-1">
+                          <Tag className="w-3 h-3" />
+                          {categories.find(c => c.id === post.categoryId)?.name}
+                        </span>
+                      )}
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => handleEditPost(post)}
                       className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                      title="Edit Post"
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
@@ -1828,6 +2095,7 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
                       variant="outline"
                       onClick={() => deletePostMutation.mutate(post.id)}
                       className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white"
+                      title="Delete Post"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
