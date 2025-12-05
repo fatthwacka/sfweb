@@ -867,12 +867,13 @@ ${content}
 
 Please provide only the enhanced content without any additional text or explanations.`;
 
-      const response = await fetch('/api/ai/generate', {
+      const response = await fetch('/api/ai/generate-blog-content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          prompt: contextPrompt,
-          type: 'enhancement'
+          type: 'excerpt',  // Use 'excerpt' type since it returns simple text
+          context: contextPrompt,
+          contentType: 'informational'  // Use valid enum value
         })
       });
 
