@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { GradientPicker } from "@/components/ui/gradient-picker";
 import {
   Plus,
   Edit,
@@ -28,7 +29,13 @@ import {
   ChevronUp,
   Settings2,
   Upload,
-  X
+  X,
+  Palette,
+  MinusCircle,
+  PlusCircle,
+  CheckCircle,
+  RefreshCw,
+  Undo2
 } from "lucide-react";
 import type { BlogPost, BlogCategory, BlogTag, InsertBlogPost } from "@shared/schema";
 
@@ -47,6 +54,9 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'published' | 'scheduled'>('all');
   const [categoryFilter, setCategoryFilter] = useState<'all' | string>('all');
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month' | 'year'>('all');
+  
+  // Temp ID for unsaved posts (for gradient management)
+  const [tempPostId] = useState(() => `draft-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
   
   // New category state
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -77,6 +87,27 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
   const [defaultPrompt, setDefaultPrompt] = useState('');
   const [saveAsDefault, setSaveAsDefault] = useState(false);
   const [loadingPrompt, setLoadingPrompt] = useState(false);
+
+  // Section enhancement state
+  const [processingSection, setProcessingSection] = useState<string | null>(null);
+  const [previousContent, setPreviousContent] = useState<{[key: string]: string}>({});
+  const [showUndo, setShowUndo] = useState<{[key: string]: boolean}>({});
+
+  // Tone options for the dropdown
+  const toneOptions = [
+    { value: 'humorous', label: 'Humorous' },
+    { value: 'creative', label: 'Creative' },
+    { value: 'poetic', label: 'Poetic' },
+    { value: 'professional', label: 'Professional' },
+    { value: 'executive', label: 'Executive' },
+    { value: 'authoritative', label: 'Authoritative' },
+    { value: 'informative', label: 'Informative' },
+    { value: 'advisory', label: 'Advisory' },
+    { value: 'conversational', label: 'Conversational' },
+    { value: 'technical', label: 'Technical' },
+    { value: 'friendly', label: 'Friendly' },
+    { value: 'formal', label: 'Formal' }
+  ];
 
   // Structured content sections with SEO headings
   interface ContentSection {
@@ -800,6 +831,234 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
     }
   };
 
+  // Section enhancement function
+  const enhanceSection = async (
+    content: string, 
+    action: 'reduce' | 'increase' | 'grammar' | 'rewrite' | 'tone',
+    sectionKey: string,
+    sectionTitle?: string,
+    tone?: string
+  ) => {
+    if (!content.trim()) {
+      toast({ title: "Error", description: "No content to enhance", variant: "destructive" });
+      return;
+    }
+
+    const enhancementPrompts = {
+      reduce: `Reduce this section to approximately 60-70% of its current length while preserving all key information. Maintain the same tone and style.`,
+      increase: `Expand this section to approximately 140-160% of its current length by adding relevant details, examples, or explanations. Maintain the same tone and style.`,
+      grammar: `Correct any spelling, grammar, or punctuation errors. Improve sentence structure for clarity and flow. Do not change the content meaning or length significantly.`,
+      rewrite: `Completely rewrite this section with fresh phrasing while preserving the core message and information. Maintain article coherence.`,
+      tone: `Rewrite this section in a ${tone} tone while preserving the core message and information. Adjust the language style, word choice, and sentence structure to match the requested tone.`
+    };
+
+    // Store previous content for undo
+    setPreviousContent(prev => ({ ...prev, [sectionKey]: content }));
+    setProcessingSection(`${sectionKey}-${action}`);
+
+    try {
+      const prompt = action === 'tone' && tone ? enhancementPrompts.tone : enhancementPrompts[action];
+      const contextPrompt = `${prompt}
+
+${sectionTitle ? `Section context: "${sectionTitle}" in article "${editorPost.title || 'Untitled Article'}"` : ''}
+
+Content to enhance:
+${content}
+
+Please provide only the enhanced content without any additional text or explanations.`;
+
+      const response = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          prompt: contextPrompt,
+          type: 'enhancement'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Enhancement failed');
+      }
+
+      const result = await response.json();
+      const enhancedContent = result.content?.trim() || result.text?.trim();
+      
+      if (!enhancedContent) {
+        throw new Error('No enhanced content received');
+      }
+
+      // Show undo option
+      setShowUndo(prev => ({ ...prev, [sectionKey]: true }));
+      
+      // Auto-hide undo after 10 seconds
+      setTimeout(() => {
+        setShowUndo(prev => ({ ...prev, [sectionKey]: false }));
+      }, 10000);
+
+      toast({ 
+        title: "Success", 
+        description: `Section ${action}d successfully`,
+        duration: 2000
+      });
+
+      return enhancedContent;
+
+    } catch (error) {
+      console.error('Enhancement error:', error);
+      toast({ 
+        title: "Error", 
+        description: `Failed to ${action} section`, 
+        variant: "destructive" 
+      });
+      return content; // Return original content on error
+    } finally {
+      setProcessingSection(null);
+    }
+  };
+
+  // Undo function
+  const undoEnhancement = (sectionKey: string, originalContent: string, updateFunction: (content: string) => void) => {
+    updateFunction(originalContent);
+    setShowUndo(prev => ({ ...prev, [sectionKey]: false }));
+    setPreviousContent(prev => {
+      const newPrev = { ...prev };
+      delete newPrev[sectionKey];
+      return newPrev;
+    });
+    toast({ title: "Undone", description: "Section restored to previous version" });
+  };
+
+  // SectionEnhancementTools component
+  const SectionEnhancementTools = ({ 
+    content, 
+    sectionKey, 
+    sectionTitle,
+    onUpdate 
+  }: {
+    content: string;
+    sectionKey: string;
+    sectionTitle?: string;
+    onUpdate: (content: string) => void;
+  }) => {
+    const hasContent = content.trim().length > 0;
+    const isProcessing = processingSection?.startsWith(sectionKey);
+    const currentAction = processingSection?.split('-')[1];
+
+    const handleEnhancement = async (action: 'reduce' | 'increase' | 'grammar' | 'rewrite') => {
+      const enhanced = await enhanceSection(content, action, sectionKey, sectionTitle);
+      if (enhanced && enhanced !== content) {
+        onUpdate(enhanced);
+      }
+    };
+
+    const handleToneChange = async (tone: string) => {
+      const enhanced = await enhanceSection(content, 'tone', sectionKey, sectionTitle, tone);
+      if (enhanced && enhanced !== content) {
+        onUpdate(enhanced);
+      }
+    };
+
+    return (
+      <div className="flex items-center gap-1">
+        {/* Reduce */}
+        <Button
+          size="sm"
+          variant="ghost"
+          disabled={!hasContent || isProcessing}
+          onClick={() => handleEnhancement('reduce')}
+          className={`w-8 h-8 p-0 ${hasContent ? 'text-gray-400 hover:text-white' : 'text-gray-600'} ${
+            processingSection === `${sectionKey}-reduce` ? 'animate-pulse text-amber-400' : ''
+          }`}
+          title="Reduce the number of words"
+        >
+          <MinusCircle className="w-3.5 h-3.5" />
+        </Button>
+
+        {/* Increase */}
+        <Button
+          size="sm"
+          variant="ghost"
+          disabled={!hasContent || isProcessing}
+          onClick={() => handleEnhancement('increase')}
+          className={`w-8 h-8 p-0 ${hasContent ? 'text-gray-400 hover:text-white' : 'text-gray-600'} ${
+            processingSection === `${sectionKey}-increase` ? 'animate-pulse text-amber-400' : ''
+          }`}
+          title="Increase the number of words"
+        >
+          <PlusCircle className="w-3.5 h-3.5" />
+        </Button>
+
+        {/* Grammar Check */}
+        <Button
+          size="sm"
+          variant="ghost"
+          disabled={!hasContent || isProcessing}
+          onClick={() => handleEnhancement('grammar')}
+          className={`w-8 h-8 p-0 ${hasContent ? 'text-gray-400 hover:text-white' : 'text-gray-600'} ${
+            processingSection === `${sectionKey}-grammar` ? 'animate-pulse text-amber-400' : ''
+          }`}
+          title="Grammar and sentence check"
+        >
+          <CheckCircle className="w-3.5 h-3.5" />
+        </Button>
+
+        {/* Rewrite */}
+        <Button
+          size="sm"
+          variant="ghost"
+          disabled={!hasContent || isProcessing}
+          onClick={() => handleEnhancement('rewrite')}
+          className={`w-8 h-8 p-0 ${hasContent ? 'text-gray-400 hover:text-white' : 'text-gray-600'} ${
+            processingSection === `${sectionKey}-rewrite` ? 'animate-pulse text-amber-400' : ''
+          }`}
+          title="Complete AI rewrite this section"
+        >
+          <RefreshCw className="w-3.5 h-3.5" />
+        </Button>
+
+        {/* Tone Selector */}
+        <Select onValueChange={handleToneChange} disabled={!hasContent || isProcessing}>
+          <SelectTrigger className={`w-20 h-8 ${hasContent ? 'text-gray-400' : 'text-gray-600'} ${
+            processingSection === `${sectionKey}-tone` ? 'animate-pulse text-amber-400' : ''
+          }`}>
+            <SelectValue placeholder="Tone" />
+          </SelectTrigger>
+          <SelectContent>
+            {toneOptions.map(option => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Undo Button */}
+        {showUndo[sectionKey] && previousContent[sectionKey] && (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => undoEnhancement(sectionKey, previousContent[sectionKey], onUpdate)}
+            className="w-8 h-8 p-0 text-blue-400 hover:text-blue-300 ml-1"
+            title="Undo last change"
+          >
+            <Undo2 className="w-3.5 h-3.5" />
+          </Button>
+        )}
+
+        {/* Processing Indicator */}
+        {isProcessing && (
+          <span className="text-xs text-amber-400 ml-2">
+            {currentAction === 'reduce' && 'Reducing...'}
+            {currentAction === 'increase' && 'Expanding...'}
+            {currentAction === 'grammar' && 'Checking...'}
+            {currentAction === 'rewrite' && 'Rewriting...'}
+            {currentAction === 'tone' && 'Adjusting tone...'}
+          </span>
+        )}
+      </div>
+    );
+  };
+
   // Filter posts
   const filteredPosts = posts.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase());
@@ -1181,10 +1440,18 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
               <CardContent className="space-y-6">
                 {/* Subtitle */}
                 <div>
-                  <Label className="text-gray-300 mb-2 block">
-                    Subtitle
-                    <span className="text-gray-500 text-xs ml-2">Expands on the title, hooks readers (8-12 words)</span>
-                  </Label>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-gray-300">
+                      Subtitle
+                      <span className="text-gray-500 text-xs ml-2">Expands on the title, hooks readers (8-12 words)</span>
+                    </Label>
+                    <SectionEnhancementTools
+                      content={contentSections.subtitle}
+                      sectionKey="subtitle"
+                      sectionTitle="Subtitle"
+                      onUpdate={(content) => setContentSections(prev => ({ ...prev, subtitle: content }))}
+                    />
+                  </div>
                   <Input
                     placeholder="e.g., Discover the strategy that transformed our client's Instagram presence"
                     value={contentSections.subtitle}
@@ -1195,10 +1462,18 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
 
                 {/* Introduction */}
                 <div>
-                  <Label className="text-gray-300 mb-2 block">
-                    Introduction
-                    <span className="text-gray-500 text-xs ml-2">2-3 sentences to hook the reader</span>
-                  </Label>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-gray-300">
+                      Introduction
+                      <span className="text-gray-500 text-xs ml-2">2-3 sentences to hook the reader</span>
+                    </Label>
+                    <SectionEnhancementTools
+                      content={contentSections.introduction}
+                      sectionKey="introduction"
+                      sectionTitle="Introduction"
+                      onUpdate={(content) => setContentSections(prev => ({ ...prev, introduction: content }))}
+                    />
+                  </div>
                   <Textarea
                     placeholder="Set up the value readers will get from this article..."
                     value={contentSections.introduction}
@@ -1216,7 +1491,20 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
                   </div>
 
                   <div>
-                    <Label className="text-gray-400 text-xs mb-1 block">H2 Heading (SEO)</Label>
+                    <div className="flex items-center justify-between mb-1">
+                      <Label className="text-gray-400 text-xs">H2 Heading (SEO)</Label>
+                      <SectionEnhancementTools
+                        content={contentSections.mainSections[0]?.heading || ''}
+                        sectionKey="section1-heading"
+                        sectionTitle="Section 1 Heading"
+                        onUpdate={(content) => setContentSections(prev => ({
+                          ...prev,
+                          mainSections: prev.mainSections.map((s, i) =>
+                            i === 0 ? { ...s, heading: content } : s
+                          )
+                        }))}
+                      />
+                    </div>
                     <Input
                       placeholder="e.g., Why Most Businesses Struggle With Social Media Growth"
                       value={contentSections.mainSections[0]?.heading || ''}
@@ -1231,7 +1519,20 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
                   </div>
 
                   <div>
-                    <Label className="text-gray-400 text-xs mb-1 block">Content (5-6 sentences)</Label>
+                    <div className="flex items-center justify-between mb-1">
+                      <Label className="text-gray-400 text-xs">Content (5-6 sentences)</Label>
+                      <SectionEnhancementTools
+                        content={contentSections.mainSections[0]?.content || ''}
+                        sectionKey="section1-content"
+                        sectionTitle="Section 1 Content"
+                        onUpdate={(content) => setContentSections(prev => ({
+                          ...prev,
+                          mainSections: prev.mainSections.map((s, i) =>
+                            i === 0 ? { ...s, content: content } : s
+                          )
+                        }))}
+                      />
+                    </div>
                     <Textarea
                       placeholder="Address the pain point with specific insights..."
                       value={contentSections.mainSections[0]?.content || ''}
@@ -1544,6 +1845,27 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
                     rows={3}
                   />
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* BG Colors */}
+            <Card className="admin-gradient-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Palette className="w-5 h-5" />
+                  BG Colors
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <GradientPicker
+                  sectionKey={selectedPost?.id ? `blog-post-${selectedPost.id}` : `blog-post-${tempPostId}`}
+                  label="Article Colors"
+                  showDirection={true}
+                  showTextColors={true}
+                />
+                <p className="text-xs text-muted-foreground mt-3">
+                  Inherits from Stories section by default. Changes auto-save.
+                </p>
               </CardContent>
             </Card>
 
