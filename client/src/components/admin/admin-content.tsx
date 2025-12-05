@@ -26,6 +26,8 @@ import { VideographySettings } from "./page-settings/videography-settings";
 import AboutSettings from "./page-settings/about-settings";
 import { WebAppsSettings } from "./page-settings/web-apps-settings";
 import { SocialMediaSettings } from "./page-settings/social-media-settings";
+import { StoriesSettings } from "./page-settings/stories-settings";
+import { BlogManagement } from "./blog-management";
 import {
   BarChart3,
   Users,
@@ -48,6 +50,7 @@ import {
   Check,
   Download,
   Star,
+  PenTool,
   FolderPlus,
   Heart,
   ThumbsUp,
@@ -115,9 +118,9 @@ interface AdminContentProps {
 export function AdminContent({ userRole }: AdminContentProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'shoots' | 'images' | 'galleries' | 'site-management' | 'staff' | 'users'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'shoots' | 'images' | 'galleries' | 'blog' | 'site-management' | 'staff' | 'users'>('overview');
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
-  const [activePageSettings, setActivePageSettings] = useState<'contact' | 'homepage' | 'photography' | 'videography' | 'about' | 'web-apps' | 'social-media' | null>(null);
+  const [activePageSettings, setActivePageSettings] = useState<'contact' | 'homepage' | 'photography' | 'videography' | 'about' | 'web-apps' | 'social-media' | 'stories' | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState<'alphabetical' | 'alphabetical-reverse' | 'date-newest' | 'date-oldest'>('date-newest');
   const [newClientOpen, setNewClientOpen] = useState(false);
@@ -1092,6 +1095,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
           { id: 'shoots', label: 'Shoots', icon: Camera },
           { id: 'images', label: 'Media', icon: FileImage },
           { id: 'galleries', label: 'Gallery Management', icon: Palette },
+          { id: 'blog', label: 'Blog', icon: PenTool },
           ...(userRole === 'super_admin' || userRole === 'staff' ? [
             { id: 'site-management', label: 'Site Management', icon: Home }
           ] : []),
@@ -2494,6 +2498,10 @@ export function AdminContent({ userRole }: AdminContentProps) {
             </div>
           )}
 
+          {activeTab === 'blog' && (
+            <BlogManagement userRole={userRole} />
+          )}
+
           {activeTab === 'site-management' && (userRole === 'super_admin' || userRole === 'staff') && (
             <div className="space-y-8">
               <div className="bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-lg p-6 border border-purple-500/30">
@@ -2590,10 +2598,10 @@ export function AdminContent({ userRole }: AdminContentProps) {
                     </div>
                   </div>
                   
-                  <div 
+                  <div
                     className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 ${
-                      activePageSettings === 'social-media' 
-                        ? 'bg-pink-500/20 border-pink-400 shadow-lg shadow-pink-500/20 ring-1 ring-pink-400/30' 
+                      activePageSettings === 'social-media'
+                        ? 'bg-pink-500/20 border-pink-400 shadow-lg shadow-pink-500/20 ring-1 ring-pink-400/30'
                         : 'bg-slate-800/50 border-slate-600 hover:border-pink-500/50'
                     }`}
                     onClick={() => setActivePageSettings('social-media')}
@@ -2601,6 +2609,20 @@ export function AdminContent({ userRole }: AdminContentProps) {
                     <div className="flex items-center justify-center gap-2 h-full">
                       <span className="text-2xl">📱</span>
                       <h3 className="text-lg font-semibold text-white">Social Media</h3>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 ${
+                      activePageSettings === 'stories'
+                        ? 'bg-orange-500/20 border-orange-400 shadow-lg shadow-orange-500/20 ring-1 ring-orange-400/30'
+                        : 'bg-slate-800/50 border-slate-600 hover:border-orange-500/50'
+                    }`}
+                    onClick={() => setActivePageSettings('stories')}
+                  >
+                    <div className="flex items-center justify-center gap-2 h-full">
+                      <span className="text-2xl">📖</span>
+                      <h3 className="text-lg font-semibold text-white">Stories</h3>
                     </div>
                   </div>
                 </div>
@@ -2636,7 +2658,13 @@ export function AdminContent({ userRole }: AdminContentProps) {
                   <SocialMediaSettings />
                 </div>
               )}
-              
+
+              {activePageSettings === 'stories' && (
+                <div className="mt-8">
+                  <StoriesSettings />
+                </div>
+              )}
+
               {activePageSettings === 'photography' && (
                 <div className="mt-8">
                   <PhotographySettings />

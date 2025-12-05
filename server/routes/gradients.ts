@@ -1,10 +1,18 @@
 import { Router } from 'express';
-import { db } from '../db';
-import { siteGradients } from '@shared/schema';
-import { eq, sql } from 'drizzle-orm';
-import { getDefaultGradient } from '@shared/constants/gradient-defaults';
+import { createClient } from '@supabase/supabase-js';
 
 const router = Router();
+
+// Create Supabase client for direct connection (even in dev)
+function getSupabaseClient() {
+  if (!process.env.VITE_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error('Supabase configuration missing');
+  }
+  return createClient(
+    process.env.VITE_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+}
 
 /**
  * GET /api/gradients/:sectionKey
@@ -13,18 +21,30 @@ const router = Router();
 router.get('/:sectionKey', async (req, res) => {
   try {
     const { sectionKey } = req.params;
+    const supabase = getSupabaseClient();
 
-    const gradient = await db
-      .select()
-      .from(siteGradients)
-      .where(eq(siteGradients.sectionKey, sectionKey))
-      .limit(1);
+    const { data, error } = await supabase
+      .from('site_gradients')
+      .select('*')
+      .eq('section_key', sectionKey)
+      .single();
 
-    if (gradient.length === 0) {
+    if (error && error.code !== 'PGRST116') {
+      throw error;
+    }
+
+    if (!data) {
       return res.status(404).json({ message: 'No custom gradient configuration found' });
     }
 
-    res.json(gradient[0]);
+    // Transform snake_case to camelCase for frontend
+    res.json({
+      id: data.id,
+      sectionKey: data.section_key,
+      gradientConfig: data.gradient_config,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at
+    });
   } catch (error) {
     console.error('Failed to fetch gradient:', error);
     res.status(500).json({ message: 'Failed to fetch gradient configuration' });
@@ -39,29 +59,37 @@ router.put('/:sectionKey', async (req, res) => {
   try {
     const { sectionKey } = req.params;
     const { gradientConfig } = req.body;
+    const supabase = getSupabaseClient();
 
     if (!gradientConfig) {
       return res.status(400).json({ message: 'gradientConfig is required' });
     }
 
     // Upsert the gradient configuration
-    const result = await db
-      .insert(siteGradients)
-      .values({
-        sectionKey,
-        gradientConfig,
-        updatedAt: sql`now()`
+    const { data, error } = await supabase
+      .from('site_gradients')
+      .upsert({
+        section_key: sectionKey,
+        gradient_config: gradientConfig,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'section_key'
       })
-      .onConflictDoUpdate({
-        target: siteGradients.sectionKey,
-        set: {
-          gradientConfig,
-          updatedAt: sql`now()`
-        }
-      })
-      .returning();
+      .select()
+      .single();
 
-    res.json(result[0]);
+    if (error) {
+      throw error;
+    }
+
+    // Transform snake_case to camelCase for frontend
+    res.json({
+      id: data.id,
+      sectionKey: data.section_key,
+      gradientConfig: data.gradient_config,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at
+    });
   } catch (error) {
     console.error('Failed to update gradient:', error);
     res.status(500).json({ message: 'Failed to update gradient configuration' });
@@ -75,10 +103,16 @@ router.put('/:sectionKey', async (req, res) => {
 router.delete('/:sectionKey', async (req, res) => {
   try {
     const { sectionKey } = req.params;
+    const supabase = getSupabaseClient();
 
-    await db
-      .delete(siteGradients)
-      .where(eq(siteGradients.sectionKey, sectionKey));
+    const { error } = await supabase
+      .from('site_gradients')
+      .delete()
+      .eq('section_key', sectionKey);
+
+    if (error) {
+      throw error;
+    }
 
     res.json({ message: 'Gradient configuration reset to defaults' });
   } catch (error) {
@@ -93,11 +127,19 @@ router.delete('/:sectionKey', async (req, res) => {
  */
 router.get('/', async (req, res) => {
   try {
-    const gradients = await db.select().from(siteGradients);
+    const supabase = getSupabaseClient();
 
-    // Return as a map with section keys
-    const gradientMap = gradients.reduce((acc, gradient) => {
-      acc[gradient.sectionKey] = gradient.gradientConfig;
+    const { data, error } = await supabase
+      .from('site_gradients')
+      .select('*');
+
+    if (error) {
+      throw error;
+    }
+
+    // Return as a map with section keys (camelCase)
+    const gradientMap = (data || []).reduce((acc, gradient) => {
+      acc[gradient.section_key] = gradient.gradient_config;
       return acc;
     }, {} as Record<string, any>);
 

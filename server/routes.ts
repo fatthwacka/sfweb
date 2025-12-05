@@ -15,6 +15,8 @@ import simpleAssetsRouter from './routes/simple-assets';
 import siteConfigRouter from './site-config-api';
 import { gradientRoutes } from './routes/gradients';
 import pricingPackagesRouter from './pricing-packages-api';
+import blogRouter from './routes/blog';
+import aiBlogRouter from './routes/ai-blog';
 import { sendContactEmail, validateEmailConfig, sendAlbumReadyEmail } from './email-service';
 import { verifyRecaptcha } from './recaptcha-service';
 import { eq, and, sql } from 'drizzle-orm';
@@ -3384,6 +3386,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Use the gradient routes for gradient configuration management
   app.use('/api/gradients', gradientRoutes);
+
+  // Blog and AI content generation routes
+  app.use('/api/blog', blogRouter);
+  app.use('/api/ai', aiBlogRouter);
 
   // Use the pricing packages router for pricing management
   app.use(pricingPackagesRouter);

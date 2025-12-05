@@ -131,6 +131,33 @@ export const GRADIENT_DEFAULTS: Record<string, GradientConfig> = {
       secondary: "#e2e8f0",
       tertiary: "#94a3b8"
     }
+  },
+
+  // Stories/Blog Page Sections
+  "stories-content": {
+    startColor: "#1f2937",
+    middleColor: "#374151",
+    endColor: "#1f2937",
+    direction: "180deg",
+    opacity: 1,
+    textColors: {
+      primary: "#ffffff",
+      secondary: "#e5e7eb",
+      tertiary: "#9ca3af"
+    }
+  },
+
+  "stories-cta": {
+    startColor: "#374151",
+    middleColor: "#4b5563",
+    endColor: "#374151",
+    direction: "135deg",
+    opacity: 1,
+    textColors: {
+      primary: "#ffffff",
+      secondary: "#e5e7eb",
+      tertiary: "#9ca3af"
+    }
   }
 };
 

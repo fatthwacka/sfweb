@@ -428,6 +428,81 @@ export const siteGradients = pgTable("site_gradients", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
 });
 
+// Blog system tables
+export const blogPosts = pgTable("blog_posts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  title: text("title").notNull(),
+  slug: text("slug").notNull().unique(),
+  excerpt: text("excerpt"),
+  content: text("content").notNull(), // Rich text/HTML content
+  coverImage: text("cover_image"), // URL to hero image at top of article
+  postImage1: text("post_image_1"), // URL to first in-article image (after section 1)
+  postImage2: text("post_image_2"), // URL to second in-article image (after section 2)
+  seoTitle: text("seo_title"), // Custom SEO title (max 60 chars)
+  seoDescription: text("seo_description"), // Custom meta description (max 160 chars)
+  status: text("status").default("draft").notNull(), // 'draft', 'published', 'scheduled'
+  publishedAt: timestamp("published_at", { withTimezone: true }),
+  scheduledFor: timestamp("scheduled_for", { withTimezone: true }),
+  viewCount: integer("view_count").default(0).notNull(),
+  authorId: uuid("author_id").references(() => profiles.id).notNull(),
+  categoryId: uuid("category_id").references(() => blogCategories.id),
+  aiGenerated: boolean("ai_generated").default(false).notNull(), // Track AI-assisted content
+  aiPrompt: text("ai_prompt"), // Store original prompt for reference
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
+});
+
+export const blogCategories = pgTable("blog_categories", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  description: text("description"),
+  color: text("color").default("#6366f1").notNull(), // Hex color for category badge
+  isActive: boolean("is_active").default(true).notNull(),
+  displayOrder: integer("display_order").default(0).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
+});
+
+export const blogTags = pgTable("blog_tags", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull().unique(),
+  slug: text("slug").notNull().unique(),
+  usageCount: integer("usage_count").default(0).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
+});
+
+export const blogPostTags = pgTable("blog_post_tags", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  postId: uuid("post_id").references(() => blogPosts.id, { onDelete: "cascade" }).notNull(),
+  tagId: uuid("tag_id").references(() => blogTags.id, { onDelete: "cascade" }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
+});
+
+export const blogMedia = pgTable("blog_media", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  postId: uuid("post_id").references(() => blogPosts.id, { onDelete: "cascade" }).notNull(),
+  filename: text("filename").notNull(),
+  storagePath: text("storage_path").notNull(), // Path in storage system
+  altText: text("alt_text"),
+  caption: text("caption"),
+  fileSize: integer("file_size"),
+  contentType: text("content_type").notNull(),
+  sortOrder: integer("sort_order").default(0).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
+});
+
+// AI Prompts table for customizable AI generation
+export const aiPrompts = pgTable("ai_prompts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  promptKey: text("prompt_key").notNull().unique(), // e.g., 'title', 'content:case-study'
+  name: text("name").notNull(),
+  description: text("description"),
+  promptText: text("prompt_text").notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
+});
+
 
 // Insert schemas for new tables
 export const insertShootPreviewSchema = createInsertSchema(shootPreviews).omit({
@@ -460,6 +535,43 @@ export const insertPreviewImageSchema = createInsertSchema(previewImages).omit({
   createdAt: true,
 });
 
+export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  viewCount: true,
+}).extend({
+  slug: z.string().optional(), // Make slug optional - backend will auto-generate if not provided
+  status: z.enum(['draft', 'published', 'scheduled']).optional().default('draft'),
+});
+
+export const insertBlogCategorySchema = createInsertSchema(blogCategories).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertBlogTagSchema = createInsertSchema(blogTags).omit({
+  id: true,
+  createdAt: true,
+  usageCount: true,
+});
+
+export const insertBlogPostTagSchema = createInsertSchema(blogPostTags).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertBlogMediaSchema = createInsertSchema(blogMedia).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertAiPromptSchema = createInsertSchema(aiPrompts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 
 // Types for new tables
 export type ShootPreview = typeof shootPreviews.$inferSelect;
@@ -473,6 +585,41 @@ export type InsertSelectionPackage = z.infer<typeof insertSelectionPackageSchema
 
 export type PreviewImage = typeof previewImages.$inferSelect;
 export type InsertPreviewImage = z.infer<typeof insertPreviewImageSchema>;
+
+// Blog types
+export type BlogPost = typeof blogPosts.$inferSelect;
+export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
+
+export type BlogCategory = typeof blogCategories.$inferSelect;
+export type InsertBlogCategory = z.infer<typeof insertBlogCategorySchema>;
+
+export type BlogTag = typeof blogTags.$inferSelect;
+export type InsertBlogTag = z.infer<typeof insertBlogTagSchema>;
+
+export type BlogPostTag = typeof blogPostTags.$inferSelect;
+export type InsertBlogPostTag = z.infer<typeof insertBlogPostTagSchema>;
+
+export type BlogMedia = typeof blogMedia.$inferSelect;
+export type InsertBlogMedia = z.infer<typeof insertBlogMediaSchema>;
+
+export type AiPrompt = typeof aiPrompts.$inferSelect;
+export type InsertAiPrompt = z.infer<typeof insertAiPromptSchema>;
+
+// Blog constants
+export const BLOG_POST_STATUS = ['draft', 'published', 'scheduled'] as const;
+export type BlogPostStatus = typeof BLOG_POST_STATUS[number];
+
+export const BLOG_CATEGORIES = [
+  'wedding-stories',
+  'portrait-sessions', 
+  'corporate-events',
+  'behind-the-scenes',
+  'photography-tips',
+  'case-studies',
+  'client-features',
+  'venue-spotlights'
+] as const;
+export type BlogCategoryType = typeof BLOG_CATEGORIES[number];
 
 // Selection status constants
 export const SELECTION_STATUS = ['none', 'favorite', 'like', 'dislike'] as const;

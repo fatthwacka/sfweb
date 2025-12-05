@@ -120,13 +120,6 @@ export function useAllGradients() {
       return { previousGradients };
     },
     onError: (error, variables, context) => {
-      // Rollback on error
-      if (context?.previousGradients) {
-        queryClient.setQueryData(['gradients', 'all'], context.previousGradients);
-      }
-      console.error(`Failed to update gradient config for ${variables.sectionKey}:`, error);
-    },
-    onError: (error, variables, context) => {
       // Rollback optimistic updates on error
       if (context?.previousGradients) {
         queryClient.setQueryData(['gradients', 'all'], context.previousGradients);

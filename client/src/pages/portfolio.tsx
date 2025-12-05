@@ -1,52 +1,73 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Navigation } from '@/components/layout/navigation';
 import { Footer } from '@/components/layout/footer';
 import { PortfolioGrid } from '@/components/portfolio/portfolio-grid';
-import { Star, Camera, Video } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+
+const ITEMS_PER_PAGE = 40;
+
+interface Shoot {
+  id: string;
+  title: string;
+  description?: string;
+  mediaType: 'photo' | 'video';
+  customSlug?: string;
+  coverImageUrl?: string;
+  coverVideoInfo?: {
+    id: string;
+    storagePath: string;
+    optimizedPath?: string;
+    thumbnailPath: string;
+    duration?: number;
+    filename: string;
+  };
+  isGroup?: boolean;
+  groupName?: string;
+  shootCount?: number;
+  shoots?: Array<{
+    id: string;
+    title: string;
+    mediaType: 'photo' | 'video';
+    customSlug?: string;
+  }>;
+}
 
 export function Portfolio() {
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  const { data: allItems = [], isLoading, error } = useQuery<Shoot[]>({
+    queryKey: ['portfolio', 'cards'],
+    queryFn: async () => {
+      const response = await fetch('/api/portfolio/cards');
+      if (!response.ok) {
+        throw new Error('Failed to fetch portfolio cards');
+      }
+      return response.json();
+    }
+  });
+
+  const totalItems = allItems.length;
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentItems = allItems.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="min-h-screen">
       <Navigation />
-      
-      {/* Hero Section */}
-      <div className="pt-20 pb-16" style={{ background: 'linear-gradient(to bottom, #1e293b 0%, #334155 50%, #475569 100%)' }}>
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h1 className="text-white text-5xl lg:text-6xl mb-6 font-light">
-              Our <span className="text-salmon">Portfolio</span>
-            </h1>
-            <p className="text-muted-foreground text-xl lg:text-2xl max-w-4xl mx-auto mb-8">
-              Explore our collection of stunning photography and videography work. 
-              Each gallery showcases unique moments, creative vision, and professional excellence.
-            </p>
-            <div className="inline-flex items-center gap-2 text-cyan">
-              <Star className="w-5 h-5 fill-current" />
-              <span className="text-sm font-medium">Professional galleries featuring photos and videos</span>
-              <Star className="w-5 h-5 fill-current" />
-            </div>
-          </div>
-          
-          {/* Feature Icons */}
-          <div className="flex justify-center gap-8 mb-12">
-            <div className="flex items-center gap-2 text-white">
-              <Camera className="w-6 h-6 text-salmon" />
-              <span className="text-sm font-medium">Photography</span>
-            </div>
-            <div className="flex items-center gap-2 text-white">
-              <Video className="w-6 h-6 text-cyan" />
-              <span className="text-sm font-medium">Videography</span>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Portfolio Grid Section */}
-      <div className="py-20" style={{ background: 'linear-gradient(to bottom, #64748b 0%, #334155 50%, #1e293b 100%)' }}>
+      <div className="pt-20 pb-20" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%)' }}>
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-white text-4xl lg:text-5xl mb-6">
-              Featured <span className="text-cyan">Galleries</span>
+              Recent Galleries
             </h2>
             <p className="text-muted-foreground text-lg lg:text-xl max-w-3xl mx-auto">
               Click on any gallery to experience our professional presentation system. 
@@ -54,7 +75,83 @@ export function Portfolio() {
             </p>
           </div>
 
-          <PortfolioGrid />
+          {isLoading ? (
+            <div className="max-w-6xl mx-auto">
+              <div className="grid grid-cols-2 md:grid-cols-3" style={{ gap: '24px' }}>
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div key={index} className="aspect-square bg-gray-800 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-400">Failed to load galleries</p>
+            </div>
+          ) : (
+            <>
+              <PortfolioGrid portfolioItems={currentItems} />
+              
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center mt-16 gap-4">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg transition-colors duration-200"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Previous
+                  </button>
+                  
+                  <div className="flex gap-2">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .filter(page => {
+                        const distance = Math.abs(page - currentPage);
+                        return distance <= 2 || page === 1 || page === totalPages;
+                      })
+                      .map((page, index, array) => {
+                        const prevPage = array[index - 1];
+                        const showEllipsis = prevPage && page - prevPage > 1;
+                        
+                        return (
+                          <React.Fragment key={page}>
+                            {showEllipsis && (
+                              <span className="px-3 py-2 text-gray-400">...</span>
+                            )}
+                            <button
+                              onClick={() => handlePageChange(page)}
+                              className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
+                                currentPage === page
+                                  ? 'bg-salmon text-white'
+                                  : 'bg-white/10 hover:bg-white/20 text-white'
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          </React.Fragment>
+                        );
+                      })}
+                  </div>
+                  
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg transition-colors duration-200"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+              
+              {/* Results info */}
+              <div className="text-center mt-8">
+                <p className="text-gray-400 text-sm">
+                  Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems} galleries
+                </p>
+              </div>
+            </>
+          )}
 
           {/* Call to Action */}
           <div className="text-center mt-20">

@@ -2932,6 +2932,276 @@ html, body {
   color: var(--social-media-cta-text-tertiary, #94a3b8) !important;
 }
 
+/* Stories Page - Card Design (extends service-card-gradient) */
+.story-card {
+  @apply relative overflow-hidden rounded-xl cursor-pointer transition-all duration-300 service-card-gradient;
+  border: 1px solid hsl(220, 13%, 30%);
+}
+
+.story-card:hover {
+  border-color: hsl(220, 13%, 40%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.story-card-image {
+  @apply aspect-[3/2] overflow-hidden;
+}
+
+.story-card-image img {
+  @apply w-full h-full object-cover transition-transform duration-500;
+}
+
+.story-card:hover .story-card-image img {
+  transform: scale(1.05);
+}
+
+.story-card-content {
+  @apply p-6;
+}
+
+.story-card-title {
+  @apply text-xl mb-2 line-clamp-2;
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 100;
+  color: white;
+}
+
+.story-card-date {
+  @apply text-sm font-light text-gray-400 mb-3;
+}
+
+.story-card-placeholder {
+  @apply aspect-[3/2] flex items-center justify-center service-card-gradient;
+}
+
+/* Stories Search Bar */
+.stories-search-bar {
+  @apply backdrop-blur-sm rounded-lg service-card-gradient;
+  border: 1px solid hsl(220, 13%, 28%);
+}
+
+/* Stories Page Text Colors - 2 sections: content and cta */
+.text-stories-content-primary {
+  color: var(--stories-content-text-primary, #ffffff) !important;
+}
+
+.text-stories-content-secondary {
+  color: var(--stories-content-text-secondary, #e2e8f0) !important;
+}
+
+.text-stories-content-tertiary {
+  color: var(--stories-content-text-tertiary, #94a3b8) !important;
+}
+
+.text-stories-cta-primary {
+  color: var(--stories-cta-text-primary, #ffffff) !important;
+}
+
+.text-stories-cta-secondary {
+  color: var(--stories-cta-text-secondary, #e2e8f0) !important;
+}
+
+.text-stories-cta-tertiary {
+  color: var(--stories-cta-text-tertiary, #94a3b8) !important;
+}
+
+/* Story Article Prose Styling */
+.story-article {
+  @apply text-gray-300 leading-relaxed;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+}
+
+.story-article p {
+  @apply mb-6 text-gray-300;
+  font-family: 'Roboto', sans-serif !important;
+  font-size: 1.125rem;
+  font-weight: 300;
+  line-height: 1.85;
+}
+
+/* First paragraph - ensure consistent styling (no special treatment) */
+.story-article > p:first-child,
+.story-article p.lead,
+.story-article p.intro {
+  @apply text-gray-300 mb-6;
+  font-family: 'Roboto', sans-serif !important;
+  font-size: 1.125rem;
+  font-weight: 300;
+  line-height: 1.85;
+}
+
+.story-article p.conclusion {
+  @apply text-lg text-gray-200 mt-4;
+  line-height: 1.75;
+}
+
+/* SEO H2 Headings - Large, prominent section separators */
+.story-article h2 {
+  @apply text-3xl md:text-4xl lg:text-5xl text-white mt-20 mb-8 pb-4;
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+  padding-top: 1.5rem;
+  margin-left: -1rem;
+  margin-right: -1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+/* First h2 doesn't need top margin */
+.story-article p.lead + h2 {
+  @apply mt-10;
+}
+
+.story-article h3 {
+  @apply text-xl text-white mt-8 mb-3;
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 400;
+}
+
+.story-article h4 {
+  @apply text-lg text-salmon mt-6 mb-2;
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 500;
+}
+
+.story-article strong {
+  @apply text-white font-medium;
+}
+
+.story-article em {
+  @apply text-gray-200;
+}
+
+/* Pull Quote - Visual break between sections */
+.story-article blockquote,
+.story-article .pull-quote {
+  @apply my-14 py-8 px-8 border-l-4 border-salmon rounded-r-lg;
+  font-family: 'Quicksand', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 300;
+  font-style: italic;
+  color: #f8fafc;
+  line-height: 1.5;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(236, 72, 153, 0.05) 100%);
+}
+
+.story-article a {
+  @apply underline underline-offset-2 transition-colors;
+  color: var(--cyan);
+}
+
+.story-article a:hover {
+  opacity: 0.8;
+}
+
+.story-article ul,
+.story-article ol {
+  @apply my-6 pl-6 space-y-2;
+}
+
+.story-article li {
+  @apply text-gray-300;
+}
+
+.story-article ul li::marker {
+  @apply text-salmon;
+}
+
+.story-article ol li::marker {
+  @apply text-salmon font-medium;
+}
+
+/* Post Images - Visual breaks within article content */
+.story-post-image {
+  @apply my-12 overflow-hidden rounded-xl;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.story-post-image img {
+  @apply w-full h-auto object-cover;
+  max-height: 500px;
+}
+
+.story-post-image figcaption {
+  @apply text-sm text-gray-400 text-center mt-3 italic;
+}
+
+/* Two-column layout for story content on larger screens */
+.story-two-column {
+  @apply grid gap-8;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .story-two-column {
+    grid-template-columns: 2fr 1fr;
+    gap: 3rem;
+  }
+}
+
+.story-main-content {
+  @apply min-w-0;
+}
+
+.story-sidebar {
+  @apply space-y-8 hidden lg:block;
+  position: sticky;
+  top: 6rem;
+  align-self: start;
+}
+
+.story-sidebar-card {
+  @apply p-6 rounded-xl;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.story-sidebar-card h3 {
+  @apply text-lg font-medium text-white mb-4;
+  font-family: 'Quicksand', sans-serif;
+}
+
+/* Pull Quote in Sidebar */
+.story-pull-quote {
+  @apply relative p-6 rounded-xl;
+  background: linear-gradient(135deg, rgba(232, 121, 121, 0.15) 0%, rgba(232, 121, 121, 0.05) 100%);
+  border-left: 4px solid rgba(232, 121, 121, 0.6);
+}
+
+.story-pull-quote-mark {
+  @apply absolute -top-2 -left-1 text-6xl leading-none;
+  color: rgba(232, 121, 121, 0.4);
+  font-family: Georgia, serif;
+}
+
+.story-pull-quote-text {
+  @apply text-gray-200 italic text-base leading-relaxed;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+/* Floating post images for desktop */
+.story-float-image {
+  @apply float-right ml-8 mb-6 w-64 rounded-xl overflow-hidden hidden lg:block;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.story-float-image img {
+  @apply w-full h-auto object-cover;
+}
+
+/* Clear floats after sections */
+.story-article::after {
+  content: '';
+  display: table;
+  clear: both;
+}
+
 /* Web Apps Page Text Colors */
 .text-web-apps-hero-primary {
   color: var(--web-apps-hero-text-primary, #ffffff) !important;

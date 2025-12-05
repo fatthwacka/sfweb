@@ -4,7 +4,8 @@ import { useAllGradients } from '@/hooks/use-all-gradients';
 // Removed deprecated useFrontPageSettings import
 
 interface GradientBackgroundProps {
-  section: 'hero' | 'testimonials' | 'portfolio' | 'services' | 'contact' | 'privateGallery';
+  // Section key - common sections listed for autocomplete, but any string is accepted for dynamic Supabase sections
+  section: string;
   children: React.ReactNode;
   className?: string;
   fallbackGradient?: string;

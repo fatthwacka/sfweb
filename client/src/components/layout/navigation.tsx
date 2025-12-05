@@ -81,6 +81,14 @@ const NavigationComponent = memo(function Navigation() {
             )}>
               Web & Apps
             </Link>
+            <Link href="/stories" className={cn(
+              "transition-colors duration-300 font-barlow font-light",
+              location.startsWith('/stories') 
+                ? "text-orange-200" 
+                : "text-blue-100 hover:text-cyan-bright"
+            )}>
+              Stories
+            </Link>
             <Link href="/about" className={cn(
               "transition-colors duration-300 font-barlow font-light",
               location === '/about' 
@@ -151,6 +159,13 @@ const NavigationComponent = memo(function Navigation() {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Web & Apps
+              </Link>
+              <Link
+                href="/stories"
+                className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Stories
               </Link>
               <Link
                 href="/about"

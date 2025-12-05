@@ -76,6 +76,8 @@ import Dashboard from "@/pages/dashboard";
 import ClientDashboard from "@/pages/client-dashboard";
 import Login from "@/pages/login";
 import Admin from "@/pages/admin";
+import { Stories } from "@/pages/stories";
+import { Story } from "@/pages/story";
 // Removed old demo MyGallery - clients use /client-portal
 import NotFound from "@/pages/not-found";
 
@@ -102,6 +104,8 @@ function Router() {
       <Route path="/about" component={About} />
       <Route path="/pricing" component={Pricing} />
       <Route path="/contact" component={Contact} />
+      <Route path="/stories" component={Stories} />
+      <Route path="/stories/:slug" component={Story} />
       <Route path="/gallery-demo" component={GalleryDemo} />
       <Route path="/portfolio" component={Portfolio} />
       <Route path="/project/:groupName" component={PortfolioGroup} />

@@ -3,18 +3,27 @@
  * Handles video transcoding for web optimization and thumbnail generation
  */
 
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const ffmpeg = require('fluent-ffmpeg');
-const ffmpegStatic = require('ffmpeg-static');
 import { createReadStream, createWriteStream, unlinkSync, existsSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
 
-// Set FFmpeg binary path
-if (ffmpegStatic) {
-  ffmpeg.setFfmpegPath(ffmpegStatic);
+// Lazy-load FFmpeg dependencies (CommonJS modules)
+let ffmpegLib: any = null;
+let ffmpegStatic: string | null = null;
+
+async function loadFfmpeg() {
+  if (!ffmpegLib) {
+    // Dynamic import for CommonJS modules
+    ffmpegLib = (await import('fluent-ffmpeg')).default;
+    ffmpegStatic = (await import('ffmpeg-static')).default;
+
+    // Set FFmpeg binary path
+    if (ffmpegStatic && ffmpegLib.setFfmpegPath) {
+      ffmpegLib.setFfmpegPath(ffmpegStatic);
+    }
+  }
+  return ffmpegLib;
 }
 
 export interface VideoProcessingOptions {
@@ -46,6 +55,9 @@ export interface VideoProcessingResult {
 export async function processVideo(
   options: VideoProcessingOptions
 ): Promise<VideoProcessingResult> {
+  // Ensure FFmpeg is loaded
+  await loadFfmpeg();
+
   const {
     inputBuffer,
     originalFilename,
@@ -139,6 +151,7 @@ async function getVideoMetadata(inputPath: string): Promise<{
   duration: number;
   bitrate: number;
 }> {
+  const ffmpeg = await loadFfmpeg();
   return new Promise((resolve, reject) => {
     ffmpeg(inputPath)
       .ffprobe((err, metadata) => {
@@ -174,6 +187,7 @@ async function transcodeVideo(
   audioBitrate: string,
   quality: string
 ): Promise<Buffer> {
+  const ffmpeg = await loadFfmpeg();
   return new Promise((resolve, reject) => {
     let ffmpegCommand = ffmpeg(inputPath)
       .outputOptions([
@@ -220,6 +234,7 @@ async function generateServerThumbnail(
   inputPath: string,
   thumbnailPath: string
 ): Promise<Buffer> {
+  const ffmpeg = await loadFfmpeg();
   return new Promise((resolve, reject) => {
     ffmpeg(inputPath)
       .screenshots({
