@@ -845,8 +845,8 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
     }
 
     const enhancementPrompts = {
-      reduce: `Reduce this section to approximately 60-70% of its current length while preserving all key information. Maintain the same tone and style.`,
-      increase: `Expand this section to approximately 140-160% of its current length by adding relevant details, examples, or explanations. Maintain the same tone and style.`,
+      reduce: `Make this content shorter by removing unnecessary words and condensing ideas. Cut out filler words, redundant phrases, and keep only the essential message. Aim for 40-50% reduction while preserving the core meaning.`,
+      increase: `Keep the existing content exactly as it is, then add one relevant, insightful sentence at the end that provides additional value, context, or supporting detail. Do not modify the original text - only append to it.`,
       grammar: `Correct any spelling, grammar, or punctuation errors. Improve sentence structure for clarity and flow. Do not change the content meaning or length significantly.`,
       rewrite: `Completely rewrite this section with fresh phrasing while preserving the core message and information. Maintain article coherence.`,
       tone: `Rewrite this section in a ${tone} tone while preserving the core message and information. Adjust the language style, word choice, and sentence structure to match the requested tone.`
@@ -1019,14 +1019,14 @@ Please provide only the enhanced content without any additional text or explanat
 
         {/* Tone Selector */}
         <Select onValueChange={handleToneChange} disabled={!hasContent || isProcessing}>
-          <SelectTrigger className={`w-20 h-8 ${hasContent ? 'text-gray-400' : 'text-gray-600'} ${
+          <SelectTrigger className={`w-32 h-8 ${hasContent ? 'text-gray-400' : 'text-gray-600'} ${
             processingSection === `${sectionKey}-tone` ? 'animate-pulse text-amber-400' : ''
           }`}>
             <SelectValue placeholder="Tone" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="min-w-36">
             {toneOptions.map(option => (
-              <SelectItem key={option.value} value={option.value}>
+              <SelectItem key={option.value} value={option.value} className="px-4 py-2">
                 {option.label}
               </SelectItem>
             ))}
