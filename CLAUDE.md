@@ -2,6 +2,47 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 📋 GIT COMMIT GUIDELINES
+
+**⚠️ CRITICAL: Follow these rules for ALL git commits**
+
+### **🔒 Commit Frequency & Timing**
+- **NEVER commit during active development** - wait for end of development session
+- **BUNDLE related changes** into meaningful commits with clear purpose
+- **COMMIT at logical breakpoints**: feature completion, major fixes, end of session
+- **AVOID micro-commits** - each commit should represent substantial progress
+
+### **🔐 Security & File Management** 
+- **✅ `.env` files are gitignored** - never commit environment variables
+- **✅ Check `git status`** before staging any files
+- **✅ Use `git add` selectively** - never use `git add .` without review
+- **❌ NEVER commit**: API keys, passwords, personal data, temp files
+
+### **📝 Commit Message Standards**
+```bash
+# GOOD: Descriptive, explains the "why"
+git commit -m "Implement section-by-section AI enhancement system for blog editor
+
+Features added:
+- 4 enhancement buttons: reduce/increase word count, grammar check, complete rewrite  
+- 5th tone adjustment dropdown with 12 professional tone options
+- Smart visual feedback and 10-second undo functionality
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+Co-Authored-By: Claude <noreply@anthropic.com>"
+
+# BAD: Vague, no context
+git commit -m "fix stuff"
+git commit -m "update files"
+```
+
+### **🚀 Deployment Commits**
+- **Production deployments** require comprehensive commit before push
+- **Include all session changes** in pre-deployment commit
+- **Test thoroughly** before final production commit
+
+---
+
 ## 🤖 SPECIALIZED AGENTS - USE PROACTIVELY
 
 **⚠️ IMPORTANT: These specialist agents MUST be used for their respective domains. Don't attempt complex tasks in these areas without consulting the appropriate specialist first.**
@@ -20,12 +61,41 @@ Available in root directory:
 
 ---
 
-## 🏗️ CURRENT ARCHITECTURE (OCTOBER 2025)
+## 🏗️ CURRENT ARCHITECTURE (DECEMBER 2025)
 
-**⚠️ HYBRID SYSTEM: HARDCODED CORE + DYNAMIC VISUALS**
+**⚠️ HYBRID SYSTEM: HARDCODED CORE + DYNAMIC VISUALS + AI-ENHANCED BLOG**
+
+### **📝 Blog System (NEW - December 2025)**
+Complete AI-powered blog management system:
+- **Blog Management**: `/client/src/components/admin/blog-management.tsx` - Full CRUD with filtering
+- **AI Content Generation**: Gemini 2.0-flash integration for automated content creation
+- **Section Enhancement System**: Per-section AI improvements (reduce, increase, grammar, rewrite, tone)
+- **Dynamic Category Management**: Inline category creation with auto-slug generation
+- **Custom Gradients**: Per-article background color customization via Supabase
+- **SEO Optimization**: Auto-generated titles, descriptions, structured data
+
+### **🎨 Per-Article Gradient System (NEW - December 2025)**
+Blog posts can override default gradients:
+- **Gradient Storage**: Supabase `siteGradients` table with `blog-post-{id}` keys
+- **Fallback Chain**: Custom gradient → stories-content → defaults
+- **Real-time Editor**: GradientPicker component in blog editor sidebar
+- **Smooth Transitions**: 700ms fade between gradients on page load
+- **Auto-save**: Changes persist automatically with 2-second debounce
+
+### **🤖 AI Enhancement Features (NEW - December 2025)**
+Section-by-section content improvement:
+- **5 Enhancement Options**: 
+  - ➖ Reduce (40-50% word reduction)
+  - ➕ Increase (append relevant sentence)
+  - ✅ Grammar (spelling, grammar, flow)
+  - 🔄 Rewrite (complete fresh phrasing)
+  - 📝 Tone (12 professional tone options)
+- **Visual Feedback**: Grey→white→amber states, processing indicators
+- **Undo System**: 10-second auto-dismiss with content restoration
+- **Context-Aware**: Prompts include section title and article context
 
 ### **Hardcoded Content Pages**
-Core content is now hardcoded in React components for optimal performance:
+Core content is hardcoded in React components for optimal performance:
 - **Contact Page**: `/client/src/pages/contact.tsx` - Business info, hours, contact methods
 - **About Page**: `/client/src/pages/about.tsx` - Team members, story, values, stats
 - **Admin Panels**: Text management removed, visual controls (gradients/images) preserved
@@ -38,155 +108,15 @@ These still use JSON configuration:
 - **Gradients**: All section background colors via Supabase database
 - **Pricing Packages**: Per-card accent colors stored in `pricing_packages` table
 
-### **Recent Architecture Improvements**
-- **Per-Card Pricing Colors**: Individual accent color control for each pricing tier card
-- **Portfolio Migration**: Moved from JSON config to Supabase gradients API
-- **Enhanced Color System**: 8-color palette with HSL manipulation for sophisticated color schemes
-- **CategoryNavigation Component**: Reusable navigation for photography/videography categories
-- **Image Reordering Performance**: Optimized batch updates from 9-64 seconds to <700ms with SQL fixes
-- **Gallery Modal UX**: Large navigation bars, proper image scaling, mobile swipe support
-- **Subtle Hover Effects**: Reduced gallery hover darkening from ~30% to ~5% for better UX
-
 ### **Key Benefits**
+- ✅ AI-powered content creation and enhancement
+- ✅ Per-article visual customization
 - ✅ Faster page loads (no config loading delays)
-- ✅ Simpler deployments (no JSON sync issues)
 - ✅ Better reliability (eliminates config corruption)
-- ✅ Visual customization preserved (gradients + per-card colors)
-- ✅ Granular design control (individual card accent colors)
+- ✅ Professional content quality with minimal effort
+- ✅ Granular design control (individual post colors)
 
 **📋 For detailed architecture information, see:** [`ARCHITECTURE.md`](./ARCHITECTURE.md)
-
----
-
-## 📁 DYNAMIC CONFIGURATION FILES
-
-**⚠️ PHOTOGRAPHY CATEGORY SYSTEM ARCHITECTURE**
-
-**PRIMARY FILES:**
-
-1. **`/shared/types/category-config.ts`** - DEFAULT FALLBACK CONTENT
-   - Contains `defaultCategoryPageConfig` used by admin dashboard when no saved data exists
-   - Used by admin component when `config.categoryPages.photography.[category]` is empty
-
-2. **`/server/data/site-config-overrides.json`** - PERSISTENT SAVED DATA
-   - Stores actual saved content from admin dashboard
-   - Structure: `categoryPages.photography.[category]` (e.g., `categoryPages.photography.corporate`)
-   - API: `/api/site-config/bulk` (PATCH method ONLY)
-
-3. **`/client/src/components/admin/page-settings/category-page-settings.tsx`** - ADMIN DASHBOARD
-   - Manages photography category settings (wedding, corporate, portraits, etc.)
-   - Saves via PATCH `/api/site-config/bulk`
-   - Falls back to `defaultCategoryPageConfig` when no saved data
-
-4. **`/client/src/pages/photography-category.tsx`** - TARGET PAGES
-   - Displays live photography category pages (`/photography/corporate`, etc.)
-   - Gets data from same API endpoint
-   - Different fallback: hardcoded generic object (not the TypeScript defaults)
-
-**🔄 DATA FLOW**: Admin saves → JSON file → API serves → Target page displays
-**🚨 PATCH METHOD REQUIRED**: Never use POST - always PATCH for configuration updates
-
----
-
-## 🚨 CRITICAL DEVELOPMENT RULES
-
-**⚠️ MANDATORY: ALWAYS READ AND FOLLOW EXISTING ARCHITECTURE FIRST**
-
-Before implementing ANY new feature or page:
-
-1. **READ DOCUMENTATION FIRST**: Always consult [`SITE_MANAGEMENT_GUIDE.md`](./SITE_MANAGEMENT_GUIDE.md) for established patterns
-2. **ANALYZE WORKING COMPONENTS**: Study working implementations like `services-overview.tsx`, `testimonials.tsx`, homepage sections
-3. **USE ESTABLISHED PATTERNS**: Copy the exact architecture of working components:
-   - `GradientBackground` component with proper section mapping
-   - CSS classes like `text-salmon`, `text-cyan` (NOT inline styles)
-   - `useSiteConfig()` hook (NOT custom hooks)
-   - Site-wide CSS variables and color system
-4. **NO INLINE STYLES**: Never use `style={}` props without explicit instruction - use CSS classes
-5. **NO CUSTOM HOOKS**: Use established hooks (`useSiteConfig`, not custom variants like `useCategoryConfig`)
-6. **NO ARCHITECTURE VARIATIONS**: Follow the documented `GradientBackground` + CSS classes pattern
-7. **TEST COLOR IMPLEMENTATION**: Verify that dashboard color changes reflect on actual pages
-
-### 🛑 MANDATORY VALIDATION CHECKPOINTS
-
-BEFORE writing ANY code, validate against these CORE RULES:
-
-1. **❌ ZERO INLINE CSS**: Never use `style={{}}` props - use CSS classes only
-2. **❌ ZERO HARDCODING**: Never hardcode colors, URLs, text, or values - use config/constants
-3. **❌ ZERO MOCK DATA**: Never create placeholder/example data - use real config sources
-4. **❌ ZERO CUSTOM HOOKS**: Never create `useCategoryConfig` - extend existing hooks only
-5. **❌ ZERO ARCHITECTURAL VARIATIONS**: Never deviate from GradientBackground pattern
-
-### 🔍 MANDATORY PRE-IMPLEMENTATION CHECKLIST
-
-- [ ] Am I using ANY `style={{}}` props? → STOP and use CSS classes
-- [ ] Am I hardcoding ANY values? → STOP and use config sources
-- [ ] Am I creating mock/placeholder data? → STOP and use real data
-- [ ] Am I creating custom solutions? → STOP and extend existing patterns
-- [ ] Does my implementation match working homepage sections EXACTLY? → If no, STOP
-
-### ⚠️ COLOR IMPLEMENTATION STANDARD
-
-All dynamic colors MUST follow this exact pattern (NO EXCEPTIONS):
-
-1. **Use `GradientBackground` Component**:
-   ```tsx
-   <GradientBackground section="services" className="py-20">
-     <h2 className="text-salmon">Title</h2>
-     <p className="text-muted-foreground">Content</p>
-   </GradientBackground>
-   ```
-
-2. **Use CSS Classes for Colors**:
-   - Headers: `text-salmon`, `text-cyan`
-   - Body text: `text-muted-foreground`
-   - NEVER use `style={{ color: '...' }}` inline styles
-
-3. **Use `useSiteConfig()` Hook**:
-   ```tsx
-   const { config } = useSiteConfig();
-   const sectionData = config?.home?.services || fallback;
-   ```
-
-4. **Available GradientBackground Sections**:
-   - `services` - Service overview sections
-   - `portfolio` - Package/pricing sections
-   - `testimonials` - Gallery/recent work sections
-   - `contact` - Contact/CTA sections
-
-**Why This Pattern Works**:
-- ✅ Colors are controlled by dashboard settings
-- ✅ CSS variables are set automatically
-- ✅ Works in both development and production
-- ✅ Consistent across all sections
-- ✅ No inline style maintenance
-
-### ⚠️ NO ALBUM-SPECIFIC OR ID-SPECIFIC CODE MODIFICATIONS
-
-When working on dynamic gallery pages or any dynamic content system:
-
-- **NEVER** target specific albums, IDs, slugs, or individual records in conditional logic
-- **NEVER** use conditions like `if (albumSlug === 'specific-album')` or similar targeting
-- **ALWAYS** work on the universal, dynamic code that affects ALL records equally
-- **If experimenting with a single record is needed:**
-  1. Clearly state it's a temporary experiment
-  2. Immediately roll the solution back to universal code once identified
-  3. Never leave album-specific conditions in the codebase
-
-**Example of FORBIDDEN patterns:**
-```javascript
-// ❌ NEVER DO THIS
-if (shoot?.customSlug === 'aloe') { /* special handling */ }
-if (album.id === 'specific-id') { /* different logic */ }
-```
-
-**Example of CORRECT patterns:**
-```javascript
-// ✅ ALWAYS DO THIS
-if (images.length > 12) { /* universal logic based on data characteristics */ }
-if (gallerySettings?.layoutStyle === 'masonry') { /* universal logic based on settings */ }
-```
-
-This rule prevents maintenance nightmares, ensures consistent user experience, and maintains system scalability.
 
 ---
 
@@ -250,67 +180,130 @@ Before any development work:
 - 🔥 **Historical Disasters**: Past deployments without full guide reading caused 4+ hour outages
 - 📖 **Guide Contains Critical Lessons**: Multi-platform issues, cache problems, permission fixes
 
-**The Deployment Guide Contains:**
-- ✅ Step-by-step manual deployment process
-- ✅ Critical post-deployment steps (image permissions - MANDATORY)
-- ✅ Known issues and recovery commands
-- ✅ Quick success verification checks
-- ✅ Emergency procedures for when things go wrong
-- ✅ Historical lessons from past production failures
-
-**⚠️ IF YOU START A DEPLOYMENT WITHOUT READING THE FULL GUIDE:**
-- ❌ You WILL cause unnecessary downtime
-- ❌ You WILL miss critical steps
-- ❌ You WILL waste time fixing avoidable issues
-- ❌ You WILL frustrate the user
-
-### Deployment Process
-
-**STEP 1: READ THE GUIDE (Non-negotiable)**
-```bash
-# Open and READ EVERY SECTION of VPS_DEPLOYMENT.md
-# Do not proceed until you have read:
-# - Critical Lessons section
-# - Pre-deployment checks
-# - Manual deployment process
-# - Post-deployment verification
-# - Known issues and recovery
-```
-
-**STEP 2: Use Automated Script (Primary Method)**
-```bash
-# After reading the guide, use automated deployment
-./deploy-production.sh
-```
-
-**STEP 3: If Script Fails, Follow Manual Process**
-- Refer to "MANUAL DEPLOYMENT PROCESS" section in VPS_DEPLOYMENT.md
-- Use exact commands from recovery section if needed
-- Apply mandatory image permissions fix (lines 67-69)
-- Run Quick Success Checks (lines 329-333)
-
 **📋 Complete deployment reference:** [`VPS_DEPLOYMENT.md`](./VPS_DEPLOYMENT.md)
-- **Automated deployment script**: `./deploy-production.sh` with full verification
-- **SSH key authentication**: Pre-configured for seamless deployment
-- **Configuration persistence**: Docker volumes ensure settings survive deployments
-- **Production monitoring**: Container status, resource usage, and log analysis
-- **Troubleshooting**: Common deployment issues and recovery procedures
-- **Historical lessons**: Multi-platform crisis, cache issues, permission problems
 
-### Common Deployment Issues
+---
 
-**🚨 PRODUCTION DEPLOYMENT TROUBLESHOOTING:**
-- **HTTP 500 with ERR_MODULE_NOT_FOUND**: Use "nuclear option" fix in [`VPS_DEPLOYMENT.md`](./VPS_DEPLOYMENT.md)
-- **Code changes not reflecting**: Docker build cache issue - see "Docker Build Cache Issues" section in [`VPS_DEPLOYMENT.md`](./VPS_DEPLOYMENT.md) for `--no-cache` rebuild process
-- **Client-side routing broken**: Test with real browser, not curl commands (server-side routing only serves index.html)
+## 📝 BLOG SYSTEM ARCHITECTURE (NEW - DECEMBER 2025)
 
-### VPS Configuration
-- **Server**: vps.netfox.co.za (168.231.86.89)
-- **Domain**: slyfox.co.za
-- **OS**: Ubuntu 24.04 LTS
-- **Resources**: 3.8GB RAM, 1 CPU core, 48GB storage
-- **Provider**: Hostinger
-- **Repository**: https://github.com/fatthwacka/sfweb.git
+### **Core Components**
+
+**Blog Management Interface**: `/client/src/components/admin/blog-management.tsx`
+- **Full CRUD Operations**: Create, edit, delete, publish blog posts
+- **Advanced Filtering**: Search, status, category, date filters with dynamic population
+- **AI Integration**: Complete article generation with structured content sections
+- **Category Management**: Inline category creation with auto-slug generation
+- **Visual Enhancements**: Clickable cards, enhanced UI, gradient customization
+
+**AI Content Generation System**: 
+- **Endpoint**: `/api/ai/generate-blog-content` (Gemini 2.0-flash)
+- **Full Generation**: Title suggestions, structured content, SEO metadata, excerpts
+- **Section Enhancement**: Individual section improvements with context awareness
+- **Content Types**: Case studies, news, informational, project showcases
+- **Cost**: ~$0.001 per article (essentially free with generous quotas)
+
+**Content Structure**:
+```typescript
+interface BlogContent {
+  subtitle: string;           // 8-12 words expanding on title
+  introduction: string;       // 2-3 hook sentences
+  mainSections: Array<{      // 3 structured sections
+    heading: string;          // SEO-friendly H2
+    content: string;          // 5-6 sentences
+  }>;
+  pullQuote: string;         // 10-15 word quotable insight
+  conclusion: {              // CTA section
+    heading: string;
+    content: string;
+  };
+}
+```
+
+### **Section Enhancement System**
+
+**Visual Interface**: 5 buttons per content section
+- **➖ Reduce**: Remove unnecessary words, aim for 40-50% reduction
+- **➕ Increase**: Append one relevant, insightful sentence
+- **✅ Grammar**: Fix spelling, grammar, improve sentence flow
+- **🔄 Rewrite**: Complete fresh phrasing, preserve meaning
+- **📝 Tone**: 12 professional tone options (formal, conversational, technical, etc.)
+
+**Smart Feedback States**:
+- **Grey icons**: No content present (disabled)
+- **White icons**: Content ready for enhancement
+- **Amber pulsing**: Processing with status text ("Reducing...", "Expanding...")
+- **Blue undo button**: 10-second auto-dismiss with content restoration
+
+**Applied To Sections**:
+- ✅ Subtitle field
+- ✅ Introduction field  
+- ✅ Section 1 heading and content
+- 🔄 Additional sections can be added following same pattern
+
+### **Per-Article Gradient System**
+
+**Gradient Management**: Integrated with existing Supabase gradient system
+```typescript
+// Section key format for blog gradients
+sectionKey: `blog-post-${postId}`  // e.g., "blog-post-a1b2c3d4-..."
+
+// Fallback hierarchy
+blogGradient || getGradient('stories-content') || defaults
+```
+
+**Editor Integration**: GradientPicker component in blog editor sidebar
+- **Location**: Between "Post Settings" and "SEO Settings"
+- **Features**: Real-time background preview, all color controls, auto-save
+- **Inheritance**: Defaults to stories-content section colors
+- **Persistence**: Tied to post ID (survives slug changes)
+
+**Page Display**: Enhanced GradientBackground component
+- **Smooth Transitions**: 700ms fade when custom gradients load
+- **Fallback Support**: New `fallbackSection` prop for seamless inheritance
+- **Performance**: No visual jumps, graceful loading states
+
+---
+
+## 🎨 SITE MANAGEMENT SYSTEM
+
+### Configuration Management
+The site management system provides a centralized approach to managing dynamic website content through an admin interface with real-time persistence and immediate updates across all pages.
+
+**Core Components:**
+- **GradientPicker Component System**: Reusable Section Colors controls with unified styling
+- **Site Configuration API**: RESTful endpoints (`/api/site-config`, `/api/site-config/bulk`) with atomic persistence
+- **Admin Interface**: Role-based management panels with visual editing and real-time preview
+- **CSS Variable Integration**: Section-specific text color mappings with automatic resolution
+- **File Upload System**: Direct image upload with automatic path integration
+
+**Complete Documentation:**
+- **📋 Primary Implementation Guide**: [`SITE_MANAGEMENT_GUIDE.md`](./SITE_MANAGEMENT_GUIDE.md)
+  - **GradientPicker Component System**: Complete reusable Section Colors methodology
+  - **Site Configuration Architecture**: Data flow, persistence, and API integration
+  - **CSS Integration System**: Section-specific variable mappings and text color controls
+  - **Component Implementation Patterns**: Homepage settings, portfolio settings, and admin interfaces
+  - **API Usage Requirements**: PATCH method enforcement and error handling
+  - **Performance Optimizations**: Debounced saves, optimistic updates, and React Query integration
+
+**Key Implementation Details:**
+```typescript
+// Configuration Structure
+interface SiteConfig {
+  contact: BusinessInfo & ContactMethods;
+  home: {
+    hero: { slides: HeroSlide[]; autoAdvance: boolean; };
+    servicesOverview: ServicesConfiguration;
+    testimonials: TestimonialsSection;
+  };
+}
+
+// Admin Component Integration
+<HomepageSettings />  // Hero slides, company info management
+<ContactSettings />   // Business details, contact methods
+
+// Data Flow: Admin → API → Memory → All Pages
+saveMutation.mutate(config) → configOverrides → deepMerge(defaults, overrides)
+```
 
 ---
 
@@ -342,132 +335,77 @@ Before any development work:
 
 ---
 
-## 🎨 SITE MANAGEMENT SYSTEM
+## 🚨 CRITICAL DEVELOPMENT RULES
 
-### Configuration Management
-The site management system provides a centralized approach to managing dynamic website content through an admin interface with real-time persistence and immediate updates across all pages.
+**⚠️ MANDATORY: ALWAYS READ AND FOLLOW EXISTING ARCHITECTURE FIRST**
 
-**Core Components:**
-- **GradientPicker Component System**: Reusable Section Colors controls with unified styling
-- **Site Configuration API**: RESTful endpoints (`/api/site-config`, `/api/site-config/bulk`) with atomic persistence
-- **Admin Interface**: Role-based management panels with visual editing and real-time preview
-- **CSS Variable Integration**: Section-specific text color mappings with automatic resolution
-- **File Upload System**: Direct image upload with automatic path integration
+Before implementing ANY new feature or page:
 
-**Complete Documentation:**
-- **📋 Primary Implementation Guide**: [`SITE_MANAGEMENT_GUIDE.md`](./SITE_MANAGEMENT_GUIDE.md)
-  - **GradientPicker Component System**: Complete reusable Section Colors methodology
-  - **Site Configuration Architecture**: Data flow, persistence, and API integration
-  - **CSS Integration System**: Section-specific variable mappings and text color controls
-  - **Component Implementation Patterns**: Homepage settings, portfolio settings, and admin interfaces
-  - **API Usage Requirements**: PATCH method enforcement and error handling
-  - **Performance Optimizations**: Debounced saves, optimistic updates, and React Query integration
+1. **READ DOCUMENTATION FIRST**: Always consult [`SITE_MANAGEMENT_GUIDE.md`](./SITE_MANAGEMENT_GUIDE.md) for established patterns
+2. **ANALYZE WORKING COMPONENTS**: Study working implementations like `services-overview.tsx`, `testimonials.tsx`, homepage sections
+3. **USE ESTABLISHED PATTERNS**: Copy the exact architecture of working components:
+   - `GradientBackground` component with proper section mapping
+   - CSS classes like `text-salmon`, `text-cyan` (NOT inline styles)
+   - `useSiteConfig()` hook (NOT custom hooks)
+   - Site-wide CSS variables and color system
+4. **NO INLINE STYLES**: Never use `style={}` props without explicit instruction - use CSS classes
+5. **NO CUSTOM HOOKS**: Use established hooks (`useSiteConfig`, not custom variants like `useCategoryConfig`)
+6. **NO ARCHITECTURE VARIATIONS**: Follow the documented `GradientBackground` + CSS classes pattern
+7. **TEST COLOR IMPLEMENTATION**: Verify that dashboard color changes reflect on actual pages
 
-- **🤖 Site Management Specialist Agent**: [`site-management-specialist.md`](./site-management-specialist.md)
-  - Expert agent for site configuration governance and component development
-  - References complete implementation guide for technical details
+### 🛑 MANDATORY VALIDATION CHECKPOINTS
 
-**Key Implementation Details:**
-```typescript
-// Configuration Structure
-interface SiteConfig {
-  contact: BusinessInfo & ContactMethods;
-  home: {
-    hero: { slides: HeroSlide[]; autoAdvance: boolean; };
-    servicesOverview: ServicesConfiguration;
-    testimonials: TestimonialsSection;
-  };
-}
+BEFORE writing ANY code, validate against these CORE RULES:
 
-// Admin Component Integration
-<HomepageSettings />  // Hero slides, company info management
-<ContactSettings />   // Business details, contact methods
+1. **❌ ZERO INLINE CSS**: Never use `style={{}}` props - use CSS classes only
+2. **❌ ZERO HARDCODING**: Never hardcode colors, URLs, text, or values - use config/constants
+3. **❌ ZERO MOCK DATA**: Never create placeholder/example data - use real config sources
+4. **❌ ZERO CUSTOM HOOKS**: Never create `useCategoryConfig` - extend existing hooks only
+5. **❌ ZERO ARCHITECTURAL VARIATIONS**: Never deviate from GradientBackground pattern
 
-// Data Flow: Admin → API → Memory → All Pages
-saveMutation.mutate(config) → configOverrides → deepMerge(defaults, overrides)
-```
+### ⚠️ COLOR IMPLEMENTATION STANDARD
 
-**Management Interface Features:**
-- **Visual Thumbnail Management**: 80px image previews with drag-and-drop upload
-- **Hero Slide Management**: Add/remove/reorder with up/down controls
-- **Real-time Validation**: Unsaved changes tracking with visual indicators
-- **Company Information**: Business details, contact info, address management
-- **File Upload Integration**: POST `/api/upload` with automatic path updates
-- **Configuration Persistence**: Atomic file writes with Docker volume persistence across deployments
-- **Production Deployment**: Settings automatically backed up and restored during deployments
+All dynamic colors MUST follow this exact pattern (NO EXCEPTIONS):
 
----
+1. **Use `GradientBackground` Component**:
+   ```tsx
+   <GradientBackground section="services" className="py-20">
+     <h2 className="text-salmon">Title</h2>
+     <p className="text-muted-foreground">Content</p>
+   </GradientBackground>
+   ```
 
-## 📧 CONTACT FORM & EMAIL SYSTEM
+2. **Use CSS Classes for Colors**:
+   - Headers: `text-salmon`, `text-cyan`
+   - Body text: `text-muted-foreground`
+   - NEVER use `style={{ color: '...' }}` inline styles
 
-### Architecture
-The contact form system provides secure form submission with spam protection and automated email delivery to the studio owner.
+3. **Use `useSiteConfig()` Hook**:
+   ```tsx
+   const { config } = useSiteConfig();
+   const sectionData = config?.home?.services || fallback;
+   ```
 
-**Core Components:**
-- **Frontend Form** (`client/src/components/sections/contact-section.tsx`): React form with validation and reCAPTCHA integration
-- **Backend API** (`server/routes.ts`): `/api/contact` endpoint with reCAPTCHA verification and email sending
-- **Email Service** (`server/email-service.ts`): Nodemailer-based email delivery with Gmail SMTP
-- **reCAPTCHA Service** (`server/recaptcha-service.ts`): Google reCAPTCHA v3 bot protection
+4. **Available GradientBackground Sections**:
+   - `services` - Service overview sections
+   - `portfolio` - Package/pricing sections
+   - `testimonials` - Gallery/recent work sections
+   - `contact` - Contact/CTA sections
+   - `blog-post-{id}` - Individual blog post gradients
 
-### Phone Number Validation
-**Supported Formats:**
-- **South African Local**: 9 digits starting with 0 (e.g., `0831234567`, displayed as `083 123 4567`)
-- **International**: 12-15 digits starting with + (e.g., `+27831234567`, `+1234567890123`)
-- **Regex Patterns**:
-  ```javascript
-  const southAfricanRegex = /^0\d{8}$/; // 9 digits starting with 0
-  const internationalRegex = /^\+\d{11,14}$/; // 12-15 digits starting with +
-  ```
-- **Optional Field**: Phone number validation only runs if field contains content
+### ⚠️ NO ALBUM-SPECIFIC OR ID-SPECIFIC CODE MODIFICATIONS
 
-### reCAPTCHA v3 Integration
-**Implementation Details:**
-- **Client-side**: `useRecaptcha` hook loads Google reCAPTCHA v3 script and executes on form submission
-- **Script Loading**: reCAPTCHA script loaded in `client/index.html` with site key: `6Le3Y7YrAAAAAJn-74S3y_kLoDIax3vY6MyisDPs`
-- **Server-side**: Verification via Google's verification API with secret key
-- **Action**: `contact_form` action used for scoring and analysis
-- **Score Threshold**: Scores above 0.5 are considered human (configurable)
+When working on dynamic gallery pages or any dynamic content system:
 
-### Email Delivery System
-**SMTP Configuration:**
-- **Service**: Gmail SMTP (`smtp.gmail.com:587`)
-- **Authentication**: App-specific password (not regular Gmail password)
-- **Sender**: `dax.tucker@gmail.com`
-- **Recipient**: `dax@slyfox.co.za`
-- **Dependencies**: Requires `nodemailer` package (already in package.json)
+- **NEVER** target specific albums, IDs, slugs, or individual records in conditional logic
+- **NEVER** use conditions like `if (albumSlug === 'specific-album')` or similar targeting
+- **ALWAYS** work on the universal, dynamic code that affects ALL records equally
+- **If experimenting with a single record is needed:**
+  1. Clearly state it's a temporary experiment
+  2. Immediately roll the solution back to universal code once identified
+  3. Never leave album-specific conditions in the codebase
 
-**Email Template Features:**
-- **HTML Format**: Professional styled email with contact details and message
-- **Plain Text Fallback**: Ensures compatibility across all email clients
-- **Contact Information**: Name, email, phone (if provided), service type, message
-- **Timestamp**: Automatic timestamp of form submission
-- **Direct Action Links**: Clickable email and phone links for immediate response
-
-### Error Handling & Debugging
-**Common Issues:**
-1. **Environment Variables**: All variables must be listed in `docker-compose.yml`
-2. **Nodemailer Import**: Use `nodemailer.createTransport` (not `createTransporter`)
-3. **reCAPTCHA Site Key**: Must match in both `.env` and `client/index.html`
-4. **Gmail Security**: Requires app password, not regular password
-
-**Debugging Commands:**
-```bash
-# Check email service logs
-docker-compose logs app | grep -i email
-
-# Test contact form directly
-curl -X POST http://localhost:3000/api/contact \
-  -H "Content-Type: application/json" \
-  -d '{"firstName":"Test","lastName":"User","email":"test@example.com","message":"Test message"}'
-```
-
-### Photography Category Pages
-**Template Architecture:**
-- **Single Template**: `client/src/pages/photography-category.tsx` serves all photography categories
-- **Dynamic Categories**: wedding, portrait, corporate, event, product, graduation, matric-dance
-- **URL Structure**: `/photography/:category` (e.g., `/photography/weddings`)
-- **Title Format**: "Professional [Category Name] Photography" (e.g., "Professional Wedding Photography")
-- **Content Sections**: Hero, About/Features, Packages, Gallery, SEO content
+This rule prevents maintenance nightmares, ensures consistent user experience, and maintains system scalability.
 
 ---
 
@@ -503,9 +441,9 @@ curl -X POST http://localhost:3000/api/contact \
    - Never justify rule violations with "technical constraints" - get approval first
 
 2. **ESCALATION PROTOCOL FOR CONSTRAINTS**
-   - If established pattern doesn't fit → STOP and ask: "I need to extend the GradientBackground pattern for dynamic category data. Should I create a gradientOverride prop, or would you prefer a different approach?"
-   - If data structure doesn't match → STOP and ask: "The category data structure differs from homepage. Should I transform the data to match, or extend the component?"
-   - If CSS classes don't exist → STOP and ask: "I need new CSS classes for this implementation. Should I add them to index.css following the existing pattern?"
+   - If established pattern doesn't fit → STOP and ask for guidance
+   - If data structure doesn't match → STOP and ask how to transform or extend
+   - If CSS classes don't exist → STOP and ask where to add them
 
 3. **ZERO TOLERANCE IMPLEMENTATION**
    - ❌ NEVER write `style={{}}` - use CSS classes or ask for new ones
@@ -520,9 +458,9 @@ curl -X POST http://localhost:3000/api/contact \
    - If pattern doesn't apply → ESCALATE, don't deviate
 
 5. **DOCUMENTATION AND CONSISTENCY**
-   - Update `CLAUDE.md` and `SITE_MANAGEMENT_GUIDE.md` when patterns evolve (with user approval)
+   - Update `CLAUDE.md` when patterns evolve (with user approval)
    - Add clear rules to prevent future inconsistencies
-   - Include "working vs broken" examples in documentation
+   - Include working examples in documentation
    - Follow documented patterns even across different conversation sessions
 
 ### Common Anti-Patterns to Avoid
@@ -539,3 +477,50 @@ curl -X POST http://localhost:3000/api/contact \
 ✅ **Maintain architectural consistency**
 ✅ **Test implementations thoroughly**
 ✅ **Update documentation when patterns change**
+
+---
+
+## 📚 APPENDIX - LEGACY/UNCERTAIN SECTIONS
+
+*The following sections contain information that may be outdated or superseded by newer implementations. Review carefully before using.*
+
+### Photography Category Pages (Status: Uncertain)
+**Template Architecture:**
+- **Single Template**: `client/src/pages/photography-category.tsx` serves all photography categories
+- **Dynamic Categories**: wedding, portrait, corporate, event, product, graduation, matric-dance
+- **URL Structure**: `/photography/:category` (e.g., `/photography/weddings`)
+- **Title Format**: "Professional [Category Name] Photography" (e.g., "Professional Wedding Photography")
+- **Content Sections**: Hero, About/Features, Packages, Gallery, SEO content
+
+*Note: This may have been superseded by newer category management system. Verify current implementation.*
+
+### Dynamic Configuration Files (Status: Partially Superseded)
+**⚠️ PHOTOGRAPHY CATEGORY SYSTEM ARCHITECTURE**
+
+*Note: Parts of this may be outdated with new blog system and configuration management changes.*
+
+**PRIMARY FILES:**
+
+1. **`/shared/types/category-config.ts`** - DEFAULT FALLBACK CONTENT
+   - Contains `defaultCategoryPageConfig` used by admin dashboard when no saved data exists
+   - Used by admin component when `config.categoryPages.photography.[category]` is empty
+
+2. **`/server/data/site-config-overrides.json`** - PERSISTENT SAVED DATA
+   - Stores actual saved content from admin dashboard
+   - Structure: `categoryPages.photography.[category]` (e.g., `categoryPages.photography.corporate`)
+   - API: `/api/site-config/bulk` (PATCH method ONLY)
+
+*Verify if this is still the current configuration management approach.*
+
+### Contact Form & Email System (Status: Likely Current)
+*This section appears current but should be verified against latest implementation.*
+
+**Architecture**: The contact form system provides secure form submission with spam protection and automated email delivery to the studio owner.
+
+**Core Components:**
+- **Frontend Form** (`client/src/components/sections/contact-section.tsx`): React form with validation and reCAPTCHA integration
+- **Backend API** (`server/routes.ts`): `/api/contact` endpoint with reCAPTCHA verification and email sending
+- **Email Service** (`server/email-service.ts`): Nodemailer-based email delivery with Gmail SMTP
+- **reCAPTCHA Service** (`server/recaptcha-service.ts`): Google reCAPTCHA v3 bot protection
+
+*Verify these file paths and implementations are still current.*

@@ -9,6 +9,7 @@ interface GradientBackgroundProps {
   children: React.ReactNode;
   className?: string;
   fallbackGradient?: string;
+  fallbackSection?: string; // New prop for fallback section (e.g., 'stories-content' for blog posts)
   id?: string;
   // New props for category pages
   categoryType?: 'photography' | 'videography';
@@ -21,6 +22,7 @@ export function GradientBackground({
   children,
   className = '',
   fallbackGradient = 'linear-gradient(135deg, #1e293b 0%, #334155 50%, #0f172a 100%)',
+  fallbackSection,
   id,
   categoryType,
   categoryName,
@@ -44,8 +46,25 @@ export function GradientBackground({
   } = useAllGradients();
 
   // Get gradient config from bulk API (unified system)
-  // The new getGradient always returns a config (with defaults), so no null check needed
+  // Try primary section first, then fallback section if provided
   let gradientConfig = getGradient(gradientKey);
+  
+  // If this is a blog post without custom gradient, use fallback section
+  if (fallbackSection && gradientKey.startsWith('blog-post-')) {
+    const blogGradient = getGradient(gradientKey);
+    const fallbackGradient = getGradient(fallbackSection);
+    
+    // Check if blog gradient is actually custom or just defaults
+    // If it's the same as the fallback, use the fallback for consistency
+    if (blogGradient && fallbackGradient && 
+        blogGradient.startColor === fallbackGradient.startColor &&
+        blogGradient.middleColor === fallbackGradient.middleColor &&
+        blogGradient.endColor === fallbackGradient.endColor) {
+      gradientConfig = fallbackGradient;
+    } else if (!blogGradient) {
+      gradientConfig = fallbackGradient;
+    }
+  }
 
   // Legacy fallback only if gradient system is not loaded
   if (isGradientLoading && categoryType && categoryName && categorySectionName) {

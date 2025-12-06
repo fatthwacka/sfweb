@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRoute } from 'wouter';
 import { Navigation } from '@/components/layout/navigation';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { apiRequest } from '@/lib/queryClient';
 import { GradientBackground } from '@/components/common/gradient-background';
+import { useAllGradients } from '@/hooks/use-all-gradients';
 import {
   Calendar,
   Eye,
@@ -33,17 +34,18 @@ interface StoryPageParams {
 export function Story() {
   const { toast } = useToast();
   const [match, params] = useRoute<StoryPageParams>('/stories/:slug');
+  const { getGradient, isLoading: gradientsLoading } = useAllGradients();
+  const [gradientLoaded, setGradientLoaded] = useState(false);
   
-  if (!match || !params?.slug) {
-    return <div>Story not found</div>;
-  }
+  const slug = params?.slug || '';
 
-  const { slug } = params;
-
-  // Fetch the blog post by slug
+  // Fetch the blog post by slug - must be called even if no slug
   const { data: post, isLoading: postLoading, error } = useQuery<BlogPost>({
     queryKey: ['story', slug],
     queryFn: async () => {
+      if (!slug) {
+        throw new Error('No slug provided');
+      }
       // First get all posts and find by slug (since we don't have a direct slug endpoint)
       const response = await apiRequest('GET', '/api/blog/posts?status=published&limit=1000');
       const posts = await response.json();
@@ -55,7 +57,8 @@ export function Story() {
 
       return post;
     },
-    retry: false
+    retry: false,
+    enabled: !!slug // Only run query if slug exists
   });
 
   // Fetch categories
@@ -80,6 +83,28 @@ export function Story() {
     },
     enabled: !!post?.categoryId
   });
+
+  // Get blog-specific gradient or fall back to stories-content (moved here after all hooks)
+  const blogGradient = post ? getGradient(`blog-post-${post.id}`) : null;
+  const storiesGradient = getGradient('stories-content');
+  const effectiveGradient = blogGradient || storiesGradient;
+  
+  // Determine section key for GradientBackground
+  const gradientSection = post?.id ? `blog-post-${post.id}` : 'stories-content';
+  
+  // Enable smooth fade-in transition once gradients are loaded
+  useEffect(() => {
+    if (!gradientsLoading && effectiveGradient) {
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => setGradientLoaded(true), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [gradientsLoading, effectiveGradient]);
+
+  // Check for routing errors early
+  if (!match || !params?.slug) {
+    return <div>Story not found</div>;
+  }
 
   if (error) {
     return (
@@ -325,7 +350,10 @@ export function Story() {
 
       <Navigation />
 
-      <GradientBackground section="stories-content" className="min-h-screen">
+      <GradientBackground 
+        section={gradientSection} 
+        fallbackSection="stories-content"
+        className={`min-h-screen transition-opacity duration-700 ${gradientLoaded ? 'opacity-100' : 'opacity-95'}`}>
         {/* Back Navigation */}
         <div className="pt-20 px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
