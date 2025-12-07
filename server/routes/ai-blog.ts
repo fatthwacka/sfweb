@@ -190,7 +190,17 @@ async function callGeminiAPI(prompt: string) {
   if (!response.ok) {
     const errorData = await response.text();
     console.error('Gemini API Error:', errorData);
-    throw new Error(`Gemini API error: ${response.status}`);
+    
+    // Handle specific error cases
+    if (response.status === 429) {
+      throw new Error(`Rate limit exceeded. Please wait a few minutes before trying again.`);
+    } else if (response.status === 403) {
+      throw new Error(`API key invalid or insufficient permissions.`);
+    } else if (response.status === 400) {
+      throw new Error(`Invalid request. Please check your input and try again.`);
+    } else {
+      throw new Error(`Gemini API error (${response.status}). Please try again later.`);
+    }
   }
 
   const data = await response.json();

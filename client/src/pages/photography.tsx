@@ -3,8 +3,6 @@ import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Camera, ArrowRight, ChevronDown } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
 import { photography as defaultPhotography } from "@/config/site-config";
 import { CategoryNavigation } from "@/components/common/category-navigation";
 
@@ -81,46 +79,7 @@ const fallbackPhotography = {
 };
 
 export default function Photography() {
-  // Fetch photography configuration
-  const { data: photographyConfig, isLoading, error } = useQuery({
-    queryKey: ["/api/site-config/photography"],
-    queryFn: async () => {
-      try {
-        const response = await apiRequest("GET", "/api/site-config/photography");
-        return response;
-      } catch (error) {
-        console.log("No custom photography config found, using defaults");
-        return defaultPhotography || fallbackPhotography;
-      }
-    }
-  });
-
-  const config = photographyConfig || defaultPhotography || fallbackPhotography;
-
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-xl mb-2">Loading...</div>
-          <div className="text-muted-foreground">Preparing photography content</div>
-        </div>
-      </div>
-    );
-  }
-
-  // Ensure config has required structure
-  if (!config || !config.hero || !config.sections || !config.categories) {
-    console.error("Invalid photography configuration:", config);
-    return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-xl mb-2 text-red-400">Configuration Error</div>
-          <div className="text-muted-foreground">Photography settings are not properly configured</div>
-        </div>
-      </div>
-    );
-  }
+  const config = defaultPhotography || fallbackPhotography;
 
   return (
     <div className="min-h-screen bg-background text-foreground background-gradient-blobs">
@@ -138,7 +97,7 @@ export default function Photography() {
       <Navigation />
 
       {/* Hero Section */}
-      <section className="relative h-screen overflow-hidden flex items-center justify-center">
+      <section className="relative h-[60vh] overflow-hidden flex items-center justify-center">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
@@ -149,12 +108,12 @@ export default function Photography() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="mb-6">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-corinthia text-white leading-tight hero-title-white" style={{ marginBottom: '-0.5rem' }}>
             {config.hero.title}
           </h1>
-          <p className="script-tagline mb-8 max-w-3xl mx-auto">
+          <h3 className="text-lg md:text-xl text-white font-quicksand font-light mb-4">
             {config.hero.subtitle}
-          </p>
+          </h3>
 
           {/* Scroll Down Button */}
           <div className="flex justify-center">
@@ -212,44 +171,38 @@ export default function Photography() {
               {
                 name: "Weddings & Maternity",
                 slug: "weddings",
-                description: "Captured with timeless elegance",
-                image: "/images/hero/wedding-photography-hero.jpg",
-                features: ["Weddings", "Engagements", "Maternity", "Newborn"]
+                description: "Engagements, Maternity, Newborn",
+                image: "/images/hero/wedding-photography-hero.jpg"
               },
               {
                 name: "Portraits & Headshots",
                 slug: "portraits",
-                description: "Glossy magazine grade portraits",
-                image: "/images/hero/portrait-photography-hero.jpg",
-                features: ["Portraits", "Studio", "Headshots", "Family"]
+                description: "Studio, Headshots, Family",
+                image: "/images/hero/portrait-photography-hero.jpg"
               },
               {
                 name: "Products & Brands",
                 slug: "products",
-                description: "Stunning commercial photography",
-                image: "/images/hero/product-photography-hero.jpg",
-                features: ["Product Hero", "Catalog", "Lifestyle", "Ecommerce"]
+                description: "Hero, Catalog, Lifestyle, Ecommerce",
+                image: "/images/hero/product-photography-hero.jpg"
               },
               {
                 name: "Events & Functions",
                 slug: "events",
-                description: "Capturing memorable moments",
-                image: "/images/hero/Event-photography-hero.jpg",
-                features: ["Conferences", "Music Festivals", "Birthdays", "Parties"]
+                description: "Conferences, Music Festivals, Birthdays",
+                image: "/images/hero/Event-photography-hero.jpg"
               },
               {
                 name: "Corporate & Business",
                 slug: "corporate",
-                description: "Elevate your business profile",
-                image: "/images/hero/corporate-photography-hero.jpg",
-                features: ["Headshots", "Team building", "Offices", "Events"]
+                description: "Company intro, Team building, Adverts",
+                image: "/images/hero/corporate-photography-hero.jpg"
               },
               {
                 name: "Graduation",
                 slug: "graduation",
-                description: "Academic graduation photos",
-                image: "/images/hero/graduation-photography-hero.jpg",
-                features: ["Matric Dances", "Graduation", "University", "College"]
+                description: "Matric Dances, University, College",
+                image: "/images/hero/graduation-photography-hero.jpg"
               }
             ].map((category, index) => (
               <Link key={category.slug} href={`/photography/${category.slug}`}>
@@ -263,23 +216,11 @@ export default function Photography() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
                   </div>
 
-                  <div className="p-8 pb-6">
+                  <div className="p-8">
                     <h3 className="text-2xl text-gold mb-4">{category.name}</h3>
-                    <p className="text-muted-foreground mb-4">
+                    <p className="text-muted-foreground">
                       {category.description}
                     </p>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      {category.features.map((feature, featureIndex) => (
-                        <div
-                          key={featureIndex}
-                          className="flex items-center text-sm text-muted-foreground"
-                        >
-                          <div className="w-1.5 h-1.5 rounded-full mr-2 flex-shrink-0 bullet-point-accent"></div>
-                          {feature}
-                        </div>
-                      ))}
-                    </div>
                   </div>
                 </div>
               </Link>

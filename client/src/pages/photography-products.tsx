@@ -12,8 +12,49 @@ export default function PhotographyProducts() {
   const { config, isLoading } = useSiteConfig();
   
   // Get products photography configuration
-  const productsConfig = config?.categoryPages?.photography?.products;
-  
+  const productsConfig = config?.categoryPages?.photography?.products || {
+    hero: {
+      title: "Professional Product Photography",
+      subtitle: "Showcase your products with stunning commercial photography",
+      image: "/images/services/product-photography.jpg",
+      alt: "Professional Product Photography by SlyFox Studios"
+    },
+    serviceOverview: {
+      title: "Product Photography Services",
+      description: "Professional product photography in Durban",
+      features: ["E-commerce photography", "Catalog shoots", "Lifestyle product shots", "360° product views"],
+      image: "/images/services/product-photography.jpg"
+    },
+    packages: {
+      title: "Product Photography Packages",
+      description: "Choose the perfect package for your product photography"
+    },
+    recentWork: {
+      title: "Recent Product Photography",
+      description: "See our latest product photography work",
+      images: ["/images/services/product-photography.jpg"]
+    },
+    seoContent: {
+      title: "Professional Product Photography in Durban",
+      content: {
+        section1: {
+          title: "Product Photography Services",
+          text: "Professional product photography services in Durban"
+        },
+        section2: {
+          title: "Why Choose SlyFox Studios",
+          text: "Professional photographers with years of experience"
+        },
+        conclusion: "Contact us today to discuss your product photography needs"
+      }
+    },
+    seo: {
+      title: "Product Photography - SlyFox Studios",
+      description: "Professional product photography in Durban",
+      keywords: "product, photography, durban"
+    }
+  };
+
   if (isLoading || !productsConfig) {
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
@@ -34,10 +75,10 @@ export default function PhotographyProducts() {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="relative h-screen overflow-hidden flex items-center justify-center">
+      <section className="relative h-[60vh] overflow-hidden flex items-center justify-center">
         <div className="absolute inset-0">
           <img 
-            src={productsConfig.hero.image}
+            src={productsConfig.hero?.image || '/images/services/product-photography.jpg'}
             alt={productsConfig.hero.alt || `Professional Product Photography by SlyFox Studios in Durban - commercial product showcase with professional lighting`}
             className="w-full h-full object-cover"
           />
@@ -45,12 +86,12 @@ export default function PhotographyProducts() {
         </div>
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="mb-6">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-corinthia text-white leading-tight hero-title-white" style={{ marginBottom: '-0.5rem' }}>
             {productsConfig.hero.title}
           </h1>
-          <p className="script-tagline mb-8 max-w-3xl mx-auto">
+          <h3 className="text-lg md:text-xl text-white font-quicksand font-light mb-4">
             {productsConfig.hero.subtitle}
-          </p>
+          </h3>
 
           {/* Scroll Down Button */}
           <div className="flex justify-center">
@@ -78,7 +119,96 @@ export default function PhotographyProducts() {
         </div>
       </section>
 
-      {/* Service Overview Section */}
+      {/* Recent Work Section */}
+      <GradientBackground
+        section="photography-product-recent-work"
+        className="py-20"
+        categoryType="photography"
+        categoryName="products"
+        categorySectionName="recentWork"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl mb-6">
+              {productsConfig.recentWork.title}
+            </h2>
+            <h3 className="text-xl ">
+              {productsConfig.recentWork.description}
+            </h3>
+          </div>
+
+          {/* NEW DYNAMIC GRID */}
+          <CategoryFeaturedGrid 
+            categoryKey="products"
+            imageCount={6}
+          />
+        </div>
+      </GradientBackground>
+
+      {/* Packages Section */}
+      <GradientBackground
+        section="photography-product-packages"
+        className="py-20"
+        categoryType="photography"
+        categoryName="products"
+        categorySectionName="packages"
+      >
+        <PricingPackagesDisplay
+          pageIdentifier="photography_products"
+          title={productsConfig.packages.title || "Product Photography Packages"}
+          description={productsConfig.packages.description || "Professional product photography solutions"}
+          ctaLink="/contact"
+          ctaText="Book Now"
+        />
+      </GradientBackground>
+
+      {/* Photography Navigation Section - Explore Our Photography Services */}
+      <section className="py-16 bg-gradient-to-br from-slate-900 via-slate-700 to-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl mb-4 text-white">
+              Explore Our Photography Services
+            </h2>
+            <p className="text-lg text-gray-300">
+              Professional photography for every special occasion
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {[
+              { name: 'weddings', title: 'Weddings', subtitle: 'Capturing your special day', image: '/images/services/wedding-photography.jpg' },
+              { name: 'portraits', title: 'Portraits', subtitle: 'Headshots & portraits', image: '/images/services/portrait-photography.jpg' },
+              { name: 'corporate', title: 'Corporate', subtitle: 'Studio and On-site', image: '/images/services/corporate-photography.jpg' },
+              { name: 'events', title: 'Events', subtitle: 'Festivals & Celebrations', image: '/images/services/event-photography.jpg' },
+              { name: 'products', title: 'Products', subtitle: 'Brand & Product shots', image: '/images/services/product-photography.jpg' },
+              { name: 'graduation', title: 'Graduation', subtitle: 'Graduation & Matric dance', image: '/images/services/graduation-photography.jpg' }
+            ].map((categoryItem) => (
+              <Link key={categoryItem.name} href={`/photography/${categoryItem.name}`}>
+                <div className="group cursor-pointer bg-slate-800/60 rounded-lg overflow-hidden hover:bg-slate-700/60 transition-all duration-300 hover:scale-105">
+                  <div className="aspect-square bg-gray-700/50 relative overflow-hidden">
+                    <img 
+                      src={categoryItem.image} 
+                      alt={categoryItem.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="p-3 text-center">
+                    <h3 className="text-sm font-semibold text-white mb-1 group-hover:text-salmon transition-colors">
+                      {categoryItem.title}
+                    </h3>
+                    <p className="text-xs text-gray-400 leading-tight">
+                      {categoryItem.subtitle}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Service Overview Section - Professional Photography Services */}
       <GradientBackground
         id="category-services"
         section="photography-product-services"
@@ -122,73 +252,6 @@ export default function PhotographyProducts() {
               />
             </div>
           </div>
-        </div>
-      </GradientBackground>
-
-      {/* Packages Section */}
-      <GradientBackground
-        section="photography-product-packages"
-        className="py-20"
-        categoryType="photography"
-        categoryName="products"
-        categorySectionName="packages"
-      >
-        <PricingPackagesDisplay
-          pageIdentifier="photography_products"
-          title={productsConfig.packages.title || "Product Photography Packages"}
-          description={productsConfig.packages.description || "Professional product photography solutions"}
-          ctaLink="/contact"
-          ctaText="Book Now"
-        />
-      </GradientBackground>
-
-      {/* Recent Work Section */}
-      <GradientBackground
-        section="photography-product-recent-work"
-        className="py-20"
-        categoryType="photography"
-        categoryName="products"
-        categorySectionName="recentWork"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6">
-              {productsConfig.recentWork.title}
-            </h2>
-            <h3 className="text-xl ">
-              {productsConfig.recentWork.description}
-            </h3>
-          </div>
-
-          {/* OLD STATIC GRID - COMMENTED OUT
-          {productsConfig.recentWork.images.length > 0 ? (
-            <div className="grid md:grid-cols-3 gap-6">
-              {productsConfig.recentWork.images.map((image, index) => (
-                <div key={index} className="group cursor-pointer bg-gradient-to-br from-slate-800/60 to-gray-900/80 rounded-2xl overflow-hidden shadow-2xl hover:shadow-gold/20 transition-all duration-500 transform hover:scale-[1.02]">
-                  <div className="relative h-64 overflow-hidden">
-                    <img
-                      src={image}
-                      alt={`Product photography sample ${index + 1}`}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <Camera className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground">Gallery images will be displayed here</p>
-            </div>
-          )}
-          */}
-
-          {/* NEW DYNAMIC GRID */}
-          <CategoryFeaturedGrid 
-            categoryKey="products"
-            imageCount={6}
-          />
         </div>
       </GradientBackground>
 
@@ -242,52 +305,6 @@ export default function PhotographyProducts() {
           </div>
         </div>
       </GradientBackground>
-
-      {/* Photography Navigation Section */}
-      <section className="py-16 bg-gradient-to-br from-slate-900 via-slate-700 to-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl mb-4 text-white">
-              Explore Our Photography Services
-            </h2>
-            <p className="text-lg text-gray-300">
-              Professional photography for every special occasion
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {[
-              { name: 'weddings', title: 'Weddings', subtitle: 'Capturing your special day', image: '/images/services/wedding-photography.jpg' },
-              { name: 'portraits', title: 'Portraits', subtitle: 'Headshots & portraits', image: '/images/services/portrait-photography.jpg' },
-              { name: 'corporate', title: 'Corporate', subtitle: 'Studio and On-site', image: '/images/services/corporate-photography.jpg' },
-              { name: 'events', title: 'Events', subtitle: 'Festivals & Celebrations', image: '/images/services/event-photography.jpg' },
-              { name: 'products', title: 'Products', subtitle: 'Brand & Product shots', image: '/images/services/product-photography.jpg' },
-              { name: 'graduation', title: 'Graduation', subtitle: 'Graduation & Matric dance', image: '/images/services/graduation-photography.jpg' }
-            ].map((categoryItem) => (
-              <Link key={categoryItem.name} href={`/photography/${categoryItem.name}`}>
-                <div className="group cursor-pointer bg-slate-800/60 rounded-lg overflow-hidden hover:bg-slate-700/60 transition-all duration-300 hover:scale-105">
-                  <div className="aspect-square bg-gray-700/50 relative overflow-hidden">
-                    <img 
-                      src={categoryItem.image} 
-                      alt={categoryItem.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="p-3 text-center">
-                    <h3 className="text-sm font-semibold text-white mb-1 group-hover:text-salmon transition-colors">
-                      {categoryItem.title}
-                    </h3>
-                    <p className="text-xs text-gray-400 leading-tight">
-                      {categoryItem.subtitle}
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
 
       <Footer />
     </div>

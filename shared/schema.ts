@@ -429,6 +429,49 @@ export const siteGradients = pgTable("site_gradients", {
 });
 
 // Blog system tables
+// Featured Section type for blog posts
+export interface FeaturedSection {
+  type: 'none' | 'image' | 'video' | 'gallery' | 'quote' | 'cta' | 'before-after';
+  config: {
+    // Image config
+    imageUrl?: string;
+    imageAlt?: string;
+    imageCaption?: string;
+    height?: number; // viewport height percentage
+    
+    // Video config
+    youtubeId?: string;
+    youtubeTitle?: string;
+    videoHeight?: number;
+    
+    // Gallery config
+    galleryImages?: Array<{ url: string; alt?: string; caption?: string }>;
+    galleryColumns?: number;
+    
+    // Quote config
+    quoteText?: string;
+    quoteAuthor?: string;
+    quoteRole?: string;
+    
+    // CTA config
+    ctaTitle?: string;
+    ctaDescription?: string;
+    ctaButtonText?: string;
+    ctaButtonLink?: string;
+    ctaStyle?: 'default' | 'gradient' | 'bordered';
+    
+    // Before-After config
+    beforeImageUrl?: string;
+    afterImageUrl?: string;
+    beforeImageAlt?: string;
+    afterImageAlt?: string;
+    beforeLabel?: string; // "Before", "Original", "Raw"
+    afterLabel?: string;  // "After", "Edited", "Retouched"
+    defaultPosition?: number; // 0-100, default slider position
+    showLabels?: boolean; // show before/after text labels
+  };
+}
+
 export const blogPosts = pgTable("blog_posts", {
   id: uuid("id").defaultRandom().primaryKey(),
   title: text("title").notNull(),
@@ -438,6 +481,11 @@ export const blogPosts = pgTable("blog_posts", {
   coverImage: text("cover_image"), // URL to hero image at top of article
   postImage1: text("post_image_1"), // URL to first in-article image (after section 1)
   postImage2: text("post_image_2"), // URL to second in-article image (after section 2)
+  
+  // Featured and Variable content sections
+  featuredSection: jsonb("featured_section").$type<FeaturedSection>(), // Featured content section
+  variableContent: text("variable_content"), // Additional variable content area
+  
   seoTitle: text("seo_title"), // Custom SEO title (max 60 chars)
   seoDescription: text("seo_description"), // Custom meta description (max 160 chars)
   status: text("status").default("draft").notNull(), // 'draft', 'published', 'scheduled'

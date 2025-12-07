@@ -24,7 +24,9 @@ import {
 } from 'lucide-react';
 import { Link } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
-import type { BlogPost, BlogCategory } from '@shared/schema';
+import { BeforeAfterSlider } from '@/components/common/before-after-slider';
+import { createRoot } from 'react-dom/client';
+import type { BlogPost, BlogCategory, FeaturedSection } from '@shared/schema';
 
 interface StoryPageParams {
   slug: string;
@@ -101,6 +103,60 @@ export function Story() {
     }
   }, [gradientsLoading, effectiveGradient]);
 
+  // Set document title when post loads - MUST BE BEFORE EARLY RETURNS
+  useEffect(() => {
+    if (post) {
+      document.title = `${post.seoTitle || post.title} | SlyFox Photography Stories`;
+    }
+  }, [post]);
+
+  // Mount BeforeAfterSlider component into placeholder after content renders
+  useEffect(() => {
+    console.log('useEffect triggered, post:', post);
+    console.log('featuredSection:', post?.featuredSection);
+    
+    if (post && post.featuredSection?.type === 'before-after') {
+      console.log('Looking for before-after-slider element...');
+      const sliderElement = document.getElementById('before-after-slider');
+      console.log('Found element:', sliderElement);
+      
+      if (sliderElement && sliderElement.children.length === 0) {
+        console.log('Mounting BeforeAfterSlider component...');
+        const config = {
+          beforeImageUrl: sliderElement.dataset.beforeUrl,
+          afterImageUrl: sliderElement.dataset.afterUrl,
+          beforeImageAlt: sliderElement.dataset.beforeAlt,
+          afterImageAlt: sliderElement.dataset.afterAlt,
+          beforeLabel: sliderElement.dataset.beforeLabel,
+          afterLabel: sliderElement.dataset.afterLabel,
+          defaultPosition: parseInt(sliderElement.dataset.defaultPosition || '50'),
+          showLabels: sliderElement.dataset.showLabels === 'true'
+        };
+
+        console.log('Config for BeforeAfterSlider:', config);
+
+        const root = createRoot(sliderElement);
+        root.render(<BeforeAfterSlider config={config} />);
+        
+        // Store root reference for cleanup
+        (sliderElement as any)._reactRoot = root;
+        console.log('BeforeAfterSlider mounted successfully');
+      } else if (sliderElement && sliderElement.hasChildNodes()) {
+        console.log('Element already has children, skipping mount');
+      }
+    }
+
+    // Cleanup function
+    return () => {
+      const sliderElement = document.getElementById('before-after-slider');
+      if (sliderElement && (sliderElement as any)._reactRoot) {
+        console.log('Cleaning up BeforeAfterSlider...');
+        (sliderElement as any)._reactRoot.unmount();
+        delete (sliderElement as any)._reactRoot;
+      }
+    };
+  }, [post]);
+
   // Check for routing errors early
   if (!match || !params?.slug) {
     return <div>Story not found</div>;
@@ -169,6 +225,94 @@ export function Story() {
 
   // Convert markdown to HTML (for posts that weren't re-saved with HTML conversion)
   // Also adds IDs to h2 elements for anchor navigation
+  // Featured section rendering components
+  const renderFeaturedSection = (featuredSection: FeaturedSection): string => {
+    if (!featuredSection || featuredSection.type === 'none') return '';
+
+    const { type, config } = featuredSection;
+
+    switch (type) {
+      case 'image':
+        if (!config.imageUrl) return '';
+        const imageHeightStyle = config.height ? ` style="height: ${config.height}vh;"` : '';
+        return `
+          <section class="featured-section featured-image-section"${imageHeightStyle}>
+            <div class="h-full">
+              <figure class="featured-image-container h-full flex flex-col justify-center">
+                <img 
+                  src="${config.imageUrl}" 
+                  alt="${config.imageAlt || 'Featured image'}"
+                  class="w-full ${config.height ? 'h-full object-cover' : 'h-auto'} rounded-lg shadow-lg"
+                  loading="lazy"
+                />
+                ${config.caption ? `<figcaption class="text-center text-gray-300 text-sm mt-4 italic px-4 sm:px-6 lg:px-8">${config.caption}</figcaption>` : ''}
+              </figure>
+            </div>
+          </section>
+        `;
+
+      case 'youtube':
+        if (!config.youtubeUrl) return '';
+        const videoId = extractYouTubeVideoId(config.youtubeUrl);
+        if (!videoId) return '';
+        
+        const videoHeightStyle = config.height ? ` style="height: ${config.height}vh;"` : '';
+        return `
+          <section class="featured-section featured-video-section my-16"${videoHeightStyle}>
+            <div class="max-w-6xl mx-auto h-full">
+              <div class="featured-video-container ${config.height ? 'h-full' : 'aspect-video'} rounded-lg overflow-hidden shadow-lg flex flex-col justify-center">
+                <iframe
+                  src="https://www.youtube.com/embed/${videoId}?rel=0&showinfo=0"
+                  title="${config.youtubeTitle || 'Featured Video'}"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen
+                  class="w-full h-full"
+                ></iframe>
+              </div>
+              ${config.caption ? `<p class="text-center text-gray-300 text-sm mt-4 italic px-4 sm:px-6 lg:px-8">${config.caption}</p>` : ''}
+            </div>
+          </section>
+        `;
+
+      case 'before-after':
+        if (!config.beforeImageUrl || !config.afterImageUrl) return '';
+        return `
+          <section class="featured-section featured-before-after-section">
+            <div id="before-after-slider" 
+                 data-before-url="${config.beforeImageUrl}"
+                 data-after-url="${config.afterImageUrl}" 
+                 data-before-alt="${config.beforeImageAlt || 'Before image'}"
+                 data-after-alt="${config.afterImageAlt || 'After image'}"
+                 data-before-label="${config.beforeLabel || 'Before'}"
+                 data-after-label="${config.afterLabel || 'After'}"
+                 data-default-position="${config.defaultPosition || 50}"
+                 data-show-labels="${config.showLabels || false}">
+              <!-- React component will be mounted here -->
+            </div>
+          </section>
+        `;
+
+      default:
+        return '';
+    }
+  };
+
+  // Extract YouTube video ID from various URL formats
+  const extractYouTubeVideoId = (url: string): string | null => {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/
+    ];
+    
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+    return null;
+  };
+
   const processContent = (content: string): string => {
     if (!content) return '';
 
@@ -217,23 +361,103 @@ export function Story() {
     return processed;
   };
 
-  // Process content and insert post images between sections
-  // postImage1: shown inline in body (all screens)
-  // postImage2: shown in sidebar on desktop, inline on mobile
-  const processContentWithImages = (content: string, postImage1?: string, postImage2?: string): string => {
+  // Process content and split at featured section for proper layout
+  const processContentForLayout = (content: string, postImage1?: string, postImage2?: string, featuredSection?: FeaturedSection | null) => {
     const processedContent = processContent(content);
 
-    // If no post images, return as-is
-    if (!postImage1 && !postImage2) return processedContent;
+    // If no featured section, return content as single block
+    if (!featuredSection || featuredSection.type === 'none') {
+      return {
+        beforeFeatured: processContentWithImages(processedContent, postImage1, postImage2),
+        pullQuoteHtml: null,
+        featuredHtml: null,
+        afterFeatured: null
+      };
+    }
 
-    // Find all h2 headings to insert images after sections
-    const h2Regex = /<h2>/g;
+    // Find h2 positions and blockquotes for splitting
+    const h2Regex = /<h2[^>]*>/g;
     const h2Matches: number[] = [];
     let match;
 
     while ((match = h2Regex.exec(processedContent)) !== null) {
       h2Matches.push(match.index);
     }
+
+    // Find blockquote/pull-quote before the split point
+    const blockquoteRegex = /<blockquote[^>]*>[\s\S]*?<\/blockquote>/g;
+    const pullQuoteMatches: Array<{start: number, end: number, html: string}> = [];
+    
+    while ((match = blockquoteRegex.exec(processedContent)) !== null) {
+      pullQuoteMatches.push({
+        start: match.index,
+        end: match.index + match[0].length,
+        html: match[0]
+      });
+    }
+
+    // Determine split point (after section 2, but before any blockquote near that point)
+    let splitPoint;
+    if (h2Matches.length >= 3) {
+      splitPoint = h2Matches[2]; // After 3rd h2
+    } else if (h2Matches.length >= 2) {
+      splitPoint = processedContent.length; // At end if only 2 sections
+    } else {
+      splitPoint = Math.floor(processedContent.length * 0.66); // Fallback
+    }
+
+    // Find the last blockquote before the split point
+    let extractedPullQuote = null;
+    let pullQuoteToRemove = null;
+    
+    for (let i = pullQuoteMatches.length - 1; i >= 0; i--) {
+      const quote = pullQuoteMatches[i];
+      if (quote.start < splitPoint) {
+        extractedPullQuote = quote.html;
+        pullQuoteToRemove = quote;
+        // Adjust split point to just before the blockquote
+        splitPoint = quote.start;
+        break;
+      }
+    }
+
+    // Split content (removing the extracted pull quote if found)
+    let beforeContent = processedContent.slice(0, splitPoint);
+    let afterContent = processedContent.slice(pullQuoteToRemove ? pullQuoteToRemove.end : splitPoint);
+
+    // Process each part with images
+    const beforeWithImages = processContentWithImages(beforeContent, postImage1, null); // Only first image in first part
+    const afterWithImages = processContentWithImages(afterContent, null, postImage2); // Second image in second part
+
+    return {
+      beforeFeatured: beforeWithImages,
+      pullQuoteHtml: extractedPullQuote,
+      featuredHtml: renderFeaturedSection(featuredSection),
+      afterFeatured: afterWithImages
+    };
+  };
+
+  // Process content and insert post images between sections  
+  // postImage1: shown inline in body (all screens)
+  // postImage2: shown in sidebar on desktop, inline on mobile
+  const processContentWithImages = (content: string, postImage1?: string, postImage2?: string, featuredSection?: FeaturedSection | null): string => {
+    const processedContent = processContent(content);
+
+
+    // If no post images and no featured section, return as-is
+    if (!postImage1 && !postImage2 && (!featuredSection || featuredSection.type === 'none')) {
+      return processedContent;
+    }
+
+    // Find all h2 headings to insert images after sections
+    const h2Regex = /<h2[^>]*>/g;
+    const h2Matches: number[] = [];
+    let match;
+
+    while ((match = h2Regex.exec(processedContent)) !== null) {
+      h2Matches.push(match.index);
+    }
+
 
     // If we have h2 headings, insert images after them
     if (h2Matches.length >= 2) {
@@ -261,6 +485,23 @@ export function Story() {
           </figure>
         `;
         result = result.slice(0, insertPoint + offset) + imageHtml + result.slice(insertPoint + offset);
+        offset += imageHtml.length;
+      }
+
+      // Insert featured section after section 2 (after the second h2) - FULL WIDTH
+      if (featuredSection && featuredSection.type !== 'none' && 
+          (featuredSection.config.position === 'after-section-2' || !featuredSection.config.position)) {
+        
+        const insertPoint = h2Matches.length >= 3 ? h2Matches[2] : 
+                           h2Matches.length >= 2 ? processedContent.length : 
+                           Math.floor(processedContent.length * 0.66);
+        
+        const featuredHtml = renderFeaturedSection(featuredSection);
+        
+        if (featuredHtml) {
+          result = result.slice(0, insertPoint + offset) + featuredHtml + result.slice(insertPoint + offset);
+          offset += featuredHtml.length;
+        }
       }
 
       return result;
@@ -307,46 +548,6 @@ export function Story() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Dynamic Meta Tags */}
-      <head>
-        <title>{post.seoTitle || post.title} | SlyFox Photography Stories</title>
-        <meta name="description" content={post.seoDescription || post.excerpt || post.title} />
-        <meta property="og:title" content={post.title} />
-        <meta property="og:description" content={post.excerpt || post.title} />
-        <meta property="og:image" content={post.coverImage || '/images/logos/slyfox-logo-black.png'} />
-        <meta property="og:url" content={currentUrl} />
-        <meta property="og:type" content="article" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={post.title} />
-        <meta name="twitter:description" content={post.excerpt || post.title} />
-        <meta name="twitter:image" content={post.coverImage || '/images/logos/slyfox-logo-black.png'} />
-        
-        {/* Article structured data */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BlogPosting",
-            "headline": post.title,
-            "description": post.excerpt || post.title,
-            "image": post.coverImage,
-            "author": {
-              "@type": "Person",
-              "name": "SlyFox Photography"
-            },
-            "publisher": {
-              "@type": "Organization",
-              "name": "SlyFox Photography",
-              "logo": {
-                "@type": "ImageObject",
-                "url": `${typeof window !== 'undefined' ? window.location.origin : ''}/images/logos/slyfox-logo-black.png`
-              }
-            },
-            "datePublished": post.publishedAt || post.createdAt,
-            "dateModified": post.updatedAt,
-            "mainEntityOfPage": currentUrl
-          })}
-        </script>
-      </head>
 
       <Navigation />
 
@@ -411,185 +612,316 @@ export function Story() {
         </div>
       )}
 
-      {/* Article Content - Two Column Layout */}
-      <div className="px-4 sm:px-6 lg:px-8 pb-16">
-        <div className="max-w-6xl mx-auto">
-          <div className="story-two-column">
-            {/* Main Content Column */}
-            <div className="story-main-content">
-              <article
-                className="story-article"
-                dangerouslySetInnerHTML={{ __html: processContentWithImages(post.content, (post as any).postImage1, (post as any).postImage2) }}
-              />
+      {/* Article Content - Split Layout with Featured Section */}
+      {(() => {
+        const { beforeFeatured, pullQuoteHtml, featuredHtml, afterFeatured } = processContentForLayout(
+          post.content, 
+          (post as any).postImage1, 
+          (post as any).postImage2, 
+          post.featuredSection
+        );
 
-              {/* 3rd Image at bottom of article - full width like image 2 */}
-              {(post as any).postImage2 && (
-                <figure className="story-post-image mt-12">
-                  <img
-                    src={(post as any).postImage2}
-                    alt="Article conclusion visual"
-                    loading="lazy"
-                  />
-                </figure>
-              )}
-
-              {/* Back to Top Arrow */}
-              <div className="flex justify-center mt-12 mb-4">
-                <button
-                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                  className="group flex flex-col items-center gap-2 text-gray-400 hover:text-salmon transition-colors"
-                  aria-label="Back to top"
-                >
-                  <div className="p-3 rounded-full border border-gray-600 group-hover:border-salmon group-hover:bg-salmon/10 transition-all">
-                    <ArrowUp className="w-5 h-5" />
+        return (
+          <>
+            {/* First Part - Two Column Layout */}
+            <div className="px-4 sm:px-6 lg:px-8 pb-8">
+              <div className="max-w-6xl mx-auto">
+                <div className="story-two-column">
+                  {/* Main Content Column */}
+                  <div className="story-main-content">
+                    <article
+                      className="story-article"
+                      dangerouslySetInnerHTML={{ __html: beforeFeatured }}
+                    />
                   </div>
-                  <span className="text-sm">Back to top</span>
-                </button>
+
+                  {/* Sidebar Column - Visible on desktop */}
+                  <aside className="story-sidebar">
+                    {/* [0] Table of Contents - In This Article */}
+                    {(() => {
+                      const h2Matches = post.content.match(/<h2[^>]*>([^<]+)<\/h2>/g);
+                      if (h2Matches && h2Matches.length >= 2) {
+                        const headings = h2Matches.map(h => h.replace(/<\/?h2[^>]*>/g, ''));
+                        return (
+                          <div className="story-sidebar-card">
+                            <h3>In This Article</h3>
+                            <nav className="space-y-2">
+                              {headings.map((heading, idx) => (
+                                <a
+                                  key={idx}
+                                  href={`#section-${idx}`}
+                                  className="block text-sm text-gray-400 hover:text-salmon transition-colors py-1 border-l-2 border-gray-700 hover:border-salmon pl-3"
+                                >
+                                  {heading}
+                                </a>
+                              ))}
+                            </nav>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
+
+                    {/* [1] Pull Quote - extracted from excerpt */}
+                    {post.excerpt && (
+                      <div className="story-pull-quote">
+                        <div className="story-pull-quote-mark">"</div>
+                        <p className="story-pull-quote-text">
+                          {post.excerpt.length > 150 ? post.excerpt.slice(0, 150) + '...' : post.excerpt}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* [2] Post Image 2 (3rd image) in Sidebar */}
+                    {(post as any).postImage2 && (
+                      <div className="story-sidebar-card p-0 overflow-hidden rounded-xl">
+                        <img
+                          src={(post as any).postImage2}
+                          alt="Related visual"
+                          className="w-full h-48 object-cover"
+                        />
+                      </div>
+                    )}
+
+                    {/* [3] Share Card */}
+                    <div className="story-sidebar-card">
+                      <h3>Share This Story</h3>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleShare('facebook')}
+                          className="border-gray-600 text-gray-300 hover:bg-blue-600 hover:text-white hover:border-blue-500"
+                        >
+                          <Facebook className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleShare('twitter')}
+                          className="border-gray-600 text-gray-300 hover:bg-sky-500 hover:text-white hover:border-sky-400"
+                        >
+                          <Twitter className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleShare('linkedin')}
+                          className="border-gray-600 text-gray-300 hover:bg-blue-700 hover:text-white hover:border-blue-600"
+                        >
+                          <Linkedin className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleShare('copy')}
+                          className="border-gray-600 text-gray-300 hover:bg-gray-600 hover:text-white"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Article Details */}
+                    <div className="story-sidebar-card">
+                      <h3>Article Details</h3>
+                      <div className="space-y-3 text-sm text-gray-400">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-salmon" />
+                          <span>{formatDate(post.publishedAt || post.createdAt)}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-cyan" />
+                          <span>{estimateReadTime(post.content)} min read</span>
+                        </div>
+                        {category && (
+                          <div className="flex items-center gap-2">
+                            <BookOpen className="w-4 h-4" style={{ color: category.color }} />
+                            <span>{category.name}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Related Stories in Sidebar */}
+                    {relatedPosts.length > 0 && (
+                      <div className="story-sidebar-card">
+                        <h3>Related Stories</h3>
+                        <div className="space-y-4">
+                          {relatedPosts.slice(0, 2).map((relatedPost) => (
+                            <Link key={relatedPost.id} href={`/stories/${relatedPost.slug}`}>
+                              <div className="group cursor-pointer">
+                                {relatedPost.coverImage && (
+                                  <div className="h-24 rounded-lg overflow-hidden mb-2">
+                                    <img
+                                      src={relatedPost.coverImage}
+                                      alt={relatedPost.title}
+                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                    />
+                                  </div>
+                                )}
+                                <h4 className="text-sm font-medium text-gray-300 group-hover:text-salmon transition-colors line-clamp-2">
+                                  {relatedPost.title}
+                                </h4>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </aside>
+                </div>
               </div>
             </div>
 
-            {/* Sidebar Column - Visible on desktop */}
-            <aside className="story-sidebar">
-              {/* [0] Table of Contents - In This Article */}
-              {(() => {
-                const h2Matches = post.content.match(/<h2[^>]*>([^<]+)<\/h2>/g);
-                if (h2Matches && h2Matches.length >= 2) {
-                  const headings = h2Matches.map(h => h.replace(/<\/?h2[^>]*>/g, ''));
-                  return (
-                    <div className="story-sidebar-card">
-                      <h3>In This Article</h3>
-                      <nav className="space-y-2">
-                        {headings.map((heading, idx) => (
-                          <a
-                            key={idx}
-                            href={`#section-${idx}`}
-                            className="block text-sm text-gray-400 hover:text-salmon transition-colors py-1 border-l-2 border-gray-700 hover:border-salmon pl-3"
-                          >
-                            {heading}
-                          </a>
-                        ))}
-                      </nav>
+            {/* Full Width Section - Pull Quote + Featured Content */}
+            {(pullQuoteHtml || featuredHtml) && (
+              <div className="my-16">
+                {/* Pull Quote - Full Width Styled */}
+                {pullQuoteHtml && (
+                  <div className="max-w-6xl mx-auto mb-8">
+                    <div className="story-full-width-pull-quote">
+                      <div 
+                        className="story-full-width-pull-quote-content"
+                        dangerouslySetInnerHTML={{ __html: pullQuoteHtml.replace(/<\/?blockquote[^>]*>/g, '') }} 
+                      />
                     </div>
-                  );
-                }
-                return null;
-              })()}
-
-              {/* [1] Pull Quote - extracted from excerpt */}
-              {post.excerpt && (
-                <div className="story-pull-quote">
-                  <div className="story-pull-quote-mark">"</div>
-                  <p className="story-pull-quote-text">
-                    {post.excerpt.length > 150 ? post.excerpt.slice(0, 150) + '...' : post.excerpt}
-                  </p>
-                </div>
-              )}
-
-              {/* [2] Post Image 2 (3rd image) in Sidebar */}
-              {(post as any).postImage2 && (
-                <div className="story-sidebar-card p-0 overflow-hidden rounded-xl">
-                  <img
-                    src={(post as any).postImage2}
-                    alt="Related visual"
-                    className="w-full h-48 object-cover"
-                  />
-                </div>
-              )}
-
-              {/* [3] Share Card */}
-              <div className="story-sidebar-card">
-                <h3>Share This Story</h3>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleShare('facebook')}
-                    className="border-gray-600 text-gray-300 hover:bg-blue-600 hover:text-white hover:border-blue-500"
-                  >
-                    <Facebook className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleShare('twitter')}
-                    className="border-gray-600 text-gray-300 hover:bg-sky-500 hover:text-white hover:border-sky-400"
-                  >
-                    <Twitter className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleShare('linkedin')}
-                    className="border-gray-600 text-gray-300 hover:bg-blue-700 hover:text-white hover:border-blue-600"
-                  >
-                    <Linkedin className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleShare('copy')}
-                    className="border-gray-600 text-gray-300 hover:bg-gray-600 hover:text-white"
-                  >
-                    <Copy className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-
-              {/* Article Details */}
-              <div className="story-sidebar-card">
-                <h3>Article Details</h3>
-                <div className="space-y-3 text-sm text-gray-400">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-salmon" />
-                    <span>{formatDate(post.publishedAt || post.createdAt)}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-cyan" />
-                    <span>{estimateReadTime(post.content)} min read</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Eye className="w-4 h-4 text-purple-400" />
-                    <span>{post.viewCount} views</span>
-                  </div>
-                  {category && (
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="w-4 h-4" style={{ color: category.color }} />
-                      <span>{category.name}</span>
+                )}
+                
+                {/* Featured Section */}
+                {featuredHtml && (
+                  <div className="px-4 sm:px-6 lg:px-8">
+                    <div className="max-w-6xl mx-auto">
+                      <div dangerouslySetInnerHTML={{ __html: featuredHtml }} />
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
+            )}
 
-              {/* Related Stories in Sidebar */}
-              {relatedPosts.length > 0 && (
-                <div className="story-sidebar-card">
-                  <h3>Related Stories</h3>
-                  <div className="space-y-4">
-                    {relatedPosts.slice(0, 2).map((relatedPost) => (
-                      <Link key={relatedPost.id} href={`/stories/${relatedPost.slug}`}>
-                        <div className="group cursor-pointer">
-                          {relatedPost.coverImage && (
-                            <div className="h-24 rounded-lg overflow-hidden mb-2">
-                              <img
-                                src={relatedPost.coverImage}
-                                alt={relatedPost.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              />
+            {/* Second Part - Two Column Layout (if there's content after featured section) */}
+            {afterFeatured && (
+              <div className="px-4 sm:px-6 lg:px-8 pb-8">
+                <div className="max-w-6xl mx-auto">
+                  <div className="story-two-column">
+                    {/* Main Content Column */}
+                    <div className="story-main-content">
+                      <article
+                        className="story-article"
+                        dangerouslySetInnerHTML={{ __html: afterFeatured }}
+                      />
+
+                      {/* 3rd Image at bottom of article - full width like image 2 */}
+                      {(post as any).postImage2 && (
+                        <figure className="story-post-image mt-12">
+                          <img
+                            src={(post as any).postImage2}
+                            alt="Article conclusion visual"
+                            loading="lazy"
+                          />
+                        </figure>
+                      )}
+
+                      {/* Back to Top Arrow */}
+                      <div className="flex justify-center mt-12 mb-4">
+                        <button
+                          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                          className="group flex flex-col items-center gap-2 text-gray-400 hover:text-salmon transition-colors"
+                          aria-label="Back to top"
+                        >
+                          <div className="p-3 rounded-full border border-gray-600 group-hover:border-salmon group-hover:bg-salmon/10 transition-all">
+                            <ArrowUp className="w-5 h-5" />
+                          </div>
+                          <span className="text-sm">Back to top</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Second Part Sidebar - Useful Widgets */}
+                    <aside className="story-sidebar">
+                      {/* [0] Table of Contents - In This Article (Repeat) */}
+                      {(() => {
+                        const h2Matches = post.content.match(/<h2[^>]*>([^<]+)<\/h2>/g);
+                        if (h2Matches && h2Matches.length >= 2) {
+                          const headings = h2Matches.map(h => h.replace(/<\/?h2[^>]*>/g, ''));
+                          return (
+                            <div className="story-sidebar-card">
+                              <h3>In This Article</h3>
+                              <nav className="space-y-2">
+                                {headings.map((heading, idx) => (
+                                  <a
+                                    key={idx}
+                                    href={`#section-${idx}`}
+                                    className="block text-sm text-gray-400 hover:text-salmon transition-colors py-1 border-l-2 border-gray-700 hover:border-salmon pl-3"
+                                  >
+                                    {heading}
+                                  </a>
+                                ))}
+                              </nav>
                             </div>
-                          )}
-                          <h4 className="text-sm font-medium text-gray-300 group-hover:text-salmon transition-colors line-clamp-2">
-                            {relatedPost.title}
-                          </h4>
+                          );
+                        }
+                        return null;
+                      })()}
+
+                      {/* [1] Post Image 1 in Second Sidebar */}
+                      {(post as any).postImage1 && (
+                        <div className="story-sidebar-card p-0 overflow-hidden rounded-xl">
+                          <img
+                            src={(post as any).postImage1}
+                            alt="Featured visual"
+                            className="w-full h-48 object-cover"
+                          />
                         </div>
-                      </Link>
-                    ))}
+                      )}
+
+                      {/* [2] Share Card (Repeat) */}
+                      <div className="story-sidebar-card">
+                        <h3>Share This Story</h3>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleShare('facebook')}
+                            className="border-gray-600 text-gray-300 hover:bg-blue-600 hover:text-white hover:border-blue-500"
+                          >
+                            <Facebook className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleShare('twitter')}
+                            className="border-gray-600 text-gray-300 hover:bg-sky-500 hover:text-white hover:border-sky-400"
+                          >
+                            <Twitter className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleShare('linkedin')}
+                            className="border-gray-600 text-gray-300 hover:bg-blue-700 hover:text-white hover:border-blue-600"
+                          >
+                            <Linkedin className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleShare('copy')}
+                            className="border-gray-600 text-gray-300 hover:bg-gray-600 hover:text-white"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </aside>
                   </div>
                 </div>
-              )}
-            </aside>
-          </div>
-        </div>
-      </div>
+              </div>
+            )}
+          </>
+        );
+      })()}
 
       {/* Related Stories - Mobile only (desktop shows in sidebar) */}
       {relatedPosts.length > 0 && (

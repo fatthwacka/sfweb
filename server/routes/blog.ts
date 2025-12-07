@@ -38,7 +38,9 @@ router.get('/posts', async (req, res) => {
         categoryId: blogPosts.categoryId,
         authorId: blogPosts.authorId,
         seoTitle: blogPosts.seoTitle,
-        seoDescription: blogPosts.seoDescription
+        seoDescription: blogPosts.seoDescription,
+        featuredSection: blogPosts.featuredSection,
+        variableContent: blogPosts.variableContent
       })
       .from(blogPosts)
       .orderBy(desc(blogPosts.createdAt));

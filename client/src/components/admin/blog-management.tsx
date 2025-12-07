@@ -37,7 +37,7 @@ import {
   RefreshCw,
   Undo2
 } from "lucide-react";
-import type { BlogPost, BlogCategory, BlogTag, InsertBlogPost } from "@shared/schema";
+import type { BlogPost, BlogCategory, BlogTag, InsertBlogPost, FeaturedSection } from "@shared/schema";
 
 interface BlogManagementProps {
   userRole: string;
@@ -132,6 +132,19 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
     conclusion: { heading: '', content: '' }
   });
 
+  // Featured section state
+  const [featuredSection, setFeaturedSection] = useState<FeaturedSection>({
+    type: 'none',
+    config: {}
+  });
+
+  // Variable content state
+  const [variableContent, setVariableContent] = useState<string>('');
+
+  // Featured section image upload state
+  const [isDraggingFeatured, setIsDraggingFeatured] = useState(false);
+  const [featuredImageUploading, setFeaturedImageUploading] = useState(false);
+
   // Image upload state
   const [isDragging, setIsDragging] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
@@ -197,6 +210,11 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
         pullQuote: '',
         conclusion: { heading: '', content: '' }
       });
+      setFeaturedSection({
+        type: 'none',
+        config: {}
+      });
+      setVariableContent('');
     },
     onError: (error) => {
       console.error('Blog post save error:', error);
@@ -740,6 +758,157 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
     setEditorPost(prev => ({ ...prev, postImage2: undefined }));
   };
 
+  // Featured image drag-drop handlers
+  const handleDragOverFeatured = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingFeatured(true);
+  }, []);
+
+  const handleDragLeaveFeatured = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setIsDraggingFeatured(false);
+  }, []);
+
+  const handleDropFeatured = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingFeatured(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    const imageFile = files.find(file => file.type.startsWith('image/'));
+
+    if (imageFile) {
+      await handleFeaturedImageUpload(imageFile);
+    }
+  }, []);
+
+  const handleFeaturedFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      await handleFeaturedImageUpload(file);
+    }
+  }, []);
+
+  const handleFeaturedImageUpload = async (file: File) => {
+    if (file.size > 10 * 1024 * 1024) { // 10MB
+      toast({ title: "Error", description: "Image must be smaller than 10MB", variant: "destructive" });
+      return;
+    }
+
+    setFeaturedImageUploading(true);
+
+    try {
+      // Compress client-side: featured images max 1400px, 82% quality
+      const originalSize = file.size;
+      const compressedFile = await compressImage(file, 1400, 0.82);
+      const compressionRatio = ((originalSize - compressedFile.size) / originalSize * 100).toFixed(0);
+      
+      const formData = new FormData();
+      formData.append('file', compressedFile);
+      formData.append('location', 'uploads');
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const data = await response.json();
+      
+      setFeaturedSection(prev => ({
+        ...prev,
+        config: { ...prev.config, imageUrl: data.path }
+      }));
+      
+      toast({
+        title: "Success",
+        description: compressionRatio !== '0' ? `Featured image uploaded (${compressionRatio}% smaller)` : "Featured image uploaded"
+      });
+    } catch (error) {
+      console.error('Featured image upload error:', error);
+      toast({ title: "Error", description: "Failed to upload featured image", variant: "destructive" });
+    } finally {
+      setFeaturedImageUploading(false);
+    }
+  };
+
+  const removeFeaturedImage = () => {
+    setFeaturedSection(prev => ({
+      ...prev,
+      config: { ...prev.config, imageUrl: undefined }
+    }));
+  };
+
+  // Before-After image upload handlers
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'before' | 'after') => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      await handleBeforeAfterImageUpload(file, type);
+    }
+  };
+
+  const handleImageDrop = async (e: React.DragEvent, type: 'before' | 'after') => {
+    e.preventDefault();
+    
+    const files = Array.from(e.dataTransfer.files);
+    const imageFile = files.find(file => file.type.startsWith('image/'));
+
+    if (imageFile) {
+      await handleBeforeAfterImageUpload(imageFile, type);
+    }
+  };
+
+  const handleBeforeAfterImageUpload = async (file: File, type: 'before' | 'after') => {
+    if (file.size > 10 * 1024 * 1024) { // 10MB
+      toast({ title: "Error", description: "Image must be smaller than 10MB", variant: "destructive" });
+      return;
+    }
+
+    try {
+      // Compress client-side: featured images max 1400px, 82% quality 
+      const originalSize = file.size;
+      const compressedFile = await compressImage(file, 1400, 0.82);
+      const compressionRatio = ((originalSize - compressedFile.size) / originalSize * 100).toFixed(0);
+      
+      const formData = new FormData();
+      formData.append('file', compressedFile);
+      formData.append('location', 'uploads');
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const data = await response.json();
+      
+      setFeaturedSection(prev => ({
+        ...prev,
+        config: { 
+          ...prev.config, 
+          [`${type}ImageUrl`]: data.path,
+          [`${type}ImageAlt`]: prev.config[`${type}ImageAlt`] || `${type} image`
+        }
+      }));
+      
+      toast({
+        title: "Success",
+        description: compressionRatio !== '0' 
+          ? `${type} image uploaded (${compressionRatio}% smaller)` 
+          : `${type} image uploaded`
+      });
+    } catch (error) {
+      console.error(`${type} image upload error:`, error);
+      toast({ title: "Error", description: `Failed to upload ${type} image`, variant: "destructive" });
+    }
+  };
+
   // Content type labels for display
   const contentTypeLabels = {
     'case-study': 'Case Study',
@@ -1225,6 +1394,16 @@ Please provide only the enhanced content without any additional text or explanat
       conclusion: { heading: conclusionHeading, content: conclusionContent }
     });
 
+    // Load featured section if it exists
+    if ((post as any).featuredSection) {
+      setFeaturedSection((post as any).featuredSection);
+    } else {
+      setFeaturedSection({ type: 'none', config: {} });
+    }
+
+    // Load variable content if it exists
+    setVariableContent((post as any).variableContent || '');
+
     setSlugManuallyEdited(true); // Editing existing post, preserve their slug
     setSlugStatus('idle');
     setActiveView('editor');
@@ -1255,6 +1434,11 @@ Please provide only the enhanced content without any additional text or explanat
       pullQuote: '',
       conclusion: { heading: '', content: '' }
     });
+    setFeaturedSection({
+      type: 'none',
+      config: {}
+    });
+    setVariableContent('');
     setSlugManuallyEdited(false); // New post, auto-generate slug from title
     setSlugStatus('idle');
     setActiveView('editor');
@@ -1311,6 +1495,8 @@ Please provide only the enhanced content without any additional text or explanat
                   ...editorPost,
                   excerpt: contentSections.subtitle || editorPost.excerpt,
                   content: combineContentSections(),
+                  featuredSection,
+                  variableContent,
                   status: 'draft'
                 };
                 
@@ -1344,6 +1530,8 @@ Please provide only the enhanced content without any additional text or explanat
                   ...editorPost,
                   excerpt: contentSections.subtitle || editorPost.excerpt,
                   content: combineContentSections(),
+                  featuredSection,
+                  variableContent,
                   status: 'published'
                 };
                 
@@ -1683,10 +1871,688 @@ Please provide only the enhanced content without any additional text or explanat
                 </p>
               </CardContent>
             </Card>
+
+            {/* Featured/Variable Section */}
+            <Card className="admin-gradient-card">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Settings2 className="w-5 h-5" />
+                  Featured Section
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-xs text-gray-400">Add a special content section that appears after section 2 of your article</p>
+
+                {/* Section Type Selector */}
+                <div>
+                  <Label className="text-gray-300">Section Type</Label>
+                  <Select
+                    value={featuredSection.type}
+                    onValueChange={(value: any) => setFeaturedSection(prev => ({
+                      type: value,
+                      config: value === 'none' ? {} : prev.config
+                    }))}
+                  >
+                    <SelectTrigger className="!bg-white !text-gray-900 border-gray-300">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="image">📸 Featured Image</SelectItem>
+                      <SelectItem value="video">🎥 YouTube Video</SelectItem>
+                      <SelectItem value="gallery">🖼️ Image Gallery</SelectItem>
+                      <SelectItem value="quote">💬 Pull Quote</SelectItem>
+                      <SelectItem value="cta">🎯 Call to Action</SelectItem>
+                      <SelectItem value="before-after">⚡ Before/After Slider</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Image Configuration */}
+                {featuredSection.type === 'image' && (
+                  <div className="space-y-3 p-3 bg-gray-700/50 rounded-lg">
+                    {/* Image Preview and Upload */}
+                    {featuredSection.config.imageUrl ? (
+                      <div className="relative group">
+                        <img
+                          src={featuredSection.config.imageUrl}
+                          alt="Featured image preview"
+                          className="w-full h-48 object-cover rounded-lg"
+                        />
+                        <button
+                          onClick={removeFeaturedImage}
+                          className="absolute top-2 right-2 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Remove featured image"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                        <p className="text-xs text-gray-400 mt-2 truncate">
+                          {featuredSection.config.imageUrl}
+                        </p>
+                      </div>
+                    ) : (
+                      <div
+                        onDragOver={handleDragOverFeatured}
+                        onDragLeave={handleDragLeaveFeatured}
+                        onDrop={handleDropFeatured}
+                        className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
+                          isDraggingFeatured
+                            ? 'border-cyan-400 bg-cyan-400/10'
+                            : 'border-gray-600 hover:border-gray-500'
+                        } ${featuredImageUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                        onClick={() => document.getElementById('featured-image-input')?.click()}
+                      >
+                        <input
+                          id="featured-image-input"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFeaturedFileSelect}
+                          className="hidden"
+                        />
+                        {featuredImageUploading ? (
+                          <>
+                            <RefreshCw className="w-8 h-8 text-cyan-400 mx-auto mb-2 animate-spin" />
+                            <p className="text-sm text-gray-300">Uploading...</p>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                            <p className="text-sm text-gray-300">
+                              {isDraggingFeatured ? 'Drop featured image here' : 'Drag & drop featured image'}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              or click to browse (max 10MB)
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    )}
+                    
+                    <div>
+                      <Label className="text-gray-300 text-sm">Image URL</Label>
+                      <Input
+                        placeholder="/uploads/featured-image.jpg"
+                        value={featuredSection.config.imageUrl || ''}
+                        onChange={(e) => setFeaturedSection(prev => ({
+                          ...prev,
+                          config: { ...prev.config, imageUrl: e.target.value }
+                        }))}
+                        className="!bg-white !text-gray-900 border-gray-300 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300 text-sm">Alt Text</Label>
+                      <Input
+                        placeholder="Description of the image"
+                        value={featuredSection.config.imageAlt || ''}
+                        onChange={(e) => setFeaturedSection(prev => ({
+                          ...prev,
+                          config: { ...prev.config, imageAlt: e.target.value }
+                        }))}
+                        className="!bg-white !text-gray-900 border-gray-300 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300 text-sm">Caption (optional)</Label>
+                      <Input
+                        placeholder="Image caption or credit"
+                        value={featuredSection.config.imageCaption || ''}
+                        onChange={(e) => setFeaturedSection(prev => ({
+                          ...prev,
+                          config: { ...prev.config, imageCaption: e.target.value }
+                        }))}
+                        className="!bg-white !text-gray-900 border-gray-300 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300 text-sm">Height (% of viewport)</Label>
+                      <Input
+                        type="number"
+                        placeholder="60"
+                        min="20"
+                        max="100"
+                        value={featuredSection.config.height || ''}
+                        onChange={(e) => setFeaturedSection(prev => ({
+                          ...prev,
+                          config: { ...prev.config, height: parseInt(e.target.value) || undefined }
+                        }))}
+                        className="!bg-white !text-gray-900 border-gray-300 text-sm"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Video Configuration */}
+                {featuredSection.type === 'video' && (
+                  <div className="space-y-3 p-3 bg-gray-700/50 rounded-lg">
+                    <div>
+                      <Label className="text-gray-300 text-sm">YouTube Video ID</Label>
+                      <Input
+                        placeholder="dQw4w9WgXcQ"
+                        value={featuredSection.config.youtubeId || ''}
+                        onChange={(e) => setFeaturedSection(prev => ({
+                          ...prev,
+                          config: { ...prev.config, youtubeId: e.target.value }
+                        }))}
+                        className="!bg-white !text-gray-900 border-gray-300 text-sm"
+                      />
+                      <p className="text-xs text-gray-400 mt-1">
+                        Just the video ID from the YouTube URL
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-gray-300 text-sm">Video Title</Label>
+                      <Input
+                        placeholder="Video title for accessibility"
+                        value={featuredSection.config.youtubeTitle || ''}
+                        onChange={(e) => setFeaturedSection(prev => ({
+                          ...prev,
+                          config: { ...prev.config, youtubeTitle: e.target.value }
+                        }))}
+                        className="!bg-white !text-gray-900 border-gray-300 text-sm"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Quote Configuration */}
+                {featuredSection.type === 'quote' && (
+                  <div className="space-y-3 p-3 bg-gray-700/50 rounded-lg">
+                    <div>
+                      <Label className="text-gray-300 text-sm">Quote Text</Label>
+                      <Textarea
+                        placeholder="Inspirational or key quote from the content..."
+                        value={featuredSection.config.quoteText || ''}
+                        onChange={(e) => setFeaturedSection(prev => ({
+                          ...prev,
+                          config: { ...prev.config, quoteText: e.target.value }
+                        }))}
+                        className="!bg-white !text-gray-900 border-gray-300 text-sm resize-none"
+                        rows={3}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300 text-sm">Author</Label>
+                      <Input
+                        placeholder="Author name"
+                        value={featuredSection.config.quoteAuthor || ''}
+                        onChange={(e) => setFeaturedSection(prev => ({
+                          ...prev,
+                          config: { ...prev.config, quoteAuthor: e.target.value }
+                        }))}
+                        className="!bg-white !text-gray-900 border-gray-300 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300 text-sm">Role/Title (optional)</Label>
+                      <Input
+                        placeholder="CEO, Expert, etc."
+                        value={featuredSection.config.quoteRole || ''}
+                        onChange={(e) => setFeaturedSection(prev => ({
+                          ...prev,
+                          config: { ...prev.config, quoteRole: e.target.value }
+                        }))}
+                        className="!bg-white !text-gray-900 border-gray-300 text-sm"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* CTA Configuration */}
+                {featuredSection.type === 'cta' && (
+                  <div className="space-y-3 p-3 bg-gray-700/50 rounded-lg">
+                    <div>
+                      <Label className="text-gray-300 text-sm">CTA Title</Label>
+                      <Input
+                        placeholder="Ready to Get Started?"
+                        value={featuredSection.config.ctaTitle || ''}
+                        onChange={(e) => setFeaturedSection(prev => ({
+                          ...prev,
+                          config: { ...prev.config, ctaTitle: e.target.value }
+                        }))}
+                        className="!bg-white !text-gray-900 border-gray-300 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300 text-sm">Description</Label>
+                      <Textarea
+                        placeholder="Brief description or value proposition..."
+                        value={featuredSection.config.ctaDescription || ''}
+                        onChange={(e) => setFeaturedSection(prev => ({
+                          ...prev,
+                          config: { ...prev.config, ctaDescription: e.target.value }
+                        }))}
+                        className="!bg-white !text-gray-900 border-gray-300 text-sm resize-none"
+                        rows={2}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300 text-sm">Button Text</Label>
+                      <Input
+                        placeholder="Contact Us"
+                        value={featuredSection.config.ctaButtonText || ''}
+                        onChange={(e) => setFeaturedSection(prev => ({
+                          ...prev,
+                          config: { ...prev.config, ctaButtonText: e.target.value }
+                        }))}
+                        className="!bg-white !text-gray-900 border-gray-300 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300 text-sm">Button Link</Label>
+                      <Input
+                        placeholder="/contact"
+                        value={featuredSection.config.ctaButtonLink || ''}
+                        onChange={(e) => setFeaturedSection(prev => ({
+                          ...prev,
+                          config: { ...prev.config, ctaButtonLink: e.target.value }
+                        }))}
+                        className="!bg-white !text-gray-900 border-gray-300 text-sm"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Before-After Configuration */}
+                {featuredSection.type === 'before-after' && (
+                  <div className="space-y-4 p-3 bg-gray-700/50 rounded-lg">
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Before Image Upload */}
+                      <div>
+                        <Label className="text-gray-300 text-sm mb-2 block">Before Image</Label>
+                        {featuredSection.config.beforeImageUrl ? (
+                          <div className="relative group">
+                            <img
+                              src={featuredSection.config.beforeImageUrl}
+                              alt="Before image preview"
+                              className="w-full h-32 object-cover rounded-lg"
+                            />
+                            <button
+                              onClick={() => setFeaturedSection(prev => ({
+                                ...prev,
+                                config: { ...prev.config, beforeImageUrl: '', beforeImageAlt: '' }
+                              }))}
+                              className="absolute top-2 right-2 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Remove before image"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div
+                            className="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center hover:border-cyan-400 transition-colors cursor-pointer"
+                            onDrop={(e) => handleImageDrop(e, 'before')}
+                            onDragOver={(e) => e.preventDefault()}
+                            onClick={() => document.getElementById('before-image-input')?.click()}
+                          >
+                            <ImageIcon className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                            <p className="text-xs text-gray-400">Drop before image or click to browse</p>
+                          </div>
+                        )}
+                        <input
+                          id="before-image-input"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleImageUpload(e, 'before')}
+                          className="hidden"
+                        />
+                      </div>
+
+                      {/* After Image Upload */}
+                      <div>
+                        <Label className="text-gray-300 text-sm mb-2 block">After Image</Label>
+                        {featuredSection.config.afterImageUrl ? (
+                          <div className="relative group">
+                            <img
+                              src={featuredSection.config.afterImageUrl}
+                              alt="After image preview"
+                              className="w-full h-32 object-cover rounded-lg"
+                            />
+                            <button
+                              onClick={() => setFeaturedSection(prev => ({
+                                ...prev,
+                                config: { ...prev.config, afterImageUrl: '', afterImageAlt: '' }
+                              }))}
+                              className="absolute top-2 right-2 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Remove after image"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div
+                            className="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center hover:border-cyan-400 transition-colors cursor-pointer"
+                            onDrop={(e) => handleImageDrop(e, 'after')}
+                            onDragOver={(e) => e.preventDefault()}
+                            onClick={() => document.getElementById('after-image-input')?.click()}
+                          >
+                            <ImageIcon className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                            <p className="text-xs text-gray-400">Drop after image or click to browse</p>
+                          </div>
+                        )}
+                        <input
+                          id="after-image-input"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleImageUpload(e, 'after')}
+                          className="hidden"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Image Labels */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-gray-300 text-sm">Before Label</Label>
+                        <Input
+                          placeholder="Before"
+                          value={featuredSection.config.beforeLabel || ''}
+                          onChange={(e) => setFeaturedSection(prev => ({
+                            ...prev,
+                            config: { ...prev.config, beforeLabel: e.target.value }
+                          }))}
+                          className="!bg-white !text-gray-900 border-gray-300 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-gray-300 text-sm">After Label</Label>
+                        <Input
+                          placeholder="After"
+                          value={featuredSection.config.afterLabel || ''}
+                          onChange={(e) => setFeaturedSection(prev => ({
+                            ...prev,
+                            config: { ...prev.config, afterLabel: e.target.value }
+                          }))}
+                          className="!bg-white !text-gray-900 border-gray-300 text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Alt Text */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-gray-300 text-sm">Before Alt Text</Label>
+                        <Input
+                          placeholder="Before image description"
+                          value={featuredSection.config.beforeImageAlt || ''}
+                          onChange={(e) => setFeaturedSection(prev => ({
+                            ...prev,
+                            config: { ...prev.config, beforeImageAlt: e.target.value }
+                          }))}
+                          className="!bg-white !text-gray-900 border-gray-300 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-gray-300 text-sm">After Alt Text</Label>
+                        <Input
+                          placeholder="After image description"
+                          value={featuredSection.config.afterImageAlt || ''}
+                          onChange={(e) => setFeaturedSection(prev => ({
+                            ...prev,
+                            config: { ...prev.config, afterImageAlt: e.target.value }
+                          }))}
+                          className="!bg-white !text-gray-900 border-gray-300 text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Slider Settings */}
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-gray-300 text-sm">Default Slider Position (%)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          placeholder="50"
+                          value={featuredSection.config.defaultPosition || ''}
+                          onChange={(e) => setFeaturedSection(prev => ({
+                            ...prev,
+                            config: { ...prev.config, defaultPosition: parseInt(e.target.value) || 50 }
+                          }))}
+                          className="!bg-white !text-gray-900 border-gray-300 text-sm"
+                        />
+                        <p className="text-xs text-gray-400 mt-1">Starting position of the slider (0-100%)</p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="show-labels"
+                          checked={featuredSection.config.showLabels || false}
+                          onChange={(e) => setFeaturedSection(prev => ({
+                            ...prev,
+                            config: { ...prev.config, showLabels: e.target.checked }
+                          }))}
+                          className="rounded"
+                        />
+                        <Label htmlFor="show-labels" className="text-gray-300 text-sm">Show before/after labels</Label>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Variable Content Section */}
+                <div className="border-t border-gray-600 pt-4">
+                  <div>
+                    <Label className="text-gray-300">Variable Content (optional)</Label>
+                    <Textarea
+                      placeholder="Additional custom HTML or markdown content..."
+                      value={variableContent}
+                      onChange={(e) => setVariableContent(e.target.value)}
+                      className="!bg-white !text-gray-900 border-gray-300 resize-none"
+                      rows={4}
+                    />
+                    <p className="text-xs text-gray-400 mt-1">
+                      Extra content area for custom HTML, markdown, or special formatting
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Hero Image */}
+            <Card className="admin-gradient-card">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5" />
+                  Hero Image
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xs text-gray-400 mb-3">Main image displayed at top of article</p>
+                {editorPost.coverImage ? (
+                  <div className="relative group">
+                    <img
+                      src={editorPost.coverImage}
+                      alt="Hero image preview"
+                      className="w-full h-48 object-cover rounded-lg"
+                    />
+                    <button
+                      onClick={removeImage}
+                      className="absolute top-2 right-2 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Remove image"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    <p className="text-xs text-gray-400 mt-2 truncate">
+                      {editorPost.coverImage}
+                    </p>
+                  </div>
+                ) : (
+                  <div
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
+                      isDragging
+                        ? 'border-cyan-400 bg-cyan-400/10'
+                        : 'border-gray-600 hover:border-gray-500'
+                    } ${imageUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                    onClick={() => document.getElementById('hero-image-input')?.click()}
+                  >
+                    <input
+                      id="hero-image-input"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                    />
+                    {imageUploading ? (
+                      <>
+                        <Clock className="w-8 h-8 text-cyan-400 mx-auto mb-2 animate-spin" />
+                        <p className="text-sm text-gray-300">Uploading...</p>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                        <p className="text-sm text-gray-300">
+                          {isDragging ? 'Drop image here' : 'Drag & drop an image'}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          or click to browse (max 10MB)
+                        </p>
+                      </>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* BG Colors */}
+            <Card className="admin-gradient-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Palette className="w-5 h-5" />
+                  BG Colors
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <GradientPicker
+                  sectionKey={selectedPost?.id ? `blog-post-${selectedPost.id}` : `blog-post-${tempPostId}`}
+                  label="Article Colors"
+                  showDirection={true}
+                  showTextColors={true}
+                />
+                <p className="text-xs text-muted-foreground mt-3">
+                  Inherits from Stories section by default. Changes auto-save.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Post Images */}
+            <Card className="admin-gradient-card">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5" />
+                  Post Images
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-xs text-gray-400">Secondary images inserted within article content</p>
+
+                {/* Post Image 1 */}
+                <div>
+                  <Label className="text-gray-400 text-xs mb-2 block">Image 1 (after Section 1)</Label>
+                  {(editorPost as any).postImage1 ? (
+                    <div className="relative group">
+                      <img
+                        src={(editorPost as any).postImage1}
+                        alt="Post image 1 preview"
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                      <button
+                        onClick={removePostImage1}
+                        className="absolute top-2 right-2 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Remove image"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div
+                      onDragOver={handleDragOverPost1}
+                      onDragLeave={handleDragLeavePost1}
+                      onDrop={handleDropPost1}
+                      className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors cursor-pointer ${
+                        isDraggingPost1
+                          ? 'border-cyan-400 bg-cyan-400/10'
+                          : 'border-gray-600 hover:border-gray-500'
+                      } ${uploadingPost1 ? 'opacity-50 pointer-events-none' : ''}`}
+                      onClick={() => document.getElementById('post-image-1-input')?.click()}
+                    >
+                      <input
+                        id="post-image-1-input"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileSelectPost1}
+                        className="hidden"
+                      />
+                      {uploadingPost1 ? (
+                        <Clock className="w-6 h-6 text-cyan-400 mx-auto animate-spin" />
+                      ) : (
+                        <>
+                          <Upload className="w-6 h-6 text-muted-foreground mx-auto mb-1" />
+                          <p className="text-xs text-gray-400">Drop or click</p>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Post Image 2 */}
+                <div>
+                  <Label className="text-gray-400 text-xs mb-2 block">Image 2 (after Section 2)</Label>
+                  {(editorPost as any).postImage2 ? (
+                    <div className="relative group">
+                      <img
+                        src={(editorPost as any).postImage2}
+                        alt="Post image 2 preview"
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                      <button
+                        onClick={removePostImage2}
+                        className="absolute top-2 right-2 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Remove image"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div
+                      onDragOver={handleDragOverPost2}
+                      onDragLeave={handleDragLeavePost2}
+                      onDrop={handleDropPost2}
+                      className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors cursor-pointer ${
+                        isDraggingPost2
+                          ? 'border-cyan-400 bg-cyan-400/10'
+                          : 'border-gray-600 hover:border-gray-500'
+                      } ${uploadingPost2 ? 'opacity-50 pointer-events-none' : ''}`}
+                      onClick={() => document.getElementById('post-image-2-input')?.click()}
+                    >
+                      <input
+                        id="post-image-2-input"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileSelectPost2}
+                        className="hidden"
+                      />
+                      {uploadingPost2 ? (
+                        <Clock className="w-6 h-6 text-cyan-400 mx-auto animate-spin" />
+                      ) : (
+                        <>
+                          <Upload className="w-6 h-6 text-muted-foreground mx-auto mb-1" />
+                          <p className="text-xs text-gray-400">Drop or click</p>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Post Settings */}
             <Card className="admin-gradient-card">
               <CardHeader>
@@ -1849,27 +2715,6 @@ Please provide only the enhanced content without any additional text or explanat
               </CardContent>
             </Card>
 
-            {/* BG Colors */}
-            <Card className="admin-gradient-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-white">
-                  <Palette className="w-5 h-5" />
-                  BG Colors
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <GradientPicker
-                  sectionKey={selectedPost?.id ? `blog-post-${selectedPost.id}` : `blog-post-${tempPostId}`}
-                  label="Article Colors"
-                  showDirection={true}
-                  showTextColors={true}
-                />
-                <p className="text-xs text-muted-foreground mt-3">
-                  Inherits from Stories section by default. Changes auto-save.
-                </p>
-              </CardContent>
-            </Card>
-
             {/* SEO Settings */}
             <Card className="admin-gradient-card">
               <CardHeader>
@@ -1900,184 +2745,6 @@ Please provide only the enhanced content without any additional text or explanat
               </CardContent>
             </Card>
 
-            {/* Hero Image */}
-            <Card className="admin-gradient-card">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <ImageIcon className="w-5 h-5" />
-                  Hero Image
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs text-gray-400 mb-3">Main image displayed at top of article</p>
-                {editorPost.coverImage ? (
-                  <div className="relative group">
-                    <img
-                      src={editorPost.coverImage}
-                      alt="Hero image preview"
-                      className="w-full h-48 object-cover rounded-lg"
-                    />
-                    <button
-                      onClick={removeImage}
-                      className="absolute top-2 right-2 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="Remove image"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                    <p className="text-xs text-gray-400 mt-2 truncate">
-                      {editorPost.coverImage}
-                    </p>
-                  </div>
-                ) : (
-                  <div
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
-                      isDragging
-                        ? 'border-cyan-400 bg-cyan-400/10'
-                        : 'border-gray-600 hover:border-gray-500'
-                    } ${imageUploading ? 'opacity-50 pointer-events-none' : ''}`}
-                    onClick={() => document.getElementById('hero-image-input')?.click()}
-                  >
-                    <input
-                      id="hero-image-input"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileSelect}
-                      className="hidden"
-                    />
-                    {imageUploading ? (
-                      <>
-                        <Clock className="w-8 h-8 text-cyan-400 mx-auto mb-2 animate-spin" />
-                        <p className="text-sm text-gray-300">Uploading...</p>
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                        <p className="text-sm text-gray-300">
-                          {isDragging ? 'Drop image here' : 'Drag & drop an image'}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          or click to browse (max 10MB)
-                        </p>
-                      </>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Post Images */}
-            <Card className="admin-gradient-card">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <ImageIcon className="w-5 h-5" />
-                  Post Images
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-xs text-gray-400">Secondary images inserted within article content</p>
-
-                {/* Post Image 1 */}
-                <div>
-                  <Label className="text-gray-400 text-xs mb-2 block">Image 1 (after Section 1)</Label>
-                  {(editorPost as any).postImage1 ? (
-                    <div className="relative group">
-                      <img
-                        src={(editorPost as any).postImage1}
-                        alt="Post image 1 preview"
-                        className="w-full h-32 object-cover rounded-lg"
-                      />
-                      <button
-                        onClick={removePostImage1}
-                        className="absolute top-2 right-2 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Remove image"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div
-                      onDragOver={handleDragOverPost1}
-                      onDragLeave={handleDragLeavePost1}
-                      onDrop={handleDropPost1}
-                      className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors cursor-pointer ${
-                        isDraggingPost1
-                          ? 'border-orange-400 bg-orange-400/10'
-                          : 'border-gray-600 hover:border-gray-500'
-                      } ${uploadingPost1 ? 'opacity-50 pointer-events-none' : ''}`}
-                      onClick={() => document.getElementById('post-image-1-input')?.click()}
-                    >
-                      <input
-                        id="post-image-1-input"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileSelectPost1}
-                        className="hidden"
-                      />
-                      {uploadingPost1 ? (
-                        <Clock className="w-6 h-6 text-orange-400 mx-auto animate-spin" />
-                      ) : (
-                        <>
-                          <Upload className="w-6 h-6 text-muted-foreground mx-auto mb-1" />
-                          <p className="text-xs text-gray-400">Drop or click</p>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Post Image 2 */}
-                <div>
-                  <Label className="text-gray-400 text-xs mb-2 block">Image 2 (after Section 2)</Label>
-                  {(editorPost as any).postImage2 ? (
-                    <div className="relative group">
-                      <img
-                        src={(editorPost as any).postImage2}
-                        alt="Post image 2 preview"
-                        className="w-full h-32 object-cover rounded-lg"
-                      />
-                      <button
-                        onClick={removePostImage2}
-                        className="absolute top-2 right-2 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Remove image"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div
-                      onDragOver={handleDragOverPost2}
-                      onDragLeave={handleDragLeavePost2}
-                      onDrop={handleDropPost2}
-                      className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors cursor-pointer ${
-                        isDraggingPost2
-                          ? 'border-cyan-400 bg-cyan-400/10'
-                          : 'border-gray-600 hover:border-gray-500'
-                      } ${uploadingPost2 ? 'opacity-50 pointer-events-none' : ''}`}
-                      onClick={() => document.getElementById('post-image-2-input')?.click()}
-                    >
-                      <input
-                        id="post-image-2-input"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileSelectPost2}
-                        className="hidden"
-                      />
-                      {uploadingPost2 ? (
-                        <Clock className="w-6 h-6 text-cyan-400 mx-auto animate-spin" />
-                      ) : (
-                        <>
-                          <Upload className="w-6 h-6 text-muted-foreground mx-auto mb-1" />
-                          <p className="text-xs text-gray-400">Drop or click</p>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
 
