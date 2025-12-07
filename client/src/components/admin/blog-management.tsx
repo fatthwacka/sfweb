@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { apiRequest } from "@/lib/queryClient";
 import { GradientPicker } from "@/components/ui/gradient-picker";
 import {
@@ -35,6 +36,7 @@ import {
   PlusCircle,
   CheckCircle,
   RefreshCw,
+  MessageSquare,
   Undo2
 } from "lucide-react";
 import type { BlogPost, BlogCategory, BlogTag, InsertBlogPost, FeaturedSection } from "@shared/schema";
@@ -45,6 +47,7 @@ interface BlogManagementProps {
 
 export function BlogManagement({ userRole }: BlogManagementProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   
   const [activeView, setActiveView] = useState<'posts' | 'categories' | 'editor'>('posts');
@@ -92,6 +95,7 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
   const [processingSection, setProcessingSection] = useState<string | null>(null);
   const [previousContent, setPreviousContent] = useState<{[key: string]: string}>({});
   const [showUndo, setShowUndo] = useState<{[key: string]: boolean}>({});
+  const [customPromptOpen, setCustomPromptOpen] = useState<{[key: string]: boolean}>({});
 
   // Tone options for the dropdown
   const toneOptions = [
@@ -1003,10 +1007,10 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
   // Section enhancement function
   const enhanceSection = async (
     content: string, 
-    action: 'reduce' | 'increase' | 'grammar' | 'rewrite' | 'tone',
+    action: 'reduce' | 'increase' | 'grammar' | 'rewrite' | 'tone' | 'custom',
     sectionKey: string,
     sectionTitle?: string,
-    tone?: string
+    toneOrCustomPrompt?: string
   ) => {
     if (!content.trim()) {
       toast({ title: "Error", description: "No content to enhance", variant: "destructive" });
@@ -1017,8 +1021,8 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
       reduce: `Make this content shorter by removing unnecessary words and condensing ideas. Cut out filler words, redundant phrases, and keep only the essential message. Aim for 40-50% reduction while preserving the core meaning.`,
       increase: `Keep the existing content exactly as it is, then add one relevant, insightful sentence at the end that provides additional value, context, or supporting detail. Do not modify the original text - only append to it.`,
       grammar: `Correct any spelling, grammar, or punctuation errors. Improve sentence structure for clarity and flow. Do not change the content meaning or length significantly.`,
-      rewrite: `Completely rewrite this section with fresh phrasing while preserving the core message and information. Maintain article coherence.`,
-      tone: `Rewrite this section in a ${tone} tone while preserving the core message and information. Adjust the language style, word choice, and sentence structure to match the requested tone.`
+      rewrite: `REWRITE TASK - WORD COUNT MUST MATCH ORIGINAL. Count the words in the original text and write exactly that many words back. If the original is 6 words or fewer, treat it as a TITLE and rewrite it as a new title with the same number of words. If the original is 7+ words, treat it as BODY TEXT and rewrite it as a new paragraph with the same word count. Do not expand short titles into sentences. Do not compress long paragraphs into titles. Preserve the format type (title stays title, paragraph stays paragraph) while using fresh wording.`,
+      tone: `Rewrite this section in a TONE_PLACEHOLDER tone while preserving the core message and information. Adjust the language style, word choice, and sentence structure to match the requested tone.`
     };
 
     // Store previous content for undo
@@ -1026,24 +1030,51 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
     setProcessingSection(`${sectionKey}-${action}`);
 
     try {
-      const prompt = action === 'tone' && tone ? enhancementPrompts.tone : enhancementPrompts[action];
-      const contextPrompt = `${prompt}
+      let prompt: string;
+      const isHeadingField = sectionKey.includes('heading') || sectionKey.includes('title') || sectionKey === 'subtitle';
+      
+      if (action === 'custom' && toneOrCustomPrompt) {
+        prompt = toneOrCustomPrompt;
+      } else if (action === 'tone' && toneOrCustomPrompt) {
+        prompt = enhancementPrompts.tone.replace('TONE_PLACEHOLDER', toneOrCustomPrompt);
+      } else if (action === 'rewrite') {
+        // Customize rewrite prompt based on field type
+        if (isHeadingField) {
+          prompt = `TITLE REWRITE: Rewrite this title/heading using different words while keeping exactly the same number of words. Input has ${content.split(' ').filter(w => w.trim()).length} words, output must have ${content.split(' ').filter(w => w.trim()).length} words. Keep it as a catchy, concise title format - do not expand into sentences or descriptions.`;
+        } else {
+          prompt = `CONTENT REWRITE: Rewrite this content using different words while keeping exactly the same number of words. Input has ${content.split(' ').filter(w => w.trim()).length} words, output must have ${content.split(' ').filter(w => w.trim()).length} words. Maintain the paragraph/content format.`;
+        }
+      } else {
+        prompt = enhancementPrompts[action as keyof typeof enhancementPrompts];
+      }
 
-${sectionTitle ? `Section context: "${sectionTitle}" in article "${editorPost.title || 'Untitled Article'}"` : ''}
+
+      // Special handling: only use excerpt type for actual excerpt field
+      const isExcerptField = sectionKey === 'excerpt';
+      
+      const requestBody = { 
+        type: 'excerpt',  // Always use excerpt type - it returns simple text
+        context: isExcerptField ? content : `${prompt}
 
 Content to enhance:
 ${content}
 
-Please provide only the enhanced content without any additional text or explanations.`;
+Please provide only the enhanced content without any additional text or explanations.`,
+        contentType: 'informational'
+      };
+      
+      console.log('🔧 Enhancement request:', { 
+        sectionKey, 
+        action, 
+        originalLength: content.length,
+        originalWords: content.split(' ').length,
+        requestBody 
+      });
 
       const response = await fetch('/api/ai/generate-blog-content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          type: 'excerpt',  // Use 'excerpt' type since it returns simple text
-          context: contextPrompt,
-          contentType: 'informational'  // Use valid enum value
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {
@@ -1051,11 +1082,43 @@ Please provide only the enhanced content without any additional text or explanat
       }
 
       const result = await response.json();
-      const enhancedContent = result.content?.trim() || result.text?.trim();
+      console.log('API response result:', result);
+      
+      // Handle different response formats
+      let enhancedContent: string | undefined;
+      if (result.content) {
+        enhancedContent = result.content.trim();
+      } else if (result.text) {
+        enhancedContent = result.text.trim();
+      } else if (result.sections && typeof result.sections === 'object') {
+        // If it returns sections format, extract the content from sections
+        const sectionsArray = Object.values(result.sections);
+        const sectionsContent = sectionsArray
+          .map(section => {
+            if (typeof section === 'string') return section;
+            if (section && typeof section === 'object' && section.content) return section.content;
+            if (section && typeof section === 'object' && section.text) return section.text;
+            return '';
+          })
+          .filter(content => content.trim().length > 0)
+          .join('\n\n');
+        enhancedContent = sectionsContent.trim();
+      }
       
       if (!enhancedContent) {
+        console.error('No enhanced content found in result:', result);
         throw new Error('No enhanced content received');
       }
+      
+      console.log('🔧 Enhancement result:', { 
+        sectionKey, 
+        action,
+        originalLength: content.length,
+        originalWords: content.split(' ').length,
+        enhancedLength: enhancedContent.length,
+        enhancedWords: enhancedContent.split(' ').length,
+        enhancedContent: enhancedContent.substring(0, 200) + (enhancedContent.length > 200 ? '...' : '')
+      });
 
       // Show undo option
       setShowUndo(prev => ({ ...prev, [sectionKey]: true }));
@@ -1110,21 +1173,46 @@ Please provide only the enhanced content without any additional text or explanat
     sectionTitle?: string;
     onUpdate: (content: string) => void;
   }) => {
+    const [localPromptText, setLocalPromptText] = useState('');
     const hasContent = content.trim().length > 0;
     const isProcessing = processingSection?.startsWith(sectionKey);
     const currentAction = processingSection?.split('-')[1];
 
     const handleEnhancement = async (action: 'reduce' | 'increase' | 'grammar' | 'rewrite') => {
-      const enhanced = await enhanceSection(content, action, sectionKey, sectionTitle);
-      if (enhanced && enhanced !== content) {
-        onUpdate(enhanced);
+      try {
+        const enhanced = await enhanceSection(content, action, sectionKey, sectionTitle);
+        if (enhanced && enhanced !== content) {
+          onUpdate(enhanced);
+        }
+      } catch (error) {
+        console.error('Enhancement error:', error);
       }
     };
 
     const handleToneChange = async (tone: string) => {
-      const enhanced = await enhanceSection(content, 'tone', sectionKey, sectionTitle, tone);
-      if (enhanced && enhanced !== content) {
-        onUpdate(enhanced);
+      try {
+        const enhanced = await enhanceSection(content, 'tone', sectionKey, sectionTitle, tone);
+        if (enhanced && enhanced !== content) {
+          onUpdate(enhanced);
+        }
+      } catch (error) {
+        console.error('Tone change error:', error);
+      }
+    };
+
+    const handleCustomPrompt = async () => {
+      if (!localPromptText) return;
+      
+      try {
+        const enhanced = await enhanceSection(content, 'custom', sectionKey, sectionTitle, localPromptText);
+        if (enhanced && enhanced !== content) {
+          onUpdate(enhanced);
+        }
+        // Close the dialog and clear the text on success
+        setCustomPromptOpen({ ...customPromptOpen, [sectionKey]: false });
+        setLocalPromptText('');
+      } catch (error) {
+        console.error('Custom prompt error:', error);
       }
     };
 
@@ -1186,6 +1274,68 @@ Please provide only the enhanced content without any additional text or explanat
           <RefreshCw className="w-3.5 h-3.5" />
         </Button>
 
+        {/* Custom Prompt */}
+        <Dialog 
+          open={customPromptOpen[sectionKey] || false} 
+          onOpenChange={(open) => setCustomPromptOpen({ ...customPromptOpen, [sectionKey]: open })}
+        >
+          <DialogTrigger asChild>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={!hasContent || isProcessing}
+              className={`w-8 h-8 p-0 ${hasContent ? 'text-gray-400 hover:text-white' : 'text-gray-600'} ${
+                processingSection === `${sectionKey}-custom` ? 'animate-pulse text-amber-400' : ''
+              }`}
+              title="Provide a specific prompt for this section"
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px] bg-gray-800 border-gray-700">
+            <DialogHeader>
+              <DialogTitle className="text-white">Custom Enhancement Prompt</DialogTitle>
+              <DialogDescription className="text-gray-300">
+                Provide specific instructions for how to enhance this section.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <Textarea
+                placeholder="e.g., 'Provide 10 sentences about the importance of professional photography for businesses' or 'Rewrite this in a more technical tone with statistics'"
+                value={localPromptText}
+                onChange={(e) => setLocalPromptText(e.target.value)}
+                className="!bg-gray-900 !text-gray-200 border-gray-600 min-h-[120px]"
+                rows={5}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setCustomPromptOpen({ ...customPromptOpen, [sectionKey]: false });
+                  setLocalPromptText('');
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCustomPrompt}
+                disabled={!localPromptText || processingSection === `${sectionKey}-custom`}
+                className="bg-salmon hover:bg-salmon/90"
+              >
+                {processingSection === `${sectionKey}-custom` ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    Applying...
+                  </>
+                ) : (
+                  'Apply Prompt'
+                )}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {/* Tone Selector */}
         <Select onValueChange={handleToneChange} disabled={!hasContent || isProcessing}>
           <SelectTrigger className={`w-32 h-8 ${hasContent ? 'text-gray-400' : 'text-gray-600'} ${
@@ -1215,15 +1365,33 @@ Please provide only the enhanced content without any additional text or explanat
           </Button>
         )}
 
-        {/* Processing Indicator */}
+        {/* Processing Indicator - Small Popup Spinner */}
         {isProcessing && (
-          <span className="text-xs text-amber-400 ml-2">
-            {currentAction === 'reduce' && 'Reducing...'}
-            {currentAction === 'increase' && 'Expanding...'}
-            {currentAction === 'grammar' && 'Checking...'}
-            {currentAction === 'rewrite' && 'Rewriting...'}
-            {currentAction === 'tone' && 'Adjusting tone...'}
-          </span>
+          <div className="fixed inset-0 flex items-center justify-center z-50">
+            <div className="bg-gray-800 border border-gray-600 rounded-lg p-4 max-w-xs text-center shadow-xl">
+              <div className="relative mb-3">
+                {/* Enhanced animated spinner */}
+                <div className="w-10 h-10 mx-auto">
+                  <div className="absolute inset-0 border-3 border-cyan-500/30 rounded-full"></div>
+                  <div className="absolute inset-0 border-3 border-transparent border-t-cyan-400 rounded-full animate-spin"></div>
+                  <div className="absolute inset-1 border-2 border-transparent border-t-orange-400 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+                </div>
+              </div>
+              <p className="text-sm text-gray-300 font-medium">
+                {currentAction === 'reduce' && 'Reducing...'}
+                {currentAction === 'increase' && 'Expanding...'}
+                {currentAction === 'grammar' && 'Checking...'}
+                {currentAction === 'rewrite' && 'Rewriting...'}
+                {currentAction === 'tone' && 'Adjusting tone...'}
+                {currentAction === 'custom' && 'Applying custom prompt...'}
+              </p>
+              <div className="flex items-center justify-center gap-1 mt-2">
+                <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     );
@@ -1279,6 +1447,7 @@ Please provide only the enhanced content without any additional text or explanat
       postImage2: (post as any).postImage2 || undefined,
       status: post.status as 'draft' | 'published' | 'scheduled',
       categoryId: post.categoryId || undefined,
+      authorId: post.authorId || undefined,  // Preserve original author
       publishedAt: post.publishedAt 
         ? new Date(post.publishedAt).toISOString().split('T')[0] 
         : new Date().toISOString().split('T')[0] // Fallback to today if no date
@@ -1497,7 +1666,8 @@ Please provide only the enhanced content without any additional text or explanat
                   content: combineContentSections(),
                   featuredSection,
                   variableContent,
-                  status: 'draft'
+                  status: 'draft',
+                  authorId: editorPost.authorId || user?.id
                 };
                 
                 // Handle publishedAt date conversion
@@ -1532,7 +1702,8 @@ Please provide only the enhanced content without any additional text or explanat
                   content: combineContentSections(),
                   featuredSection,
                   variableContent,
-                  status: 'published'
+                  status: 'published',
+                  authorId: editorPost.authorId || user?.id
                 };
                 
                 // Handle publishedAt date conversion
@@ -1745,7 +1916,20 @@ Please provide only the enhanced content without any additional text or explanat
                   </div>
 
                   <div>
-                    <Label className="text-gray-400 text-xs mb-1 block">H2 Heading (SEO)</Label>
+                    <div className="flex items-center justify-between mb-1">
+                      <Label className="text-gray-400 text-xs">H2 Heading (SEO)</Label>
+                      <SectionEnhancementTools
+                        content={contentSections.mainSections[1]?.heading || ''}
+                        sectionKey="section2-heading"
+                        sectionTitle="Section 2 Heading"
+                        onUpdate={(content) => setContentSections(prev => ({
+                          ...prev,
+                          mainSections: prev.mainSections.map((s, i) =>
+                            i === 1 ? { ...s, heading: content } : s
+                          )
+                        }))}
+                      />
+                    </div>
                     <Input
                       placeholder="e.g., How to Build an Engaged Following in 90 Days"
                       value={contentSections.mainSections[1]?.heading || ''}
@@ -1760,7 +1944,20 @@ Please provide only the enhanced content without any additional text or explanat
                   </div>
 
                   <div>
-                    <Label className="text-gray-400 text-xs mb-1 block">Content (5-6 sentences)</Label>
+                    <div className="flex items-center justify-between mb-1">
+                      <Label className="text-gray-400 text-xs">Content (5-6 sentences)</Label>
+                      <SectionEnhancementTools
+                        content={contentSections.mainSections[1]?.content || ''}
+                        sectionKey="section2-content"
+                        sectionTitle="Section 2 Content"
+                        onUpdate={(content) => setContentSections(prev => ({
+                          ...prev,
+                          mainSections: prev.mainSections.map((s, i) =>
+                            i === 1 ? { ...s, content } : s
+                          )
+                        }))}
+                      />
+                    </div>
                     <Textarea
                       placeholder="Provide actionable steps or solutions..."
                       value={contentSections.mainSections[1]?.content || ''}
@@ -1778,9 +1975,17 @@ Please provide only the enhanced content without any additional text or explanat
 
                 {/* Pull Quote - Visual Break */}
                 <div className="border border-salmon/30 rounded-lg p-4 space-y-3 bg-salmon/5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-salmon uppercase tracking-wide">Pull Quote</span>
-                    <span className="text-xs text-gray-500">Key insight to highlight (10-15 words)</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-salmon uppercase tracking-wide">Pull Quote</span>
+                      <span className="text-xs text-gray-500">Key insight to highlight (10-15 words)</span>
+                    </div>
+                    <SectionEnhancementTools
+                      content={contentSections.pullQuote}
+                      sectionKey="pullQuote"
+                      sectionTitle="Pull Quote"
+                      onUpdate={(content) => setContentSections(prev => ({ ...prev, pullQuote: content }))}
+                    />
                   </div>
 
                   <Textarea
@@ -1800,7 +2005,20 @@ Please provide only the enhanced content without any additional text or explanat
                   </div>
 
                   <div>
-                    <Label className="text-gray-400 text-xs mb-1 block">H2 Heading (SEO)</Label>
+                    <div className="flex items-center justify-between mb-1">
+                      <Label className="text-gray-400 text-xs">H2 Heading (SEO)</Label>
+                      <SectionEnhancementTools
+                        content={contentSections.mainSections[2]?.heading || ''}
+                        sectionKey="section3-heading"
+                        sectionTitle="Section 3 Heading"
+                        onUpdate={(content) => setContentSections(prev => ({
+                          ...prev,
+                          mainSections: prev.mainSections.map((s, i) =>
+                            i === 2 ? { ...s, heading: content } : s
+                          )
+                        }))}
+                      />
+                    </div>
                     <Input
                       placeholder="e.g., The Results You Can Expect Within 30 Days"
                       value={contentSections.mainSections[2]?.heading || ''}
@@ -1815,7 +2033,20 @@ Please provide only the enhanced content without any additional text or explanat
                   </div>
 
                   <div>
-                    <Label className="text-gray-400 text-xs mb-1 block">Content (5-6 sentences)</Label>
+                    <div className="flex items-center justify-between mb-1">
+                      <Label className="text-gray-400 text-xs">Content (5-6 sentences)</Label>
+                      <SectionEnhancementTools
+                        content={contentSections.mainSections[2]?.content || ''}
+                        sectionKey="section3-content"
+                        sectionTitle="Section 3 Content"
+                        onUpdate={(content) => setContentSections(prev => ({
+                          ...prev,
+                          mainSections: prev.mainSections.map((s, i) =>
+                            i === 2 ? { ...s, content } : s
+                          )
+                        }))}
+                      />
+                    </div>
                     <Textarea
                       placeholder="Show the transformation or benefits achieved..."
                       value={contentSections.mainSections[2]?.content || ''}
@@ -1839,7 +2070,18 @@ Please provide only the enhanced content without any additional text or explanat
                   </div>
 
                   <div>
-                    <Label className="text-gray-400 text-xs mb-1 block">H2 Heading</Label>
+                    <div className="flex items-center justify-between mb-1">
+                      <Label className="text-gray-400 text-xs">H2 Heading</Label>
+                      <SectionEnhancementTools
+                        content={contentSections.conclusion.heading}
+                        sectionKey="conclusion-heading"
+                        sectionTitle="Conclusion Heading"
+                        onUpdate={(content) => setContentSections(prev => ({
+                          ...prev,
+                          conclusion: { ...prev.conclusion, heading: content }
+                        }))}
+                      />
+                    </div>
                     <Input
                       placeholder="e.g., Ready to Transform Your Social Media Presence?"
                       value={contentSections.conclusion.heading}
@@ -1852,7 +2094,18 @@ Please provide only the enhanced content without any additional text or explanat
                   </div>
 
                   <div>
-                    <Label className="text-gray-400 text-xs mb-1 block">CTA Content</Label>
+                    <div className="flex items-center justify-between mb-1">
+                      <Label className="text-gray-400 text-xs">CTA Content</Label>
+                      <SectionEnhancementTools
+                        content={contentSections.conclusion.content}
+                        sectionKey="conclusion-content"
+                        sectionTitle="Conclusion Content"
+                        onUpdate={(content) => setContentSections(prev => ({
+                          ...prev,
+                          conclusion: { ...prev.conclusion, content }
+                        }))}
+                      />
+                    </div>
                     <Textarea
                       placeholder="Key takeaway and clear call-to-action..."
                       value={contentSections.conclusion.content}
@@ -2701,9 +2954,45 @@ Please provide only the enhanced content without any additional text or explanat
                   )}
                 </div>
 
+                {/* Author */}
+                <div>
+                  <Label className="text-gray-300">Author</Label>
+                  {(() => {
+                    // Get author info - for existing posts, use the post's author, for new posts use current user
+                    const isEditingPost = selectedPost?.id;
+                    const authorName = isEditingPost ? (selectedPost as any)?.authorName || 'Unknown Author' : (user?.fullName || user?.email || 'Current User');
+                    const authorInitial = authorName.charAt(0).toUpperCase();
+                    
+                    return (
+                      <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-md border border-gray-300">
+                        <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                          {authorInitial}
+                        </div>
+                        <span className="text-gray-700 text-sm font-medium">
+                          {authorName}
+                        </span>
+                      </div>
+                    );
+                  })()}
+                  <p className="text-xs text-gray-400 mt-1">
+                    {selectedPost?.id 
+                      ? 'Original author of this post (preserved when editing)'
+                      : 'The logged-in user will be set as the author when the post is saved'
+                    }
+                  </p>
+                </div>
+
                 {/* Excerpt */}
                 <div>
-                  <Label className="text-gray-300">Excerpt</Label>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-gray-300">Excerpt</Label>
+                    <SectionEnhancementTools
+                      content={editorPost.excerpt || ''}
+                      sectionKey="excerpt"
+                      sectionTitle="Excerpt"
+                      onUpdate={(content) => setEditorPost(prev => ({ ...prev, excerpt: content }))}
+                    />
+                  </div>
                   <Textarea
                     placeholder="Brief description for search results and social sharing..."
                     value={editorPost.excerpt || ''}
@@ -2732,7 +3021,15 @@ Please provide only the enhanced content without any additional text or explanat
                   />
                 </div>
                 <div>
-                  <Label className="text-gray-300">SEO Description</Label>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-gray-300">SEO Description</Label>
+                    <SectionEnhancementTools
+                      content={editorPost.seoDescription || ''}
+                      sectionKey="seo-description"
+                      sectionTitle="SEO Description"
+                      onUpdate={(content) => setEditorPost(prev => ({ ...prev, seoDescription: content }))}
+                    />
+                  </div>
                   <Textarea
                     placeholder="Custom meta description (max 160 chars)"
                     value={editorPost.seoDescription || ''}

@@ -5,6 +5,7 @@ import {
   blogCategories,
   blogTags,
   blogPostTags,
+  profiles,
   insertBlogPostSchema,
   insertBlogCategorySchema,
   insertBlogTagSchema
@@ -40,9 +41,14 @@ router.get('/posts', async (req, res) => {
         seoTitle: blogPosts.seoTitle,
         seoDescription: blogPosts.seoDescription,
         featuredSection: blogPosts.featuredSection,
-        variableContent: blogPosts.variableContent
+        variableContent: blogPosts.variableContent,
+        // Author information
+        authorName: profiles.fullName,
+        authorEmail: profiles.email,
+        authorProfileImage: profiles.profileImageUrl
       })
       .from(blogPosts)
+      .leftJoin(profiles, eq(blogPosts.authorId, profiles.id))
       .orderBy(desc(blogPosts.createdAt));
 
     // Apply filters
@@ -84,8 +90,34 @@ router.get('/posts/:id', async (req, res) => {
     const { id } = req.params;
     
     const [post] = await db
-      .select()
+      .select({
+        id: blogPosts.id,
+        title: blogPosts.title,
+        slug: blogPosts.slug,
+        excerpt: blogPosts.excerpt,
+        content: blogPosts.content,
+        coverImage: blogPosts.coverImage,
+        postImage1: blogPosts.postImage1,
+        postImage2: blogPosts.postImage2,
+        status: blogPosts.status,
+        publishedAt: blogPosts.publishedAt,
+        viewCount: blogPosts.viewCount,
+        aiGenerated: blogPosts.aiGenerated,
+        createdAt: blogPosts.createdAt,
+        updatedAt: blogPosts.updatedAt,
+        categoryId: blogPosts.categoryId,
+        authorId: blogPosts.authorId,
+        seoTitle: blogPosts.seoTitle,
+        seoDescription: blogPosts.seoDescription,
+        featuredSection: blogPosts.featuredSection,
+        variableContent: blogPosts.variableContent,
+        // Author information
+        authorName: profiles.fullName,
+        authorEmail: profiles.email,
+        authorProfileImage: profiles.profileImageUrl
+      })
       .from(blogPosts)
+      .leftJoin(profiles, eq(blogPosts.authorId, profiles.id))
       .where(eq(blogPosts.id, id));
 
     if (!post) {

@@ -303,36 +303,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`✅ Human verified with score: ${recaptchaResult.score}`);
       }
       
-      // Create booking inquiry
-      const booking = await storage.createBooking({
-        email: data.email,
-        phone: data.phone || "",
-        message: data.message,
-        serviceType: data.service || "general",
-        preferredDate: null,
-        budgetRange: "",
-        status: "pending",
-        inquiryData: JSON.stringify({
-          firstName: data.firstName,
-          lastName: data.lastName,
-          fullName: `${data.firstName} ${data.lastName}`,
-          service: data.service
-        })
-      });
-
-      // Send email notification to dax@slyfox.co.za
+      // Send email notification
       console.log("📧 Contact form submission received:", data);
       
       try {
         await sendContactEmail(data);
         console.log("✅ Email sent successfully to dax@slyfox.co.za");
+        res.json({ success: true, message: "Message sent successfully" });
       } catch (emailError) {
         console.error("❌ Email sending failed:", emailError);
-        // Continue with success response even if email fails
-        // Contact is still saved to database
+        res.status(500).json({ 
+          success: false, 
+          message: "Failed to send message. Please try again or contact us directly at info@slyfox.co.za" 
+        });
       }
-      
-      res.json({ success: true, bookingId: booking.id });
     } catch (error) {
       console.error("Contact form error:", error);
       res.status(400).json({ message: "Invalid form data" });

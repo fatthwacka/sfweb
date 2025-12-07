@@ -20,7 +20,8 @@ import {
   Facebook,
   Twitter,
   Linkedin,
-  Copy
+  Copy,
+  User
 } from 'lucide-react';
 import { Link } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
@@ -730,6 +731,12 @@ export function Story() {
                           <Calendar className="w-4 h-4 text-salmon" />
                           <span>{formatDate(post.publishedAt || post.createdAt)}</span>
                         </div>
+                        {(post as any).authorName && (
+                          <div className="flex items-center gap-2">
+                            <User className="w-4 h-4 text-purple-400" />
+                            <span>{(post as any).authorName}</span>
+                          </div>
+                        )}
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4 text-cyan" />
                           <span>{estimateReadTime(post.content)} min read</span>

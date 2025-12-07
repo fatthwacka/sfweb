@@ -221,7 +221,7 @@ router.post('/generate-blog-content', async (req, res) => {
       });
     }
 
-    const { type, context = '', currentContent, category, keywords, contentType } = generateContentSchema.parse(req.body);
+    const { type, context = '', currentContent, category, keywords, contentType, customPrompt } = generateContentSchema.parse(req.body);
 
     if (!context.trim()) {
       return res.status(400).json({ error: 'Context is required for content generation' });
@@ -230,24 +230,45 @@ router.post('/generate-blog-content', async (req, res) => {
     // Get the appropriate prompt
     let prompt: string;
 
-    switch (type) {
-      case 'title':
-        prompt = prompts.title(context, category, contentType);
-        break;
-      case 'excerpt':
-        prompt = prompts.excerpt(context, currentContent);
-        break;
-      case 'content':
-        prompt = prompts.content(context, category, contentType);
-        break;
-      case 'seo-title':
-        prompt = prompts['seo-title'](context, keywords);
-        break;
-      case 'seo-description':
-        prompt = prompts['seo-description'](context, keywords);
-        break;
-      default:
-        return res.status(400).json({ error: 'Invalid content type' });
+    // Use custom prompt if provided, otherwise use default prompts
+    if (customPrompt) {
+      console.log('🔧 Using custom prompt:', customPrompt);
+      prompt = `${customPrompt}
+
+Content to work with:
+${context}
+
+Please provide only the enhanced content without any additional text or explanations.`;
+      console.log('🔧 Final prompt:', prompt);
+    } else {
+      console.log('🔧 Using default prompts for type:', type);
+      switch (type) {
+        case 'title':
+          prompt = prompts.title(context, category, contentType);
+          break;
+        case 'excerpt':
+          // Check if context contains enhancement instructions (rather than just a topic)
+          if (context.includes('Content to enhance:') || context.includes('REWRITE TASK') || context.includes('Make this content')) {
+            // Use the full context as-is for enhancements
+            prompt = context;
+            console.log('🔧 Using enhancement context directly');
+          } else {
+            // Use normal excerpt template for actual excerpts
+            prompt = prompts.excerpt(context, currentContent);
+          }
+          break;
+        case 'content':
+          prompt = prompts.content(context, category, contentType);
+          break;
+        case 'seo-title':
+          prompt = prompts['seo-title'](context, keywords);
+          break;
+        case 'seo-description':
+          prompt = prompts['seo-description'](context, keywords);
+          break;
+        default:
+          return res.status(400).json({ error: 'Invalid content type' });
+      }
     }
 
     console.log(`🤖 Generating ${type} content for: "${context}"`);
