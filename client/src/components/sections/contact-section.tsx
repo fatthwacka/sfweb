@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Mail, Phone, Clock } from "lucide-react";
+import { MapPin, Mail, Phone, Clock, Loader2, CheckCircle, X } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { GradientBackground } from "@/components/common/gradient-background";
@@ -24,6 +24,7 @@ interface ContactFormData {
 export function ContactSection() {
   const { toast } = useToast();
   const { executeRecaptcha, isRecaptchaLoaded } = useRecaptcha();
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [formData, setFormData] = useState<ContactFormData>({
     firstName: "",
     lastName: "",
@@ -36,10 +37,12 @@ export function ContactSection() {
   const contactMutation = useMutation({
     mutationFn: (data: ContactFormData) => apiRequest("POST", "/api/contact", data),
     onSuccess: () => {
+      // Show both toast and modal
       toast({
         title: "Message Sent!",
         description: "Thank you for your message. We'll get back to you within 24 hours."
       });
+      setShowSuccessModal(true);
       setFormData({
         firstName: "",
         lastName: "",
@@ -112,7 +115,34 @@ export function ContactSection() {
     contactMutation.mutate(submitData);
   };
 
+  // Phone number formatter - strip all characters except digits and one + at start
+  const formatPhoneNumber = (value: string): string => {
+    // Allow only one + at the very beginning, followed by digits only
+    let cleaned = value.replace(/[^\d+]/g, ''); // Remove everything except digits and +
+    
+    // If there are multiple + signs, keep only the first one if it's at the start
+    const plusCount = (cleaned.match(/\+/g) || []).length;
+    if (plusCount > 1) {
+      // Find first + and keep it if it's at position 0, remove all others
+      const firstPlusIndex = cleaned.indexOf('+');
+      if (firstPlusIndex === 0) {
+        cleaned = '+' + cleaned.replace(/\+/g, '');
+      } else {
+        cleaned = cleaned.replace(/\+/g, '');
+      }
+    } else if (plusCount === 1 && cleaned.indexOf('+') !== 0) {
+      // If + is not at the beginning, remove it
+      cleaned = cleaned.replace(/\+/g, '');
+    }
+    
+    return cleaned;
+  };
+
   const handleInputChange = (field: keyof ContactFormData, value: string) => {
+    // Special handling for phone number to strip formatting as user types
+    if (field === 'phone') {
+      value = formatPhoneNumber(value);
+    }
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -221,7 +251,14 @@ export function ContactSection() {
                 disabled={contactMutation.isPending}
                 className="w-full btn-salmon"
               >
-                {contactMutation.isPending ? "Sending..." : "Send Message"}
+                {contactMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  "Send Message"
+                )}
               </Button>
               
               {/* reCAPTCHA attribution text - required when badge is hidden */}
@@ -238,6 +275,33 @@ export function ContactSection() {
               </div>
             </form>
           </div>
+          
+          {/* Success Modal */}
+          {showSuccessModal && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center shadow-2xl border border-gray-200">
+                <div className="mb-6">
+                  <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Message Sent Successfully!</h3>
+                  <p className="text-gray-600">
+                    Thank you for getting in touch! We've received your message and will respond within 24 hours.
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => setShowSuccessModal(false)}
+                  className="bg-green-500 hover:bg-green-600 text-white px-8 py-2 rounded-lg font-semibold"
+                >
+                  Great!
+                </Button>
+                <button 
+                  onClick={() => setShowSuccessModal(false)}
+                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Contact Information */}
           <div>
@@ -259,7 +323,6 @@ export function ContactSection() {
                   <div>
                     <h4 className="font-barlow font-semibold text-lg mb-2">Studio Location</h4>
                     <p className="text-foreground">La Lucia, Umhlanga, Durban</p>
-                    <p className="text-muted-foreground text-sm">Serving Durban & KZN</p>
                   </div>
                 </div>
 
@@ -271,7 +334,6 @@ export function ContactSection() {
                   <div>
                     <h4 className="font-barlow font-semibold text-lg mb-2">Email Us</h4>
                     <p className="text-foreground">info@slyfox.co.za</p>
-                    <p className="text-muted-foreground text-sm">We respond within usually within hours</p>
                   </div>
                 </div>
 
@@ -304,16 +366,10 @@ export function ContactSection() {
               <div className="mt-8 pt-8 border-t border-border">
                 <h4 className="font-barlow font-semibold text-lg mb-4">Follow Us</h4>
                 <div className="flex flex-wrap gap-4">
-                  {/* X (formerly Twitter) */}
-                  <a href="https://x.com/AiVulpin" target="_blank" rel="noopener noreferrer" className="bg-muted p-3 rounded-full hover:bg-gold hover:text-black transition-all duration-300">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/>
-                    </svg>
-                  </a>
                   {/* Instagram */}
                   <a href="https://www.instagram.com/slyfoxstudiogroup/" target="_blank" rel="noopener noreferrer" className="bg-muted p-3 rounded-full hover:bg-gold hover:text-black transition-all duration-300">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.40z"/>
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.40z"/>
                     </svg>
                   </a>
                   {/* Facebook */}
@@ -332,6 +388,12 @@ export function ContactSection() {
                   <a href="https://www.youtube.com/@slyfoxcreativestudio3214" target="_blank" rel="noopener noreferrer" className="bg-muted p-3 rounded-full hover:bg-gold hover:text-black transition-all duration-300">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    </svg>
+                  </a>
+                  {/* X (formerly Twitter) */}
+                  <a href="https://x.com/AiVulpin" target="_blank" rel="noopener noreferrer" className="bg-muted p-3 rounded-full hover:bg-gold hover:text-black transition-all duration-300">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/>
                     </svg>
                   </a>
                 </div>
