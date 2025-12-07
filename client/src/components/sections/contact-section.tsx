@@ -61,16 +61,18 @@ export function ContactSection() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Basic phone number validation if provided
+    // Very lenient phone number validation if provided
     if (formData.phone && formData.phone.trim() !== "") {
-      const cleanPhone = formData.phone.replace(/[\s\-\(\)]/g, '');
-      const southAfricanRegex = /^0\d{8}$/; // 9 digits starting with 0
-      const internationalRegex = /^\+\d{11,14}$/; // 12-15 digits starting with +
+      // Remove all characters except digits and +
+      const cleanPhone = formData.phone.replace(/[^\d+]/g, '');
       
-      if (!southAfricanRegex.test(cleanPhone) && !internationalRegex.test(cleanPhone)) {
+      // Very basic validation: must contain at least 6 digits total
+      const digitCount = cleanPhone.replace(/\+/g, '').length;
+      
+      if (digitCount < 6) {
         toast({
           title: "Invalid Phone Number",
-          description: "Please enter a valid phone number: 9 digits starting with 0 (e.g., 083 123 4567) or international format with + (e.g., +27831234567).",
+          description: "Please enter a valid phone number with at least 6 digits.",
           variant: "destructive"
         });
         return;
