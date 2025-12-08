@@ -86,27 +86,23 @@ export function ContactSection() {
       }
     }
     
-    // Execute reCAPTCHA
+    // Execute reCAPTCHA with timeout (don't block form submission if it fails)
     let recaptchaToken: string | null = null;
     if (isRecaptchaLoaded()) {
       try {
-        recaptchaToken = await executeRecaptcha('contact_form');
+        // Timeout after 5 seconds - don't let reCAPTCHA block the form
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000));
+        recaptchaToken = await Promise.race([
+          executeRecaptcha('contact_form'),
+          timeoutPromise
+        ]);
+        // If timeout or null, just proceed without token (backend handles it)
         if (!recaptchaToken) {
-          toast({
-            title: "Security Check Failed",
-            description: "Please try again. If the problem persists, refresh the page.",
-            variant: "destructive"
-          });
-          return;
+          console.warn('reCAPTCHA timed out or failed, proceeding without token');
         }
       } catch (error) {
         console.error('reCAPTCHA error:', error);
-        toast({
-          title: "Security Check Failed",
-          description: "Please try again. If the problem persists, refresh the page.",
-          variant: "destructive"
-        });
-        return;
+        // Don't block submission - proceed without token
       }
     }
     
