@@ -1680,10 +1680,13 @@ Please provide only the enhanced content without any additional text or explanat
                   console.log('No publishedAt date provided, backend will set automatically');
                 }
                 
-                // Remove undefined/empty fields that might cause validation issues
-                Object.keys(postData).forEach(key => {
-                  if (postData[key as keyof typeof postData] === undefined || postData[key as keyof typeof postData] === '') {
-                    delete postData[key as keyof typeof postData];
+                // Convert empty/undefined optional fields to null so backend clears them
+                // Required fields: title, content, authorId, status - keep as-is
+                const nullableFields = ['coverImage', 'postImage1', 'postImage2', 'excerpt', 'seoTitle', 'seoDescription', 'categoryId', 'variableContent'];
+                nullableFields.forEach(key => {
+                  const value = postData[key as keyof typeof postData];
+                  if (value === undefined || value === '') {
+                    (postData as any)[key] = null;
                   }
                 });
                 savePostMutation.mutate(postData);
@@ -1716,10 +1719,13 @@ Please provide only the enhanced content without any additional text or explanat
                   console.log('No publishedAt date provided, backend will set automatically');
                 }
                 
-                // Remove undefined/empty fields that might cause validation issues
-                Object.keys(postData).forEach(key => {
-                  if (postData[key as keyof typeof postData] === undefined || postData[key as keyof typeof postData] === '') {
-                    delete postData[key as keyof typeof postData];
+                // Convert empty/undefined optional fields to null so backend clears them
+                // Required fields: title, content, authorId, status - keep as-is
+                const nullableFields = ['coverImage', 'postImage1', 'postImage2', 'excerpt', 'seoTitle', 'seoDescription', 'categoryId', 'variableContent'];
+                nullableFields.forEach(key => {
+                  const value = postData[key as keyof typeof postData];
+                  if (value === undefined || value === '') {
+                    (postData as any)[key] = null;
                   }
                 });
                 savePostMutation.mutate(postData);
@@ -2135,6 +2141,20 @@ Please provide only the enhanced content without any additional text or explanat
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-xs text-gray-400">Add a special content section that appears after section 2 of your article</p>
+
+                {/* Section Title (optional) */}
+                <div>
+                  <Label className="text-gray-300">Section Title (optional)</Label>
+                  <Input
+                    placeholder="e.g., See the Transformation, Behind the Scenes..."
+                    value={featuredSection.title || ''}
+                    onChange={(e) => setFeaturedSection(prev => ({
+                      ...prev,
+                      title: e.target.value || undefined
+                    }))}
+                    className="!bg-white !text-gray-900 border-gray-300"
+                  />
+                </div>
 
                 {/* Section Type Selector */}
                 <div>

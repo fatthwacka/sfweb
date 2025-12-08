@@ -432,6 +432,7 @@ export const siteGradients = pgTable("site_gradients", {
 // Featured Section type for blog posts
 export interface FeaturedSection {
   type: 'none' | 'image' | 'video' | 'gallery' | 'quote' | 'cta' | 'before-after';
+  title?: string; // Optional heading displayed above the featured content
   config: {
     // Image config
     imageUrl?: string;
@@ -592,6 +593,15 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
 }).extend({
   slug: z.string().optional(), // Make slug optional - backend will auto-generate if not provided
   status: z.enum(['draft', 'published', 'scheduled']).optional().default('draft'),
+  // Allow null for optional fields so they can be cleared
+  coverImage: z.string().nullable().optional(),
+  postImage1: z.string().nullable().optional(),
+  postImage2: z.string().nullable().optional(),
+  excerpt: z.string().nullable().optional(),
+  seoTitle: z.string().nullable().optional(),
+  seoDescription: z.string().nullable().optional(),
+  categoryId: z.string().nullable().optional(),
+  variableContent: z.string().nullable().optional(),
 });
 
 export const insertBlogCategorySchema = createInsertSchema(blogCategories).omit({

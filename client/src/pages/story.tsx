@@ -230,23 +230,29 @@ export function Story() {
   const renderFeaturedSection = (featuredSection: FeaturedSection): string => {
     if (!featuredSection || featuredSection.type === 'none') return '';
 
-    const { type, config } = featuredSection;
+    const { type, title, config } = featuredSection;
+
+    // Render optional title above the featured content
+    const titleHtml = title
+      ? `<h2 class="text-2xl lg:text-3xl font-semibold text-white text-center mb-8">${title}</h2>`
+      : '';
 
     switch (type) {
       case 'image':
         if (!config.imageUrl) return '';
         const imageHeightStyle = config.height ? ` style="height: ${config.height}vh;"` : '';
         return `
+          ${titleHtml}
           <section class="featured-section featured-image-section"${imageHeightStyle}>
             <div class="h-full">
               <figure class="featured-image-container h-full flex flex-col justify-center">
-                <img 
-                  src="${config.imageUrl}" 
+                <img
+                  src="${config.imageUrl}"
                   alt="${config.imageAlt || 'Featured image'}"
                   class="w-full ${config.height ? 'h-full object-cover' : 'h-auto'} rounded-lg shadow-lg"
                   loading="lazy"
                 />
-                ${config.caption ? `<figcaption class="text-center text-gray-300 text-sm mt-4 italic px-4 sm:px-6 lg:px-8">${config.caption}</figcaption>` : ''}
+                ${config.imageCaption ? `<figcaption class="text-center text-gray-300 text-sm mt-4 italic px-4 sm:px-6 lg:px-8">${config.imageCaption}</figcaption>` : ''}
               </figure>
             </div>
           </section>
@@ -256,9 +262,10 @@ export function Story() {
         if (!config.youtubeUrl) return '';
         const videoId = extractYouTubeVideoId(config.youtubeUrl);
         if (!videoId) return '';
-        
+
         const videoHeightStyle = config.height ? ` style="height: ${config.height}vh;"` : '';
         return `
+          ${titleHtml}
           <section class="featured-section featured-video-section my-16"${videoHeightStyle}>
             <div class="max-w-6xl mx-auto h-full">
               <div class="featured-video-container ${config.height ? 'h-full' : 'aspect-video'} rounded-lg overflow-hidden shadow-lg flex flex-col justify-center">
@@ -279,10 +286,11 @@ export function Story() {
       case 'before-after':
         if (!config.beforeImageUrl || !config.afterImageUrl) return '';
         return `
+          ${titleHtml}
           <section class="featured-section featured-before-after-section">
-            <div id="before-after-slider" 
+            <div id="before-after-slider"
                  data-before-url="${config.beforeImageUrl}"
-                 data-after-url="${config.afterImageUrl}" 
+                 data-after-url="${config.afterImageUrl}"
                  data-before-alt="${config.beforeImageAlt || 'Before image'}"
                  data-after-alt="${config.afterImageAlt || 'After image'}"
                  data-before-label="${config.beforeLabel || 'Before'}"
@@ -683,45 +691,6 @@ export function Story() {
                         />
                       </div>
                     )}
-
-                    {/* [3] Share Card */}
-                    <div className="story-sidebar-card">
-                      <h3>Share This Story</h3>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleShare('facebook')}
-                          className="border-gray-600 text-gray-300 hover:bg-blue-600 hover:text-white hover:border-blue-500"
-                        >
-                          <Facebook className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleShare('twitter')}
-                          className="border-gray-600 text-gray-300 hover:bg-sky-500 hover:text-white hover:border-sky-400"
-                        >
-                          <Twitter className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleShare('linkedin')}
-                          className="border-gray-600 text-gray-300 hover:bg-blue-700 hover:text-white hover:border-blue-600"
-                        >
-                          <Linkedin className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleShare('copy')}
-                          className="border-gray-600 text-gray-300 hover:bg-gray-600 hover:text-white"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
 
                     {/* Article Details */}
                     <div className="story-sidebar-card">
