@@ -3219,48 +3219,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Generic file upload endpoint for homepage settings and other admin features
+  // Generic file upload endpoint for homepage settings, blog images, and other admin features
+  // Uploads directly to Supabase Storage for both dev and production persistence
   app.post("/api/upload", upload.single('file'), async (req, res) => {
     try {
       const file = req.file;
-      
+
       if (!file) {
         return res.status(400).json({ message: 'No file provided' });
       }
-      
-      console.log(`🔄 Uploading file: ${file.originalname} (${file.mimetype})`);
-      
-      // Create uploads directory if it doesn't exist
-      const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
-      }
-      
-      // Generate unique filename to avoid conflicts
+
+      const fileSizeKB = (file.size / 1024).toFixed(0);
+      console.log(`🔄 Uploading to Supabase: ${file.originalname} (${file.mimetype}, ${fileSizeKB}KB)`);
+
+      // Initialize Supabase client with service role for storage operations
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
+      // Generate unique filename
       const timestamp = Date.now();
       const fileExtension = path.extname(file.originalname);
-      const fileName = `${path.basename(file.originalname, fileExtension)}_${timestamp}${fileExtension}`;
-      const filePath = path.join(uploadsDir, fileName);
-      
-      // Write file to disk
-      fs.writeFileSync(filePath, file.buffer);
-      
-      const relativePath = `/uploads/${fileName}`;
-      
-      console.log(`✅ File uploaded: ${fileName} -> ${relativePath}`);
-      
+      const cleanName = path.basename(file.originalname, fileExtension)
+        .replace(/[^a-zA-Z0-9-_]/g, '-')
+        .substring(0, 50); // Limit name length
+      const fileName = `${cleanName}_${timestamp}${fileExtension}`;
+
+      // Store in blog/ subfolder within gallery-images bucket
+      const storagePath = `blog/${fileName}`;
+
+      // Upload to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('gallery-images')
+        .upload(storagePath, file.buffer, {
+          contentType: file.mimetype,
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('❌ Supabase upload error:', uploadError);
+        throw new Error(`Storage upload failed: ${uploadError.message}`);
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('gallery-images')
+        .getPublicUrl(storagePath);
+
+      console.log(`✅ Uploaded to Supabase: ${fileName} -> ${publicUrl}`);
+
       res.json({
         success: true,
-        path: relativePath,
+        path: publicUrl,
         filename: fileName,
         originalName: file.originalname,
         size: file.size,
         mimetype: file.mimetype
       });
-      
+
     } catch (error) {
       console.error('File upload error:', error);
-      res.status(500).json({ message: 'Failed to upload file' });
+      res.status(500).json({
+        message: 'Failed to upload file',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 

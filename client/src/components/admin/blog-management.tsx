@@ -561,9 +561,9 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
       return;
     }
 
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      toast({ title: "Error", description: "Image must be less than 10MB", variant: "destructive" });
+    // Validate file size (max 20MB - will be compressed before upload)
+    if (file.size > 20 * 1024 * 1024) {
+      toast({ title: "Error", description: "Image must be less than 20MB", variant: "destructive" });
       return;
     }
 
@@ -643,8 +643,8 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      toast({ title: "Error", description: "Image must be less than 10MB", variant: "destructive" });
+    if (file.size > 20 * 1024 * 1024) {
+      toast({ title: "Error", description: "Image must be less than 20MB", variant: "destructive" });
       return;
     }
 
@@ -721,8 +721,8 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      toast({ title: "Error", description: "Image must be less than 10MB", variant: "destructive" });
+    if (file.size > 20 * 1024 * 1024) {
+      toast({ title: "Error", description: "Image must be less than 20MB", variant: "destructive" });
       return;
     }
 
@@ -794,8 +794,8 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
   }, []);
 
   const handleFeaturedImageUpload = async (file: File) => {
-    if (file.size > 10 * 1024 * 1024) { // 10MB
-      toast({ title: "Error", description: "Image must be smaller than 10MB", variant: "destructive" });
+    if (file.size > 20 * 1024 * 1024) { // 20MB - compressed before upload
+      toast({ title: "Error", description: "Image must be smaller than 20MB", variant: "destructive" });
       return;
     }
 
@@ -866,8 +866,8 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
   };
 
   const handleBeforeAfterImageUpload = async (file: File, type: 'before' | 'after') => {
-    if (file.size > 10 * 1024 * 1024) { // 10MB
-      toast({ title: "Error", description: "Image must be smaller than 10MB", variant: "destructive" });
+    if (file.size > 20 * 1024 * 1024) { // 20MB - compressed before upload
+      toast({ title: "Error", description: "Image must be smaller than 20MB", variant: "destructive" });
       return;
     }
 
@@ -2164,62 +2164,68 @@ Please provide only the enhanced content without any additional text or explanat
                 {/* Image Configuration */}
                 {featuredSection.type === 'image' && (
                   <div className="space-y-3 p-3 bg-gray-700/50 rounded-lg">
-                    {/* Image Preview and Upload */}
-                    {featuredSection.config.imageUrl ? (
-                      <div className="relative group">
-                        <img
-                          src={featuredSection.config.imageUrl}
-                          alt="Featured image preview"
-                          className="w-full h-48 object-cover rounded-lg"
-                        />
-                        <button
-                          onClick={removeFeaturedImage}
-                          className="absolute top-2 right-2 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                          title="Remove featured image"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                        <p className="text-xs text-gray-400 mt-2 truncate">
-                          {featuredSection.config.imageUrl}
-                        </p>
-                      </div>
-                    ) : (
-                      <div
-                        onDragOver={handleDragOverFeatured}
-                        onDragLeave={handleDragLeaveFeatured}
-                        onDrop={handleDropFeatured}
-                        className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
-                          isDraggingFeatured
-                            ? 'border-cyan-400 bg-cyan-400/10'
+                    {/* Image Preview and Upload - unified dropzone */}
+                    <div
+                      onDragOver={handleDragOverFeatured}
+                      onDragLeave={handleDragLeaveFeatured}
+                      onDrop={handleDropFeatured}
+                      onClick={() => document.getElementById('featured-image-input')?.click()}
+                      className={`relative group border-2 border-dashed rounded-lg text-center transition-colors cursor-pointer overflow-hidden ${
+                        isDraggingFeatured
+                          ? 'border-cyan-400 bg-cyan-400/10'
+                          : featuredSection.config.imageUrl
+                            ? 'border-transparent hover:border-cyan-400/50'
                             : 'border-gray-600 hover:border-gray-500'
-                        } ${featuredImageUploading ? 'opacity-50 pointer-events-none' : ''}`}
-                        onClick={() => document.getElementById('featured-image-input')?.click()}
-                      >
-                        <input
-                          id="featured-image-input"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleFeaturedFileSelect}
-                          className="hidden"
-                        />
-                        {featuredImageUploading ? (
-                          <>
-                            <RefreshCw className="w-8 h-8 text-cyan-400 mx-auto mb-2 animate-spin" />
-                            <p className="text-sm text-gray-300">Uploading...</p>
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                            <p className="text-sm text-gray-300">
-                              {isDraggingFeatured ? 'Drop featured image here' : 'Drag & drop featured image'}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              or click to browse (max 10MB)
-                            </p>
-                          </>
-                        )}
-                      </div>
-                    )}
+                      } ${featuredImageUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                    >
+                      <input
+                        id="featured-image-input"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFeaturedFileSelect}
+                        className="hidden"
+                      />
+                      {featuredSection.config.imageUrl ? (
+                        <>
+                          <img
+                            src={featuredSection.config.imageUrl}
+                            alt="Featured image preview"
+                            className="w-full h-48 object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center">
+                            <Upload className="w-8 h-8 text-white mb-2" />
+                            <p className="text-sm text-white">Drop to replace</p>
+                            <p className="text-xs text-gray-300 mt-1">or click to browse</p>
+                          </div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); removeFeaturedImage(); }}
+                            className="absolute top-2 right-2 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                            title="Remove featured image"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </>
+                      ) : (
+                        <div className="p-6">
+                          {featuredImageUploading ? (
+                            <>
+                              <RefreshCw className="w-8 h-8 text-cyan-400 mx-auto mb-2 animate-spin" />
+                              <p className="text-sm text-gray-300">Uploading...</p>
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                              <p className="text-sm text-gray-300">
+                                {isDraggingFeatured ? 'Drop featured image here' : 'Drag & drop featured image'}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                or click to browse (max 20MB)
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
                     
                     <div>
                       <Label className="text-gray-300 text-sm">Image URL</Label>
@@ -2410,38 +2416,51 @@ Please provide only the enhanced content without any additional text or explanat
                 {featuredSection.type === 'before-after' && (
                   <div className="space-y-4 p-3 bg-gray-700/50 rounded-lg">
                     <div className="grid grid-cols-2 gap-4">
-                      {/* Before Image Upload */}
+                      {/* Before Image Upload - unified dropzone */}
                       <div>
                         <Label className="text-gray-300 text-sm mb-2 block">Before Image</Label>
-                        {featuredSection.config.beforeImageUrl ? (
-                          <div className="relative group">
-                            <img
-                              src={featuredSection.config.beforeImageUrl}
-                              alt="Before image preview"
-                              className="w-full h-32 object-cover rounded-lg"
-                            />
-                            <button
-                              onClick={() => setFeaturedSection(prev => ({
-                                ...prev,
-                                config: { ...prev.config, beforeImageUrl: '', beforeImageAlt: '' }
-                              }))}
-                              className="absolute top-2 right-2 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                              title="Remove before image"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ) : (
-                          <div
-                            className="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center hover:border-cyan-400 transition-colors cursor-pointer"
-                            onDrop={(e) => handleImageDrop(e, 'before')}
-                            onDragOver={(e) => e.preventDefault()}
-                            onClick={() => document.getElementById('before-image-input')?.click()}
-                          >
-                            <ImageIcon className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-                            <p className="text-xs text-gray-400">Drop before image or click to browse</p>
-                          </div>
-                        )}
+                        <div
+                          className={`relative group border-2 border-dashed rounded-lg text-center transition-colors cursor-pointer overflow-hidden ${
+                            featuredSection.config.beforeImageUrl
+                              ? 'border-transparent hover:border-cyan-400/50'
+                              : 'border-gray-600 hover:border-cyan-400'
+                          }`}
+                          onDrop={(e) => handleImageDrop(e, 'before')}
+                          onDragOver={(e) => e.preventDefault()}
+                          onClick={() => document.getElementById('before-image-input')?.click()}
+                        >
+                          {featuredSection.config.beforeImageUrl ? (
+                            <>
+                              <img
+                                src={featuredSection.config.beforeImageUrl}
+                                alt="Before image preview"
+                                className="w-full h-32 object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center">
+                                <Upload className="w-6 h-6 text-white mb-1" />
+                                <p className="text-xs text-white">Drop to replace</p>
+                              </div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setFeaturedSection(prev => ({
+                                    ...prev,
+                                    config: { ...prev.config, beforeImageUrl: '', beforeImageAlt: '' }
+                                  }));
+                                }}
+                                className="absolute top-2 right-2 p-1 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                title="Remove before image"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </>
+                          ) : (
+                            <div className="p-4">
+                              <ImageIcon className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                              <p className="text-xs text-gray-400">Drop or click</p>
+                            </div>
+                          )}
+                        </div>
                         <input
                           id="before-image-input"
                           type="file"
@@ -2451,38 +2470,51 @@ Please provide only the enhanced content without any additional text or explanat
                         />
                       </div>
 
-                      {/* After Image Upload */}
+                      {/* After Image Upload - unified dropzone */}
                       <div>
                         <Label className="text-gray-300 text-sm mb-2 block">After Image</Label>
-                        {featuredSection.config.afterImageUrl ? (
-                          <div className="relative group">
-                            <img
-                              src={featuredSection.config.afterImageUrl}
-                              alt="After image preview"
-                              className="w-full h-32 object-cover rounded-lg"
-                            />
-                            <button
-                              onClick={() => setFeaturedSection(prev => ({
-                                ...prev,
-                                config: { ...prev.config, afterImageUrl: '', afterImageAlt: '' }
-                              }))}
-                              className="absolute top-2 right-2 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                              title="Remove after image"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ) : (
-                          <div
-                            className="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center hover:border-cyan-400 transition-colors cursor-pointer"
-                            onDrop={(e) => handleImageDrop(e, 'after')}
-                            onDragOver={(e) => e.preventDefault()}
-                            onClick={() => document.getElementById('after-image-input')?.click()}
-                          >
-                            <ImageIcon className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-                            <p className="text-xs text-gray-400">Drop after image or click to browse</p>
-                          </div>
-                        )}
+                        <div
+                          className={`relative group border-2 border-dashed rounded-lg text-center transition-colors cursor-pointer overflow-hidden ${
+                            featuredSection.config.afterImageUrl
+                              ? 'border-transparent hover:border-cyan-400/50'
+                              : 'border-gray-600 hover:border-cyan-400'
+                          }`}
+                          onDrop={(e) => handleImageDrop(e, 'after')}
+                          onDragOver={(e) => e.preventDefault()}
+                          onClick={() => document.getElementById('after-image-input')?.click()}
+                        >
+                          {featuredSection.config.afterImageUrl ? (
+                            <>
+                              <img
+                                src={featuredSection.config.afterImageUrl}
+                                alt="After image preview"
+                                className="w-full h-32 object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center">
+                                <Upload className="w-6 h-6 text-white mb-1" />
+                                <p className="text-xs text-white">Drop to replace</p>
+                              </div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setFeaturedSection(prev => ({
+                                    ...prev,
+                                    config: { ...prev.config, afterImageUrl: '', afterImageAlt: '' }
+                                  }));
+                                }}
+                                className="absolute top-2 right-2 p-1 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                title="Remove after image"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </>
+                          ) : (
+                            <div className="p-4">
+                              <ImageIcon className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                              <p className="text-xs text-gray-400">Drop or click</p>
+                            </div>
+                          )}
+                        </div>
                         <input
                           id="after-image-input"
                           type="file"
@@ -2616,61 +2648,71 @@ Please provide only the enhanced content without any additional text or explanat
               </CardHeader>
               <CardContent>
                 <p className="text-xs text-gray-400 mb-3">Main image displayed at top of article</p>
-                {editorPost.coverImage ? (
-                  <div className="relative group">
-                    <img
-                      src={editorPost.coverImage}
-                      alt="Hero image preview"
-                      className="w-full h-48 object-cover rounded-lg"
-                    />
-                    <button
-                      onClick={removeImage}
-                      className="absolute top-2 right-2 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="Remove image"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                    <p className="text-xs text-gray-400 mt-2 truncate">
-                      {editorPost.coverImage}
-                    </p>
-                  </div>
-                ) : (
-                  <div
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
-                      isDragging
-                        ? 'border-cyan-400 bg-cyan-400/10'
+                {/* Unified dropzone - works with or without existing image */}
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => document.getElementById('hero-image-input')?.click()}
+                  className={`relative group border-2 border-dashed rounded-lg text-center transition-colors cursor-pointer overflow-hidden ${
+                    isDragging
+                      ? 'border-cyan-400 bg-cyan-400/10'
+                      : editorPost.coverImage
+                        ? 'border-transparent hover:border-cyan-400/50'
                         : 'border-gray-600 hover:border-gray-500'
-                    } ${imageUploading ? 'opacity-50 pointer-events-none' : ''}`}
-                    onClick={() => document.getElementById('hero-image-input')?.click()}
-                  >
-                    <input
-                      id="hero-image-input"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileSelect}
-                      className="hidden"
-                    />
-                    {imageUploading ? (
-                      <>
-                        <Clock className="w-8 h-8 text-cyan-400 mx-auto mb-2 animate-spin" />
-                        <p className="text-sm text-gray-300">Uploading...</p>
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                        <p className="text-sm text-gray-300">
-                          {isDragging ? 'Drop image here' : 'Drag & drop an image'}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          or click to browse (max 10MB)
-                        </p>
-                      </>
-                    )}
-                  </div>
-                )}
+                  } ${imageUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                >
+                  <input
+                    id="hero-image-input"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+
+                  {editorPost.coverImage ? (
+                    <>
+                      <img
+                        src={editorPost.coverImage}
+                        alt="Hero image preview"
+                        className="w-full h-48 object-cover"
+                      />
+                      {/* Hover overlay for replacement */}
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center">
+                        <Upload className="w-8 h-8 text-white mb-2" />
+                        <p className="text-sm text-white">Drop to replace</p>
+                        <p className="text-xs text-gray-300 mt-1">or click to browse</p>
+                      </div>
+                      {/* Remove button */}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); removeImage(); }}
+                        className="absolute top-2 right-2 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                        title="Remove image"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </>
+                  ) : (
+                    <div className="p-6">
+                      {imageUploading ? (
+                        <>
+                          <Clock className="w-8 h-8 text-cyan-400 mx-auto mb-2 animate-spin" />
+                          <p className="text-sm text-gray-300">Uploading...</p>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-sm text-gray-300">
+                            {isDragging ? 'Drop image here' : 'Drag & drop an image'}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            or click to browse (max 20MB)
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
 
@@ -2709,99 +2751,115 @@ Please provide only the enhanced content without any additional text or explanat
                 {/* Post Image 1 */}
                 <div>
                   <Label className="text-gray-400 text-xs mb-2 block">Image 1 (after Section 1)</Label>
-                  {(editorPost as any).postImage1 ? (
-                    <div className="relative group">
-                      <img
-                        src={(editorPost as any).postImage1}
-                        alt="Post image 1 preview"
-                        className="w-full h-32 object-cover rounded-lg"
-                      />
-                      <button
-                        onClick={removePostImage1}
-                        className="absolute top-2 right-2 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Remove image"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div
-                      onDragOver={handleDragOverPost1}
-                      onDragLeave={handleDragLeavePost1}
-                      onDrop={handleDropPost1}
-                      className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors cursor-pointer ${
-                        isDraggingPost1
-                          ? 'border-cyan-400 bg-cyan-400/10'
+                  <div
+                    onDragOver={handleDragOverPost1}
+                    onDragLeave={handleDragLeavePost1}
+                    onDrop={handleDropPost1}
+                    onClick={() => document.getElementById('post-image-1-input')?.click()}
+                    className={`relative group border-2 border-dashed rounded-lg text-center transition-colors cursor-pointer overflow-hidden ${
+                      isDraggingPost1
+                        ? 'border-cyan-400 bg-cyan-400/10'
+                        : (editorPost as any).postImage1
+                          ? 'border-transparent hover:border-cyan-400/50'
                           : 'border-gray-600 hover:border-gray-500'
-                      } ${uploadingPost1 ? 'opacity-50 pointer-events-none' : ''}`}
-                      onClick={() => document.getElementById('post-image-1-input')?.click()}
-                    >
-                      <input
-                        id="post-image-1-input"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileSelectPost1}
-                        className="hidden"
-                      />
-                      {uploadingPost1 ? (
-                        <Clock className="w-6 h-6 text-cyan-400 mx-auto animate-spin" />
-                      ) : (
-                        <>
-                          <Upload className="w-6 h-6 text-muted-foreground mx-auto mb-1" />
-                          <p className="text-xs text-gray-400">Drop or click</p>
-                        </>
-                      )}
-                    </div>
-                  )}
+                    } ${uploadingPost1 ? 'opacity-50 pointer-events-none' : ''}`}
+                  >
+                    <input
+                      id="post-image-1-input"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileSelectPost1}
+                      className="hidden"
+                    />
+                    {(editorPost as any).postImage1 ? (
+                      <>
+                        <img
+                          src={(editorPost as any).postImage1}
+                          alt="Post image 1 preview"
+                          className="w-full h-32 object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center">
+                          <Upload className="w-6 h-6 text-white mb-1" />
+                          <p className="text-xs text-white">Drop to replace</p>
+                        </div>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); removePostImage1(); }}
+                          className="absolute top-2 right-2 p-1 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                          title="Remove image"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </>
+                    ) : (
+                      <div className="p-4">
+                        {uploadingPost1 ? (
+                          <Clock className="w-6 h-6 text-cyan-400 mx-auto animate-spin" />
+                        ) : (
+                          <>
+                            <Upload className="w-6 h-6 text-muted-foreground mx-auto mb-1" />
+                            <p className="text-xs text-gray-400">Drop or click</p>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Post Image 2 */}
                 <div>
                   <Label className="text-gray-400 text-xs mb-2 block">Image 2 (after Section 2)</Label>
-                  {(editorPost as any).postImage2 ? (
-                    <div className="relative group">
-                      <img
-                        src={(editorPost as any).postImage2}
-                        alt="Post image 2 preview"
-                        className="w-full h-32 object-cover rounded-lg"
-                      />
-                      <button
-                        onClick={removePostImage2}
-                        className="absolute top-2 right-2 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Remove image"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div
-                      onDragOver={handleDragOverPost2}
-                      onDragLeave={handleDragLeavePost2}
-                      onDrop={handleDropPost2}
-                      className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors cursor-pointer ${
-                        isDraggingPost2
-                          ? 'border-cyan-400 bg-cyan-400/10'
+                  <div
+                    onDragOver={handleDragOverPost2}
+                    onDragLeave={handleDragLeavePost2}
+                    onDrop={handleDropPost2}
+                    onClick={() => document.getElementById('post-image-2-input')?.click()}
+                    className={`relative group border-2 border-dashed rounded-lg text-center transition-colors cursor-pointer overflow-hidden ${
+                      isDraggingPost2
+                        ? 'border-cyan-400 bg-cyan-400/10'
+                        : (editorPost as any).postImage2
+                          ? 'border-transparent hover:border-cyan-400/50'
                           : 'border-gray-600 hover:border-gray-500'
-                      } ${uploadingPost2 ? 'opacity-50 pointer-events-none' : ''}`}
-                      onClick={() => document.getElementById('post-image-2-input')?.click()}
-                    >
-                      <input
-                        id="post-image-2-input"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileSelectPost2}
-                        className="hidden"
-                      />
-                      {uploadingPost2 ? (
-                        <Clock className="w-6 h-6 text-cyan-400 mx-auto animate-spin" />
-                      ) : (
-                        <>
-                          <Upload className="w-6 h-6 text-muted-foreground mx-auto mb-1" />
-                          <p className="text-xs text-gray-400">Drop or click</p>
-                        </>
-                      )}
-                    </div>
-                  )}
+                    } ${uploadingPost2 ? 'opacity-50 pointer-events-none' : ''}`}
+                  >
+                    <input
+                      id="post-image-2-input"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileSelectPost2}
+                      className="hidden"
+                    />
+                    {(editorPost as any).postImage2 ? (
+                      <>
+                        <img
+                          src={(editorPost as any).postImage2}
+                          alt="Post image 2 preview"
+                          className="w-full h-32 object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center">
+                          <Upload className="w-6 h-6 text-white mb-1" />
+                          <p className="text-xs text-white">Drop to replace</p>
+                        </div>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); removePostImage2(); }}
+                          className="absolute top-2 right-2 p-1 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                          title="Remove image"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </>
+                    ) : (
+                      <div className="p-4">
+                        {uploadingPost2 ? (
+                          <Clock className="w-6 h-6 text-cyan-400 mx-auto animate-spin" />
+                        ) : (
+                          <>
+                            <Upload className="w-6 h-6 text-muted-foreground mx-auto mb-1" />
+                            <p className="text-xs text-gray-400">Drop or click</p>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>

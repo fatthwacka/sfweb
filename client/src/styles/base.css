@@ -191,7 +191,7 @@
 
   body {
     @apply bg-background text-foreground font-saira antialiased;
-    background: 
+    background:
       radial-gradient(ellipse at 20% 30%, hsla(300, 85%, 55%, 0.35) 0%, transparent 50%),
       radial-gradient(ellipse at 80% 70%, hsla(25, 95%, 65%, 0.3) 0%, transparent 50%),
       radial-gradient(ellipse at 60% 10%, hsla(195, 85%, 55%, 0.25) 0%, transparent 50%),
@@ -200,7 +200,7 @@
     background-attachment: fixed;
     min-height: 100vh;
   }
-  
+
   /* Smooth gradient transitions for all dynamic backgrounds and text colors */
   [class*="text-"][class*="-primary"],
   [class*="text-"][class*="-secondary"],
@@ -435,5 +435,24 @@
     top: 0 !important;
     cursor: pointer !important;
   }
+}
+
+/* WHITE BACKGROUNDS: Dark text - outside @layer for highest priority */
+/* Fixes white-on-white inheritance from body's text-foreground */
+.bg-white {
+  color: rgb(31, 41, 55) !important; /* gray-800 */
+}
+
+.bg-white h1,
+.bg-white h2,
+.bg-white h3,
+.bg-white h4,
+.bg-white h5,
+.bg-white h6 {
+  color: rgb(17, 24, 39) !important; /* gray-900 */
+}
+
+.bg-white p {
+  color: rgb(75, 85, 99) !important; /* gray-600 */
 }
 

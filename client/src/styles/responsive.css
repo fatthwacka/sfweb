@@ -1779,6 +1779,23 @@ html, body {
 [data-gradient-section="contact"] .text-muted-foreground {
   color: var(--contact-text-tertiary, #94a3b8) !important;
 }
+
+/* WHITE BACKGROUNDS inside gradient sections - override with dark text */
+[data-gradient-section] .bg-white,
+[data-gradient-section] .bg-white * {
+  color: rgb(31, 41, 55) !important;
+}
+[data-gradient-section] .bg-white h1,
+[data-gradient-section] .bg-white h2,
+[data-gradient-section] .bg-white h3,
+[data-gradient-section] .bg-white h4,
+[data-gradient-section] .bg-white h5,
+[data-gradient-section] .bg-white h6 {
+  color: rgb(17, 24, 39) !important;
+}
+[data-gradient-section] .bg-white p {
+  color: rgb(75, 85, 99) !important;
+}
 [data-gradient-section="portfolio"] h1,
 [data-gradient-section="portfolio"] h2 {
   color: var(--portfolio-text-primary, #ffffff) !important;

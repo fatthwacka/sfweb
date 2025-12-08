@@ -11,44 +11,38 @@ const videographyCategories = [
   {
     name: "Weddings",
     slug: "weddings",
-    description: "Cinematic films that tell your love story",
     image: "/images/hero/wedding-videography-hero.jpg",
-    features: ["Ceremony", "Reception", "Drone", "Family"]
+    features: ["Ceremonies", "Receptions", "Drone Footage", "Highlights"]  // 49 chars
   },
   {
     name: "Corporate",
     slug: "corporate",
-    description: "Videos that elevate your business",
     image: "/images/hero/corporate-videography-hero.jpg",
-    features: ["Company intro", "Adverts & Promo", "Conferences", "Interviews"]
+    features: ["Company Intros", "Adverts", "Conferences", "Interviews"]  // 48 chars
   },
   {
     name: "Events",
     slug: "events",
-    description: "Capturing every glistening moment",
     image: "/images/hero/events-videography-hero.jpg",
-    features: ["Conferences", "Music Festivals", "Birthdays", "Functions"]
+    features: ["Conferences", "Music Festivals", "Birthdays", "Functions"]  // 50 chars
   },
   {
     name: "Product Videos",
     slug: "products",
-    description: "Showcase features and benefits",
     image: "/images/hero/product-videography-hero.jpg",
-    features: ["Product adverts", "Lifestyle uses", "Unboxing", "360° product"]
+    features: ["Product Adverts", "Lifestyle", "Unboxing", "360° Views"]  // 48 chars
   },
   {
     name: "Social Media",
     slug: "social",
-    description: "Engaging social media content production",
     image: "/images/hero/social-media-videography-hero.jpg",
-    features: ["Instagram Reels", "TikTok content", "Facebook videos", "YouTube shorts"]
+    features: ["Reels", "TikTok Content", "Facebook Videos", "Shorts"]  // 46 chars
   },
   {
     name: "Animation",
     slug: "animation",
-    description: "Motion graphics for visual impact",
     image: "/images/hero/animation-videography-hero.jpg",
-    features: ["Logo Builds", "Explainer videos", "Character animation", "3D renders"]
+    features: ["Logo Builds", "Explainer Videos", "Motion Graphics", "3D"]  // 48 chars
   }
 ];
 
@@ -114,17 +108,7 @@ export default function Videography() {
                   
                   <div className="p-8 pb-6">
                     <h3 className="text-2xl mb-4">{category.name}</h3>
-                    <p className="mb-6 text-muted-foreground">{category.description}</p>
-                    
-                    <div className="grid grid-cols-2 gap-2 mb-6">
-                      {category.features.map((feature, featureIndex) => (
-                        <div key={featureIndex} className="flex items-center text-sm text-muted-foreground">
-                          <div className="w-1.5 h-1.5 rounded-full mr-2 flex-shrink-0 bullet-point-accent"></div>
-                          {feature}
-                        </div>
-                      ))}
-                    </div>
-                    
+                    <p className="text-muted-foreground">{category.features.join(", ")}</p>
                   </div>
                 </div>
               </Link>

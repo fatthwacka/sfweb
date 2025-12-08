@@ -1,22 +1,12 @@
 import { Link } from "wouter";
 
-const photographyServices = [
-  { name: "Weddings", href: "/photography/weddings" },
-  { name: "Portraits", href: "/photography/portraits" },
-  { name: "Corporate", href: "/photography/corporate" },
-  { name: "Events", href: "/photography/events" },
-  { name: "Products", href: "/photography/products" },
-  { name: "Graduation", href: "/photography/graduation" },
-  { name: "Gallery Demo", href: "/gallery-demo" },
-];
-
-const videographyServices = [
-  { name: "Wedding Films", href: "/videography/weddings" },
-  { name: "Corporate Videos", href: "/videography/corporate" },
-  { name: "Events", href: "/videography/events" },
-  { name: "Product Videos", href: "/videography/products" },
-  { name: "Social Media", href: "/videography/social" },
-  { name: "Animation", href: "/videography/animation" },
+const services = [
+  { name: "Photography", href: "/photography" },
+  { name: "Videography", href: "/videography" },
+  { name: "Social Media", href: "/social-media" },
+  { name: "Web & Apps", href: "/web-apps" },
+  { name: "Portfolio", href: "/portfolio" },
+  { name: "Case Studies", href: "/stories" },
 ];
 
 const companyLinks = [
@@ -94,30 +84,13 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Links Container */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-            {/* Photography Services */}
+          {/* Links Container - 2 columns */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            {/* Services */}
             <div>
-              <h4 className="text-lg text-salmon mb-6">Photography</h4>
+              <h4 className="text-lg text-cyan mb-6">Services</h4>
               <ul className="space-y-3">
-                {photographyServices.map((service) => (
-                  <li key={service.href}>
-                    <Link
-                      href={service.href}
-                      className="text-muted-foreground hover:text-white transition-colors duration-300"
-                    >
-                      {service.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Videography Services */}
-            <div>
-              <h4 className="text-lg text-cyan mb-6">Videography</h4>
-              <ul className="space-y-3">
-                {videographyServices.map((service) => (
+                {services.map((service) => (
                   <li key={service.href}>
                     <Link
                       href={service.href}

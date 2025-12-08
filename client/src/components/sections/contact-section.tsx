@@ -64,18 +64,22 @@ export function ContactSection() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Very lenient phone number validation if provided
+    // Phone number validation if provided
     if (formData.phone && formData.phone.trim() !== "") {
       // Remove all characters except digits and +
       const cleanPhone = formData.phone.replace(/[^\d+]/g, '');
-      
-      // Very basic validation: must contain at least 6 digits total
+      const hasCountryCode = cleanPhone.startsWith('+');
       const digitCount = cleanPhone.replace(/\+/g, '').length;
-      
-      if (digitCount < 6) {
+
+      // Validation: 10 digits for local, or 11 digits with + (12 chars total) for international
+      const minDigits = hasCountryCode ? 11 : 10;
+
+      if (digitCount < minDigits) {
         toast({
           title: "Invalid Phone Number",
-          description: "Please enter a valid phone number with at least 6 digits.",
+          description: hasCountryCode
+            ? "International numbers need at least 11 digits after the + symbol."
+            : "Please enter a valid phone number with at least 10 digits.",
           variant: "destructive"
         });
         return;
@@ -276,10 +280,10 @@ export function ContactSection() {
             </form>
           </div>
           
-          {/* Success Modal */}
+          {/* Success Modal - rendered outside GradientBackground via portal-like fixed positioning */}
           {showSuccessModal && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center shadow-2xl border border-gray-200">
+              <div className="relative bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center shadow-2xl border border-gray-200">
                 <div className="mb-6">
                   <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">Message Sent Successfully!</h3>
@@ -287,13 +291,13 @@ export function ContactSection() {
                     Thank you for getting in touch! We've received your message and will respond within 24 hours.
                   </p>
                 </div>
-                <Button 
+                <Button
                   onClick={() => setShowSuccessModal(false)}
                   className="bg-green-500 hover:bg-green-600 text-white px-8 py-2 rounded-lg font-semibold"
                 >
                   Great!
                 </Button>
-                <button 
+                <button
                   onClick={() => setShowSuccessModal(false)}
                   className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
                 >
