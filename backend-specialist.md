@@ -73,12 +73,32 @@ I work with your 9 primary tables:
 - Backend performance optimization
 - Data consistency and integrity issues
 
+## Third-Party Service Integration
+
+### reCAPTCHA v3 (Google)
+- **Backend verification**: `server/recaptcha-service.ts`
+- **Graceful degradation**: Backend accepts submissions without tokens (logs warning)
+- **Timeout lesson**: Frontend uses 5-second `Promise.race()` timeout to prevent hanging
+
+### Email Service (Gmail SMTP)
+- **Implementation**: `server/email-service.ts` with Nodemailer
+- **Configuration**: Requires `GMAIL_USER` and `GMAIL_APP_PASSWORD` in `.env`
+- **Contact endpoint**: `/api/contact` handles form submissions
+
+### Best Practices for External Services
+- Always implement timeouts for third-party API calls
+- Provide graceful fallbacks when services are unavailable
+- Log failures but don't block user actions on non-critical services
+- Test production behavior separately (external services behave differently)
+
 ## Technical Context
 
 I understand your server architecture:
 - Single Express server (`server/routes.ts`)
 - Database abstraction layer (`server/storage.ts`)
 - Authentication logic (`server/auth.ts`)
+- reCAPTCHA verification (`server/recaptcha-service.ts`)
+- Email delivery (`server/email-service.ts`)
 - Production deployment serving both API and static files
 - CORS configuration and request/response logging
 

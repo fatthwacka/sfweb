@@ -2,95 +2,49 @@ import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Camera, Check, ChevronDown } from "lucide-react";
-import { useSiteConfig } from "@/hooks/use-site-config";
+import { Camera, ChevronDown } from "lucide-react";
 import { GradientBackground } from "@/components/common/gradient-background";
 import { CategoryFeaturedGrid } from "@/components/shared/category-featured-grid";
 import { PricingPackagesDisplay } from "@/components/sections/pricing-packages-display";
+import { useCategoryHero } from "@/hooks/use-category-heroes";
+
+// Hardcoded defaults for SEO - crawlers see this immediately
+const DEFAULT_HERO_IMAGE = "/images/services/product-photography.jpg";
 
 export default function PhotographyProducts() {
-  const { config, isLoading } = useSiteConfig();
-  
-  // Get products photography configuration
-  const productsConfig = config?.categoryPages?.photography?.products || {
-    hero: {
-      title: "Professional Product Photography",
-      subtitle: "Showcase your products with stunning commercial photography",
-      image: "/images/services/product-photography.jpg",
-      alt: "Professional Product Photography by SlyFox Studios"
-    },
-    serviceOverview: {
-      title: "Product Photography Services",
-      description: "Professional product photography in Durban",
-      features: ["E-commerce photography", "Catalog shoots", "Lifestyle product shots", "360° product views"],
-      image: "/images/services/product-photography.jpg"
-    },
-    packages: {
-      title: "Product Photography Packages",
-      description: "Choose the perfect package for your product photography"
-    },
-    recentWork: {
-      title: "Recent Product Photography",
-      description: "See our latest product photography work",
-      images: ["/images/services/product-photography.jpg"]
-    },
-    seoContent: {
-      title: "Professional Product Photography in Durban",
-      content: {
-        section1: {
-          title: "Product Photography Services",
-          text: "Professional product photography services in Durban"
-        },
-        section2: {
-          title: "Why Choose SlyFox Studios",
-          text: "Professional photographers with years of experience"
-        },
-        conclusion: "Contact us today to discuss your product photography needs"
-      }
-    },
-    seo: {
-      title: "Product Photography - SlyFox Studios",
-      description: "Professional product photography in Durban",
-      keywords: "product, photography, durban"
-    }
-  };
-
-  if (isLoading || !productsConfig) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl mb-4">Loading...</h1>
-        </div>
-      </div>
-    );
-  }
+  // Fetch hero image and display settings from Supabase (falls back to defaults)
+  const { heroImage, heroHeight, imageAlign } = useCategoryHero('photography', 'products');
 
   return (
     <div className="min-h-screen bg-background text-foreground background-gradient-blobs">
-      {/* SEO Meta Tags */}
-      <title>{productsConfig.seo.title}</title>
-      <meta name="description" content={productsConfig.seo.description} />
-      <meta name="keywords" content={productsConfig.seo.keywords} />
-      
+      {/* SEO Meta Tags - Hardcoded for crawler visibility */}
+      <title>Product Photography South Africa | SlyFox Studios</title>
+      <meta name="description" content="Professional product photography for e-commerce, catalogues, and marketing. Ship your products to our studio—we work with brands across South Africa and internationally." />
+      <meta name="keywords" content="product photography South Africa, e-commerce photography, commercial photography Durban, catalogue photography" />
+
       <Navigation />
-      
+
       {/* Hero Section */}
-      <section className="relative h-[60vh] overflow-hidden flex items-center justify-center">
+      <section
+        className="relative overflow-hidden flex items-center justify-center"
+        style={{ height: `${heroHeight}vh` }}
+      >
         <div className="absolute inset-0">
-          <img 
-            src={productsConfig.hero?.image || '/images/services/product-photography.jpg'}
-            alt={productsConfig.hero.alt || `Professional Product Photography by SlyFox Studios in Durban - commercial product showcase with professional lighting`}
+          <img
+            src={heroImage || DEFAULT_HERO_IMAGE}
+            alt="Professional Product Photography by SlyFox Studios"
             className="w-full h-full object-cover"
+            style={{ objectPosition: imageAlign }}
           />
           <div className="absolute inset-0 hero-gradient"></div>
         </div>
-        
+
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-corinthia text-white leading-tight hero-title-white" style={{ marginBottom: '-0.5rem' }}>
-            {productsConfig.hero.title}
+            Professional Product Photography
           </h1>
           <h3 className="text-lg md:text-xl text-white font-quicksand font-light mb-4">
-            {productsConfig.hero.subtitle}
+            Showcase your products with stunning commercial photography
           </h3>
 
           {/* Scroll Down Button */}
@@ -99,7 +53,7 @@ export default function PhotographyProducts() {
               onClick={() => {
                 const servicesElement = document.querySelector('#category-services');
                 if (servicesElement) {
-                  const headerOffset = 80; // Account for fixed navigation bar
+                  const headerOffset = 80;
                   const elementPosition = servicesElement.getBoundingClientRect().top;
                   const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
@@ -130,15 +84,15 @@ export default function PhotographyProducts() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6">
-              {productsConfig.recentWork.title}
+              Recent Product Photography
             </h2>
             <h3 className="text-xl ">
-              {productsConfig.recentWork.description}
+              See our latest product photography work
             </h3>
           </div>
 
-          {/* NEW DYNAMIC GRID */}
-          <CategoryFeaturedGrid 
+          {/* Dynamic Featured Grid from Supabase */}
+          <CategoryFeaturedGrid
             categoryKey="products"
             imageCount={6}
           />
@@ -155,8 +109,8 @@ export default function PhotographyProducts() {
       >
         <PricingPackagesDisplay
           pageIdentifier="photography_products"
-          title={productsConfig.packages.title || "Product Photography Packages"}
-          description={productsConfig.packages.description || "Professional product photography solutions"}
+          title="Product Photography Packages"
+          description="Professional product photography solutions for your brand"
           ctaLink="/contact"
           ctaText="Book Now"
         />
@@ -186,8 +140,8 @@ export default function PhotographyProducts() {
               <Link key={categoryItem.name} href={`/photography/${categoryItem.name}`}>
                 <div className="group cursor-pointer bg-slate-800/60 rounded-lg overflow-hidden hover:bg-slate-700/60 transition-all duration-300 hover:scale-105">
                   <div className="aspect-square bg-gray-700/50 relative overflow-hidden">
-                    <img 
-                      src={categoryItem.image} 
+                    <img
+                      src={categoryItem.image}
                       alt={categoryItem.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       loading="lazy"
@@ -221,21 +175,30 @@ export default function PhotographyProducts() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-4xl lg:text-5xl mb-6">
-                {productsConfig.serviceOverview.title}
+                Product Photography Services
               </h2>
               <h3 className="text-xl mb-8 leading-relaxed">
-                {productsConfig.serviceOverview.description}
+                From clean white-background e-commerce shots to lifestyle imagery that tells your brand's story, we create images that convert browsers into buyers.
               </h3>
-              
+
               <div className="grid grid-cols-2 gap-2 mb-8">
-                {productsConfig.serviceOverview.features.map((feature, index) => (
+                {[
+                  'E-commerce photography',
+                  'Lifestyle product shots',
+                  'Catalogue shoots',
+                  '360° product views',
+                  'White background',
+                  'Creative styling',
+                  'Bulk product shoots',
+                  'Quick turnaround'
+                ].map((feature, index) => (
                   <div key={index} className="flex items-center text-sm text-muted-foreground">
                     <div className="w-2 h-2 bg-gradient-to-r from-salmon to-cyan rounded-full mr-2 flex-shrink-0"></div>
                     <span>{feature}</span>
                   </div>
                 ))}
               </div>
-              
+
               <Link href="/contact">
                 <Button className="btn-salmon">
                   Get Started Today
@@ -243,10 +206,10 @@ export default function PhotographyProducts() {
                 </Button>
               </Link>
             </div>
-            
+
             <div className="relative">
-              <img 
-                src={productsConfig.serviceOverview.image || productsConfig.recentWork.images[0] || '/images/placeholder-gallery.jpg'}
+              <img
+                src={heroImage || DEFAULT_HERO_IMAGE}
                 alt="Product Photography example"
                 className="w-full rounded-2xl shadow-2xl"
               />
@@ -255,49 +218,46 @@ export default function PhotographyProducts() {
         </div>
       </GradientBackground>
 
-      {/* SEO Content Section */}
+      {/* SEO Content Section - Hardcoded for crawler visibility */}
       <GradientBackground
         section="photography-product-seo"
         className="py-20"
-        categoryType="photography"
-        categoryName="products"
-        categorySectionName="seoContent"
       >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="mb-12">
             <h2 className="text-4xl lg:text-5xl mb-6">
-              {productsConfig.seoContent.title}
+              Professional Product Photography
             </h2>
           </div>
 
           <div className="max-w-none">
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                {productsConfig.seoContent.content.section1.title}
+                Images That Sell
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                {productsConfig.seoContent.content.section1.text}
+                Great product photography is the difference between a scroll-past and a sale. We work with brands across South Africa and internationally—from e-commerce startups needing clean white-background shots to established companies wanting lifestyle imagery that tells a story. Ship your products to our studio, and we'll handle the rest.
               </p>
             </div>
 
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                {productsConfig.seoContent.content.section2.title}
+                Flexible for Any Product Type
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                {productsConfig.seoContent.content.section2.text}
+                Jewellery, cosmetics, food, electronics, clothing—we've photographed it all. Our studio is equipped for everything from tiny detailed items to larger furniture pieces. Need consistent imagery across hundreds of SKUs for your online store? We've developed efficient workflows that maintain quality at scale.
               </p>
             </div>
 
             <div>
               <p className="text-xl text-muted-foreground">
-                {productsConfig.seoContent.content.conclusion}
+                Whether you're in Cape Town, Johannesburg, or overseas, we can work together. Get in touch to discuss your product photography needs.
               </p>
-              
+
               <div className="mt-8 text-center">
                 <Link href="/contact">
                   <Button className="btn-salmon">
-                    Book Your Product Photography Today
+                    Get a Product Photography Quote
                   </Button>
                 </Link>
               </div>

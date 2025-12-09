@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 // import { DatePicker } from "@/components/ui/date-picker";
 import { useToast } from "@/hooks/use-toast";
+import { useVisitorStats, useVisitorHistory } from "@/hooks/use-visitor-tracking";
 import { apiRequest } from "@/lib/queryClient";
 import { ImageUrl } from "@/lib/image-utils";
 import { VideoUrl } from "@/lib/video-utils";
@@ -58,7 +59,15 @@ import {
   ArrowUpDown,
   Video,
   Play,
-  Image
+  Image,
+  Activity,
+  Clock,
+  Globe,
+  Smartphone,
+  Monitor,
+  Tablet,
+  TrendingUp,
+  ExternalLink
 } from "lucide-react";
 
 interface Client {
@@ -118,6 +127,8 @@ interface AdminContentProps {
 export function AdminContent({ userRole }: AdminContentProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { stats: visitorStats, isLoading: visitorStatsLoading } = useVisitorStats(true, 30000);
+  const { history: visitorHistory } = useVisitorHistory(14, true); // Last 14 days
   const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'shoots' | 'images' | 'galleries' | 'blog' | 'site-management' | 'staff' | 'users'>('overview');
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
   const [activePageSettings, setActivePageSettings] = useState<'contact' | 'homepage' | 'photography' | 'videography' | 'about' | 'web-apps' | 'social-media' | 'stories' | null>(null);
@@ -224,10 +235,11 @@ export function AdminContent({ userRole }: AdminContentProps) {
     queryKey: ['/api/videos']
   });
   
-  // Filter shoots based on selected client for gallery management
-  const galleryFilteredShoots = selectedGalleryClient === '__all__' 
-    ? shoots 
-    : shoots.filter(shoot => shoot.clientId === selectedGalleryClient);
+  // Filter shoots based on selected client for gallery management, sorted alphabetically by title
+  const galleryFilteredShoots = (selectedGalleryClient === '__all__'
+    ? shoots
+    : shoots.filter(shoot => shoot.clientId === selectedGalleryClient)
+  ).sort((a, b) => (a.title || '').localeCompare(b.title || ''));
 
   // Handler for client filter change - reset shoot selection when client changes
   const handleGalleryClientChange = (clientId: string) => {
@@ -1128,7 +1140,27 @@ export function AdminContent({ userRole }: AdminContentProps) {
           {activeTab === 'overview' && (
             <div className="space-y-8">
               {/* Stats Grid */}
-              <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-6 gap-6">
+                <Card className="admin-gradient-card">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-green-400" />
+                      Live Visitors
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-400">
+                      {visitorStatsLoading ? '...' : (visitorStats?.totalActive || 0)}
+                    </div>
+                    {visitorStats && visitorStats.totalActive > 0 && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {visitorStats.anonymousVisitors} guest{visitorStats.anonymousVisitors !== 1 ? 's' : ''}
+                        {visitorStats.loggedInUsers > 0 && `, ${visitorStats.loggedInUsers} logged in`}
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+
                 <Card className="admin-gradient-card">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -1140,7 +1172,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                     <div className="text-2xl font-bold text-salmon">{clients.length}</div>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="admin-gradient-card">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -1152,7 +1184,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                     <div className="text-2xl font-bold text-salmon">{shoots.length}</div>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="admin-gradient-card">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -1164,7 +1196,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                     <div className="text-2xl font-bold text-salmon">{images.length}</div>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="admin-gradient-card">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -1176,7 +1208,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                     <div className="text-2xl font-bold text-salmon">{videos.length}</div>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="admin-gradient-card">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -1242,11 +1274,215 @@ export function AdminContent({ userRole }: AdminContentProps) {
                       <span className="text-sm">Upload Images</span>
                     </Button>
 
-                    <Button className="h-20 flex-col gap-2 bg-cyan-dark border border-cyan/30 shadow-lg hover:border-salmon text-white">
-                      <BarChart3 className="w-6 h-6 icon-cyan" />
-                      <span className="text-sm">View Analytics</span>
-                    </Button>
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* Site Analytics Dashboard */}
+              <Card className="admin-gradient-card">
+                <CardHeader>
+                  <CardTitle className="text-xl font-saira font-bold text-salmon flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5" />
+                    Site Analytics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Time Window Stats */}
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      Visitors by Time Period
+                    </h3>
+                    <div className="grid grid-cols-5 gap-3">
+                      {[
+                        { label: '5 min', key: '5m' as const },
+                        { label: '30 min', key: '30m' as const },
+                        { label: '1 hour', key: '1h' as const },
+                        { label: '24 hours', key: '24h' as const },
+                        { label: '7 days', key: '7d' as const }
+                      ].map(({ label, key }) => (
+                        <div key={key} className="bg-background/50 rounded-lg p-3 text-center">
+                          <div className="text-lg font-bold text-salmon">
+                            {visitorStats?.timeWindows?.[key]?.visitors ?? '-'}
+                          </div>
+                          <div className="text-xs text-muted-foreground">{label}</div>
+                          <div className="text-xs text-cyan mt-1">
+                            {visitorStats?.timeWindows?.[key]?.pageViews ?? 0} views
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-3 gap-6">
+                    {/* Popular Pages */}
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4" />
+                        Popular Pages (24h)
+                      </h3>
+                      <div className="space-y-2">
+                        {visitorStats?.popularPages?.['24h']?.length ? (
+                          visitorStats.popularPages['24h'].slice(0, 5).map(({ page, count }, i) => (
+                            <div key={page} className="flex items-center justify-between text-sm bg-background/30 rounded px-2 py-1">
+                              <span className="text-muted-foreground truncate max-w-[150px]" title={page}>
+                                {page === '/' ? 'Homepage' : page}
+                              </span>
+                              <span className="text-salmon font-medium">{count}</span>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-xs text-muted-foreground">No data yet</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Device Breakdown */}
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                        <Smartphone className="w-4 h-4" />
+                        Devices (24h)
+                      </h3>
+                      <div className="space-y-2">
+                        {visitorStats?.deviceBreakdown24h && (
+                          <>
+                            <div className="flex items-center justify-between text-sm bg-background/30 rounded px-2 py-1">
+                              <span className="flex items-center gap-2 text-muted-foreground">
+                                <Monitor className="w-3 h-3" /> Desktop
+                              </span>
+                              <span className="text-salmon font-medium">{visitorStats.deviceBreakdown24h.desktop}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm bg-background/30 rounded px-2 py-1">
+                              <span className="flex items-center gap-2 text-muted-foreground">
+                                <Smartphone className="w-3 h-3" /> Mobile
+                              </span>
+                              <span className="text-salmon font-medium">{visitorStats.deviceBreakdown24h.mobile}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm bg-background/30 rounded px-2 py-1">
+                              <span className="flex items-center gap-2 text-muted-foreground">
+                                <Tablet className="w-3 h-3" /> Tablet
+                              </span>
+                              <span className="text-salmon font-medium">{visitorStats.deviceBreakdown24h.tablet}</span>
+                            </div>
+                          </>
+                        )}
+                        {visitorStats?.avgSessionDuration !== undefined && (
+                          <div className="mt-3 pt-2 border-t border-muted/20">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-muted-foreground">Avg. Session</span>
+                              <span className="text-cyan font-medium">{visitorStats.avgSessionDuration} min</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Traffic Sources */}
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                        <Globe className="w-4 h-4" />
+                        Traffic Sources (24h)
+                      </h3>
+                      <div className="space-y-2">
+                        {visitorStats?.trafficSources?.length ? (
+                          visitorStats.trafficSources.map(({ source, count }) => (
+                            <div key={source} className="flex items-center justify-between text-sm bg-background/30 rounded px-2 py-1">
+                              <span className="text-muted-foreground truncate max-w-[150px]" title={source}>
+                                {source === 'Direct' ? (
+                                  <span className="flex items-center gap-1">
+                                    <ExternalLink className="w-3 h-3" /> Direct
+                                  </span>
+                                ) : source}
+                              </span>
+                              <span className="text-salmon font-medium">{count}</span>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-xs text-muted-foreground">No data yet</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Currently Active */}
+                  {visitorStats?.currentPages && Object.keys(visitorStats.currentPages).length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-green-400" />
+                        Currently Viewing (Live)
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {Object.entries(visitorStats.currentPages).map(([page, count]) => (
+                          <Badge key={page} variant="secondary" className="bg-green-500/20 text-green-400 border-green-500/30">
+                            {page === '/' ? 'Homepage' : page} ({count})
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Historical Trend (Last 14 Days) */}
+                  {visitorHistory && visitorHistory.dailyStats.length > 0 && (
+                    <div className="border-t border-muted/20 pt-6">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4" />
+                          Daily Visitors (Last 14 Days)
+                        </h3>
+                        <div className="text-xs text-muted-foreground">
+                          Avg: <span className="text-salmon font-medium">{visitorHistory.summary.avgDailyVisitors}</span>/day
+                        </div>
+                      </div>
+
+                      {/* Simple bar chart */}
+                      <div className="flex items-end gap-1 h-20">
+                        {visitorHistory.dailyStats.map((day, i) => {
+                          const maxVisitors = Math.max(...visitorHistory.dailyStats.map(d => d.unique_visitors), 1);
+                          const heightPercent = (day.unique_visitors / maxVisitors) * 100;
+                          const date = new Date(day.date);
+                          const dayLabel = date.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
+
+                          return (
+                            <div key={day.date} className="flex-1 flex flex-col items-center gap-1">
+                              <div
+                                className="w-full bg-salmon/80 rounded-t hover:bg-salmon transition-colors cursor-default"
+                                style={{ height: `${Math.max(heightPercent, 4)}%` }}
+                                title={`${date.toLocaleDateString()}: ${day.unique_visitors} visitors, ${day.total_page_views} views`}
+                              />
+                              <span className="text-[10px] text-muted-foreground">{dayLabel}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Summary stats */}
+                      <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-muted/10">
+                        <div className="text-center">
+                          <div className="text-lg font-bold text-salmon">{visitorHistory.summary.totalVisitors}</div>
+                          <div className="text-xs text-muted-foreground">Total Visitors</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-lg font-bold text-cyan">{visitorHistory.summary.totalPageViews}</div>
+                          <div className="text-xs text-muted-foreground">Page Views</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-lg font-bold text-muted-foreground">{visitorHistory.summary.daysWithData}</div>
+                          <div className="text-xs text-muted-foreground">Days Tracked</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* No history data message */}
+                  {visitorHistory && visitorHistory.dailyStats.length === 0 && (
+                    <div className="border-t border-muted/20 pt-6">
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        Historical data will appear here after the daily cleanup runs.
+                        <br />
+                        <span className="text-xs">Data is aggregated at 2am daily via VPS cron job.</span>
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -2463,15 +2699,15 @@ export function AdminContent({ userRole }: AdminContentProps) {
                         <SelectContent>
                           {galleryFilteredShoots.map(shoot => (
                             <SelectItem key={shoot.id} value={shoot.id.toString()}>
-                              {shoot.title} - {(() => {
+                              {shoot.title} ({(() => {
                                 try {
                                   if (!shoot.shootDate) return 'No date';
                                   const date = new Date(shoot.shootDate);
-                                  return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleDateString();
+                                  return isNaN(date.getTime()) ? 'No date' : date.toLocaleDateString();
                                 } catch {
-                                  return 'Invalid Date';
+                                  return 'No date';
                                 }
-                              })()} - {shoot.location || 'No location'}
+                              })()})
                             </SelectItem>
                           ))}
                         </SelectContent>

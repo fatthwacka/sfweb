@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
 import { useScrollToTop } from "./hooks/use-scroll-to-top";
+import { useVisitorTracking } from "./hooks/use-visitor-tracking";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { AuthProvider } from "@/hooks/use-auth";
 
@@ -86,6 +87,8 @@ function Router() {
   useAnalytics();
   // Auto scroll to top on route change
   useScrollToTop();
+  // Track visitor sessions for admin dashboard
+  useVisitorTracking();
   
   return (
     <Switch>

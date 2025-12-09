@@ -14,6 +14,7 @@ import { createClient } from '@supabase/supabase-js';
 import simpleAssetsRouter from './routes/simple-assets';
 import siteConfigRouter from './site-config-api';
 import { gradientRoutes } from './routes/gradients';
+import { categoryHeroesRouter } from './routes/category-heroes';
 import pricingPackagesRouter from './pricing-packages-api';
 import blogRouter from './routes/blog';
 import aiBlogRouter from './routes/ai-blog';
@@ -37,7 +38,7 @@ import { z } from "zod";
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
+    fileSize: 20 * 1024 * 1024, // 20MB limit (hero images can be large, compressed client-side)
   },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
@@ -876,71 +877,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Optimized portfolio endpoint - only fetches essential cover image data
   app.get("/api/portfolio/cards", async (req, res) => {
     try {
-      const startTime = Date.now();
-      console.log("[PERF] Starting optimized portfolio cards");
-      
-      // Get basic shoot info only - no media fetching yet
+      // OPTIMIZED: Batch fetch all data in parallel instead of N+1 queries
       const publicShoots = await storage.getPublicShoots();
-      console.log(`[PERF] Got ${publicShoots.length} public shoots in ${Date.now() - startTime}ms`);
-      
-      // For each shoot, only get the cover image/video info - not all media
-      const portfolioCards = await Promise.all(
-        publicShoots.map(async (shoot) => {
-          let coverImageUrl = '';
-          let coverVideoInfo = null;
-          
-          if (shoot.mediaType === 'video') {
-            // Get only the first/featured video for cover
-            const videos = await storage.getVideosByShoot(shoot.id);
-            const coverVideo = videos.find(video => video.featuredVideo === true) || videos[0];
-            
-            if (coverVideo) {
-              coverVideoInfo = {
-                id: coverVideo.id,
-                storagePath: coverVideo.storagePath,
-                optimizedPath: coverVideo.optimizedPath,
-                thumbnailPath: coverVideo.thumbnailPath,
-                duration: coverVideo.duration,
-                filename: coverVideo.filename
-              };
-              coverImageUrl = coverVideo.thumbnailPath;
-            }
-          } else {
-            // Get only cover image for photo albums
-            const images = await storage.getImagesByShoot(shoot.id);
-            let coverImage = null;
-            
-            // 1st priority: bannerImageId (designated album cover)
-            if (shoot.bannerImageId) {
-              coverImage = images.find(img => img.id === shoot.bannerImageId);
-            }
-            
-            // 2nd priority: featuredImage
-            if (!coverImage) {
-              coverImage = images.find(img => img.featuredImage === true);
-            }
-            
-            // 3rd priority: first image
-            if (!coverImage) {
-              coverImage = images[0];
-            }
-            
-            if (coverImage && coverImage.storagePath) {
-              coverImageUrl = coverImage.storagePath.includes('supabase') 
-                ? coverImage.storagePath.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=600&height=400&resize=cover&quality=85'
-                : coverImage.storagePath;
-            }
+
+      // Separate shoots by type
+      const videoShootIds = publicShoots.filter(s => s.mediaType === 'video').map(s => s.id);
+      const photoShoots = publicShoots.filter(s => s.mediaType !== 'video');
+      const photoShootsWithBanner = photoShoots.filter(s => s.bannerImageId);
+      const photoShootsWithoutBanner = photoShoots.filter(s => !s.bannerImageId);
+
+      // Batch fetch all cover media in parallel (single query each, not N queries!)
+      const bannerImageIds = photoShootsWithBanner.map(s => s.bannerImageId!).filter(Boolean);
+      const [coverVideosMap, bannerImageMap, fallbackImagesMap] = await Promise.all([
+        videoShootIds.length > 0 ? storage.getCoverVideosForShoots(videoShootIds) : Promise.resolve(new Map()),
+        bannerImageIds.length > 0 ? storage.getImagesByIds(bannerImageIds) : Promise.resolve(new Map()),
+        photoShootsWithoutBanner.length > 0
+          ? storage.getImagesForShoots(photoShootsWithoutBanner.map(s => s.id))
+          : Promise.resolve(new Map())
+      ]);
+
+      // Build portfolio cards using pre-fetched data
+      const portfolioCards = publicShoots.map(shoot => {
+        let coverImageUrl = '';
+        let coverVideoInfo = null;
+
+        if (shoot.mediaType === 'video') {
+          const coverVideo = coverVideosMap.get(shoot.id);
+          if (coverVideo) {
+            coverVideoInfo = {
+              id: coverVideo.id,
+              storagePath: coverVideo.storagePath,
+              optimizedPath: coverVideo.optimizedPath,
+              thumbnailPath: coverVideo.thumbnailPath,
+              duration: coverVideo.duration,
+              filename: coverVideo.filename
+            };
+            coverImageUrl = coverVideo.thumbnailPath;
           }
-          
-          return {
-            ...shoot,
-            coverImageUrl,
-            coverVideoInfo
-          };
-        })
-      );
-      
-      console.log(`[PERF] Generated portfolio cards in ${Date.now() - startTime}ms`);
+        } else {
+          // Photo album: try banner first, then fallback images
+          let coverImage = null;
+
+          if (shoot.bannerImageId) {
+            coverImage = bannerImageMap.get(shoot.bannerImageId);
+          }
+
+          if (!coverImage) {
+            const images = fallbackImagesMap.get(shoot.id) || [];
+            coverImage = images.find(img => img.featuredImage === true) || images[0];
+          }
+
+          if (coverImage && coverImage.storagePath) {
+            coverImageUrl = coverImage.storagePath.includes('supabase')
+              ? coverImage.storagePath.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=600&height=400&resize=cover&quality=85'
+              : coverImage.storagePath;
+          }
+        }
+
+        return {
+          ...shoot,
+          coverImageUrl,
+          coverVideoInfo
+        };
+      });
       
       // Group shoots by groupName for portfolio bundling (same logic as before)
       const portfolioItems = [];
@@ -1070,56 +1069,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { groupName } = req.params;
       const decodedGroupName = decodeURIComponent(groupName.replace(/-/g, ' '));
-      
-      const publicShoots = await storage.getPublicShoots();
-      const groupShoots = publicShoots.filter(shoot => 
-        shoot.groupName?.toLowerCase() === decodedGroupName.toLowerCase()
-      );
-      
-      if (groupShoots.length === 0) {
+
+      // OPTIMIZED: Single query gets shoots WITH banner image data via JOIN
+      const groupShootsWithBanner = await storage.getPublicShootsWithBannerByGroupName(decodedGroupName);
+
+      if (groupShootsWithBanner.length === 0) {
         return res.status(404).json({ message: "Portfolio group not found" });
       }
-      
-      // Enhance shoots with cover media information
-      const shootsWithCoverMedia = await Promise.all(
-        groupShoots.map(async (shoot) => {
-          let coverImageUrl = '';
-          let coverVideoInfo = null;
-          
-          if (shoot.mediaType === 'video') {
-            const videos = await storage.getVideosByShoot(shoot.id);
-            const coverVideo = videos.find(video => video.featuredVideo === true) || videos[0];
-            
-            if (coverVideo) {
-              coverVideoInfo = {
-                id: coverVideo.id,
-                storagePath: coverVideo.storagePath,
-                optimizedPath: coverVideo.optimizedPath,
-                thumbnailPath: coverVideo.thumbnailPath,
-                duration: coverVideo.duration,
-                filename: coverVideo.filename
-              };
-              coverImageUrl = coverVideo.thumbnailPath;
-            }
+
+      // Only need to fetch videos and images for shoots without banners
+      const videoShootIds = groupShootsWithBanner.filter(s => s.mediaType === 'video').map(s => s.id);
+      const photoShootsWithoutBanner = groupShootsWithBanner.filter(s => s.mediaType !== 'video' && !s.bannerImage);
+
+      // Batch fetch: only cover videos and fallback images (banner already in first query)
+      const [videosMap, imagesMap] = await Promise.all([
+        videoShootIds.length > 0 ? storage.getCoverVideosForShoots(videoShootIds) : Promise.resolve(new Map()),
+        photoShootsWithoutBanner.length > 0 ? storage.getImagesForShoots(photoShootsWithoutBanner.map(s => s.id)) : Promise.resolve(new Map())
+      ]);
+
+      // Build the response using pre-fetched data
+      const shootsWithCoverMedia = groupShootsWithBanner.map(shoot => {
+        let coverImageUrl = '';
+        let coverVideoInfo = null;
+
+        if (shoot.mediaType === 'video') {
+          // videosMap now returns single cover video, not array
+          const coverVideo = videosMap.get(shoot.id);
+
+          if (coverVideo) {
+            coverVideoInfo = {
+              id: coverVideo.id,
+              storagePath: coverVideo.storagePath,
+              optimizedPath: coverVideo.optimizedPath,
+              thumbnailPath: coverVideo.thumbnailPath,
+              duration: coverVideo.duration,
+              filename: coverVideo.filename
+            };
+            coverImageUrl = coverVideo.thumbnailPath;
+          }
+        } else {
+          // For photo albums: use bannerImage from JOIN, or fall back to images
+          let coverImagePath = null;
+
+          // Banner image was fetched via JOIN - use it directly
+          if (shoot.bannerImage) {
+            coverImagePath = shoot.bannerImage.storagePath;
           } else {
-            const images = await storage.getImagesByShoot(shoot.id);
-            const coverImage = images.find(img => img.featuredImage === true) || images[0];
-            
-            if (coverImage && coverImage.storagePath) {
-              coverImageUrl = coverImage.storagePath.includes('supabase') 
-                ? coverImage.storagePath.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=600&height=400&resize=cover&quality=85'
-                : coverImage.storagePath;
+            // Fall back to images for shoots without banner
+            const images = imagesMap.get(shoot.id) || [];
+            const fallbackImage = images.find(img => img.featuredImage === true) || images[0];
+            if (fallbackImage) {
+              coverImagePath = fallbackImage.storagePath;
             }
           }
-          
-          return {
-            ...shoot,
-            coverImageUrl,
-            coverVideoInfo
-          };
-        })
-      );
-      
+
+          if (coverImagePath) {
+            coverImageUrl = coverImagePath.includes('supabase')
+              ? coverImagePath.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=600&height=400&resize=cover&quality=85'
+              : coverImagePath;
+          }
+        }
+
+        // Remove bannerImage from response (internal use only)
+        const { bannerImage, ...shootData } = shoot;
+        return {
+          ...shootData,
+          coverImageUrl,
+          coverVideoInfo
+        };
+      });
+
       res.json({
         groupName: decodedGroupName,
         shoots: shootsWithCoverMedia,
@@ -3287,49 +3306,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // SEO-optimized upload endpoint for category hero images
+  // List existing blog images from Supabase Storage
+  app.get("/api/blog/images", async (req, res) => {
+    try {
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
+      // List all files in the blog/ folder within gallery-images bucket
+      const { data: files, error } = await supabase.storage
+        .from('gallery-images')
+        .list('blog', {
+          limit: 100,
+          sortBy: { column: 'created_at', order: 'desc' }
+        });
+
+      if (error) {
+        console.error('Error listing blog images:', error);
+        throw new Error(`Failed to list blog images: ${error.message}`);
+      }
+
+      // Filter out any non-image files and build full URLs
+      const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+      const images = (files || [])
+        .filter(file => {
+          const ext = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+          return imageExtensions.includes(ext);
+        })
+        .map(file => {
+          const { data: { publicUrl } } = supabase.storage
+            .from('gallery-images')
+            .getPublicUrl(`blog/${file.name}`);
+
+          return {
+            name: file.name,
+            url: publicUrl,
+            createdAt: file.created_at,
+            size: file.metadata?.size || 0
+          };
+        });
+
+      console.log(`📚 Listed ${images.length} blog images from Supabase`);
+      res.json(images);
+
+    } catch (error) {
+      console.error('Blog images list error:', error);
+      res.status(500).json({
+        message: 'Failed to list blog images',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // SEO-optimized upload endpoint for category hero images - stores in Supabase
   app.post("/api/upload/category-hero", upload.single('file'), async (req, res) => {
     try {
       const file = req.file;
       const { category, type } = req.body; // e.g., category="weddings", type="photography"
-      
+
       if (!file) {
         return res.status(400).json({ message: 'No file provided' });
       }
-      
+
       if (!category || !type) {
         return res.status(400).json({ message: 'Category and type are required for SEO optimization' });
       }
-      
-      console.log(`🔍 SEO Upload: ${category} ${type} - ${file.originalname}`);
-      
-      // Create uploads directory if it doesn't exist
-      const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
-      }
-      
-      // Generate SEO-optimized filename
+
+      console.log(`🔍 SEO Upload to Supabase: ${category} ${type} - ${file.originalname}`);
+
+      // Initialize Supabase client
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
+      // Generate SEO-optimized filename with timestamp for uniqueness
       const fileExtension = path.extname(file.originalname).toLowerCase();
+      const timestamp = Date.now();
       const baseName = `slyfox-${category.toLowerCase()}-${type.toLowerCase()}-durban-hero`;
-      const optimalName = `${baseName}${fileExtension}`;
-      
-      // Get list of existing files
-      const existingFiles = fs.readdirSync(uploadsDir);
-      
-      // Check if optimal name exists
-      const optimalPath = path.join(uploadsDir, optimalName);
-      if (fs.existsSync(optimalPath)) {
-        // Archive the current optimal file
-        const archivedName = `${baseName}-archived-${Date.now()}${fileExtension}`;
-        const archivedPath = path.join(uploadsDir, archivedName);
-        fs.renameSync(optimalPath, archivedPath);
-        console.log(`📦 Archived existing hero: ${optimalName} -> ${archivedName}`);
+      const optimalName = `${baseName}-${timestamp}${fileExtension}`;
+
+      // Store in heroes/ subfolder within gallery-images bucket
+      const storagePath = `heroes/${optimalName}`;
+
+      // Upload to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('gallery-images')
+        .upload(storagePath, file.buffer, {
+          contentType: file.mimetype,
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('❌ Supabase hero upload error:', uploadError);
+        throw new Error(`Storage upload failed: ${uploadError.message}`);
       }
-      
-      // Write new file with optimal SEO name
-      fs.writeFileSync(optimalPath, file.buffer);
-      
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('gallery-images')
+        .getPublicUrl(storagePath);
+
+      // Update the category_heroes table with the new image URL
+      const { error: dbError } = await supabase
+        .from('category_heroes')
+        .upsert({
+          page_type: type.toLowerCase(),
+          category: category.toLowerCase(),
+          image_url: publicUrl,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'page_type,category'
+        });
+
+      if (dbError) {
+        console.error('❌ Failed to update category_heroes table:', dbError);
+        // Don't fail the upload, just log the error
+      }
+
       // Generate intelligent alt text
       const categoryDescriptions: { [key: string]: string } = {
         weddings: "elegant wedding ceremony with bride and groom",
@@ -3343,19 +3438,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         product: "commercial product showcase with professional lighting",
         graduation: "graduation ceremony photography with academic regalia"
       };
-      
+
       const categoryKey = category.toLowerCase().replace(/s$/, ''); // Remove plural 's' if present
       const description = categoryDescriptions[categoryKey] || categoryDescriptions[category.toLowerCase()] || "professional photography session";
       const autoAltText = `Professional ${category} ${type} by SlyFox Studios in Durban - ${description}`;
-      
-      const relativePath = `/uploads/${optimalName}`;
-      
-      console.log(`✅ SEO Optimized Upload: ${optimalName}`);
+
+      console.log(`✅ SEO Optimised Upload to Supabase: ${optimalName}`);
+      console.log(`🔗 Public URL: ${publicUrl}`);
       console.log(`🏷️ Generated Alt Text: ${autoAltText}`);
-      
+
       res.json({
         success: true,
-        path: relativePath,
+        path: publicUrl,
         filename: optimalName,
         originalName: file.originalname,
         generatedAltText: autoAltText,
@@ -3363,7 +3457,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         size: file.size,
         mimetype: file.mimetype
       });
-      
+
     } catch (error) {
       console.error('SEO upload error:', error);
       res.status(500).json({ message: 'Failed to upload with SEO optimization' });
@@ -3433,6 +3527,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Use the gradient routes for gradient configuration management
   app.use('/api/gradients', gradientRoutes);
+
+  // Use the category heroes routes for hero image management
+  app.use('/api/category-heroes', categoryHeroesRouter);
 
   // Blog and AI content generation routes
   app.use('/api/blog', blogRouter);
@@ -4624,6 +4721,404 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('❌ Image storage verification failed:', error);
       res.status(500).json({ error: 'Image storage verification failed', details: error.message });
+    }
+  });
+
+  // ============================================
+  // VISITOR TRACKING ENDPOINTS
+  // ============================================
+
+  // Track visitor activity (called from frontend on page load/navigation)
+  app.post("/api/visitors/track", async (req, res) => {
+    try {
+      const { sessionId, currentPage, referrer, userAgent } = req.body;
+
+      if (!sessionId) {
+        return res.status(400).json({ error: "sessionId is required" });
+      }
+
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
+      // Detect device type from user agent
+      const deviceType = userAgent?.toLowerCase().includes('mobile') ? 'mobile'
+        : userAgent?.toLowerCase().includes('tablet') ? 'tablet'
+        : 'desktop';
+
+      // Simple bot detection
+      const isBot = /bot|crawler|spider|scraper|curl|wget/i.test(userAgent || '');
+
+      // Check if session exists
+      const { data: existingSession } = await supabase
+        .from('visitor_sessions')
+        .select('id, page_views')
+        .eq('session_id', sessionId)
+        .single();
+
+      if (existingSession) {
+        // Update existing session
+        await supabase
+          .from('visitor_sessions')
+          .update({
+            current_page: currentPage,
+            last_activity_at: new Date().toISOString(),
+            page_views: (existingSession.page_views || 0) + 1
+          })
+          .eq('session_id', sessionId);
+      } else {
+        // Create new session
+        await supabase
+          .from('visitor_sessions')
+          .insert({
+            session_id: sessionId,
+            current_page: currentPage,
+            referrer: referrer,
+            user_agent: userAgent,
+            device_type: deviceType,
+            is_bot: isBot,
+            first_seen_at: new Date().toISOString(),
+            last_activity_at: new Date().toISOString(),
+            page_views: 1
+          });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Visitor tracking error:", error);
+      res.status(500).json({ error: "Failed to track visitor" });
+    }
+  });
+
+  // Get active visitors stats (for admin dashboard)
+  app.get("/api/visitors/stats", async (req, res) => {
+    try {
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
+      // Time windows
+      const now = Date.now();
+      const fiveMinutesAgo = new Date(now - 5 * 60 * 1000).toISOString();
+      const thirtyMinutesAgo = new Date(now - 30 * 60 * 1000).toISOString();
+      const oneHourAgo = new Date(now - 60 * 60 * 1000).toISOString();
+      const twentyFourHoursAgo = new Date(now - 24 * 60 * 60 * 1000).toISOString();
+      const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+      // Fetch all sessions from last 7 days in one query (most efficient)
+      const { data: allSessions, error } = await supabase
+        .from('visitor_sessions')
+        .select('*')
+        .gt('last_activity_at', sevenDaysAgo)
+        .eq('is_bot', false);
+
+      if (error) {
+        throw error;
+      }
+
+      const sessions = allSessions || [];
+
+      // Filter by time windows
+      const active5m = sessions.filter(s => s.last_activity_at > fiveMinutesAgo);
+      const active30m = sessions.filter(s => s.last_activity_at > thirtyMinutesAgo);
+      const active1h = sessions.filter(s => s.last_activity_at > oneHourAgo);
+      const active24h = sessions.filter(s => s.last_activity_at > twentyFourHoursAgo);
+      const active7d = sessions;
+
+      // Helper to get page counts from sessions
+      const getPageCounts = (sessionList: typeof sessions) => {
+        const counts: Record<string, number> = {};
+        sessionList.forEach(s => {
+          if (s.current_page) {
+            counts[s.current_page] = (counts[s.current_page] || 0) + 1;
+          }
+        });
+        // Sort by count descending and take top 10
+        return Object.entries(counts)
+          .sort(([, a], [, b]) => b - a)
+          .slice(0, 10)
+          .map(([page, count]) => ({ page, count }));
+      };
+
+      // Helper to get referrer counts
+      const getReferrerCounts = (sessionList: typeof sessions) => {
+        const counts: Record<string, number> = {};
+        sessionList.forEach(s => {
+          // Clean up referrer - extract domain only
+          let domain = 'Direct';
+          if (s.referrer) {
+            try {
+              const url = new URL(s.referrer);
+              domain = url.hostname.replace('www.', '');
+            } catch {
+              domain = s.referrer.substring(0, 50);
+            }
+          }
+          counts[domain] = (counts[domain] || 0) + 1;
+        });
+        return Object.entries(counts)
+          .sort(([, a], [, b]) => b - a)
+          .slice(0, 5)
+          .map(([source, count]) => ({ source, count }));
+      };
+
+      // Helper for device breakdown
+      const getDeviceBreakdown = (sessionList: typeof sessions) => ({
+        desktop: sessionList.filter(v => v.device_type === 'desktop').length,
+        mobile: sessionList.filter(v => v.device_type === 'mobile').length,
+        tablet: sessionList.filter(v => v.device_type === 'tablet').length
+      });
+
+      // Calculate average session duration for 24h window
+      const avgSessionDuration = active24h.length > 0
+        ? Math.round(
+            active24h.reduce((sum, s) => {
+              const duration = new Date(s.last_activity_at).getTime() - new Date(s.first_seen_at).getTime();
+              return sum + duration;
+            }, 0) / active24h.length / 1000 / 60 // in minutes
+          )
+        : 0;
+
+      // Total page views in each window
+      const getTotalPageViews = (sessionList: typeof sessions) =>
+        sessionList.reduce((sum, s) => sum + (s.page_views || 1), 0);
+
+      const stats = {
+        // Live stats (backward compatible)
+        totalActive: active5m.length,
+        loggedInUsers: active5m.filter(v => v.user_id).length,
+        anonymousVisitors: active5m.filter(v => !v.user_id).length,
+        deviceBreakdown: getDeviceBreakdown(active5m),
+        currentPages: active5m.reduce((acc, v) => {
+          if (v.current_page) {
+            acc[v.current_page] = (acc[v.current_page] || 0) + 1;
+          }
+          return acc;
+        }, {} as Record<string, number>),
+
+        // Extended analytics
+        timeWindows: {
+          '5m': { visitors: active5m.length, pageViews: getTotalPageViews(active5m) },
+          '30m': { visitors: active30m.length, pageViews: getTotalPageViews(active30m) },
+          '1h': { visitors: active1h.length, pageViews: getTotalPageViews(active1h) },
+          '24h': { visitors: active24h.length, pageViews: getTotalPageViews(active24h) },
+          '7d': { visitors: active7d.length, pageViews: getTotalPageViews(active7d) }
+        },
+
+        // Popular pages by time window
+        popularPages: {
+          '1h': getPageCounts(active1h),
+          '24h': getPageCounts(active24h),
+          '7d': getPageCounts(active7d)
+        },
+
+        // Device breakdown for 24h
+        deviceBreakdown24h: getDeviceBreakdown(active24h),
+
+        // Traffic sources for 24h
+        trafficSources: getReferrerCounts(active24h),
+
+        // Average session duration (in minutes)
+        avgSessionDuration,
+
+        // Unique sessions count (not page views)
+        uniqueSessions: {
+          '24h': active24h.length,
+          '7d': active7d.length
+        }
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error("Visitor stats error:", error);
+      res.status(500).json({ error: "Failed to get visitor stats" });
+    }
+  });
+
+  // Cleanup old sessions and aggregate daily stats (call via VPS cron daily)
+  app.delete("/api/visitors/cleanup", async (req, res) => {
+    try {
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
+      // Get yesterday's date (we aggregate completed days)
+      const now = new Date();
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0]; // YYYY-MM-DD
+
+      // Check if we already aggregated yesterday
+      const { data: existingStats } = await supabase
+        .from('visitor_daily_stats')
+        .select('date')
+        .eq('date', yesterdayStr)
+        .single();
+
+      let aggregated = false;
+
+      if (!existingStats) {
+        // Fetch yesterday's sessions for aggregation
+        const startOfYesterday = new Date(yesterdayStr + 'T00:00:00.000Z').toISOString();
+        const endOfYesterday = new Date(yesterdayStr + 'T23:59:59.999Z').toISOString();
+
+        const { data: yesterdaySessions } = await supabase
+          .from('visitor_sessions')
+          .select('*')
+          .gte('first_seen_at', startOfYesterday)
+          .lte('first_seen_at', endOfYesterday)
+          .eq('is_bot', false);
+
+        if (yesterdaySessions && yesterdaySessions.length > 0) {
+          // Calculate aggregates
+          const uniqueVisitors = yesterdaySessions.length;
+          const totalPageViews = yesterdaySessions.reduce((sum, s) => sum + (s.page_views || 1), 0);
+          const desktopVisitors = yesterdaySessions.filter(s => s.device_type === 'desktop').length;
+          const mobileVisitors = yesterdaySessions.filter(s => s.device_type === 'mobile').length;
+          const tabletVisitors = yesterdaySessions.filter(s => s.device_type === 'tablet').length;
+
+          // Average session duration
+          const avgSessionMinutes = yesterdaySessions.length > 0
+            ? Math.round(
+                yesterdaySessions.reduce((sum, s) => {
+                  const duration = new Date(s.last_activity_at).getTime() - new Date(s.first_seen_at).getTime();
+                  return sum + duration;
+                }, 0) / yesterdaySessions.length / 1000 / 60 * 100
+              ) / 100
+            : 0;
+
+          // Top pages
+          const pageCounts: Record<string, number> = {};
+          yesterdaySessions.forEach(s => {
+            if (s.current_page) {
+              pageCounts[s.current_page] = (pageCounts[s.current_page] || 0) + 1;
+            }
+          });
+          const topPages = Object.entries(pageCounts)
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, 10)
+            .map(([page, count]) => ({ page, count }));
+
+          // Top referrers
+          const refCounts: Record<string, number> = {};
+          yesterdaySessions.forEach(s => {
+            let domain = 'Direct';
+            if (s.referrer) {
+              try {
+                const url = new URL(s.referrer);
+                domain = url.hostname.replace('www.', '');
+              } catch {
+                domain = s.referrer.substring(0, 50);
+              }
+            }
+            refCounts[domain] = (refCounts[domain] || 0) + 1;
+          });
+          const topReferrers = Object.entries(refCounts)
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, 5)
+            .map(([source, count]) => ({ source, count }));
+
+          // Insert aggregated stats
+          const { error: insertError } = await supabase
+            .from('visitor_daily_stats')
+            .insert({
+              date: yesterdayStr,
+              unique_visitors: uniqueVisitors,
+              total_page_views: totalPageViews,
+              desktop_visitors: desktopVisitors,
+              mobile_visitors: mobileVisitors,
+              tablet_visitors: tabletVisitors,
+              avg_session_minutes: avgSessionMinutes,
+              top_pages: topPages,
+              top_referrers: topReferrers
+            });
+
+          if (insertError) {
+            console.error('Failed to insert daily stats:', insertError);
+          } else {
+            aggregated = true;
+            console.log(`Aggregated stats for ${yesterdayStr}: ${uniqueVisitors} visitors, ${totalPageViews} page views`);
+          }
+        }
+      }
+
+      // Now delete sessions older than 48 hours (keep 24h buffer for safety)
+      const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+
+      const { error, count } = await supabase
+        .from('visitor_sessions')
+        .delete()
+        .lt('last_activity_at', fortyEightHoursAgo);
+
+      if (error) {
+        throw error;
+      }
+
+      res.json({
+        success: true,
+        aggregated,
+        aggregatedDate: aggregated ? yesterdayStr : null,
+        deletedSessions: count
+      });
+    } catch (error) {
+      console.error("Visitor cleanup error:", error);
+      res.status(500).json({ error: "Failed to cleanup old sessions" });
+    }
+  });
+
+  // Get historical visitor stats for charts
+  app.get("/api/visitors/history", async (req, res) => {
+    try {
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
+      // Get number of days from query param (default 30)
+      const days = Math.min(parseInt(req.query.days as string) || 30, 365);
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+      const startDateStr = startDate.toISOString().split('T')[0];
+
+      const { data: history, error } = await supabase
+        .from('visitor_daily_stats')
+        .select('*')
+        .gte('date', startDateStr)
+        .order('date', { ascending: true });
+
+      if (error) {
+        throw error;
+      }
+
+      // Calculate totals and trends
+      const totalVisitors = history?.reduce((sum, d) => sum + (d.unique_visitors || 0), 0) || 0;
+      const totalPageViews = history?.reduce((sum, d) => sum + (d.total_page_views || 0), 0) || 0;
+      const avgDailyVisitors = history?.length ? Math.round(totalVisitors / history.length) : 0;
+
+      // Device totals across period
+      const deviceTotals = {
+        desktop: history?.reduce((sum, d) => sum + (d.desktop_visitors || 0), 0) || 0,
+        mobile: history?.reduce((sum, d) => sum + (d.mobile_visitors || 0), 0) || 0,
+        tablet: history?.reduce((sum, d) => sum + (d.tablet_visitors || 0), 0) || 0
+      };
+
+      res.json({
+        days,
+        dailyStats: history || [],
+        summary: {
+          totalVisitors,
+          totalPageViews,
+          avgDailyVisitors,
+          deviceTotals,
+          daysWithData: history?.length || 0
+        }
+      });
+    } catch (error) {
+      console.error("Visitor history error:", error);
+      res.status(500).json({ error: "Failed to get visitor history" });
     }
   });
 

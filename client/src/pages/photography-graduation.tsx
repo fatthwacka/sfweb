@@ -2,95 +2,49 @@ import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Camera, Check, ChevronDown } from "lucide-react";
-import { useSiteConfig } from "@/hooks/use-site-config";
+import { Camera, ChevronDown } from "lucide-react";
 import { GradientBackground } from "@/components/common/gradient-background";
 import { CategoryFeaturedGrid } from "@/components/shared/category-featured-grid";
 import { PricingPackagesDisplay } from "@/components/sections/pricing-packages-display";
+import { useCategoryHero } from "@/hooks/use-category-heroes";
+
+// Hardcoded defaults for SEO - crawlers see this immediately
+const DEFAULT_HERO_IMAGE = "/images/services/graduation-photography.jpg";
 
 export default function PhotographyGraduation() {
-  const { config, isLoading } = useSiteConfig();
-  
-  // Get graduation photography configuration
-  const graduationConfig = config?.categoryPages?.photography?.graduation || {
-    hero: {
-      title: "Professional Graduation Photography",
-      subtitle: "Celebrate academic achievements with memorable graduation photos",
-      image: "/images/services/graduation-photography.jpg",
-      alt: "Professional Graduation Photography by SlyFox Studios"
-    },
-    serviceOverview: {
-      title: "Graduation Photography Services",
-      description: "Professional graduation photography in Durban",
-      features: ["Graduation ceremonies", "Individual portraits", "Family group shots", "Campus photography"],
-      image: "/images/services/graduation-photography.jpg"
-    },
-    packages: {
-      title: "Graduation Photography Packages",
-      description: "Choose the perfect package for your graduation"
-    },
-    recentWork: {
-      title: "Recent Graduation Photography",
-      description: "See our latest graduation photography work",
-      images: ["/images/services/graduation-photography.jpg"]
-    },
-    seoContent: {
-      title: "Professional Graduation Photography in Durban",
-      content: {
-        section1: {
-          title: "Graduation Photography Services",
-          text: "Professional graduation photography services in Durban"
-        },
-        section2: {
-          title: "Why Choose SlyFox Studios",
-          text: "Professional photographers with years of experience"
-        },
-        conclusion: "Contact us today to discuss your graduation photography needs"
-      }
-    },
-    seo: {
-      title: "Graduation Photography - SlyFox Studios",
-      description: "Professional graduation photography in Durban",
-      keywords: "graduation, photography, durban"
-    }
-  };
-
-  if (isLoading || !graduationConfig) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl mb-4">Loading...</h1>
-        </div>
-      </div>
-    );
-  }
+  // Fetch hero image and display settings from Supabase (falls back to defaults)
+  const { heroImage, heroHeight, imageAlign } = useCategoryHero('photography', 'graduation');
 
   return (
     <div className="min-h-screen bg-background text-foreground background-gradient-blobs">
-      {/* SEO Meta Tags */}
-      <title>{graduationConfig.seo.title}</title>
-      <meta name="description" content={graduationConfig.seo.description} />
-      <meta name="keywords" content={graduationConfig.seo.keywords} />
-      
+      {/* SEO Meta Tags - Hardcoded for crawler visibility */}
+      <title>Graduation Photography Durban | SlyFox Studios</title>
+      <meta name="description" content="Professional graduation photography in Durban. UKZN, DUT, and matric dance photography at our Umhlanga studio or on campus." />
+      <meta name="keywords" content="graduation photography Durban, UKZN graduation photographer, DUT graduation photos, matric dance photography KZN" />
+
       <Navigation />
-      
+
       {/* Hero Section */}
-      <section className="relative h-[60vh] overflow-hidden flex items-center justify-center">
+      <section
+        className="relative overflow-hidden flex items-center justify-center"
+        style={{ height: `${heroHeight}vh` }}
+      >
         <div className="absolute inset-0">
-          <img 
-            src={graduationConfig.hero?.image || '/images/services/graduation-photography.jpg'}
-            alt={graduationConfig.hero.alt || `Professional Graduation Photography by SlyFox Studios in Durban - graduation ceremony photography with academic regalia`}
+          <img
+            src={heroImage || DEFAULT_HERO_IMAGE}
+            alt="Professional Graduation Photography by SlyFox Studios in Durban"
             className="w-full h-full object-cover"
+            style={{ objectPosition: imageAlign }}
           />
           <div className="absolute inset-0 hero-gradient"></div>
         </div>
-        
+
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-corinthia text-white leading-tight hero-title-white" style={{ marginBottom: '-0.5rem' }}>
-            {graduationConfig.hero.title}
+            Professional Graduation Photography
           </h1>
           <h3 className="text-lg md:text-xl text-white font-quicksand font-light mb-4">
-            {graduationConfig.hero.subtitle}
+            Celebrate academic achievements with memorable graduation photos
           </h3>
 
           {/* Scroll Down Button */}
@@ -99,7 +53,7 @@ export default function PhotographyGraduation() {
               onClick={() => {
                 const servicesElement = document.querySelector('#category-services');
                 if (servicesElement) {
-                  const headerOffset = 80; // Account for fixed navigation bar
+                  const headerOffset = 80;
                   const elementPosition = servicesElement.getBoundingClientRect().top;
                   const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
@@ -130,15 +84,15 @@ export default function PhotographyGraduation() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6">
-              {graduationConfig.recentWork.title}
+              Recent Graduation Photography
             </h2>
             <h3 className="text-xl ">
-              {graduationConfig.recentWork.description}
+              See our latest graduation photography work
             </h3>
           </div>
 
-          {/* NEW DYNAMIC GRID */}
-          <CategoryFeaturedGrid 
+          {/* Dynamic Featured Grid from Supabase */}
+          <CategoryFeaturedGrid
             categoryKey="graduation"
             imageCount={6}
           />
@@ -155,8 +109,8 @@ export default function PhotographyGraduation() {
       >
         <PricingPackagesDisplay
           pageIdentifier="photography_graduation"
-          title={graduationConfig.packages.title || "Graduation Photography Packages"}
-          description={graduationConfig.packages.description || "Professional graduation photography solutions"}
+          title="Graduation Photography Packages"
+          description="Professional graduation photography to commemorate your achievement"
           ctaLink="/contact"
           ctaText="Book Now"
         />
@@ -186,8 +140,8 @@ export default function PhotographyGraduation() {
               <Link key={categoryItem.name} href={`/photography/${categoryItem.name}`}>
                 <div className="group cursor-pointer bg-slate-800/60 rounded-lg overflow-hidden hover:bg-slate-700/60 transition-all duration-300 hover:scale-105">
                   <div className="aspect-square bg-gray-700/50 relative overflow-hidden">
-                    <img 
-                      src={categoryItem.image} 
+                    <img
+                      src={categoryItem.image}
                       alt={categoryItem.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       loading="lazy"
@@ -221,21 +175,30 @@ export default function PhotographyGraduation() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-4xl lg:text-5xl mb-6">
-                {graduationConfig.serviceOverview.title}
+                Graduation Photography Services
               </h2>
               <h3 className="text-xl mb-8 leading-relaxed">
-                {graduationConfig.serviceOverview.description}
+                Commemorate years of hard work with professional graduation portraits that capture this milestone moment in your life.
               </h3>
-              
+
               <div className="grid grid-cols-2 gap-2 mb-8">
-                {graduationConfig.serviceOverview.features.map((feature, index) => (
+                {[
+                  'University graduations',
+                  'Matric dance photography',
+                  'Individual portraits',
+                  'Family group shots',
+                  'Campus photography',
+                  'Studio sessions',
+                  'Cap and gown portraits',
+                  'Quick turnaround'
+                ].map((feature, index) => (
                   <div key={index} className="flex items-center text-sm text-muted-foreground">
                     <div className="w-2 h-2 bg-gradient-to-r from-salmon to-cyan rounded-full mr-2 flex-shrink-0"></div>
                     <span>{feature}</span>
                   </div>
                 ))}
               </div>
-              
+
               <Link href="/contact">
                 <Button className="btn-salmon">
                   Get Started Today
@@ -243,10 +206,10 @@ export default function PhotographyGraduation() {
                 </Button>
               </Link>
             </div>
-            
+
             <div className="relative">
-              <img 
-                src={graduationConfig.serviceOverview.image || graduationConfig.recentWork.images[0] || '/images/placeholder-gallery.jpg'}
+              <img
+                src={heroImage || DEFAULT_HERO_IMAGE}
                 alt="Graduation Photography example"
                 className="w-full rounded-2xl shadow-2xl"
               />
@@ -255,49 +218,46 @@ export default function PhotographyGraduation() {
         </div>
       </GradientBackground>
 
-      {/* SEO Content Section */}
+      {/* SEO Content Section - Hardcoded for crawler visibility */}
       <GradientBackground
         section="photography-graduation-seo"
         className="py-20"
-        categoryType="photography"
-        categoryName="graduation"
-        categorySectionName="seoContent"
       >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="mb-12">
             <h2 className="text-4xl lg:text-5xl mb-6">
-              {graduationConfig.seoContent.title}
+              Graduation Photography in Durban
             </h2>
           </div>
 
           <div className="max-w-none">
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                {graduationConfig.seoContent.content.section1.title}
+                Celebrating Your Achievement
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                {graduationConfig.seoContent.content.section1.text}
+                Years of hard work deserve to be properly commemorated. We photograph graduates from UKZN, DUT, and schools across Durban and KZN—whether it's a university degree, matric dance, or any milestone worth celebrating. Our studio sessions give you polished, professional images that capture this moment in your life.
               </p>
             </div>
 
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                {graduationConfig.seoContent.content.section2.title}
+                Studio Sessions and On-Location
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                {graduationConfig.seoContent.content.section2.text}
+                Book a session at our Umhlanga studio for a classic graduation portrait with your cap and gown, or we can photograph you on campus at your university in Durban. We also offer family group shots so everyone who supported you can be part of the memory. Most sessions take under an hour.
               </p>
             </div>
 
             <div>
               <p className="text-xl text-muted-foreground">
-                {graduationConfig.seoContent.content.conclusion}
+                Graduating soon? Book your session early—graduation season gets busy quickly in Durban.
               </p>
-              
+
               <div className="mt-8 text-center">
                 <Link href="/contact">
                   <Button className="btn-salmon">
-                    Book Your Graduation Photography Today
+                    Book Your Graduation Session
                   </Button>
                 </Link>
               </div>

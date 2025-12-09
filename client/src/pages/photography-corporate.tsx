@@ -2,95 +2,49 @@ import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Camera, Check, ChevronDown } from "lucide-react";
-import { useSiteConfig } from "@/hooks/use-site-config";
+import { Camera, ChevronDown } from "lucide-react";
 import { GradientBackground } from "@/components/common/gradient-background";
 import { CategoryFeaturedGrid } from "@/components/shared/category-featured-grid";
 import { PricingPackagesDisplay } from "@/components/sections/pricing-packages-display";
+import { useCategoryHero } from "@/hooks/use-category-heroes";
+
+// Hardcoded defaults for SEO - crawlers see this immediately
+const DEFAULT_HERO_IMAGE = "/images/services/corporate-photography.jpg";
 
 export default function PhotographyCorporate() {
-  const { config, isLoading } = useSiteConfig();
-  
-  // Get corporate photography configuration
-  const corporateConfig = config?.categoryPages?.photography?.corporate || {
-    hero: {
-      title: "Professional Corporate Photography",
-      subtitle: "Elevate your business image with professional corporate photography",
-      image: "/images/services/corporate-photography.jpg",
-      alt: "Professional Corporate Photography by SlyFox Studios"
-    },
-    serviceOverview: {
-      title: "Corporate Photography Services",
-      description: "Professional corporate photography in Durban",
-      features: ["Team headshots", "Office photography", "Corporate events", "Brand documentation"],
-      image: "/images/services/corporate-photography.jpg"
-    },
-    packages: {
-      title: "Corporate Photography Packages",
-      description: "Choose the perfect package for your business needs"
-    },
-    recentWork: {
-      title: "Recent Corporate Photography",
-      description: "See our latest corporate photography work",
-      images: ["/images/services/corporate-photography.jpg"]
-    },
-    seoContent: {
-      title: "Professional Corporate Photography in Durban",
-      content: {
-        section1: {
-          title: "Corporate Photography Services",
-          text: "Professional corporate photography services in Durban"
-        },
-        section2: {
-          title: "Why Choose SlyFox Studios",
-          text: "Professional photographers with years of experience"
-        },
-        conclusion: "Contact us today to discuss your corporate photography needs"
-      }
-    },
-    seo: {
-      title: "Corporate Photography - SlyFox Studios",
-      description: "Professional corporate photography in Durban",
-      keywords: "corporate, photography, durban"
-    }
-  };
-
-  if (isLoading || !corporateConfig) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl mb-4">Loading...</h1>
-        </div>
-      </div>
-    );
-  }
+  // Fetch hero image and display settings from Supabase (falls back to defaults)
+  const { heroImage, heroHeight, imageAlign } = useCategoryHero('photography', 'corporate');
 
   return (
     <div className="min-h-screen bg-background text-foreground background-gradient-blobs">
-      {/* SEO Meta Tags */}
-      <title>{corporateConfig.seo.title}</title>
-      <meta name="description" content={corporateConfig.seo.description} />
-      <meta name="keywords" content={corporateConfig.seo.keywords} />
-      
+      {/* SEO Meta Tags - Hardcoded for crawler visibility */}
+      <title>Corporate Photography Durban | SlyFox Studios</title>
+      <meta name="description" content="Professional corporate photography in Durban. Executive headshots, team photos, and business imagery at your offices or our Umhlanga studio." />
+      <meta name="keywords" content="corporate photography Durban, business headshots KZN, executive portraits Umhlanga, team photography South Africa" />
+
       <Navigation />
-      
+
       {/* Hero Section */}
-      <section className="relative h-[60vh] overflow-hidden flex items-center justify-center">
+      <section
+        className="relative overflow-hidden flex items-center justify-center"
+        style={{ height: `${heroHeight}vh` }}
+      >
         <div className="absolute inset-0">
-          <img 
-            src={corporateConfig.hero?.image || '/images/services/corporate-photography.jpg'}
-            alt={corporateConfig.hero.alt || `Professional Corporate Photography by SlyFox Studios in Durban - executive headshot in modern office setting`}
+          <img
+            src={heroImage || DEFAULT_HERO_IMAGE}
+            alt="Professional Corporate Photography by SlyFox Studios in Durban"
             className="w-full h-full object-cover"
+            style={{ objectPosition: imageAlign }}
           />
           <div className="absolute inset-0 hero-gradient"></div>
         </div>
-        
+
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-corinthia text-white leading-tight hero-title-white" style={{ marginBottom: '-0.5rem' }}>
-            {corporateConfig.hero.title}
+            Professional Corporate Photography
           </h1>
           <h3 className="text-lg md:text-xl text-white font-quicksand font-light mb-4">
-            {corporateConfig.hero.subtitle}
+            Elevate your business image with professional photography
           </h3>
 
           {/* Scroll Down Button */}
@@ -99,7 +53,7 @@ export default function PhotographyCorporate() {
               onClick={() => {
                 const servicesElement = document.querySelector('#category-services');
                 if (servicesElement) {
-                  const headerOffset = 80; // Account for fixed navigation bar
+                  const headerOffset = 80;
                   const elementPosition = servicesElement.getBoundingClientRect().top;
                   const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
@@ -120,8 +74,8 @@ export default function PhotographyCorporate() {
       </section>
 
       {/* Recent Work Section */}
-      <GradientBackground 
-        section="photography-corporate-recent-work" 
+      <GradientBackground
+        section="photography-corporate-recent-work"
         className="py-20"
         categoryType="photography"
         categoryName="corporate"
@@ -130,15 +84,15 @@ export default function PhotographyCorporate() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6">
-              {corporateConfig.recentWork.title}
+              Recent Corporate Photography
             </h2>
             <h3 className="text-xl ">
-              {corporateConfig.recentWork.description}
+              See our latest corporate photography work
             </h3>
           </div>
 
-          {/* NEW DYNAMIC GRID */}
-          <CategoryFeaturedGrid 
+          {/* Dynamic Featured Grid from Supabase */}
+          <CategoryFeaturedGrid
             categoryKey="corporate"
             imageCount={6}
           />
@@ -155,8 +109,8 @@ export default function PhotographyCorporate() {
       >
         <PricingPackagesDisplay
           pageIdentifier="photography_corporate"
-          title={corporateConfig.packages.title || "Corporate Photography Packages"}
-          description={corporateConfig.packages.description || "Professional corporate photography solutions"}
+          title="Corporate Photography Packages"
+          description="Professional corporate photography solutions for your business"
           ctaLink="/contact"
           ctaText="Book Now"
         />
@@ -186,8 +140,8 @@ export default function PhotographyCorporate() {
               <Link key={categoryItem.name} href={`/photography/${categoryItem.name}`}>
                 <div className="group cursor-pointer bg-slate-800/60 rounded-lg overflow-hidden hover:bg-slate-700/60 transition-all duration-300 hover:scale-105">
                   <div className="aspect-square bg-gray-700/50 relative overflow-hidden">
-                    <img 
-                      src={categoryItem.image} 
+                    <img
+                      src={categoryItem.image}
                       alt={categoryItem.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       loading="lazy"
@@ -221,21 +175,30 @@ export default function PhotographyCorporate() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-4xl lg:text-5xl mb-6">
-                {corporateConfig.serviceOverview.title}
+                Corporate Photography Services
               </h2>
               <h3 className="text-xl mb-8 leading-relaxed">
-                {corporateConfig.serviceOverview.description}
+                Professional business imagery that reflects your company's values and professionalism, from executive headshots to full team documentation.
               </h3>
-              
+
               <div className="grid grid-cols-2 gap-2 mb-8">
-                {corporateConfig.serviceOverview.features.map((feature, index) => (
+                {[
+                  'Executive headshots',
+                  'Team photography',
+                  'Office environments',
+                  'Corporate events',
+                  'Annual report imagery',
+                  'On-site sessions',
+                  'Studio sessions',
+                  'Quick turnaround'
+                ].map((feature, index) => (
                   <div key={index} className="flex items-center text-sm text-muted-foreground">
                     <div className="w-2 h-2 bg-gradient-to-r from-salmon to-cyan rounded-full mr-2 flex-shrink-0"></div>
                     <span>{feature}</span>
                   </div>
                 ))}
               </div>
-              
+
               <Link href="/contact">
                 <Button className="btn-salmon">
                   Get Started Today
@@ -243,10 +206,10 @@ export default function PhotographyCorporate() {
                 </Button>
               </Link>
             </div>
-            
+
             <div className="relative">
-              <img 
-                src={corporateConfig.serviceOverview.image || corporateConfig.recentWork.images[0] || '/images/placeholder-gallery.jpg'}
+              <img
+                src={heroImage || DEFAULT_HERO_IMAGE}
                 alt="Corporate Photography example"
                 className="w-full rounded-2xl shadow-2xl"
               />
@@ -255,49 +218,46 @@ export default function PhotographyCorporate() {
         </div>
       </GradientBackground>
 
-      {/* SEO Content Section */}
-      <GradientBackground 
-        section="photography-corporate-seo" 
+      {/* SEO Content Section - Hardcoded for crawler visibility */}
+      <GradientBackground
+        section="photography-corporate-seo"
         className="py-20"
-        categoryType="photography"
-        categoryName="corporate"
-        categorySectionName="seoContent"
       >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="mb-12">
             <h2 className="text-4xl lg:text-5xl mb-6">
-              {corporateConfig.seoContent.title}
+              Corporate Photography in Durban
             </h2>
           </div>
 
           <div className="max-w-none">
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                {corporateConfig.seoContent.content.section1.title}
+                Professional Business Imagery
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                {corporateConfig.seoContent.content.section1.text}
+                First impressions matter in business, and your visual presence speaks before you do. We work with companies across Durban and KZN to create corporate photography that reflects professionalism without feeling stiff or generic. From executive headshots to team photos, office environments to annual report imagery—we understand what businesses need.
               </p>
             </div>
 
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                {corporateConfig.seoContent.content.section2.title}
+                Flexible Service Options
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                {corporateConfig.seoContent.content.section2.text}
+                We can set up at your Durban offices for minimal disruption to your workday, or host your team at our Umhlanga studio for a more controlled environment. Need to photograph multiple staff members efficiently? We've streamlined our process to get great results without wasting anyone's time.
               </p>
             </div>
 
             <div>
               <p className="text-xl text-muted-foreground">
-                {corporateConfig.seoContent.content.conclusion}
+                Let's discuss what your business needs. Whether it's refreshing your website imagery or documenting a corporate event in KZN, we're here to help.
               </p>
-              
+
               <div className="mt-8 text-center">
                 <Link href="/contact">
                   <Button className="btn-salmon">
-                    Book Your Corporate Session Today
+                    Book Your Corporate Session
                   </Button>
                 </Link>
               </div>

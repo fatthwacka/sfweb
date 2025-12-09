@@ -2,95 +2,49 @@ import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Camera, Check, ChevronDown } from "lucide-react";
-import { useSiteConfig } from "@/hooks/use-site-config";
+import { Camera, ChevronDown } from "lucide-react";
 import { GradientBackground } from "@/components/common/gradient-background";
 import { CategoryFeaturedGrid } from "@/components/shared/category-featured-grid";
 import { PricingPackagesDisplay } from "@/components/sections/pricing-packages-display";
+import { useCategoryHero } from "@/hooks/use-category-heroes";
+
+// Hardcoded defaults for SEO - crawlers see this immediately
+const DEFAULT_HERO_IMAGE = "/images/services/portrait-photography.jpg";
 
 export default function PhotographyPortraits() {
-  const { config, isLoading } = useSiteConfig();
-  
-  // Get portraits photography configuration
-  const portraitConfig = config?.categoryPages?.photography?.portraits || {
-    hero: {
-      title: "Professional Portrait Photography",
-      subtitle: "Professional headshots and personal portraits that tell your story",
-      image: "/images/services/portrait-photography.jpg",
-      alt: "Professional Portrait Photography by SlyFox Studios"
-    },
-    serviceOverview: {
-      title: "Portrait Photography Services",
-      description: "Professional portrait photography in Durban",
-      features: ["Executive headshots", "Family portraits", "Personal branding", "Studio sessions"],
-      image: "/images/services/portrait-photography.jpg"
-    },
-    packages: {
-      title: "Portrait Photography Packages",
-      description: "Choose the perfect package for your portrait session"
-    },
-    recentWork: {
-      title: "Recent Portrait Photography",
-      description: "See our latest portrait photography work",
-      images: ["/images/services/portrait-photography.jpg"]
-    },
-    seoContent: {
-      title: "Professional Portrait Photography in Durban",
-      content: {
-        section1: {
-          title: "Portrait Photography Services",
-          text: "Professional portrait photography services in Durban"
-        },
-        section2: {
-          title: "Why Choose SlyFox Studios",
-          text: "Professional photographers with years of experience"
-        },
-        conclusion: "Contact us today to discuss your portrait photography needs"
-      }
-    },
-    seo: {
-      title: "Portrait Photography - SlyFox Studios",
-      description: "Professional portrait photography in Durban",
-      keywords: "portrait, photography, durban"
-    }
-  };
-
-  if (isLoading || !portraitConfig) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl mb-4">Loading...</h1>
-        </div>
-      </div>
-    );
-  }
+  // Fetch hero image and display settings from Supabase (falls back to defaults)
+  const { heroImage, heroHeight, imageAlign } = useCategoryHero('photography', 'portraits');
 
   return (
     <div className="min-h-screen bg-background text-foreground background-gradient-blobs">
-      {/* SEO Meta Tags */}
-      <title>{portraitConfig.seo.title}</title>
-      <meta name="description" content={portraitConfig.seo.description} />
-      <meta name="keywords" content={portraitConfig.seo.keywords} />
-      
+      {/* SEO Meta Tags - Hardcoded for crawler visibility */}
+      <title>Portrait Photography Durban | SlyFox Studios</title>
+      <meta name="description" content="Professional portrait photography in Durban. Executive headshots, personal branding, and family portraits at our Umhlanga studio." />
+      <meta name="keywords" content="portrait photography Durban, headshots Umhlanga, professional portraits KZN, personal branding photographer" />
+
       <Navigation />
-      
+
       {/* Hero Section */}
-      <section className="relative h-[60vh] overflow-hidden flex items-center justify-center">
+      <section
+        className="relative overflow-hidden flex items-center justify-center"
+        style={{ height: `${heroHeight}vh` }}
+      >
         <div className="absolute inset-0">
-          <img 
-            src={portraitConfig.hero?.image || '/images/services/portrait-photography.jpg'}
-            alt={portraitConfig.hero.alt || `Professional Portrait Photography by SlyFox Studios in Durban - studio portrait session with professional lighting`}
+          <img
+            src={heroImage || DEFAULT_HERO_IMAGE}
+            alt="Professional Portrait Photography by SlyFox Studios in Durban"
             className="w-full h-full object-cover"
+            style={{ objectPosition: imageAlign }}
           />
           <div className="absolute inset-0 hero-gradient"></div>
         </div>
-        
+
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-corinthia text-white leading-tight hero-title-white" style={{ marginBottom: '-0.5rem' }}>
-            {portraitConfig.hero.title}
+            Professional Portrait Photography
           </h1>
           <h3 className="text-lg md:text-xl text-white font-quicksand font-light mb-4">
-            {portraitConfig.hero.subtitle}
+            Headshots and personal portraits that tell your story
           </h3>
 
           {/* Scroll Down Button */}
@@ -99,7 +53,7 @@ export default function PhotographyPortraits() {
               onClick={() => {
                 const servicesElement = document.querySelector('#category-services');
                 if (servicesElement) {
-                  const headerOffset = 80; // Account for fixed navigation bar
+                  const headerOffset = 80;
                   const elementPosition = servicesElement.getBoundingClientRect().top;
                   const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
@@ -130,15 +84,15 @@ export default function PhotographyPortraits() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6">
-              {portraitConfig.recentWork.title}
+              Recent Portrait Photography
             </h2>
             <h3 className="text-xl ">
-              {portraitConfig.recentWork.description}
+              See our latest portrait photography work
             </h3>
           </div>
 
-          {/* NEW DYNAMIC GRID */}
-          <CategoryFeaturedGrid 
+          {/* Dynamic Featured Grid from Supabase */}
+          <CategoryFeaturedGrid
             categoryKey="portraits"
             imageCount={6}
           />
@@ -155,8 +109,8 @@ export default function PhotographyPortraits() {
       >
         <PricingPackagesDisplay
           pageIdentifier="photography_portraits"
-          title={portraitConfig.packages.title || "Portrait Photography Packages"}
-          description={portraitConfig.packages.description || "Professional portrait photography solutions"}
+          title="Portrait Photography Packages"
+          description="Professional portrait photography solutions for every need"
           ctaLink="/contact"
           ctaText="Book Now"
         />
@@ -186,8 +140,8 @@ export default function PhotographyPortraits() {
               <Link key={categoryItem.name} href={`/photography/${categoryItem.name}`}>
                 <div className="group cursor-pointer bg-slate-800/60 rounded-lg overflow-hidden hover:bg-slate-700/60 transition-all duration-300 hover:scale-105">
                   <div className="aspect-square bg-gray-700/50 relative overflow-hidden">
-                    <img 
-                      src={categoryItem.image} 
+                    <img
+                      src={categoryItem.image}
                       alt={categoryItem.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       loading="lazy"
@@ -221,21 +175,30 @@ export default function PhotographyPortraits() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-4xl lg:text-5xl mb-6">
-                {portraitConfig.serviceOverview.title}
+                Portrait Photography Services
               </h2>
               <h3 className="text-xl mb-8 leading-relaxed">
-                {portraitConfig.serviceOverview.description}
+                From executive headshots to family portraits, we create images that capture personality and professionalism in equal measure.
               </h3>
-              
+
               <div className="grid grid-cols-2 gap-2 mb-8">
-                {portraitConfig.serviceOverview.features.map((feature, index) => (
+                {[
+                  'Executive headshots',
+                  'Personal branding',
+                  'Family portraits',
+                  'Studio sessions',
+                  'On-location shoots',
+                  'LinkedIn profiles',
+                  'Actor portfolios',
+                  'Professional retouching'
+                ].map((feature, index) => (
                   <div key={index} className="flex items-center text-sm text-muted-foreground">
                     <div className="w-2 h-2 bg-gradient-to-r from-salmon to-cyan rounded-full mr-2 flex-shrink-0"></div>
                     <span>{feature}</span>
                   </div>
                 ))}
               </div>
-              
+
               <Link href="/contact">
                 <Button className="btn-salmon">
                   Get Started Today
@@ -243,10 +206,10 @@ export default function PhotographyPortraits() {
                 </Button>
               </Link>
             </div>
-            
+
             <div className="relative">
-              <img 
-                src={portraitConfig.serviceOverview.image || portraitConfig.recentWork.images[0] || '/images/placeholder-gallery.jpg'}
+              <img
+                src={heroImage || DEFAULT_HERO_IMAGE}
                 alt="Portrait Photography example"
                 className="w-full rounded-2xl shadow-2xl"
               />
@@ -255,49 +218,46 @@ export default function PhotographyPortraits() {
         </div>
       </GradientBackground>
 
-      {/* SEO Content Section */}
+      {/* SEO Content Section - Hardcoded for crawler visibility */}
       <GradientBackground
         section="photography-portrait-seo"
         className="py-20"
-        categoryType="photography"
-        categoryName="portraits"
-        categorySectionName="seoContent"
       >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="mb-12">
             <h2 className="text-4xl lg:text-5xl mb-6">
-              {portraitConfig.seoContent.title}
+              Portrait Photography in Durban
             </h2>
           </div>
 
           <div className="max-w-none">
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                {portraitConfig.seoContent.content.section1.title}
+                More Than Just a Headshot
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                {portraitConfig.seoContent.content.section1.text}
+                A good portrait does more than show what you look like—it communicates who you are. Our Umhlanga studio provides a comfortable, professional environment for headshots, personal branding, and family portraits. Based in Durban, we're easily accessible for clients across KZN looking for quality portrait photography without the hassle.
               </p>
             </div>
 
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                {portraitConfig.seoContent.content.section2.title}
+                Studio and Location Sessions
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                {portraitConfig.seoContent.content.section2.text}
+                Visit our Umhlanga studio for a controlled lighting environment, or we can come to you for on-location shoots around Durban. Whether you need a single LinkedIn headshot or a full personal branding set with multiple looks, we'll work with your schedule. Most clients receive their edited images within a week.
               </p>
             </div>
 
             <div>
               <p className="text-xl text-muted-foreground">
-                {portraitConfig.seoContent.content.conclusion}
+                Ready to update your professional image? Book a session at our Umhlanga studio—we're just minutes from Durban's business district.
               </p>
-              
+
               <div className="mt-8 text-center">
                 <Link href="/contact">
                   <Button className="btn-salmon">
-                    Book Your Portrait Session Today
+                    Book Your Portrait Session
                   </Button>
                 </Link>
               </div>

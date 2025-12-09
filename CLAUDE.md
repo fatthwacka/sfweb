@@ -2,6 +2,19 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🇬🇧 LANGUAGE & SPELLING
+
+**Always use British English spelling throughout this codebase.**
+
+Examples:
+- ✅ colour, favour, honour (not color, favor, honor)
+- ✅ specialise, organise, realise (not specialize, organize, realize)
+- ✅ centre, metre, theatre (not center, meter, theater)
+- ✅ programme (not program, unless referring to code)
+- ✅ catalogue, dialogue (not catalog, dialog)
+
+---
+
 ## 📋 GIT COMMIT GUIDELINES
 
 **⚠️ CRITICAL: Follow these rules for ALL git commits**
@@ -512,8 +525,7 @@ This rule prevents maintenance nightmares, ensures consistent user experience, a
 
 *Verify if this is still the current configuration management approach.*
 
-### Contact Form & Email System (Status: Likely Current)
-*This section appears current but should be verified against latest implementation.*
+### Contact Form & Email System (Status: Current - December 2025)
 
 **Architecture**: The contact form system provides secure form submission with spam protection and automated email delivery to the studio owner.
 
@@ -522,5 +534,50 @@ This rule prevents maintenance nightmares, ensures consistent user experience, a
 - **Backend API** (`server/routes.ts`): `/api/contact` endpoint with reCAPTCHA verification and email sending
 - **Email Service** (`server/email-service.ts`): Nodemailer-based email delivery with Gmail SMTP
 - **reCAPTCHA Service** (`server/recaptcha-service.ts`): Google reCAPTCHA v3 bot protection
+- **reCAPTCHA Site Key**: Loaded in `client/index.html` via Google script
 
-*Verify these file paths and implementations are still current.*
+**⚠️ Known Issue & Fix: reCAPTCHA Timeout (December 2025)**
+
+**Symptoms:**
+- Contact form button works for validation errors (shows toast on invalid phone)
+- Button presses silently with no response when all fields are valid
+- Works in development but fails in production
+- Backend API works fine when tested directly via curl
+
+**Root Cause:**
+The `executeRecaptcha()` Promise from `react-google-recaptcha-v3` can hang indefinitely in production environments. This happens when:
+- reCAPTCHA script loads slowly or partially
+- Network issues prevent reCAPTCHA from completing verification
+- Third-party script blockers interfere with Google's reCAPTCHA service
+
+**The Fix (Implemented):**
+A 5-second timeout wrapper using `Promise.race()` ensures the form never hangs:
+```typescript
+// Execute reCAPTCHA with timeout (don't block form submission if it fails)
+let recaptchaToken: string | null = null;
+if (isRecaptchaLoaded()) {
+  try {
+    const timeoutPromise = new Promise<null>((resolve) =>
+      setTimeout(() => resolve(null), 5000)
+    );
+    recaptchaToken = await Promise.race([
+      executeRecaptcha('contact_form'),
+      timeoutPromise
+    ]);
+    if (!recaptchaToken) {
+      console.warn('reCAPTCHA timed out or failed, proceeding without token');
+    }
+  } catch (error) {
+    console.error('reCAPTCHA error:', error);
+  }
+}
+```
+
+**Backend Handling:**
+The backend (`server/routes.ts`) handles missing tokens gracefully - it logs a warning but still processes the submission. This ensures legitimate users aren't blocked by reCAPTCHA failures.
+
+**Troubleshooting Contact Form Issues:**
+1. **Check browser console** - Look for reCAPTCHA errors or network failures
+2. **Test backend directly**: `curl -X POST https://slyfoxstudios.co.za/api/contact -H "Content-Type: application/json" -d '{"name":"Test","email":"test@test.com","message":"test","phone":""}'`
+3. **Verify reCAPTCHA keys** - Check `.env` has valid `RECAPTCHA_SECRET_KEY`
+4. **Check email service** - Verify Gmail SMTP credentials in `.env`

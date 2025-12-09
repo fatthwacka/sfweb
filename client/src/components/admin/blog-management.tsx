@@ -37,7 +37,9 @@ import {
   CheckCircle,
   RefreshCw,
   MessageSquare,
-  Undo2
+  Undo2,
+  FolderOpen,
+  Loader2
 } from "lucide-react";
 import type { BlogPost, BlogCategory, BlogTag, InsertBlogPost, FeaturedSection } from "@shared/schema";
 
@@ -157,6 +159,10 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
   const [uploadingPost1, setUploadingPost1] = useState(false);
   const [uploadingPost2, setUploadingPost2] = useState(false);
 
+  // Image browser dialog state
+  const [imageBrowserOpen, setImageBrowserOpen] = useState(false);
+  const [imageBrowserTarget, setImageBrowserTarget] = useState<'hero' | 'post1' | 'post2' | 'featured' | null>(null);
+
   // Fetch blog posts
   const { data: posts = [], isLoading: postsLoading } = useQuery<BlogPost[]>({
     queryKey: ['blog', 'posts'],
@@ -174,6 +180,50 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
       return response.json();
     }
   });
+
+  // Fetch existing blog images for browser dialog
+  interface BlogImage {
+    name: string;
+    url: string;
+    createdAt: string;
+    size: number;
+  }
+  const { data: blogImages = [], isLoading: blogImagesLoading, refetch: refetchBlogImages } = useQuery<BlogImage[]>({
+    queryKey: ['blog', 'images'],
+    queryFn: async () => {
+      const response = await apiRequest('GET', '/api/blog/images');
+      return response.json();
+    },
+    enabled: imageBrowserOpen // Only fetch when dialog is open
+  });
+
+  // Handle selecting an existing image from the browser
+  const handleSelectExistingImage = (imageUrl: string) => {
+    if (imageBrowserTarget === 'hero') {
+      setEditorPost(prev => ({ ...prev, coverImage: imageUrl }));
+    } else if (imageBrowserTarget === 'post1') {
+      setEditorPost(prev => ({ ...prev, postImage1: imageUrl }));
+    } else if (imageBrowserTarget === 'post2') {
+      setEditorPost(prev => ({ ...prev, postImage2: imageUrl }));
+    } else if (imageBrowserTarget === 'featured') {
+      setFeaturedSection(prev => ({
+        ...prev,
+        config: { ...prev.config, imageUrl: imageUrl }
+      }));
+    }
+    setImageBrowserOpen(false);
+    setImageBrowserTarget(null);
+    toast({
+      title: "Image selected",
+      description: "Existing image has been applied"
+    });
+  };
+
+  // Open image browser for a specific target
+  const openImageBrowser = (target: 'hero' | 'post1' | 'post2' | 'featured') => {
+    setImageBrowserTarget(target);
+    setImageBrowserOpen(true);
+  };
 
   // Create/update post mutation
   const savePostMutation = useMutation({
@@ -651,9 +701,9 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
     setUploadingPost1(true);
 
     try {
-      // Compress client-side: post images max 800px, 80% quality
+      // Compress client-side: post images max 1200px, 82% quality (matches hero)
       const originalSize = file.size;
-      const compressedFile = await compressImage(file, 800, 0.80);
+      const compressedFile = await compressImage(file, 1200, 0.82);
       const compressionRatio = ((originalSize - compressedFile.size) / originalSize * 100).toFixed(0);
 
       const formData = new FormData();
@@ -729,9 +779,9 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
     setUploadingPost2(true);
 
     try {
-      // Compress client-side: post images max 800px, 80% quality
+      // Compress client-side: post images max 1200px, 82% quality (matches hero)
       const originalSize = file.size;
-      const compressedFile = await compressImage(file, 800, 0.80);
+      const compressedFile = await compressImage(file, 1200, 0.82);
       const compressionRatio = ((originalSize - compressedFile.size) / originalSize * 100).toFixed(0);
 
       const formData = new FormData();
@@ -2246,7 +2296,30 @@ Please provide only the enhanced content without any additional text or explanat
                         </div>
                       )}
                     </div>
-                    
+                    {/* Browse Existing / Add New buttons */}
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openImageBrowser('featured')}
+                        className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
+                      >
+                        <FolderOpen className="w-4 h-4 mr-1.5" />
+                        Browse
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => document.getElementById('featured-image-input')?.click()}
+                        className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
+                      >
+                        <Plus className="w-4 h-4 mr-1.5" />
+                        Add New
+                      </Button>
+                    </div>
+
                     <div>
                       <Label className="text-gray-300 text-sm">Image URL</Label>
                       <Input
@@ -2733,6 +2806,29 @@ Please provide only the enhanced content without any additional text or explanat
                     </div>
                   )}
                 </div>
+                {/* Browse Existing / Add New buttons */}
+                <div className="flex gap-2 mt-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openImageBrowser('hero')}
+                    className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
+                  >
+                    <FolderOpen className="w-4 h-4 mr-1.5" />
+                    Browse
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => document.getElementById('hero-image-input')?.click()}
+                    className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
+                  >
+                    <Plus className="w-4 h-4 mr-1.5" />
+                    Add New
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 
@@ -2823,6 +2919,29 @@ Please provide only the enhanced content without any additional text or explanat
                       </div>
                     )}
                   </div>
+                  {/* Browse Existing / Add New buttons */}
+                  <div className="flex gap-2 mt-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openImageBrowser('post1')}
+                      className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white text-xs py-1"
+                    >
+                      <FolderOpen className="w-3 h-3 mr-1" />
+                      Browse
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => document.getElementById('post-image-1-input')?.click()}
+                      className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white text-xs py-1"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      Add New
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Post Image 2 */}
@@ -2879,6 +2998,29 @@ Please provide only the enhanced content without any additional text or explanat
                         )}
                       </div>
                     )}
+                  </div>
+                  {/* Browse Existing / Add New buttons */}
+                  <div className="flex gap-2 mt-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openImageBrowser('post2')}
+                      className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white text-xs py-1"
+                    >
+                      <FolderOpen className="w-3 h-3 mr-1" />
+                      Browse
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => document.getElementById('post-image-2-input')?.click()}
+                      className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white text-xs py-1"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      Add New
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -3285,6 +3427,69 @@ Please provide only the enhanced content without any additional text or explanat
                   )}
                 </Button>
               </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Image Browser Dialog */}
+        <Dialog open={imageBrowserOpen} onOpenChange={setImageBrowserOpen}>
+          <DialogContent className="bg-gray-800 border-gray-700 max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+            <DialogHeader>
+              <DialogTitle className="text-white flex items-center gap-2">
+                <FolderOpen className="w-5 h-5 text-cyan-400" />
+                Browse Existing Images
+              </DialogTitle>
+              <DialogDescription className="text-gray-300 text-sm">
+                Select an image from your previously uploaded blog images
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex-1 overflow-y-auto">
+              {blogImagesLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+                  <span className="ml-3 text-gray-300">Loading images...</span>
+                </div>
+              ) : blogImages.length === 0 ? (
+                <div className="text-center py-12">
+                  <ImageIcon className="w-12 h-12 text-gray-500 mx-auto mb-3" />
+                  <p className="text-gray-400">No existing blog images found</p>
+                  <p className="text-gray-500 text-sm mt-1">Upload some images first using the "Add New" button</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 p-1">
+                  {blogImages.map((image) => (
+                    <button
+                      key={image.name}
+                      onClick={() => handleSelectExistingImage(image.url)}
+                      className="group relative aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-cyan-400 transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                    >
+                      <img
+                        src={image.url}
+                        alt={image.name}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                        <CheckCircle className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <p className="text-white text-xs truncate">{image.name}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="pt-4 border-t border-gray-700 flex justify-between items-center">
+              <p className="text-sm text-gray-400">
+                {blogImages.length} image{blogImages.length !== 1 ? 's' : ''} available
+              </p>
+              <Button
+                variant="outline"
+                onClick={() => setImageBrowserOpen(false)}
+                className="border-gray-600 text-gray-300 hover:bg-gray-700"
+              >
+                Cancel
+              </Button>
             </div>
           </DialogContent>
         </Dialog>

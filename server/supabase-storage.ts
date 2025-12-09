@@ -188,6 +188,41 @@ export class SupabaseStorage implements IStorage {
     return await db.select().from(shoots).where(eq(shoots.isPrivate, false)).orderBy(desc(shoots.createdAt));
   }
 
+  // OPTIMIZED: Query directly by groupName instead of fetching all public shoots
+  async getPublicShootsByGroupName(groupName: string): Promise<Shoot[]> {
+    return await db.select().from(shoots)
+      .where(and(
+        eq(shoots.isPrivate, false),
+        sql`LOWER(${shoots.groupName}) = LOWER(${groupName})`
+      ))
+      .orderBy(desc(shoots.createdAt));
+  }
+
+  // OPTIMIZED: Get shoots with banner image data in a single query (JOIN)
+  async getPublicShootsWithBannerByGroupName(groupName: string): Promise<(Shoot & { bannerImage?: { id: string; storagePath: string } })[]> {
+    const result = await db
+      .select({
+        shoot: shoots,
+        bannerImageId: images.id,
+        bannerImagePath: images.storagePath,
+      })
+      .from(shoots)
+      .leftJoin(images, eq(shoots.bannerImageId, images.id))
+      .where(and(
+        eq(shoots.isPrivate, false),
+        sql`LOWER(${shoots.groupName}) = LOWER(${groupName})`
+      ))
+      .orderBy(desc(shoots.createdAt));
+
+    return result.map(row => ({
+      ...row.shoot,
+      bannerImage: row.bannerImageId ? {
+        id: row.bannerImageId,
+        storagePath: row.bannerImagePath!
+      } : undefined
+    }));
+  }
+
   async getAllShoots(): Promise<Shoot[]> {
     return await db.select().from(shoots).orderBy(desc(shoots.createdAt));
   }
@@ -228,6 +263,17 @@ export class SupabaseStorage implements IStorage {
   async getImage(id: string): Promise<Image | undefined> {
     const result = await db.select().from(images).where(eq(images.id, id)).limit(1);
     return result[0];
+  }
+
+  // OPTIMIZED: Batch fetch multiple images by ID in a single query
+  async getImagesByIds(ids: string[]): Promise<Map<string, Image>> {
+    if (ids.length === 0) return new Map();
+    const result = await db.select().from(images).where(inArray(images.id, ids));
+    const imageMap = new Map<string, Image>();
+    for (const img of result) {
+      imageMap.set(img.id, img);
+    }
+    return imageMap;
   }
 
   async getImagesByShoot(shootId: string): Promise<Image[]> {
@@ -456,25 +502,75 @@ export class SupabaseStorage implements IStorage {
     if (shootIds.length === 0) {
       return new Map();
     }
-    
+
     const allVideos = await db.select().from(videos)
       .where(inArray(videos.shootId, shootIds))
       .orderBy(videos.sequence);
-    
+
     // Group videos by shootId
     const videosByShoot = new Map<string, Video[]>();
     for (const shootId of shootIds) {
       videosByShoot.set(shootId, []);
     }
-    
+
     for (const video of allVideos) {
       const shootVideos = videosByShoot.get(video.shootId);
       if (shootVideos) {
         shootVideos.push(video);
       }
     }
-    
+
     return videosByShoot;
+  }
+
+  // OPTIMIZED: Get just the cover video (featured or first) for multiple shoots - for card displays
+  async getCoverVideosForShoots(shootIds: string[]): Promise<Map<string, Video | null>> {
+    if (shootIds.length === 0) {
+      return new Map();
+    }
+
+    // Fetch only featured videos first
+    const featuredVideos = await db.select().from(videos)
+      .where(and(
+        inArray(videos.shootId, shootIds),
+        eq(videos.featuredVideo, true)
+      ));
+
+    // For shoots without featured video, get first video by sequence
+    const shootsWithFeatured = new Set(featuredVideos.map(v => v.shootId));
+    const shootsNeedingFirst = shootIds.filter(id => !shootsWithFeatured.has(id));
+
+    let firstVideos: Video[] = [];
+    if (shootsNeedingFirst.length > 0) {
+      // Get first video for each shoot
+      const allFirstVideos = await db.select().from(videos)
+        .where(inArray(videos.shootId, shootsNeedingFirst))
+        .orderBy(videos.shootId, videos.sequence);
+
+      // Deduplicate to keep only first per shoot
+      const seen = new Set<string>();
+      firstVideos = allFirstVideos.filter(v => {
+        if (seen.has(v.shootId)) return false;
+        seen.add(v.shootId);
+        return true;
+      });
+    }
+
+    // Build result map
+    const result = new Map<string, Video | null>();
+    for (const shootId of shootIds) {
+      result.set(shootId, null);
+    }
+    for (const video of featuredVideos) {
+      result.set(video.shootId, video);
+    }
+    for (const video of firstVideos) {
+      if (!result.get(video.shootId)) {
+        result.set(video.shootId, video);
+      }
+    }
+
+    return result;
   }
 
   async createVideo(insertVideo: InsertVideo): Promise<Video> {

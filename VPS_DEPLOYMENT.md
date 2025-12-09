@@ -532,9 +532,43 @@ LEGACY TROUBLESHOOTING REFERENCE - Before hardcoded architecture
 
 ---
 
+# 🔧 PRODUCTION TROUBLESHOOTING
+
+## Contact Form Not Working (December 2025)
+
+**Symptoms**: Form button works for validation errors but silently fails on valid submissions.
+
+**Quick Diagnosis**:
+1. Test backend directly: `curl -X POST https://slyfoxstudios.co.za/api/contact -H "Content-Type: application/json" -d '{"name":"Test","email":"test@test.com","message":"test"}'`
+2. If backend works → reCAPTCHA is hanging (see fix below)
+3. If backend fails → check email service credentials in `.env`
+
+**Root Cause**: Google reCAPTCHA v3 `executeRecaptcha()` Promise can hang indefinitely in production.
+
+**Fix Location**: `client/src/components/sections/contact-section.tsx` - 5-second timeout wrapper using `Promise.race()`
+
+**Full Documentation**: See CLAUDE.md → "Contact Form & Email System" section
+
+## Image 403 Errors After Deployment
+
+**Cause**: rsync preserves local file permissions which may be restrictive.
+
+**Fix**: Always run after rsync:
+```bash
+ssh slyfox-vps "cd /opt/sfweb && chmod -R 644 public/images && find public -type d -exec chmod 755 {} \;"
+```
+
+## Config Changes Not Reflecting
+
+**For Homepage/Portfolio content**: Use the Config Sync procedure (Section above)
+
+**For Contact/About pages**: These are hardcoded - redeploy the code changes.
+
+---
+
 # 🎯 DEPLOYMENT HISTORY
 
-**Last Successful Deployment**: 2025-09-18 (Docker cache fix + videography updates)  
+**Last Successful Deployment**: 2025-12-08 (reCAPTCHA timeout fix + footer redesign)  
 **Critical Fixes Applied**:
 - Docker build cache bypass methodology
 - Videography YouTube integration deployment

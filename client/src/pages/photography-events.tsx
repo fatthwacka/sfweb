@@ -2,95 +2,49 @@ import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Camera, Check, ChevronDown } from "lucide-react";
-import { useSiteConfig } from "@/hooks/use-site-config";
+import { Camera, ChevronDown } from "lucide-react";
 import { GradientBackground } from "@/components/common/gradient-background";
 import { CategoryFeaturedGrid } from "@/components/shared/category-featured-grid";
 import { PricingPackagesDisplay } from "@/components/sections/pricing-packages-display";
+import { useCategoryHero } from "@/hooks/use-category-heroes";
+
+// Hardcoded defaults for SEO - crawlers see this immediately
+const DEFAULT_HERO_IMAGE = "/images/services/event-photography.jpg";
 
 export default function PhotographyEvents() {
-  const { config, isLoading } = useSiteConfig();
-  
-  // Get events photography configuration
-  const eventsConfig = config?.categoryPages?.photography?.events || {
-    hero: {
-      title: "Professional Event Photography",
-      subtitle: "Documenting memorable moments at conferences, parties, and gatherings",
-      image: "/images/services/event-photography.jpg",
-      alt: "Professional Event Photography by SlyFox Studios"
-    },
-    serviceOverview: {
-      title: "Event Photography Services",
-      description: "Professional event photography in Durban",
-      features: ["Conference photography", "Party coverage", "Award ceremonies", "Networking events"],
-      image: "/images/services/event-photography.jpg"
-    },
-    packages: {
-      title: "Event Photography Packages",
-      description: "Choose the perfect package for your event"
-    },
-    recentWork: {
-      title: "Recent Event Photography",
-      description: "See our latest event photography work",
-      images: ["/images/services/event-photography.jpg"]
-    },
-    seoContent: {
-      title: "Professional Event Photography in Durban",
-      content: {
-        section1: {
-          title: "Event Photography Services",
-          text: "Professional event photography services in Durban"
-        },
-        section2: {
-          title: "Why Choose SlyFox Studios",
-          text: "Professional photographers with years of experience"
-        },
-        conclusion: "Contact us today to discuss your event photography needs"
-      }
-    },
-    seo: {
-      title: "Event Photography - SlyFox Studios",
-      description: "Professional event photography in Durban",
-      keywords: "event, photography, durban"
-    }
-  };
-
-  if (isLoading || !eventsConfig) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl mb-4">Loading...</h1>
-        </div>
-      </div>
-    );
-  }
+  // Fetch hero image and display settings from Supabase (falls back to defaults)
+  const { heroImage, heroHeight, imageAlign } = useCategoryHero('photography', 'events');
 
   return (
     <div className="min-h-screen bg-background text-foreground background-gradient-blobs">
-      {/* SEO Meta Tags */}
-      <title>{eventsConfig.seo.title}</title>
-      <meta name="description" content={eventsConfig.seo.description} />
-      <meta name="keywords" content={eventsConfig.seo.keywords} />
-      
+      {/* SEO Meta Tags - Hardcoded for crawler visibility */}
+      <title>Event Photography Durban | SlyFox Studios</title>
+      <meta name="description" content="Professional event photography in Durban and KZN. Conferences, parties, award ceremonies, and corporate functions captured with style." />
+      <meta name="keywords" content="event photography Durban, conference photographer KZN, party photography Umhlanga, corporate event photographer" />
+
       <Navigation />
-      
+
       {/* Hero Section */}
-      <section className="relative h-[60vh] overflow-hidden flex items-center justify-center">
+      <section
+        className="relative overflow-hidden flex items-center justify-center"
+        style={{ height: `${heroHeight}vh` }}
+      >
         <div className="absolute inset-0">
-          <img 
-            src={eventsConfig.hero?.image || '/images/services/event-photography.jpg'}
-            alt={eventsConfig.hero.alt || `Professional Event Photography by SlyFox Studios in Durban - dynamic event photography capturing special moments`}
+          <img
+            src={heroImage || DEFAULT_HERO_IMAGE}
+            alt="Professional Event Photography by SlyFox Studios in Durban"
             className="w-full h-full object-cover"
+            style={{ objectPosition: imageAlign }}
           />
           <div className="absolute inset-0 hero-gradient"></div>
         </div>
-        
+
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-corinthia text-white leading-tight hero-title-white" style={{ marginBottom: '-0.5rem' }}>
-            {eventsConfig.hero.title}
+            Professional Event Photography
           </h1>
           <h3 className="text-lg md:text-xl text-white font-quicksand font-light mb-4">
-            {eventsConfig.hero.subtitle}
+            Documenting memorable moments at conferences, parties, and gatherings
           </h3>
 
           {/* Scroll Down Button */}
@@ -99,7 +53,7 @@ export default function PhotographyEvents() {
               onClick={() => {
                 const servicesElement = document.querySelector('#category-services');
                 if (servicesElement) {
-                  const headerOffset = 80; // Account for fixed navigation bar
+                  const headerOffset = 80;
                   const elementPosition = servicesElement.getBoundingClientRect().top;
                   const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
@@ -130,15 +84,15 @@ export default function PhotographyEvents() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-6">
-              {eventsConfig.recentWork.title}
+              Recent Event Photography
             </h2>
             <h3 className="text-xl ">
-              {eventsConfig.recentWork.description}
+              See our latest event photography work
             </h3>
           </div>
 
-          {/* NEW DYNAMIC GRID */}
-          <CategoryFeaturedGrid 
+          {/* Dynamic Featured Grid from Supabase */}
+          <CategoryFeaturedGrid
             categoryKey="events"
             imageCount={6}
           />
@@ -155,8 +109,8 @@ export default function PhotographyEvents() {
       >
         <PricingPackagesDisplay
           pageIdentifier="photography_events"
-          title={eventsConfig.packages.title || "Event Photography Packages"}
-          description={eventsConfig.packages.description || "Professional event photography solutions"}
+          title="Event Photography Packages"
+          description="Professional event photography solutions for any occasion"
           ctaLink="/contact"
           ctaText="Book Now"
         />
@@ -186,8 +140,8 @@ export default function PhotographyEvents() {
               <Link key={categoryItem.name} href={`/photography/${categoryItem.name}`}>
                 <div className="group cursor-pointer bg-slate-800/60 rounded-lg overflow-hidden hover:bg-slate-700/60 transition-all duration-300 hover:scale-105">
                   <div className="aspect-square bg-gray-700/50 relative overflow-hidden">
-                    <img 
-                      src={categoryItem.image} 
+                    <img
+                      src={categoryItem.image}
                       alt={categoryItem.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       loading="lazy"
@@ -221,21 +175,30 @@ export default function PhotographyEvents() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-4xl lg:text-5xl mb-6">
-                {eventsConfig.serviceOverview.title}
+                Event Photography Services
               </h2>
               <h3 className="text-xl mb-8 leading-relaxed">
-                {eventsConfig.serviceOverview.description}
+                From intimate gatherings to large-scale corporate functions, we capture the energy and key moments of your event without getting in the way.
               </h3>
-              
+
               <div className="grid grid-cols-2 gap-2 mb-8">
-                {eventsConfig.serviceOverview.features.map((feature, index) => (
+                {[
+                  'Conference photography',
+                  'Award ceremonies',
+                  'Party coverage',
+                  'Networking events',
+                  'Product launches',
+                  'Gala dinners',
+                  'Same-day highlights',
+                  'Full event documentation'
+                ].map((feature, index) => (
                   <div key={index} className="flex items-center text-sm text-muted-foreground">
                     <div className="w-2 h-2 bg-gradient-to-r from-salmon to-cyan rounded-full mr-2 flex-shrink-0"></div>
                     <span>{feature}</span>
                   </div>
                 ))}
               </div>
-              
+
               <Link href="/contact">
                 <Button className="btn-salmon">
                   Get Started Today
@@ -243,11 +206,11 @@ export default function PhotographyEvents() {
                 </Button>
               </Link>
             </div>
-            
+
             <div className="relative">
-              <img 
-                src={eventsConfig.serviceOverview.image || eventsConfig.recentWork.images[0] || '/images/placeholder-gallery.jpg'}
-                alt="Events Photography example"
+              <img
+                src={heroImage || DEFAULT_HERO_IMAGE}
+                alt="Event Photography example"
                 className="w-full rounded-2xl shadow-2xl"
               />
             </div>
@@ -255,49 +218,46 @@ export default function PhotographyEvents() {
         </div>
       </GradientBackground>
 
-      {/* SEO Content Section */}
+      {/* SEO Content Section - Hardcoded for crawler visibility */}
       <GradientBackground
         section="photography-event-seo"
         className="py-20"
-        categoryType="photography"
-        categoryName="events"
-        categorySectionName="seoContent"
       >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="mb-12">
             <h2 className="text-4xl lg:text-5xl mb-6">
-              {eventsConfig.seoContent.title}
+              Event Photography in Durban
             </h2>
           </div>
 
           <div className="max-w-none">
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                {eventsConfig.seoContent.content.section1.title}
+                Capturing the Energy of Your Event
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                {eventsConfig.seoContent.content.section1.text}
+                Events move fast—blink and you miss the keynote speaker's best moment or the spontaneous laughter at a milestone celebration. We've photographed conferences, award ceremonies, product launches, and private parties across Durban and KZN. Our approach is unobtrusive: we blend into the background while making sure nothing important goes undocumented.
               </p>
             </div>
 
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                {eventsConfig.seoContent.content.section2.title}
+                Coverage That Fits Your Event
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                {eventsConfig.seoContent.content.section2.text}
+                From intimate gatherings to large-scale corporate functions at Durban's premier venues, we scale our coverage to match your needs. Need same-day social media highlights? We can arrange that. Prefer a comprehensive gallery delivered after thorough editing? That's our standard. We're flexible because every event is different.
               </p>
             </div>
 
             <div>
               <p className="text-xl text-muted-foreground">
-                {eventsConfig.seoContent.content.conclusion}
+                Planning an event in Durban, Umhlanga, or anywhere in KZN? Let's chat about how we can help you capture it.
               </p>
-              
+
               <div className="mt-8 text-center">
                 <Link href="/contact">
                   <Button className="btn-salmon">
-                    Book Your Event Photography Today
+                    Book Event Photography
                   </Button>
                 </Link>
               </div>

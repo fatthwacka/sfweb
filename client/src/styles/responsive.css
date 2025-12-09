@@ -1173,9 +1173,15 @@ html, body {
   border-radius: 0.5rem 0.5rem 0 0;
 }
 
-/* First h2 doesn't need top margin */
+/* First h2 doesn't need large top margin */
 .story-article p.lead + h2 {
   @apply mt-10;
+}
+
+/* When h2 is the first element (no intro paragraph), remove top margin completely */
+.story-article > h2:first-child {
+  @apply mt-0;
+  padding-top: 0;
 }
 
 .story-article h3 {
@@ -1312,6 +1318,7 @@ html, body {
 
 .story-main-content {
   @apply min-w-0;
+  align-self: start;
 }
 
 .story-sidebar {

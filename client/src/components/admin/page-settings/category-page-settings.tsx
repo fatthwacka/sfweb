@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Save, AlertCircle, Camera, Trash2 } from 'lucide-react';
+import { Save, AlertCircle, Camera, Trash2, Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,6 +10,7 @@ import { ImageBrowser } from '@/components/shared/image-browser';
 import { CategoryPageConfig, defaultCategoryPageConfig } from '@shared/types/category-config';
 import { PricingPackagesEditor } from '@/components/admin/pricing-packages-editor';
 import { createPageIdentifier } from '@shared/types/pricing';
+import { useCategoryHeroes } from '@/hooks/use-category-heroes';
 
 interface CategoryPageSettingsProps {
   type: 'photography' | 'videography';
@@ -26,13 +27,108 @@ interface SiteConfig {
 
 const defaultSiteConfig: SiteConfig = {};
 
+// Hero image compression settings
+const HERO_MAX_WIDTH = 2400;
+const HERO_QUALITY = 0.82;
+const MAX_FILE_SIZE_MB = 20;
+const COMPRESSION_THRESHOLD_KB = 650; // Only compress images larger than this
+
 export function CategoryPageSettings({ type, category }: CategoryPageSettingsProps) {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [config, setConfig] = useState<SiteConfig>(defaultSiteConfig);
+  const [heroUploading, setHeroUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const heroDropRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+
+  // Use the new Supabase-backed hero images system
+  const { getHeroImage, isCustomHero, getHeroHeight, getImageAlign, updateHero, updateHeroSettings, isUpdating } = useCategoryHeroes();
+  const currentHeroImage = getHeroImage(type, category);
+  const hasCustomHero = isCustomHero(type, category);
+  const savedHeroHeight = getHeroHeight(type, category);
+  const savedImageAlign = getImageAlign(type, category);
+
+  // Local state for optimistic UI updates (slider/dropdown respond immediately)
+  const [localHeroHeight, setLocalHeroHeight] = useState<number>(savedHeroHeight);
+  const [localImageAlign, setLocalImageAlign] = useState<'top' | 'center' | 'bottom'>(savedImageAlign);
+
+  // Sync local state when saved data changes
+  useEffect(() => {
+    setLocalHeroHeight(savedHeroHeight);
+  }, [savedHeroHeight]);
+
+  useEffect(() => {
+    setLocalImageAlign(savedImageAlign);
+  }, [savedImageAlign]);
 
   // Get current category page config
   const categoryConfig = config?.categoryPages?.[type]?.[category] || defaultCategoryPageConfig;
+
+  // Client-side image compression for hero images (2400px @ 82% quality)
+  const compressHeroImage = async (file: File): Promise<File> => {
+    // Only compress JPEG/PNG images
+    if (!['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) {
+      return file;
+    }
+
+    // Skip compression for images under threshold (already optimised)
+    const fileSizeKB = file.size / 1024;
+    if (fileSizeKB <= COMPRESSION_THRESHOLD_KB) {
+      console.log(`⏭️ Skipping compression: ${fileSizeKB.toFixed(0)}KB is under ${COMPRESSION_THRESHOLD_KB}KB threshold`);
+      return file;
+    }
+
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = document.createElement('img');
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+
+          // Only resize if larger than max width
+          if (width > HERO_MAX_WIDTH) {
+            height = (height * HERO_MAX_WIDTH) / width;
+            width = HERO_MAX_WIDTH;
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(file);
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                resolve(file);
+                return;
+              }
+              const optimizedFile = new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() });
+              // Only use compressed version if it's actually smaller
+              if (optimizedFile.size < file.size) {
+                const reduction = ((file.size - optimizedFile.size) / file.size * 100).toFixed(0);
+                console.log(`✨ Hero compressed: ${(file.size / 1024).toFixed(0)}KB → ${(optimizedFile.size / 1024).toFixed(0)}KB (${reduction}% reduction)`);
+                resolve(optimizedFile);
+              } else {
+                resolve(file);
+              }
+            },
+            'image/jpeg',
+            HERO_QUALITY
+          );
+        };
+        img.src = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
 
   // Site configuration query
   const { data: siteConfig, isLoading } = useQuery({
@@ -132,89 +228,116 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
     });
   };
 
+  // New hero image upload handler - uploads to Supabase Storage
   const handleHeroImageUpload = async (file: File) => {
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({ title: "Error", description: "Please upload an image file", variant: "destructive" });
+      return;
+    }
+
+    // Validate file size (max 20MB - will be compressed before upload)
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      toast({ title: "Error", description: `Image must be less than ${MAX_FILE_SIZE_MB}MB`, variant: "destructive" });
+      return;
+    }
+
+    setHeroUploading(true);
+
     try {
-      console.log('Starting SEO upload for:', file.name, 'Category:', category, 'Type:', type);
-      
-      // Try SEO-optimized upload endpoint first
+      // Compress image client-side before upload (2400px @ 82% quality)
+      const originalSize = file.size;
+      const compressedFile = await compressHeroImage(file);
+      const compressionRatio = ((originalSize - compressedFile.size) / originalSize * 100).toFixed(0);
+
+      // Upload to Supabase via the category-hero endpoint
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressedFile);
       formData.append('category', category);
       formData.append('type', type);
-      
-      let response = await fetch('/api/upload/category-hero', {
+
+      const response = await fetch('/api/upload/category-hero', {
         method: 'POST',
         body: formData
       });
-      
-      // If SEO endpoint doesn't exist (404 or returns HTML), fall back to regular upload
-      if (!response.ok || response.headers.get('content-type')?.includes('text/html')) {
-        console.log('SEO endpoint not available, falling back to regular upload');
-        
-        // Use regular upload endpoint as fallback
-        const regularFormData = new FormData();
-        regularFormData.append('file', file);
-        
-        response = await fetch('/api/upload', {
-          method: 'POST',
-          body: regularFormData
-        });
-        
-        if (!response.ok) {
-          throw new Error('Both upload methods failed');
-        }
-        
-        const data = await response.json();
-        
-        // Generate alt text client-side for fallback
-        const categoryDescriptions: { [key: string]: string } = {
-          weddings: "elegant wedding ceremony with bride and groom",
-          wedding: "elegant wedding ceremony with bride and groom",
-          portraits: "professional portrait session with studio lighting",
-          portrait: "professional portrait session with studio lighting",
-          corporate: "executive headshot in modern office setting",
-          events: "dynamic event photography capturing special moments",
-          event: "dynamic event photography capturing special moments",
-          products: "commercial product showcase with professional lighting",
-          product: "commercial product showcase with professional lighting",
-          graduation: "graduation ceremony photography with academic regalia"
-        };
-        
-        const categoryKey = category.toLowerCase().replace(/s$/, '');
-        const description = categoryDescriptions[categoryKey] || categoryDescriptions[category.toLowerCase()] || "professional photography session";
-        const generatedAltText = `Professional ${category} ${type} by SlyFox Studios in Durban - ${description}`;
-        
-        // Update with regular upload path and client-generated alt text
-        updateHeroConfig({ 
-          image: data.path,
-          alt: generatedAltText 
-        });
-        
-        toast({
-          title: "Hero image uploaded",
-          description: "Using standard upload (SEO endpoint will be available after server restart)"
-        });
-      } else {
-        // SEO endpoint worked!
-        const data = await response.json();
-        const { path, generatedAltText, filename } = data;
-        
-        // Update both image path and auto-generated alt text
-        updateHeroConfig({ 
-          image: path,
-          alt: generatedAltText 
-        });
-        
-        toast({
-          title: "Hero image uploaded",
-          description: `SEO-optimized upload: ${filename}`
-        });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Upload failed');
       }
+
+      const data = await response.json();
+
+      // Invalidate the category heroes query to refresh the UI
+      queryClient.invalidateQueries({ queryKey: ['category-heroes'] });
+
+      toast({
+        title: "Hero image uploaded",
+        description: `Saved to Supabase${Number(compressionRatio) > 5 ? ` (${compressionRatio}% compressed)` : ''}`
+      });
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error('Hero upload error:', error);
       toast({
         title: "Upload failed",
         description: error instanceof Error ? error.message : "Failed to upload hero image",
+        variant: "destructive"
+      });
+    } finally {
+      setHeroUploading(false);
+    }
+  };
+
+  // Handle drag and drop for hero images
+  const handleHeroDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleHeroDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleHeroDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      if (file.type.startsWith('image/')) {
+        await handleHeroImageUpload(file);
+      } else {
+        toast({ title: "Error", description: "Please drop an image file", variant: "destructive" });
+      }
+    }
+  };
+
+  // Reset hero to default (delete from Supabase)
+  const handleResetHero = async () => {
+    try {
+      const response = await fetch(`/api/category-heroes/${type}/${category}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to reset hero image');
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['category-heroes'] });
+
+      toast({
+        title: "Hero image reset",
+        description: "Now using the default hero image"
+      });
+    } catch (error) {
+      toast({
+        title: "Reset failed",
+        description: error instanceof Error ? error.message : "Failed to reset hero image",
         variant: "destructive"
       });
     }
@@ -348,42 +471,208 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
                 <div>
                   <CardTitle>Hero Section - Visual Customization</CardTitle>
                   <CardDescription>
-                    Manage the hero background image for your {categoryDisplayName.toLowerCase()} page
+                    Manage the hero background image for your {categoryDisplayName.toLowerCase()} page (stored in Supabase)
                   </CardDescription>
-                </div>
-                <div className="flex items-center gap-3">
-                  {hasUnsavedChanges && (
-                    <div className="flex items-center text-yellow-400 text-sm">
-                      <AlertCircle className="w-4 h-4 mr-1" />
-                      Unsaved changes
-                    </div>
-                  )}
-                  <Button
-                    onClick={handleSave}
-                    disabled={!hasUnsavedChanges || saveMutation.isPending}
-                    className="btn-salmon"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
-                  </Button>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Hero Image Upload */}
+              {/* Hero Image Upload - Now with Supabase Storage */}
               <div className="gallery-slider-container">
                 <div className="p-4">
-                  <h4 className="text-sm font-medium mb-4 text-white">Hero Background Image</h4>
-                  <ImageBrowser
-                    currentImage={categoryConfig.hero.image}
-                    onSelect={(imagePath) => updateHeroConfig({ image: imagePath })}
-                    onUpload={handleHeroImageUpload}
-                    label="Hero Background Image"
-                    className=""
-                  />
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Choose from existing images or upload a new high-resolution hero background
-                  </p>
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-sm font-medium text-white">Hero Background Image</h4>
+                    {hasCustomHero && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleResetHero}
+                        className="text-xs"
+                      >
+                        <Trash2 className="w-3 h-3 mr-1" />
+                        Reset to Default
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Current Image Preview */}
+                  <div className="mb-4">
+                    <div className="relative rounded-lg overflow-hidden border border-slate-600">
+                      <img
+                        src={currentHeroImage}
+                        alt="Current hero"
+                        className="w-full h-48 object-cover"
+                      />
+                      {hasCustomHero && (
+                        <div className="absolute top-2 right-2 bg-green-500/80 text-white text-xs px-2 py-1 rounded">
+                          Custom Image
+                        </div>
+                      )}
+                      {!hasCustomHero && (
+                        <div className="absolute top-2 right-2 bg-slate-500/80 text-white text-xs px-2 py-1 rounded">
+                          Default Image
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Drag and Drop Upload Zone */}
+                  <div
+                    ref={heroDropRef}
+                    onDragOver={handleHeroDragOver}
+                    onDragLeave={handleHeroDragLeave}
+                    onDrop={handleHeroDrop}
+                    className={`
+                      relative border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200
+                      ${isDragging
+                        ? 'border-salmon bg-salmon/10'
+                        : 'border-slate-600 hover:border-slate-500'
+                      }
+                      ${heroUploading ? 'opacity-50 pointer-events-none' : ''}
+                    `}
+                  >
+                    {heroUploading ? (
+                      <div className="flex flex-col items-center">
+                        <Loader2 className="w-8 h-8 animate-spin text-salmon mb-2" />
+                        <p className="text-sm text-muted-foreground">Compressing and uploading...</p>
+                      </div>
+                    ) : (
+                      <>
+                        <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground mb-2">
+                          Drag and drop an image here, or click to browse
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          Max {MAX_FILE_SIZE_MB}MB • Will be compressed to {HERO_MAX_WIDTH}px @ {Math.round(HERO_QUALITY * 100)}% quality
+                        </p>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleHeroImageUpload(file);
+                            e.target.value = '';
+                          }}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                      </>
+                    )}
+                  </div>
+
+                  {/* Browse Existing Button */}
+                  <div className="mt-4">
+                    <ImageBrowser
+                      currentImage={currentHeroImage}
+                      onSelect={async (imagePath) => {
+                        // When selecting from existing images, update Supabase
+                        try {
+                          updateHero({ pageType: type, category, imageUrl: imagePath });
+                          toast({
+                            title: "Hero image updated",
+                            description: "Selected image saved to Supabase"
+                          });
+                        } catch (error) {
+                          toast({
+                            title: "Error",
+                            description: "Failed to update hero image",
+                            variant: "destructive"
+                          });
+                        }
+                      }}
+                      label="Browse Existing Images"
+                      className=""
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Hero Display Settings */}
+              <div className="gallery-slider-container">
+                <div className="p-4">
+                  <h4 className="text-sm font-medium text-white mb-4">Hero Display Settings</h4>
+                  {!hasCustomHero && (
+                    <p className="text-xs text-amber-400 mb-4">
+                      ⚠️ Upload a custom hero image first to enable height and alignment settings
+                    </p>
+                  )}
+
+                  {/* Hero Height Slider */}
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-sm text-slate-300">Hero Height</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min={40}
+                          max={100}
+                          value={localHeroHeight}
+                          disabled={!hasCustomHero}
+                          onChange={(e) => {
+                            const value = Math.min(100, Math.max(40, parseInt(e.target.value) || 60));
+                            setLocalHeroHeight(value);
+                          }}
+                          onBlur={() => {
+                            if (hasCustomHero && localHeroHeight !== savedHeroHeight) {
+                              updateHeroSettings({ pageType: type, category, heroHeight: localHeroHeight });
+                            }
+                          }}
+                          className="w-16 px-2 py-1 text-sm bg-slate-700 border border-slate-600 rounded text-white text-center disabled:opacity-50"
+                        />
+                        <span className="text-sm text-slate-400">%</span>
+                      </div>
+                    </div>
+                    <input
+                      type="range"
+                      min={40}
+                      max={100}
+                      value={localHeroHeight}
+                      disabled={!hasCustomHero}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        setLocalHeroHeight(value);
+                      }}
+                      onMouseUp={() => {
+                        if (hasCustomHero) {
+                          updateHeroSettings({ pageType: type, category, heroHeight: localHeroHeight });
+                        }
+                      }}
+                      onTouchEnd={() => {
+                        if (hasCustomHero) {
+                          updateHeroSettings({ pageType: type, category, heroHeight: localHeroHeight });
+                        }
+                      }}
+                      className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-salmon disabled:opacity-50"
+                    />
+                    <div className="flex justify-between text-xs text-slate-500 mt-1">
+                      <span>40%</span>
+                      <span>70%</span>
+                      <span>100%</span>
+                    </div>
+                  </div>
+
+                  {/* Image Alignment Dropdown */}
+                  <div>
+                    <label className="block text-sm text-slate-300 mb-2">Image Alignment</label>
+                    <select
+                      value={localImageAlign}
+                      disabled={!hasCustomHero}
+                      onChange={(e) => {
+                        const value = e.target.value as 'top' | 'center' | 'bottom';
+                        setLocalImageAlign(value);
+                        if (hasCustomHero) {
+                          updateHeroSettings({ pageType: type, category, imageAlign: value });
+                        }
+                      }}
+                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-salmon disabled:opacity-50"
+                    >
+                      <option value="top">Top - Focus on upper part of image</option>
+                      <option value="center">Center - Focus on middle of image (default)</option>
+                      <option value="bottom">Bottom - Focus on lower part of image</option>
+                    </select>
+                    <p className="text-xs text-slate-500 mt-2">
+                      Controls how the hero image is positioned when cropped to fit the hero area
+                    </p>
+                  </div>
                 </div>
               </div>
             </CardContent>
