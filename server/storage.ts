@@ -63,7 +63,8 @@ export interface IStorage {
   // Images (UUIDs)
   getImage(id: string): Promise<Image | undefined>;
   getImagesByShoot(shootId: string): Promise<Image[]>;
-  getImagesForShoots?(shootIds: string[]): Promise<Map<string, Image[]>>; // Optimized batch method
+  getImagesForShoots(shootIds: string[]): Promise<Map<string, Image[]>>; // Optimized batch method
+  getImagesByIds(ids: string[]): Promise<Map<string, Image>>; // Batch fetch images by IDs
   getFeaturedImages(): Promise<Image[]>;
   getFeaturedClassifications(): Promise<string[]>;
   createImage(image: InsertImage): Promise<Image>;
@@ -109,7 +110,8 @@ export interface IStorage {
   updateVideoFeaturedStatus(videoIds: string[], featured: boolean): Promise<Video[]>;
   setShootCoverVideo(shootId: string, videoId: string): Promise<Video | undefined>;
   getVideosByShoot(shootId: string): Promise<Video[]>;
-  getVideosForShoots?(shootIds: string[]): Promise<Map<string, Video[]>>; // Optimized batch method
+  getVideosForShoots(shootIds: string[]): Promise<Map<string, Video[]>>; // Optimized batch method
+  getCoverVideosForShoots(shootIds: string[]): Promise<Map<string, Video | null>>; // Batch fetch cover videos
   getAllVideos(): Promise<Video[]>;
   
   // Preview Selection System
@@ -794,6 +796,28 @@ export class MemStorage implements IStorage {
       .sort((a, b) => a.sequence - b.sequence);
   }
 
+  async getImagesForShoots(shootIds: string[]): Promise<Map<string, Image[]>> {
+    const imagesByShoot = new Map<string, Image[]>();
+    for (const shootId of shootIds) {
+      const images = Array.from(this.images.values())
+        .filter(image => image.shootId === shootId)
+        .sort((a, b) => a.sequence - b.sequence);
+      imagesByShoot.set(shootId, images);
+    }
+    return imagesByShoot;
+  }
+
+  async getImagesByIds(ids: string[]): Promise<Map<string, Image>> {
+    const imageMap = new Map<string, Image>();
+    for (const id of ids) {
+      const image = this.images.get(id);
+      if (image) {
+        imageMap.set(id, image);
+      }
+    }
+    return imageMap;
+  }
+
   async createImage(insertImage: InsertImage): Promise<Image> {
     const image: Image = {
       ...insertImage,
@@ -1032,6 +1056,30 @@ export class MemStorage implements IStorage {
     return Array.from(this.videos.values())
       .filter(video => video.shootId === shootId)
       .sort((a, b) => a.sequence - b.sequence);
+  }
+
+  async getVideosForShoots(shootIds: string[]): Promise<Map<string, Video[]>> {
+    const videosByShoot = new Map<string, Video[]>();
+    for (const shootId of shootIds) {
+      const videos = Array.from(this.videos.values())
+        .filter(video => video.shootId === shootId)
+        .sort((a, b) => a.sequence - b.sequence);
+      videosByShoot.set(shootId, videos);
+    }
+    return videosByShoot;
+  }
+
+  async getCoverVideosForShoots(shootIds: string[]): Promise<Map<string, Video | null>> {
+    const coverVideosMap = new Map<string, Video | null>();
+    for (const shootId of shootIds) {
+      const videos = Array.from(this.videos.values())
+        .filter(video => video.shootId === shootId)
+        .sort((a, b) => a.sequence - b.sequence);
+      // Get featured or first video
+      const coverVideo = videos.find(v => v.featuredVideo) || videos[0] || null;
+      coverVideosMap.set(shootId, coverVideo);
+    }
+    return coverVideosMap;
   }
 
   async getAllVideos(): Promise<Video[]> {
