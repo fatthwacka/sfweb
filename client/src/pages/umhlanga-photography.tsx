@@ -212,25 +212,28 @@ export default function UmhlangaPhotography() {
           <div className="max-w-none">
             <div className="mb-8">
               <h3 className="text-2xl mb-4 text-white">
-                Your Local Umhlanga Photography Studio
+                Photography Studio in Umhlanga
               </h3>
               <p className="text-xl text-gray-300 mb-6 leading-relaxed">
-                SlyFox Studios is based in La Lucia, making us the convenient choice for professional photography in Umhlanga and the greater Durban North area. Whether you're looking for executive headshots, family portraits, or corporate photography, our studio is just minutes from Umhlanga Village and Gateway.
+                To get a guaranteed perfect shot, sometimes you need four walls, controlled lighting, and zero chance of rain! Our Umhlanga photography studio is fully equipped for portraits, family shoots, product photography, and creative projects. Clean white, black, or colour backdrops, professional lighting rigs, and enough space for the whole fam.
               </p>
             </div>
 
             <div className="mb-8">
               <h3 className="text-2xl mb-4 text-white">
-                Why Choose a Local Umhlanga Photographer?
+                Family Photography Studio Sessions
               </h3>
               <p className="text-xl text-gray-300 mb-6 leading-relaxed">
-                Working with a photographer who knows the area means access to the best local spots for outdoor shoots, from Umhlanga Rocks beach to the beautiful gardens in La Lucia. For studio work, our professional lighting setup ensures consistent, high-quality results regardless of the weather.
+                Studio family photography gives you comfortable surroundings, and a controlled environment where kids can be kids without bolting into traffic. Newborns to grandparents and every age in between.
               </p>
             </div>
 
             <div>
-              <p className="text-xl text-gray-300">
-                Ready to book your photography session in Umhlanga? Contact us to discuss your requirements and check availability.
+              <h3 className="text-2xl mb-4 text-white">
+                Book a Professional Photography Studio in Durban
+              </h3>
+              <p className="text-xl text-gray-300 mb-6 leading-relaxed">
+                Looking for a photography studio in Durban for your next shoot? We offer studio sessions for portraits, headshots, family photos, and creative projects. Based in La Lucia with easy access from Durban North, Ballito, Umhlanga and surrounds. Professional setup, relaxed atmosphere, results you'll actually want to print.
               </p>
 
               <div className="mt-8 text-center">

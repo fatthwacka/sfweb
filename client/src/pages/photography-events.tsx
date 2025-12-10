@@ -233,25 +233,28 @@ export default function PhotographyEvents() {
           <div className="max-w-none">
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                Capturing the Energy of Your Event
+                Event Photography That Captures the Moment
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                Events move fast—blink and you miss the keynote speaker's best moment or the spontaneous laughter at a milestone celebration. We've photographed conferences, award ceremonies, product launches, and private parties across Durban and KZN. Our approach is unobtrusive: we blend into the background while making sure nothing important goes undocumented.
+                Whether it's a milestone birthday, a corporate gala, or a festival crowd losing their minds to the headline act, event photography is about being in the right place at the right time – every time. We cover events across Durban, Umhlanga, and KZN, delivering striking images that make the event and the guests look equally glamorous.
               </p>
             </div>
 
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                Coverage That Fits Your Event
+                Birthday & Party Photography
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                From intimate gatherings to large-scale corporate functions at Durban's premier venues, we scale our coverage to match your needs. Need same-day social media highlights? We can arrange that. Prefer a comprehensive gallery delivered after thorough editing? That's our standard. We're flexible because every event is different.
+                From intimate studio birthday shoots to roving coverage at your private celebration, we capture the cake smash, the candid laughs, and everything in between. Whether you're planning a kids' party, a 21st, or a "I stopped counting" affair, professional party photography means you get to actually enjoy your event instead of worrying about how it's going to look.
               </p>
             </div>
 
             <div>
-              <p className="text-xl text-muted-foreground">
-                Planning an event in Durban, Umhlanga, or anywhere in KZN? Let's chat about how we can help you capture it.
+              <h3 className="text-2xl mb-4">
+                Festival & Corporate Event Photographers
+              </h3>
+              <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
+                Music festivals, product launches, awards evenings, year-end functions – large-scale events need a photographer who can read a room and work a crowd. We deliver fast turnaround imagery for social media, press releases, and internal comms. Based in Umhlanga, available throughout KwaZulu-Natal and beyond.
               </p>
 
               <div className="mt-8 text-center">

@@ -233,25 +233,28 @@ export default function PhotographyGraduation() {
           <div className="max-w-none">
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                Celebrating Your Achievement
+                Graduation Photography in Durban
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                Years of hard work deserve to be properly commemorated. We photograph graduates from UKZN, DUT, and schools across Durban and KZN—whether it's a university degree, matric dance, or any milestone worth celebrating. Our studio sessions give you polished, professional images that capture this moment in your life.
+                You've put in the work, now it's time to look the part. Graduation photography captures the feeling of exuberance, along with the cap, the gown, and the look of someone who's entering a whole new life chapter. We do professional graduation shoots for matric, university, and college students across Durban and Umhlanga – in our studio or on location at your campus.
               </p>
             </div>
 
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                Studio Sessions and On-Location
+                Matric Dance Photography
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                Book a session at our Umhlanga studio for a classic graduation portrait with your cap and gown, or we can photograph you on campus at your university in Durban. We also offer family group shots so everyone who supported you can be part of the memory. Most sessions take under an hour.
+                Your matric dance happens once. The dress, the suit, the entrance, and that feeling – matric dance photography freezes the moment before the night gets blurry. Studio sessions beforehand or hotel, event, or location coverage on the night.
               </p>
             </div>
 
             <div>
-              <p className="text-xl text-muted-foreground">
-                Graduating soon? Book your session early—graduation season gets busy quickly in Durban.
+              <h3 className="text-2xl mb-4">
+                University & College Graduation Portraits
+              </h3>
+              <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
+                Whether you're crossing the stage at UKZN, DUT, or anywhere else in KZN, a proper graduation portrait is worth having. Professional photography, great compositions, and image quality that'll make your art lecturer drool.
               </p>
 
               <div className="mt-8 text-center">

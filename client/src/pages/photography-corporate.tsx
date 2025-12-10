@@ -233,25 +233,28 @@ export default function PhotographyCorporate() {
           <div className="max-w-none">
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                Professional Business Imagery
+                Corporate Photography for Businesses That Mean Business
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                First impressions matter in business, and your visual presence speaks before you do. We work with companies across Durban and KZN to create corporate photography that reflects professionalism without feeling stiff or generic. From executive headshots to team photos, office environments to annual report imagery—we understand what businesses need.
+                First impressions count, and your website is shaking hands before you ever get the chance. Professional corporate photography builds trust, credibility, and brand recognition – whether it's headquarters photos, headshots for your leadership team or behind-the-scenes content that shows the humans behind the logo.
               </p>
             </div>
 
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                Flexible Service Options
+                Professional Headshots & Team Photos
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                We can set up at your Durban offices for minimal disruption to your workday, or host your team at our Umhlanga studio for a more controlled environment. Need to photograph multiple staff members efficiently? We've streamlined our process to get great results without wasting anyone's time.
+                LinkedIn profiles, company websites, email signatures – your face is everywhere, so it might as well look good. We shoot professional headshots and team photography in our Umhlanga studio or on-location at your offices. Consistent lighting, clean backgrounds, and a relaxed process that even your camera-shy staff will survive. Serving businesses around Umhlanga and Durban northern suburbs.
               </p>
             </div>
 
             <div>
-              <p className="text-xl text-muted-foreground">
-                Let's discuss what your business needs. Whether it's refreshing your website imagery or documenting a corporate event in KZN, we're here to help.
+              <h3 className="text-2xl mb-4">
+                Team Building & Corporate Event Photography
+              </h3>
+              <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
+                Away days, conferences, product launches, team building, and office braais – corporate event photography captures the culture you're building.
               </p>
 
               <div className="mt-8 text-center">

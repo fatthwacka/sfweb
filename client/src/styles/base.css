@@ -333,12 +333,12 @@
 
   h3 {
     @apply font-quicksand font-light text-2xl;
-    color: hsl(var(--salmon));
+    color: #d1d5db; /* Pale grey - replaces previous salmon/cyan */
   }
   
   h4 {
     @apply font-quicksand font-light text-xl;
-    color: hsl(var(--cyan));
+    color: #d1d5db; /* Pale grey - replaces previous cyan */
   }
   
   h5, h6 {
@@ -358,9 +358,17 @@
   .h3-salmon {
     color: hsl(var(--salmon));
   }
-  
+
   .h3-cyan {
     color: hsl(var(--cyan));
+  }
+
+  .h3-white {
+    color: #ffffff !important;
+  }
+
+  .h3-gray {
+    color: #d1d5db !important;
   }
   
   .h4-salmon {

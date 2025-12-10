@@ -233,25 +233,28 @@ export default function PhotographyPortraits() {
           <div className="max-w-none">
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                More Than Just a Headshot
+                Portrait Photographer in Durban
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                A good portrait does more than show what you look like—it communicates who you are. Our Umhlanga studio provides a comfortable, professional environment for headshots, personal branding, and family portraits. Based in Durban, we're easily accessible for clients across KZN looking for quality portrait photography without the hassle.
+                Whether you need a professional headshot, an updated profile picture, or a creative personal portrait, SlyFox delivers natural, relaxed imagery that actually looks like you. Based in Umhlanga, we shoot studio portraits and on-location sessions across Durban and KwaZulu-Natal. No stiff poses, no awkward smiles – just you at your best.
               </p>
             </div>
 
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                Studio and Location Sessions
+                Professional Headshots for LinkedIn & Business
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                Visit our Umhlanga studio for a controlled lighting environment, or we can come to you for on-location shoots around Durban. Whether you need a single LinkedIn headshot or a full personal branding set with multiple looks, we'll work with your schedule. Most clients receive their edited images within a week.
+                Your headshot does the talking on LinkedIn profiles, company websites, and portfolio pages. A professional profile photo builds authority, credibility, and makes your profile more memorable. Studio sessions can include multiple setups and outfit changes if needed, and give you enough quality shots to allow you to cycle through them and keep looking fresh for the next 2 years.
               </p>
             </div>
 
             <div>
-              <p className="text-xl text-muted-foreground">
-                Ready to update your professional image? Book a session at our Umhlanga studio—we're just minutes from Durban's business district.
+              <h3 className="text-2xl mb-4">
+                Studio Portrait Sessions in Umhlanga
+              </h3>
+              <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
+                Controlled lighting, clean backdrops, and a photographer who knows how to get the best out of your look. Our Umhlanga photography studio is set up for individual portraits, corporate headshots, and personal branding shoots.
               </p>
 
               <div className="mt-8 text-center">

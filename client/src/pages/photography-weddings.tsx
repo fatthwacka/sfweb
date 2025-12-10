@@ -230,25 +230,28 @@ export default function PhotographyWeddings() {
           <div className="max-w-none">
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                Your Story, Beautifully Told
+                Wedding Photography That Tells Your Story
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                Every wedding has its own rhythm—the nervous laughter before the ceremony, the tears during the vows, the chaos of the dance floor at midnight. Based in Durban, we've spent years learning to anticipate these moments and capture them naturally. Whether you're planning an intimate Umhlanga beach ceremony or a grand celebration in the KZN Midlands, we're there to document it all without getting in the way.
+                Your wedding is just one day. The photos live forever. We capture the laughs, the tears, and every special moment that makes your day unique. From intimate elopements to full-scale celebrations, we provide professional wedding photography across Durban, Umhlanga, and KwaZulu-Natal.
               </p>
             </div>
 
             <div className="mb-8">
               <h3 className="text-2xl mb-4">
-                What We Offer
+                Engagement & Couples Photography
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                Our packages range from half-day coverage for smaller ceremonies to full weekend documentation for destination weddings. Every booking includes professionally edited images delivered in an online gallery, with options for engagement sessions, albums, and prints. We're happy to tailor something specific to your plans.
+                Engagement shoots are a chance to get comfortable in front of the camera, test your chemistry with your photographer, and walk away with images worth framing. Whether it's a beach sunset, an urban backdrop, or a studio session, we'll capture the two of you at your most natural.
               </p>
             </div>
 
             <div>
-              <p className="text-xl text-muted-foreground">
-                If you're getting married in Durban, the KZN coast, or the Midlands, we'd love to hear about your day. Get in touch and let's talk about how we can help you remember it.
+              <h3 className="text-2xl mb-4">
+                Maternity & Newborn Photography
+              </h3>
+              <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
+                From bump to baby, these are the moments that slip by faster than you'd believe. Maternity photography captures the anticipation, newborn photography freezes those tiny fingers and milk-drunk expressions before they're gone. Studio sessions in Umhlanga or lifestyle shoots in your home.
               </p>
 
               <div className="mt-8 text-center">

@@ -232,26 +232,38 @@ export default function PhotographyProducts() {
 
           <div className="max-w-none">
             <div className="mb-8">
-              <h3 className="text-2xl mb-4">
-                Images That Sell
+              <h3 className="text-2xl mb-4 h3-white">
+                Product Photography That Sells
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                Great product photography is the difference between a scroll-past and a sale. We work with brands across South Africa and internationally—from e-commerce startups needing clean white-background shots to established companies wanting lifestyle imagery that tells a story. Ship your products to our studio, and we'll handle the rest.
+                Your product deserves more than a smartphone snap against a bedsheet. Professional product photography is the difference between a scroll-past and a sale. SlyFox delivers clean, consistent imagery for ecommerce listings, catalogues, and marketing campaigns – whether you're shipping from Cape Town, London, or Los Angeles. Send us your products, we'll send back images that convert.
               </p>
             </div>
 
             <div className="mb-8">
-              <h3 className="text-2xl mb-4">
-                Flexible for Any Product Type
+              <h3 className="text-2xl mb-4 h3-white">
+                Ecommerce Photography for Online Stores That Convert
               </h3>
               <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                Jewellery, cosmetics, food, electronics, clothing—we've photographed it all. Our studio is equipped for everything from tiny detailed items to larger furniture pieces. Need consistent imagery across hundreds of SKUs for your online store? We've developed efficient workflows that maintain quality at scale.
+                Brand photography tells your story without saying a word. From lifestyle shoots that capture your product in context to crisp white-background images for Amazon, Takealot, or your own online store, we handle everything from ecommerce product photography, packshot photography, and creative commercial shoots – all under one roof in our Umhlanga studio.
+              </p>
+            </div>
+
+            <div className="mb-8">
+              <h3 className="text-2xl mb-4 h3-white">
+                Packshot & Catalogue Photography
+              </h3>
+              <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
+                Ship your products to our Durban studio, brief us on the look you're after, and we'll handle the rest. Flat lays, 360-degree spins, lifestyle compositions, ghost mannequin apparel shots, and glossy magazine-ready advertising images – whatever your catalogue or print campaign needs.
               </p>
             </div>
 
             <div>
-              <p className="text-xl text-muted-foreground">
-                Whether you're in Cape Town, Johannesburg, or overseas, we can work together. Get in touch to discuss your product photography needs.
+              <h3 className="text-2xl mb-4 h3-white">
+                Flexible for Any Product Type
+              </h3>
+              <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
+                Jewellery, cosmetics, food, electronics, clothing—we've photographed it all. Our studio is equipped for everything from tiny detailed items to large ornaments and pieces. Need consistent imagery across hundreds of SKUs for your online store? We've developed efficient workflows that maintain quality at scale.
               </p>
 
               <div className="mt-8 text-center">
