@@ -7,7 +7,8 @@ export const CLASSIFICATION_CLUMPING = {
   corporate: ['corporate', 'business', 'linkedin_headshots'],
   events: ['lifestyle', 'party', 'celebration', 'birthday'],
   products: ['product', 'commercial', 'advertising', 'brand'],
-  graduation: ['matric dance', 'graduation', 'academic']
+  graduation: ['matric dance', 'graduation', 'academic'],
+  studio: ['portrait', 'portraits', 'studio', 'model']
 } as const;
 
 export type CategoryKey = keyof typeof CLASSIFICATION_CLUMPING;

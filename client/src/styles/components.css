@@ -746,7 +746,48 @@
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(34, 211, 238, 0.4);
     border-color: rgba(34, 211, 238, 0.8);
   }
-  
+
+  /* Studio Card Buttons */
+  .studio-card-button-orange {
+    @apply w-full py-3 px-6 rounded-lg font-semibold text-white transition-all duration-300;
+    background: transparent;
+    border: 1px solid rgba(249, 115, 22, 0.6);
+  }
+  .studio-card-button-orange:hover {
+    background: rgba(249, 115, 22, 0.2);
+    border-color: rgba(249, 115, 22, 1);
+  }
+
+  .studio-card-button-cyan {
+    @apply w-full py-3 px-6 rounded-lg font-semibold text-white transition-all duration-300;
+    background: transparent;
+    border: 1px solid rgba(34, 211, 238, 0.6);
+  }
+  .studio-card-button-cyan:hover {
+    background: rgba(34, 211, 238, 0.2);
+    border-color: rgba(34, 211, 238, 1);
+  }
+
+  .studio-card-button-pink {
+    @apply w-full py-3 px-6 rounded-lg font-semibold text-white transition-all duration-300;
+    background: transparent;
+    border: 1px solid rgba(255, 105, 180, 0.6);
+  }
+  .studio-card-button-pink:hover {
+    background: rgba(255, 105, 180, 0.2);
+    border-color: rgba(255, 105, 180, 1);
+  }
+
+  .studio-card-button-green {
+    @apply w-full py-3 px-6 rounded-lg font-semibold text-white transition-all duration-300;
+    background: transparent;
+    border: 1px solid rgba(34, 197, 94, 0.6);
+  }
+  .studio-card-button-green:hover {
+    background: rgba(34, 197, 94, 0.2);
+    border-color: rgba(34, 197, 94, 1);
+  }
+
   .studio-card-title {
     @apply text-2xl mb-4 font-semibold;
     color: hsl(16, 100%, 73%);

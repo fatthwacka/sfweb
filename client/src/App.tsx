@@ -63,6 +63,7 @@ import PhotographyCorporate from "@/pages/photography-corporate";
 import PhotographyEvents from "@/pages/photography-events";
 import PhotographyProducts from "@/pages/photography-products";
 import PhotographyGraduation from "@/pages/photography-graduation";
+import UmhlangaPhotography from "@/pages/umhlanga-photography";
 import Videography from "@/pages/videography";
 import VideographyCategory from "@/pages/videography-category";
 import About from "@/pages/about";
@@ -103,6 +104,8 @@ function Router() {
       <Route path="/photography/events" component={PhotographyEvents} />
       <Route path="/photography/products" component={PhotographyProducts} />
       <Route path="/photography/graduation" component={PhotographyGraduation} />
+      {/* SEO Landing Pages - not in main navigation */}
+      <Route path="/UmhlangaPhotography" component={UmhlangaPhotography} />
       <Route path="/videography" component={Videography} />
       <Route path="/videography/:category" component={VideographyCategory} />
       <Route path="/social-media" component={SocialMedia} />

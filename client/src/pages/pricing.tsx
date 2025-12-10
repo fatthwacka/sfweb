@@ -2,7 +2,7 @@ import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Check, Download, Camera, Video } from "lucide-react";
+import { Download, Camera, Video } from "lucide-react";
 
 const additionalServices = [
   {
@@ -59,33 +59,6 @@ export default function Pricing() {
                 <p className="studio-card-duration">packages from R1,500</p>
               </div>
 
-              <ul className="space-y-4 mb-8">
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>Wedding photography</span>
-                </li>
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>Portrait sessions</span>
-                </li>
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>Corporate events</span>
-                </li>
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>Professional editing</span>
-                </li>
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>High-resolution gallery</span>
-                </li>
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>Print release rights</span>
-                </li>
-              </ul>
-
               <Link href="/photography">
                 <button className="studio-card-button-orange">
                   Learn More
@@ -101,33 +74,6 @@ export default function Pricing() {
                 <div className="studio-card-price">R3,500</div>
                 <p className="studio-card-duration">packages from R3,500</p>
               </div>
-
-              <ul className="space-y-4 mb-8">
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>Wedding films</span>
-                </li>
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>Corporate videos</span>
-                </li>
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>Promotional content</span>
-                </li>
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>Professional editing</span>
-                </li>
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>Multiple formats</span>
-                </li>
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>Color grading</span>
-                </li>
-              </ul>
 
               <Link href="/videography">
                 <button className="studio-card-button-cyan">
@@ -148,33 +94,6 @@ export default function Pricing() {
                 <div className="studio-card-price">R3,500</div>
                 <p className="studio-card-duration">packages from R3,500</p>
               </div>
-
-                <ul className="space-y-4 mb-8">
-                  <li className="studio-card-feature">
-                    <Check className="studio-card-feature-icon" />
-                    <span>Content creation</span>
-                  </li>
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>Strategic planning</span>
-                </li>
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>Platform management</span>
-                </li>
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>Analytics & reporting</span>
-                </li>
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>Engagement optimization</span>
-                </li>
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>Campaign management</span>
-                </li>
-              </ul>
 
               <Link href="/social-media">
                 <button className="studio-card-button-pink">
@@ -197,33 +116,6 @@ export default function Pricing() {
                 <div className="studio-card-price">R3,500</div>
                 <p className="studio-card-duration">packages from R3,500</p>
               </div>
-
-                <ul className="space-y-4 mb-8">
-                  <li className="studio-card-feature">
-                    <Check className="studio-card-feature-icon" />
-                    <span>AI Automation</span>
-                  </li>
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>Website development</span>
-                </li>
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>Mobile applications</span>
-                </li>
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>E-commerce solutions</span>
-                </li>
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>Hosting & maintenance</span>
-                </li>
-                <li className="studio-card-feature">
-                  <Check className="studio-card-feature-icon" />
-                  <span>SEO optimization</span>
-                </li>
-              </ul>
 
               <Link href="/web-apps">
                 <button className="studio-card-button-green">

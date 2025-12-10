@@ -84,10 +84,10 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Links Container - 2 columns */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+          {/* Links Container - always 2 columns, both centre aligned */}
+          <div className="grid grid-cols-2 gap-8">
             {/* Services */}
-            <div>
+            <div className="text-center">
               <h4 className="text-lg text-cyan mb-6">Services</h4>
               <ul className="space-y-3">
                 {services.map((service) => (
@@ -103,8 +103,8 @@ export function Footer() {
               </ul>
             </div>
 
-            {/* Company Links */}
-            <div>
+            {/* Company Links - centre aligned */}
+            <div className="text-center">
               <h4 className="text-lg text-salmon mb-6">Company</h4>
               <ul className="space-y-3">
                 {companyLinks.map((link) => (

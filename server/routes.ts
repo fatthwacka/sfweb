@@ -1767,6 +1767,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get existing images once for efficiency
       const existingImages = await storage.getImagesByShoot(shootId);
 
+      // Get the shoot's shootType to use as classification for uploaded images
+      const shoot = await storage.getShoot(shootId);
+      const classification = shoot?.shootType?.toLowerCase() || null;
+      console.log(`📸 Shoot ${shootId} has shootType: ${shoot?.shootType} → classification: ${classification}`);
+
       for (const file of files) {
         // Check if this file has a conflict resolution
         const resolution = conflictResolutions.find(r => r.filename === file.originalname);
@@ -1912,7 +1917,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               description: '',
               isPrivate: false,
               tags: [],
-              downloadCount: 0
+              downloadCount: 0,
+              classification: classification // Inherit classification from shoot's shootType
             };
             const newImage = await storage.createImage(imageData);
             uploadedImages.push(newImage);
@@ -1930,7 +1936,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             description: '',
             isPrivate: false,
             tags: [],
-            downloadCount: 0
+            downloadCount: 0,
+            classification: classification // Inherit classification from shoot's shootType
           };
 
           const newImage = await storage.createImage(imageData);
