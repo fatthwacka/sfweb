@@ -8,6 +8,7 @@ import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
 import { useScrollToTop } from "./hooks/use-scroll-to-top";
 import { useVisitorTracking } from "./hooks/use-visitor-tracking";
+import { useMetricool } from "./hooks/use-metricool";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { AuthProvider } from "@/hooks/use-auth";
 
@@ -85,6 +86,8 @@ import NotFound from "@/pages/not-found";
 function Router() {
   // Track page views when routes change
   useAnalytics();
+  // Track page views with Metricool
+  useMetricool();
   // Auto scroll to top on route change
   useScrollToTop();
   // Track visitor sessions for admin dashboard

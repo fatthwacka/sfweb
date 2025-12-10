@@ -196,6 +196,10 @@ export function AdminContent({ userRole }: AdminContentProps) {
   const [newClientData, setNewClientData] = useState({ name: '', email: '' });
   const [newShootData, setNewShootData] = useState({ title: '', shootType: 'portrait', location: 'Durban' });
   
+  // Shoots tab filters
+  const [shootsClientFilter, setShootsClientFilter] = useState<string>('__all__');
+  const [shootsTypeFilter, setShootsTypeFilter] = useState<string>('__all__');
+
   // Image filters
   const [selectedClientFilter, setSelectedClientFilter] = useState<string>('__all__');
   const [selectedShootFilter, setSelectedShootFilter] = useState<string>('__all__');
@@ -700,10 +704,20 @@ export function AdminContent({ userRole }: AdminContentProps) {
     }
   });
 
-  const searchFilteredShoots = shoots.filter(shoot =>
-    shoot.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (shoot.description && shoot.description.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const searchFilteredShoots = shoots.filter(shoot => {
+    // Text search filter
+    const matchesSearch = searchTerm === '' ||
+      shoot.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (shoot.description && shoot.description.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    // Client filter
+    const matchesClient = shootsClientFilter === '__all__' || shoot.clientId === shootsClientFilter;
+
+    // Shoot type filter
+    const matchesType = shootsTypeFilter === '__all__' || shoot.shootType === shootsTypeFilter;
+
+    return matchesSearch && matchesClient && matchesType;
+  });
 
   // Bulk delete media mutation (works for both images and videos)
   const deleteImagesMutation = useMutation({
@@ -1926,16 +1940,65 @@ export function AdminContent({ userRole }: AdminContentProps) {
 
           {activeTab === 'shoots' && (
             <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-saira font-bold text-salmon">Shoots Management</h2>
-                <div className="relative w-80">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                  <Input
-                    placeholder="Search shoots..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-full"
-                  />
+              <div className="flex flex-col gap-4">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-saira font-bold text-salmon">Shoots Management</h2>
+                </div>
+
+                {/* Filters Row */}
+                <div className="flex flex-wrap gap-3 items-center">
+                  {/* Search */}
+                  <div className="relative flex-1 min-w-[200px] max-w-[300px]">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Input
+                      placeholder="Search shoots..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 w-full"
+                    />
+                  </div>
+
+                  {/* Client Filter */}
+                  <Select value={shootsClientFilter} onValueChange={setShootsClientFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="All Clients" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__all__">All Clients</SelectItem>
+                      {[...clients].sort((a, b) => a.name.localeCompare(b.name)).map(client => (
+                        <SelectItem key={client.id} value={client.email || `client-${client.id}`}>
+                          {client.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {/* Shoot Type Filter */}
+                  <Select value={shootsTypeFilter} onValueChange={setShootsTypeFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="All Types" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__all__">All Types</SelectItem>
+                      <SelectItem value="corporate">Corporate</SelectItem>
+                      <SelectItem value="engagement">Engagement</SelectItem>
+                      <SelectItem value="event">Event</SelectItem>
+                      <SelectItem value="family">Family</SelectItem>
+                      <SelectItem value="graduation">Graduation</SelectItem>
+                      <SelectItem value="lifestyle">Lifestyle</SelectItem>
+                      <SelectItem value="maternity">Maternity</SelectItem>
+                      <SelectItem value="matric dance">Matric Dance</SelectItem>
+                      <SelectItem value="newborn">Newborn</SelectItem>
+                      <SelectItem value="portrait">Portrait</SelectItem>
+                      <SelectItem value="product">Product</SelectItem>
+                      <SelectItem value="wedding">Wedding</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {/* Results count */}
+                  <span className="text-sm text-muted-foreground">
+                    {searchFilteredShoots.length} {searchFilteredShoots.length === 1 ? 'shoot' : 'shoots'}
+                  </span>
                 </div>
               </div>
 
