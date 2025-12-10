@@ -26,7 +26,7 @@ export default function PhotographyGraduation() {
 
       {/* Hero Section */}
       <section
-        className="relative overflow-hidden flex items-center justify-center"
+        className="relative overflow-hidden flex items-center justify-center hero-section-animated"
         style={{ height: `${heroHeight}vh` }}
       >
         <div className="absolute inset-0">

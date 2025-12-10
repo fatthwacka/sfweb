@@ -11,13 +11,29 @@ interface CategoryHero {
   updatedAt: string;
 }
 
-// Default settings
-const DEFAULT_HERO_HEIGHT = 60; // vh percentage (was 60vh in CSS)
-const DEFAULT_IMAGE_ALIGN = 'center';
+// Default settings - synced from Supabase production values (December 2025)
+// These are the FINAL values from Supabase - local images load instantly, no low-res placeholder needed
+const DEFAULT_HERO_HEIGHT = 60; // Fallback only - each category has its own height
 
 type AllHeroesResponse = Record<string, CategoryHero>;
 
-// Default hero images - hardcoded for SEO visibility
+// Hardcoded hero settings per category - synced from Supabase production
+// This eliminates the low-res → high-res image jump and height jump issues
+const categoryDefaults: Record<string, { image: string; height: number; align: 'top' | 'center' | 'bottom' }> = {
+  // Photography - local images with production vh/alignment values
+  'photography_weddings': { image: '/images/hero/slyfox-weddings-photography-durban-hero.jpg', height: 83, align: 'bottom' },
+  'photography_portraits': { image: '/images/hero/slyfox-portraits-photography-durban-hero.jpg', height: 90, align: 'center' },
+  'photography_corporate': { image: '/images/hero/slyfox-corporate-photography-durban-hero.jpg', height: 75, align: 'center' },
+  'photography_events': { image: '/images/hero/slyfox-events-photography-durban-hero.jpg', height: 82, align: 'center' },
+  'photography_products': { image: '/images/hero/slyfox-products-photography-durban-hero.jpg', height: 82, align: 'center' },
+  'photography_graduation': { image: '/images/hero/slyfox-graduation-photography-durban-hero.jpg', height: 86, align: 'top' },
+  // Videography (add as needed)
+  'videography_weddings': { image: '/images/services/wedding-videography.jpg', height: 60, align: 'center' },
+  'videography_corporate': { image: '/images/services/corporate-videography.jpg', height: 60, align: 'center' },
+  'videography_events': { image: '/images/services/event-videography.jpg', height: 60, align: 'center' },
+};
+
+// Legacy fallback - only used if categoryDefaults doesn't have the key
 const defaultHeroImages: Record<string, string> = {
   // Photography
   'photography_weddings': '/images/services/wedding-photography.jpg',
@@ -64,18 +80,20 @@ export function useCategoryHeroes() {
 
   /**
    * Get hero image URL for a specific category
-   * Returns Supabase URL if available, otherwise falls back to hardcoded default
+   * ALWAYS uses local images for instant loading (no Supabase fetch)
+   * Supabase is only used for admin-uploaded custom images
    */
   const getHeroImage = (pageType: string, category: string): string => {
     const key = `${pageType}_${category}`;
 
-    // Check Supabase data first
-    const hero = allHeroes?.[key];
-    if (hero?.imageUrl) {
-      return hero.imageUrl;
+    // Always use local hardcoded images for photography pages
+    // This eliminates the low-res placeholder → high-res jump
+    const defaults = categoryDefaults[key];
+    if (defaults?.image) {
+      return defaults.image;
     }
 
-    // Fall back to hardcoded default
+    // Legacy fallback
     return defaultHeroImages[key] || '/images/services/default-hero.jpg';
   };
 
@@ -89,18 +107,24 @@ export function useCategoryHeroes() {
 
   /**
    * Get hero height setting (40-100 vh percentage)
+   * Uses hardcoded defaults to prevent height jump on page load
    */
   const getHeroHeight = (pageType: string, category: string): number => {
     const key = `${pageType}_${category}`;
-    return allHeroes?.[key]?.heroHeight || DEFAULT_HERO_HEIGHT;
+    // Use local defaults first for instant correct height (no jump)
+    const defaults = categoryDefaults[key];
+    return defaults?.height || DEFAULT_HERO_HEIGHT;
   };
 
   /**
    * Get image alignment setting (top, center, bottom)
+   * Uses hardcoded defaults to prevent alignment change on load
    */
   const getImageAlign = (pageType: string, category: string): 'top' | 'center' | 'bottom' => {
     const key = `${pageType}_${category}`;
-    return allHeroes?.[key]?.imageAlign || DEFAULT_IMAGE_ALIGN;
+    // Use local defaults first for instant correct alignment
+    const defaults = categoryDefaults[key];
+    return defaults?.align || 'center';
   };
 
   // Mutation for updating hero image URL (called after upload)
