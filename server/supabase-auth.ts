@@ -20,7 +20,7 @@ export interface CreateUserData {
   email: string;
   password: string;
   fullName: string;
-  role: 'staff' | 'client';
+  role: 'super_admin' | 'staff' | 'client' | 'user';
   themePreference?: 'light' | 'dark';
 }
 
@@ -52,10 +52,12 @@ export async function createSupabaseUser(userData: CreateUserData) {
     throw new Error('User creation failed - no user returned');
   }
 
-  // Wait briefly for trigger to create profile, then update it
-  await new Promise(resolve => setTimeout(resolve, 200));
-  
+  // Wait for trigger to create profile, then update it
+  // Increased from 200ms to 500ms to ensure trigger completes
+  await new Promise(resolve => setTimeout(resolve, 500));
+
   // Update the profile created by the trigger with our specific data
+  // This ensures the role is set correctly even if trigger defaults differ
   const { data: profile, error: profileError } = await supabaseAdmin
     .from('profiles')
     .update({
@@ -69,13 +71,16 @@ export async function createSupabaseUser(userData: CreateUserData) {
     .single();
 
   if (profileError) {
-    console.warn('Profile update failed, but user was created:', profileError.message);
+    console.error(`❌ Profile update failed for ${userData.email}:`, profileError.message);
+    console.error('This may cause the user to have incorrect role. Check Supabase trigger.');
     // Don't fail completely - just return the auth user
     return {
       authUser: authUser.user,
       profile: { id: authUser.user.id, email: userData.email, full_name: userData.fullName, role: userData.role }
     };
   }
+
+  console.log(`✅ Profile updated: ${userData.email} with role '${userData.role}'`);
 
   return {
     authUser: authUser.user,
