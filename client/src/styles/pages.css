@@ -466,7 +466,128 @@
   .portfolio-card-meta {
     @apply text-salmon text-xs mt-2;
   }
-  
+
+  /* ==========================================
+   * TOOL CARD STYLES
+   * Clean design with large icon and description
+   * ========================================== */
+
+  .tool-card {
+    @apply relative overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 rounded-xl cursor-pointer bg-slate-900;
+  }
+
+  .tool-card:hover {
+    @apply scale-[1.02];
+  }
+
+  /* Header with gradient background and large icon */
+  .tool-card-header {
+    @apply relative flex items-center justify-center py-8 px-4;
+  }
+
+  .tool-card-icon-large {
+    @apply text-6xl select-none drop-shadow-lg transition-transform duration-300;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  }
+
+  .tool-card:hover .tool-card-icon-large {
+    @apply scale-110;
+  }
+
+  /* Status badges in top-right corner */
+  .tool-card-status-badges {
+    @apply absolute top-3 right-3 flex items-center gap-1.5;
+  }
+
+  .tool-card-status-badge {
+    @apply flex items-center justify-center w-7 h-7 rounded-full bg-black/50 backdrop-blur-sm text-white;
+  }
+
+  /* Content section */
+  .tool-card-content {
+    @apply p-5 pt-4;
+  }
+
+  .tool-card-title {
+    @apply text-white font-semibold text-lg mb-2;
+  }
+
+  .tool-card-description {
+    @apply text-gray-400 text-sm leading-relaxed mb-4;
+  }
+
+  /* Icon-based feature indicators */
+  .tool-card-indicators {
+    @apply flex items-center gap-3 pt-3 border-t border-white/10;
+  }
+
+  .tool-card-indicator {
+    @apply text-gray-500 hover:text-gray-300 transition-colors cursor-help;
+  }
+
+  /* Locked card state */
+  .tool-card.is-locked {
+    @apply opacity-75;
+  }
+
+  .tool-card.is-locked:hover {
+    @apply opacity-100;
+  }
+
+  /* Coming soon state */
+  .tool-card.is-coming-soon {
+    @apply opacity-50 cursor-default;
+  }
+
+  .tool-card.is-coming-soon:hover {
+    @apply scale-100;
+  }
+
+  .tool-card.is-coming-soon:hover .tool-card-icon-large {
+    @apply scale-100;
+  }
+
+  /* Tools Grid - Custom responsive breakpoints */
+  .tools-grid {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 640px) {
+    .tools-grid {
+      gap: 1.5rem;
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .tools-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .tools-grid {
+      grid-template-columns: repeat(5, 1fr);
+    }
+  }
+
+  @media (min-width: 1536px) {
+    .tools-grid {
+      grid-template-columns: repeat(6, 1fr);
+    }
+  }
+
+  /* Tool Card Gradient Background - for tool UI containers */
+  .tool-card-gradient {
+    background: linear-gradient(145deg,
+      hsl(220, 20%, 18%) 0%,
+      hsl(220, 18%, 15%) 50%,
+      hsl(220, 16%, 12%) 100%
+    );
+  }
+
   /* Card button styling - alternating colors */
   .card-button-salmon {
     background: var(--salmon);

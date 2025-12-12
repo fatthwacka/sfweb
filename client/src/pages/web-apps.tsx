@@ -1,11 +1,49 @@
 import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
-import { ArrowRight, Globe, Smartphone, Code, Palette, Zap, Shield } from "lucide-react";
+import { Link, useLocation } from "wouter";
+import { ArrowRight, Globe, Smartphone, Code, Palette, Zap, Shield, Wrench, FolderOpen, Sparkles, FileText, Search, Package } from "lucide-react";
 import { GradientBackground } from "@/components/common/gradient-background";
 
 export default function WebApps() {
+  const [, setLocation] = useLocation();
+
+  // Tool card data with navigation
+  const tools = [
+    {
+      name: 'File Renamer',
+      description: 'Batch rename files with smart pattern matching',
+      icon: FolderOpen,
+      iconBg: 'bg-purple-500/20',
+      iconColor: 'text-purple-400',
+      path: '/tools/file-renamer',
+    },
+    {
+      name: 'Duplicate Finder',
+      description: 'Find and remove duplicate files intelligently',
+      icon: Search,
+      iconBg: 'bg-blue-500/20',
+      iconColor: 'text-blue-400',
+      path: '/tools/duplicate-finder',
+    },
+    {
+      name: 'Smart Organiser',
+      description: 'AI-powered file organisation and categorisation',
+      icon: Sparkles,
+      iconBg: 'bg-pink-500/20',
+      iconColor: 'text-pink-400',
+      path: '/tools/smart-organiser',
+    },
+    {
+      name: 'Bulk Mover',
+      description: 'Move and consolidate files with conflict resolution',
+      icon: Package,
+      iconBg: 'bg-green-500/20',
+      iconColor: 'text-green-400',
+      path: '/tools/bulk-mover',
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-background text-foreground background-gradient-blobs">
       <Navigation />
@@ -198,68 +236,50 @@ export default function WebApps() {
         </div>
       </section>
 
-      {/* Process Section */}
+      {/* Free Tools Section */}
       <GradientBackground section="web-apps-process" className="py-20 relative overflow-hidden">
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-salmon/20 mb-6">
+              <Wrench className="w-8 h-8 text-salmon" />
+            </div>
             <h2 className="text-4xl lg:text-5xl mb-6 text-web-apps-process-primary">
-              Our Development Process
+              Free Productivity Tools
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              A structured approach to deliver projects on time and within budget
+              We've built a collection of free utilities to help streamline your workflow.
+              No signup required for most tools.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-salmon/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-salmon">1</span>
-              </div>
-              <h3 className="mb-2 text-web-apps-process-primary">Discovery</h3>
-              <p className="text-muted-foreground text-sm">
-                Understanding your needs and defining project scope
-              </p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            {tools.map((tool, index) => {
+              const IconComponent = tool.icon;
+              return (
+                <button
+                  key={tool.path}
+                  onClick={() => setLocation(tool.path)}
+                  className={`rounded-xl p-6 border border-white/10 ${index % 2 === 0 ? 'hover:border-salmon/50' : 'hover:border-cyan/50'} transition-all service-card-gradient text-center cursor-pointer group`}
+                >
+                  <div className={`w-12 h-12 ${tool.iconBg} rounded-lg flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}>
+                    <IconComponent className={`w-6 h-6 ${tool.iconColor}`} />
+                  </div>
+                  <h3 className="text-white font-medium mb-2">{tool.name}</h3>
+                  <p className="text-muted-foreground text-sm">
+                    {tool.description}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-cyan/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-cyan">2</span>
-              </div>
-              <h3 className="mb-2 text-web-apps-process-primary">Design</h3>
-              <p className="text-muted-foreground text-sm">
-                Creating wireframes and visual designs
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-salmon/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-salmon">3</span>
-              </div>
-              <h3 className="mb-2 text-web-apps-process-primary">Development</h3>
-              <p className="text-muted-foreground text-sm">
-                Building your solution with clean, maintainable code
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-cyan/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-cyan">4</span>
-              </div>
-              <h3 className="mb-2 text-web-apps-process-primary">Testing</h3>
-              <p className="text-muted-foreground text-sm">
-                Rigorous quality assurance and user testing
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-salmon/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-salmon">5</span>
-              </div>
-              <h3 className="mb-2 text-web-apps-process-primary">Launch</h3>
-              <p className="text-muted-foreground text-sm">
-                Deployment and ongoing support
-              </p>
-            </div>
+          <div className="text-center">
+            <Link href="/tools">
+              <Button size="lg" className="btn-salmon">
+                Explore All Tools
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
           </div>
         </div>
       </GradientBackground>

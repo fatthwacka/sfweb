@@ -81,6 +81,13 @@ import Login from "@/pages/login";
 import Admin from "@/pages/admin";
 import { Stories } from "@/pages/stories";
 import { Story } from "@/pages/story";
+// Tools Hub
+import ToolsHub from "@/pages/tools";
+import FileRenamer from "@/pages/tools/file-renamer";
+import BulkMover from "@/pages/tools/bulk-mover";
+import DuplicateFinder from "@/pages/tools/duplicate-finder";
+import SmartOrganiser from "@/pages/tools/smart-organiser";
+import ProjectCleanup from "@/pages/tools/project-cleanup";
 // Removed old demo MyGallery - clients use /client-portal
 import NotFound from "@/pages/not-found";
 
@@ -115,6 +122,12 @@ function Router() {
       <Route path="/contact" component={Contact} />
       <Route path="/stories" component={Stories} />
       <Route path="/stories/:slug" component={Story} />
+      <Route path="/tools" component={ToolsHub} />
+      <Route path="/tools/file-renamer" component={FileRenamer} />
+      <Route path="/tools/bulk-mover" component={BulkMover} />
+      <Route path="/tools/duplicate-finder" component={DuplicateFinder} />
+      <Route path="/tools/smart-organiser" component={SmartOrganiser} />
+      <Route path="/tools/project-cleanup" component={ProjectCleanup} />
       <Route path="/gallery-demo" component={GalleryDemo} />
       <Route path="/portfolio" component={Portfolio} />
       <Route path="/project/:groupName" component={PortfolioGroup} />
