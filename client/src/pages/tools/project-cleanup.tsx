@@ -24,6 +24,8 @@ import {
   ChevronRight,
   Eye,
   FileCheck,
+  Folder,
+  ImageIcon,
 } from 'lucide-react';
 import { ProcessFlow, LoadingOverlay, type ProcessStep } from '@/components/tools/process-flow';
 
@@ -131,9 +133,30 @@ interface OrphanedRAW extends FileInfo {
   previewUrl?: string;
 }
 
+interface PreviewableFile {
+  handle: FileSystemFileHandle;
+  name: string;
+  path: string;
+  size: number;
+  extension: string;
+  previewUrl?: string;
+  selected: boolean;
+}
+
 interface MatchedExport extends FileInfo {
   matchedRAW: string;  // name of the RAW file this export matches
   selected: boolean;
+  previewUrl?: string;
+}
+
+interface SubCategory {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  color: string;
+  defaultSelected: boolean;
+  items: (JunkFile | OrphanedRAW | MatchedExport)[];
 }
 
 type CleanupCategory = {
@@ -145,6 +168,7 @@ type CleanupCategory = {
   defaultSelected: boolean;
   items: (JunkFile | OrphanedRAW | MatchedExport)[];
   expanded: boolean;
+  subCategories?: SubCategory[];  // Optional sub-categories for nested control
 };
 
 // === HELPER FUNCTIONS ===
@@ -175,6 +199,47 @@ const extractCameraBaseName = (filename: string): string => {
   }
 
   return baseName.toUpperCase();
+};
+
+// Enhanced flexible filename matching for RAW-to-edit associations
+const isFlexibleMatch = (rawBaseName: string, editBaseName: string): boolean => {
+  const rawName = getBaseName(rawBaseName).toUpperCase();
+  const editName = editBaseName.toUpperCase();
+  
+  // Extract camera ID from RAW filename using multiple patterns
+  const cameraPatterns = [
+    /(_?DSC\d+)/gi,
+    /(_?IMG_?\d+)/gi,
+    /(P\d{7,})/gi,
+    /([A-Z]{2,4}\d{4,})/gi,
+  ];
+  
+  // Find all potential camera IDs in the RAW filename
+  const rawCameraIds: string[] = [];
+  for (const pattern of cameraPatterns) {
+    const matches = rawName.matchAll(pattern);
+    for (const match of matches) {
+      rawCameraIds.push(match[1]);
+    }
+  }
+  
+  // If no camera patterns found, use the full basename
+  if (rawCameraIds.length === 0) {
+    rawCameraIds.push(rawName);
+  }
+  
+  // Check if any camera ID appears in the edit filename
+  // Look for camera ID as separate word (bounded by non-alphanumeric chars)
+  for (const cameraId of rawCameraIds) {
+    // Create regex that matches camera ID as whole word, allowing for separators
+    const wordBoundaryRegex = new RegExp(`(^|[^A-Z0-9])${cameraId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^A-Z0-9]|$)`, 'i');
+    if (wordBoundaryRegex.test(editName)) {
+      return true;
+    }
+  }
+  
+  // Fallback: check if RAW basename is contained anywhere in edit basename
+  return editName.includes(rawName);
 };
 
 const formatFileSize = (bytes: number): string => {
@@ -232,6 +297,17 @@ const extractARWPreview = async (file: File): Promise<string | null> => {
   }
 };
 
+// Create preview URL for JPG files
+const createJPGPreview = async (file: File): Promise<string> => {
+  return URL.createObjectURL(file);
+};
+
+// Check if file type supports preview
+const supportsPreview = (filename: string): boolean => {
+  const extension = getExtension(filename).toLowerCase();
+  return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'arw', 'cr2', 'cr3', 'nef', 'raf', 'orf', 'rw2', 'dng'].includes(extension);
+};
+
 // === PROCESS STEPS ===
 const PROCESS_STEPS: ProcessStep[] = [
   { number: 1, title: 'Select Folder' },
@@ -253,7 +329,8 @@ export default function ProjectCleanup() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [scanProgress, setScanProgress] = useState<string>('');
   const [categories, setCategories] = useState<CleanupCategory[]>([]);
-  const [previewFile, setPreviewFile] = useState<OrphanedRAW | null>(null);
+  const [previewFile, setPreviewFile] = useState<PreviewableFile | null>(null);
+  const [expandedSubCategories, setExpandedSubCategories] = useState<Set<string>>(new Set());
 
   // Settings
   const [includeJunk, setIncludeJunk] = useState(true);
@@ -412,6 +489,75 @@ export default function ProjectCleanup() {
     return { allFiles, junkFiles, junkFolders };
   }, [includeJunk]);
 
+  // Helper function to find orphaned JPGs (JPGs without corresponding RAW files)
+  const findOrphanedJPGs = useCallback((allFiles: FileInfo[], rawFiles: OrphanedRAW[]) => {
+    const jpgFiles = allFiles.filter(f => ['jpg', 'jpeg'].includes(f.extension.toLowerCase()));
+    const allMatchedJPGs = new Set<string>();
+    
+    // Collect all JPG files that are matched to RAW files
+    for (const raw of rawFiles) {
+      for (const matched of raw.matchedFiles) {
+        if (['jpg', 'jpeg'].includes(matched.extension.toLowerCase())) {
+          allMatchedJPGs.add(matched.path);
+        }
+      }
+    }
+    
+    // Find JPGs that don't have corresponding RAW files
+    const orphanedJPGs = jpgFiles.filter(jpg => !allMatchedJPGs.has(jpg.path));
+    
+    return orphanedJPGs.map(jpg => ({
+      ...jpg,
+      selected: false, // Don't delete orphaned JPGs by default - they might be important
+    }));
+  }, []);
+
+  // Helper function to create sub-categories based on JPG association
+  const createSubCategories = useCallback((rawFiles: OrphanedRAW[], categoryId: string) => {
+    const withJPG: OrphanedRAW[] = [];
+    const withoutJPG: OrphanedRAW[] = [];
+    
+    for (const raw of rawFiles) {
+      const hasJPG = raw.matchedFiles.some(file => 
+        ['jpg', 'jpeg'].includes(file.extension.toLowerCase())
+      );
+      
+      if (hasJPG) {
+        withJPG.push(raw);
+      } else {
+        withoutJPG.push(raw);
+      }
+    }
+    
+    const subCategories: SubCategory[] = [];
+    
+    if (withJPG.length > 0) {
+      subCategories.push({
+        id: `${categoryId}-with-jpg`,
+        title: `✅ With associated JPG (${withJPG.length} files)`,
+        description: 'Already exported to JPG - safe to delete',
+        icon: <FileCheck className="h-4 w-4" />,
+        color: 'text-green-400',
+        defaultSelected: true, // Safe to delete by default
+        items: withJPG,
+      });
+    }
+    
+    if (withoutJPG.length > 0) {
+      subCategories.push({
+        id: `${categoryId}-without-jpg`,
+        title: `⚠️ Without associated JPG (${withoutJPG.length} files)`,
+        description: 'Not yet exported - review before deleting',
+        icon: <AlertTriangle className="h-4 w-4" />,
+        color: 'text-amber-400',
+        defaultSelected: false, // Preserve by default
+        items: withoutJPG,
+      });
+    }
+    
+    return subCategories;
+  }, []);
+
   // Analyse orphaned RAWs
   const analyseOrphanedRAWs = useCallback((allFiles: FileInfo[]): OrphanedRAW[] => {
     const rawFiles = allFiles.filter(f => RAW_EXTENSIONS.includes(f.extension));
@@ -434,16 +580,20 @@ export default function ProjectCleanup() {
         f.cameraBaseName === rawBaseName
       );
 
-      // Find matching edits (JPG, PSD, etc.)
+      // Find matching edits (JPG, PSD, etc.) using flexible matching
       // Priority: same parent folder first
       const sameParentEdits = editFiles.filter(f =>
         f.parentPath === rawParent &&
-        (f.cameraBaseName === rawBaseName || f.baseName.toUpperCase().includes(rawBaseName))
+        (f.cameraBaseName === rawBaseName || 
+         f.baseName.toUpperCase().includes(rawBaseName) ||
+         isFlexibleMatch(raw.baseName, f.baseName))
       );
 
       const otherParentEdits = editFiles.filter(f =>
         f.parentPath !== rawParent &&
-        (f.cameraBaseName === rawBaseName || f.baseName.toUpperCase().includes(rawBaseName))
+        (f.cameraBaseName === rawBaseName || 
+         f.baseName.toUpperCase().includes(rawBaseName) ||
+         isFlexibleMatch(raw.baseName, f.baseName))
       );
 
       // Determine category
@@ -517,7 +667,7 @@ export default function ProjectCleanup() {
           color: 'text-gray-400',
           defaultSelected: true,
           items: junkFiles,
-          expanded: true,
+          expanded: false,
         });
       }
 
@@ -531,7 +681,7 @@ export default function ProjectCleanup() {
           color: 'text-orange-400',
           defaultSelected: true,
           items: junkFolders,
-          expanded: true,
+          expanded: false,
         });
       }
 
@@ -550,11 +700,12 @@ export default function ProjectCleanup() {
           color: 'text-red-400',
           defaultSelected: true,
           items: trueOrphans,
-          expanded: true,
+          expanded: false,
         });
       }
 
       if (acrEdited.length > 0) {
+        const subCategories = createSubCategories(acrEdited, 'acr-edited');
         newCategories.push({
           id: 'acr-edited',
           title: `AI Enhanced RAW (${acrEdited.length})`,
@@ -564,10 +715,12 @@ export default function ProjectCleanup() {
           defaultSelected: false,
           items: acrEdited,
           expanded: false,
+          subCategories,
         });
       }
 
       if (xmpEdited.length > 0) {
+        const subCategories = createSubCategories(xmpEdited, 'xmp-edited');
         newCategories.push({
           id: 'xmp-edited',
           title: `Lightroom Edited RAW (${xmpEdited.length})`,
@@ -577,11 +730,13 @@ export default function ProjectCleanup() {
           defaultSelected: false,
           items: xmpEdited,
           expanded: false,
+          subCategories,
         });
       }
 
       if (hasEdits.length > 0) {
         const weakMatches = hasEdits.filter(h => h.matchStrength === 'weak').length;
+        const subCategories = createSubCategories(hasEdits, 'has-edits');
         newCategories.push({
           id: 'has-edits',
           title: `RAW with Exports (${hasEdits.length})`,
@@ -591,12 +746,14 @@ export default function ProjectCleanup() {
           defaultSelected: false,
           items: hasEdits,
           expanded: false,
+          subCategories,
         });
       }
 
       // Collect all matched exports (JPG/PSD files that match a RAW)
-      // This includes exports from has-acr, has-xmp, and has-edit categories
-      const allMatchedExports: MatchedExport[] = [];
+      // Split into separate JPG and PSD categories
+      const matchedJPGs: MatchedExport[] = [];
+      const matchedPSDs: MatchedExport[] = [];
       const seenExports = new Set<string>(); // Avoid duplicates by path
 
       for (const raw of [...acrEdited, ...xmpEdited, ...hasEdits]) {
@@ -604,24 +761,61 @@ export default function ProjectCleanup() {
           // Only include actual edit files (JPG, PSD, etc.), not sidecars
           if (EDIT_EXTENSIONS.includes(matched.extension) && !seenExports.has(matched.path)) {
             seenExports.add(matched.path);
-            allMatchedExports.push({
+            const exportFile = {
               ...matched,
               matchedRAW: raw.name,
               selected: false, // Unchecked by default - these are preserved
-            });
+            };
+
+            // Split by file type
+            if (['jpg', 'jpeg'].includes(matched.extension.toLowerCase())) {
+              matchedJPGs.push(exportFile);
+            } else if (matched.extension.toLowerCase() === 'psd') {
+              matchedPSDs.push(exportFile);
+            }
           }
         }
       }
 
-      if (allMatchedExports.length > 0) {
+      // Add JPG exports category
+      if (matchedJPGs.length > 0) {
         newCategories.push({
-          id: 'matched-exports',
-          title: `Matched Exports (${allMatchedExports.length})`,
-          description: 'JPG/PSD files that match RAW files - preserved by default',
+          id: 'matched-jpg-exports',
+          title: `JPG Exports (${matchedJPGs.length})`,
+          description: 'JPG files that match RAW files - preserved by default',
           icon: <FileCheck className="h-5 w-5" />,
           color: 'text-emerald-400',
           defaultSelected: false,
-          items: allMatchedExports,
+          items: matchedJPGs,
+          expanded: false,
+        });
+      }
+
+      // Add PSD exports category
+      if (matchedPSDs.length > 0) {
+        newCategories.push({
+          id: 'matched-psd-exports',
+          title: `PSD Exports (${matchedPSDs.length})`,
+          description: 'PSD files that match RAW files - preserved by default',
+          icon: <FileCheck className="h-5 w-5" />,
+          color: 'text-blue-400',
+          defaultSelected: false,
+          items: matchedPSDs,
+          expanded: false,
+        });
+      }
+
+      // Find and add orphaned JPGs (JPGs without corresponding RAW files)
+      const orphanedJPGs = findOrphanedJPGs(allFiles, orphanedRAWs);
+      if (orphanedJPGs.length > 0) {
+        newCategories.push({
+          id: 'orphaned-jpgs',
+          title: `Orphaned JPG Files (${orphanedJPGs.length})`,
+          description: 'JPG files with no corresponding RAW file - possibly exported from other sessions',
+          icon: <AlertTriangle className="h-5 w-5" />,
+          color: 'text-amber-400',
+          defaultSelected: false, // Don't delete by default - might be important
+          items: orphanedJPGs,
           expanded: false,
         });
       }
@@ -666,6 +860,19 @@ export default function ProjectCleanup() {
       cat.id === categoryId ? { ...cat, expanded: !cat.expanded } : cat
     ));
   }, []);
+  
+  // Toggle sub-category visibility in Quick Selection
+  const toggleSubCategoryExpanded = useCallback((categoryId: string) => {
+    setExpandedSubCategories(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(categoryId)) {
+        newSet.delete(categoryId);
+      } else {
+        newSet.add(categoryId);
+      }
+      return newSet;
+    });
+  }, []);
 
   // Select/deselect all in category
   const selectAllInCategory = useCallback((categoryId: string, selected: boolean) => {
@@ -678,30 +885,87 @@ export default function ProjectCleanup() {
     }));
   }, []);
 
-  // Load preview for ARW
-  const loadPreview = useCallback(async (item: OrphanedRAW) => {
-    if (item.previewUrl) {
-      setPreviewFile(item);
+  // Reveal file in Finder/File Explorer
+  const revealInFinder = useCallback(async (filePath: string) => {
+    try {
+      // Copy file path to clipboard for user convenience
+      await navigator.clipboard.writeText(filePath);
+      toast({
+        title: 'File path copied',
+        description: `Path copied to clipboard: ${filePath}`,
+      });
+    } catch (error) {
+      console.error('Error copying path:', error);
+      toast({
+        title: 'File location',
+        description: filePath,
+      });
+    }
+  }, [toast]);
+
+  // Load preview for any supported file type
+  const loadPreview = useCallback(async (item: JunkFile | OrphanedRAW | MatchedExport) => {
+    // Check if already has preview URL
+    if ('previewUrl' in item && item.previewUrl) {
+      setPreviewFile({
+        handle: item.handle,
+        name: item.name,
+        path: item.path,
+        size: item.size,
+        extension: item.extension,
+        previewUrl: item.previewUrl,
+        selected: item.selected,
+      });
+      return;
+    }
+
+    // Check if file supports preview
+    if (!supportsPreview(item.name)) {
+      toast({
+        title: 'Preview not supported',
+        description: `Cannot preview .${item.extension} files`,
+        variant: 'destructive',
+      });
       return;
     }
 
     try {
       const file = await item.handle.getFile();
-      const previewUrl = await extractARWPreview(file);
+      let previewUrl: string | null = null;
+
+      const extension = item.extension.toLowerCase();
+
+      // Handle different file types
+      if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(extension)) {
+        previewUrl = await createJPGPreview(file);
+      } else if (['arw', 'cr2', 'cr3', 'nef', 'raf', 'orf', 'rw2', 'dng'].includes(extension)) {
+        previewUrl = await extractARWPreview(file);
+      }
 
       if (previewUrl) {
         // Update the item with preview URL
         setCategories(prev => prev.map(cat => ({
           ...cat,
           items: cat.items.map(i =>
-            i === item ? { ...i, previewUrl } as OrphanedRAW : i
+            i.path === item.path ? { ...i, previewUrl } : i
           ),
         })));
-        setPreviewFile({ ...item, previewUrl });
+        
+        setPreviewFile({
+          handle: item.handle,
+          name: item.name,
+          path: item.path,
+          size: item.size,
+          extension: item.extension,
+          previewUrl,
+          selected: item.selected,
+        });
       } else {
         toast({
           title: 'Preview unavailable',
-          description: 'Could not extract preview from this RAW file',
+          description: extension.toUpperCase() === 'ARW' 
+            ? 'Could not extract embedded preview from this RAW file'
+            : 'Could not load preview for this file',
         });
       }
     } catch (error) {
@@ -834,14 +1098,6 @@ export default function ProjectCleanup() {
             </p>
           </div>
 
-          {/* Process Flow */}
-          <ProcessFlow
-            steps={PROCESS_STEPS}
-            currentStep={currentStep}
-            isProcessing={isScanning || isDeleting}
-            processingText={isDeleting ? 'Cleaning up files...' : scanProgress}
-            className="max-w-5xl mx-auto"
-          />
         </div>
       </div>
 
@@ -852,8 +1108,8 @@ export default function ProjectCleanup() {
 
             {/* Controls */}
             <Card className="tool-card-gradient border-white/10 mb-6">
-              <CardContent className="p-6">
-                <div className="flex flex-wrap gap-4 justify-center mb-6">
+              <CardContent className="p-4">
+                <div className="flex flex-wrap gap-4 justify-center mb-4">
                   <Button
                     onClick={handleSelectFolder}
                     className="bg-salmon hover:bg-salmon/90"
@@ -868,36 +1124,26 @@ export default function ProjectCleanup() {
                     variant="secondary"
                   >
                     <Search className="mr-2 h-4 w-4" />
-                    Scan for Cleanup
+                    Scan
                   </Button>
                 </div>
 
                 {folderName && (
-                  <div className="text-center text-gray-400 mb-4">
+                  <div className="text-center text-gray-400 mb-3">
                     Selected: <span className="text-cyan">{folderName}</span>
                   </div>
                 )}
 
-                {/* Scan Options */}
-                <div className="mt-4 pt-4 border-t border-white/10">
-                  <div className="flex flex-wrap items-center gap-6 justify-center">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <Checkbox
-                        checked={includeJunk}
-                        onCheckedChange={(c) => setIncludeJunk(c === true)}
-                      />
-                      <span className="text-sm text-gray-400">System junk files</span>
-                    </label>
-
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <Checkbox
-                        checked={includeOrphanedRAW}
-                        onCheckedChange={(c) => setIncludeOrphanedRAW(c === true)}
-                      />
-                      <span className="text-sm text-gray-400">Orphaned RAW analysis</span>
-                    </label>
-                  </div>
+                {/* Process Flow - Always Visible */}
+                <div className="mt-3">
+                  <ProcessFlow
+                    steps={PROCESS_STEPS}
+                    currentStep={currentStep}
+                    isProcessing={isScanning || isDeleting}
+                    processingText={isDeleting ? 'Cleaning up files...' : scanProgress}
+                  />
                 </div>
+
               </CardContent>
             </Card>
 
@@ -932,10 +1178,231 @@ export default function ProjectCleanup() {
                   </CardContent>
                 </Card>
 
-                {/* Categories */}
+                {/* Smart Summary Section */}
+                <Card className="overflow-hidden mb-6">
+                  <div className="bg-gradient-to-r from-purple-900 via-purple-800 to-indigo-900 p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-white text-lg font-bold">Quick Selection</h3>
+                      <div className="text-white font-bold text-lg text-right" style={{ marginRight: '60px' }}>
+                        {(() => {
+                          const selectedTotal = categories.reduce((sum, cat) => sum + getCategorySize(cat.items).selected, 0);
+                          const overallTotal = categories.reduce((sum, cat) => sum + getCategorySize(cat.items).total, 0);
+                          return `${formatFileSize(selectedTotal)} / ${formatFileSize(overallTotal)}`;
+                        })()}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      {categories.map(category => {
+                        const sizes = getCategorySize(category.items);
+                        const allSelected = category.items.every(item => item.selected);
+                        const someSelected = category.items.some(item => item.selected);
+                        
+                        const getDescription = (categoryId: string) => {
+                          switch (categoryId) {
+                            case 'junk-files':
+                              return 'Delete junk files like .DS_Store and cache files';
+                            case 'junk-folders':
+                              return 'Delete system junk folders and temporary directories';
+                            case 'orphan-raw':
+                              return 'Raw images never opened in Lightroom nor Photoshop';
+                            case 'acr-edited':
+                              return 'Raw images with Lightroom AI enhancements';
+                            case 'xmp-edited':
+                              return 'Raw images with Lightroom settings';
+                            case 'has-edits':
+                              return 'Raw images that have associated PSDs and/or JPGs';
+                            case 'matched-exports':
+                              return 'Your finished JPG and PSD photos';
+                            case 'matched-jpg-exports':
+                              return 'Associated JPG exports';
+                            case 'matched-psd-exports':
+                              return 'Associated PSD files';
+                            case 'orphaned-jpgs':
+                              return 'Orphaned JPG files (no matching RAW)';
+                            default:
+                              return category.description;
+                          }
+                        };
+
+                        const hasSubCategories = category.subCategories && category.subCategories.length > 0;
+                        const isExpanded = expandedSubCategories.has(category.id);
+                        
+                        return (
+                          <div key={category.id} className="space-y-2">
+                            {/* Main category row */}
+                            <div className="grid grid-cols-12 items-center bg-white/10 rounded p-2 gap-2">
+                              {/* Left: Checkbox + Title (6 columns) */}
+                              <div className="col-span-6 flex items-center gap-3">
+                                <Checkbox
+                                  checked={allSelected}
+                                  ref={(el) => {
+                                    if (el) {
+                                      el.indeterminate = someSelected && !allSelected;
+                                    }
+                                  }}
+                                  onCheckedChange={(checked) => {
+                                    selectAllInCategory(category.id, checked === true);
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="data-[state=checked]:bg-white data-[state=checked]:text-purple-700"
+                                />
+                                {hasSubCategories && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => toggleSubCategoryExpanded(category.id)}
+                                    className="h-5 w-5 p-0 text-gray-400 hover:text-white"
+                                  >
+                                    {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                                  </Button>
+                                )}
+                                <span className="text-white text-sm">
+                                  {getDescription(category.id)}
+                                </span>
+                              </div>
+                              
+                              {/* Center: File Count (3 columns) */}
+                              <div className="col-span-3 text-left">
+                                <span className="text-xs text-cyan font-medium bg-purple-500/20 px-2 py-1 rounded">
+                                  {category.items.filter(item => item.selected).length} / {category.items.length} files
+                                </span>
+                              </div>
+                              
+                              {/* Right: Size + Chevron (3 columns) */}
+                              <div className="col-span-3 flex items-center justify-end gap-2">
+                                <span className="text-xs text-white font-mono bg-white/20 px-2 py-1 rounded">
+                                  {formatFileSize(sizes.selected)} / {formatFileSize(sizes.total)}
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // Prevent container click
+                                    const element = document.getElementById(`category-${category.id}`);
+                                    if (element) {
+                                      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                      if (!category.expanded) {
+                                        toggleCategoryExpanded(category.id);
+                                      }
+                                    }
+                                  }}
+                                  className="text-purple-200 hover:text-white hover:bg-white/20 h-6 px-2"
+                                  title="Inspect details"
+                                >
+                                  <Search className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            {/* Sub-categories if they exist and are expanded */}
+                            {hasSubCategories && isExpanded && category.subCategories!.map(subCategory => {
+                              // Find actual selected state from the main category items
+                              const subCategoryItemPaths = new Set(subCategory.items.map(item => item.path));
+                              const actualSubCategoryItems = category.items.filter(item => subCategoryItemPaths.has(item.path));
+                              
+                              const subAllSelected = actualSubCategoryItems.every(item => item.selected);
+                              const subSomeSelected = actualSubCategoryItems.some(item => item.selected);
+                              const subSizes = {
+                                selected: actualSubCategoryItems.filter(item => item.selected).reduce((sum, item) => sum + item.size, 0),
+                                total: actualSubCategoryItems.reduce((sum, item) => sum + item.size, 0)
+                              };
+                              
+                              return (
+                                <div 
+                                  key={subCategory.id} 
+                                  className="grid grid-cols-12 items-center bg-black/20 rounded p-2 gap-2 cursor-pointer hover:bg-black/30 transition-colors border-l-2 border-white/20"
+                                  onClick={() => {
+                                    // Toggle all items in this sub-category
+                                    const newSelected = !subAllSelected;
+                                    setCategories(prev => prev.map(cat => {
+                                      if (cat.id !== category.id) return cat;
+                                      return {
+                                        ...cat,
+                                        items: cat.items.map(item => {
+                                          const isInSubCategory = subCategory.items.some(subItem => subItem.path === item.path);
+                                          return isInSubCategory ? { ...item, selected: newSelected } : item;
+                                        })
+                                      };
+                                    }));
+                                  }}
+                                >
+                                  {/* Left: Checkbox + Title (6 columns) */}
+                                  <div className="col-span-6 flex items-center gap-3">
+                                    <Checkbox
+                                      checked={subAllSelected}
+                                      ref={(el) => {
+                                        if (el) {
+                                          el.indeterminate = subSomeSelected && !subAllSelected;
+                                        }
+                                      }}
+                                      onCheckedChange={(checked) => {
+                                        // Update all items in this sub-category
+                                        setCategories(prev => prev.map(cat => {
+                                          if (cat.id !== category.id) return cat;
+                                          return {
+                                            ...cat,
+                                            items: cat.items.map(item => {
+                                              const isInSubCategory = subCategory.items.some(subItem => subItem.path === item.path);
+                                              return isInSubCategory ? { ...item, selected: checked === true } : item;
+                                            })
+                                          };
+                                        }));
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="data-[state=checked]:bg-white data-[state=checked]:text-purple-700"
+                                    />
+                                    <span className={subCategory.color}>{subCategory.icon}</span>
+                                    <span className="text-white text-xs">
+                                      {subCategory.title}
+                                    </span>
+                                  </div>
+                                  
+                                  {/* Center: File Count (3 columns) */}
+                                  <div className="col-span-3 text-left">
+                                    <span className="text-xs text-cyan font-medium bg-purple-500/20 px-2 py-1 rounded">
+                                      {actualSubCategoryItems.filter(item => item.selected).length} / {actualSubCategoryItems.length} files
+                                    </span>
+                                  </div>
+                                  
+                                  {/* Right: Size + Magnifying Glass (3 columns) */}
+                                  <div className="col-span-3 flex items-center justify-end gap-2">
+                                    <span className="text-xs text-white font-mono bg-white/20 px-2 py-1 rounded">
+                                      {formatFileSize(subSizes.selected)} / {formatFileSize(subSizes.total)}
+                                    </span>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const element = document.getElementById(`category-${category.id}`);
+                                        if (element) {
+                                          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                          if (!category.expanded) {
+                                            toggleCategoryExpanded(category.id);
+                                          }
+                                        }
+                                      }}
+                                      className="text-purple-200 hover:text-white hover:bg-white/20 h-6 px-2"
+                                      title="Inspect details"
+                                    >
+                                      <Search className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Detailed Categories */}
                 <div className="space-y-4">
                   {categories.map(category => (
-                    <Card key={category.id} className="tool-card-gradient border-white/10 overflow-hidden">
+                    <Card key={category.id} id={`category-${category.id}`} className="tool-card-gradient border-white/10 overflow-hidden">
                       <Collapsible open={category.expanded} onOpenChange={() => toggleCategoryExpanded(category.id)}>
                         <CollapsibleTrigger asChild>
                           <CardHeader className="cursor-pointer hover:bg-white/5 transition-colors py-4">
@@ -948,9 +1415,12 @@ export default function ProjectCleanup() {
                                 </div>
                               </div>
                               <div className="flex items-center gap-3">
-                                {/* Category size */}
-                                <span className="text-xs text-cyan">
-                                  {formatFileSize(getCategorySize(category.items).selected)}
+                                {/* Category size - selected / total */}
+                                <span className="text-xs text-cyan font-mono">
+                                  {(() => {
+                                    const sizes = getCategorySize(category.items);
+                                    return `${formatFileSize(sizes.selected)} / ${formatFileSize(sizes.total)}`;
+                                  })()}
                                 </span>
                                 <Badge variant="outline" className="text-xs">
                                   {category.items.filter(i => i.selected).length}/{category.items.length}
@@ -967,31 +1437,145 @@ export default function ProjectCleanup() {
 
                         <CollapsibleContent>
                           <CardContent className="p-0 border-t border-white/10">
-                            {/* Quick actions */}
-                            <div className="px-4 py-2 bg-black/20 flex gap-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => selectAllInCategory(category.id, true)}
-                                className="text-xs h-7"
-                              >
-                                <CheckSquare className="mr-1 h-3 w-3" />
-                                Select All
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => selectAllInCategory(category.id, false)}
-                                className="text-xs h-7"
-                              >
-                                <Square className="mr-1 h-3 w-3" />
-                                Deselect All
-                              </Button>
-                            </div>
+                            {/* Show sub-categories if they exist */}
+                            {category.subCategories && category.subCategories.length > 0 ? (
+                              <div className="space-y-4 p-4">
+                                {category.subCategories.map(subCategory => (
+                                  <div key={subCategory.id} className="bg-black/30 rounded-lg overflow-hidden">
+                                    {/* Sub-category header */}
+                                    <div className="flex items-center justify-between px-4 py-3 bg-black/20">
+                                      <div className="flex items-center gap-3">
+                                        <Checkbox
+                                          checked={(() => {
+                                            const subCategoryPaths = new Set(subCategory.items.map(item => item.path));
+                                            const actualSubItems = category.items.filter(item => subCategoryPaths.has(item.path));
+                                            return actualSubItems.every(item => item.selected);
+                                          })()}
+                                          ref={(el) => {
+                                            if (el) {
+                                              const subCategoryPaths = new Set(subCategory.items.map(item => item.path));
+                                              const actualSubItems = category.items.filter(item => subCategoryPaths.has(item.path));
+                                              el.indeterminate = actualSubItems.some(item => item.selected) && 
+                                                               !actualSubItems.every(item => item.selected);
+                                            }
+                                          }}
+                                          onCheckedChange={(checked) => {
+                                            // Update all items in this sub-category
+                                            setCategories(prev => prev.map(cat => {
+                                              if (cat.id !== category.id) return cat;
+                                              return {
+                                                ...cat,
+                                                items: cat.items.map(item => {
+                                                  const isInSubCategory = subCategory.items.some(subItem => subItem.path === item.path);
+                                                  return isInSubCategory ? { ...item, selected: checked === true } : item;
+                                                })
+                                              };
+                                            }));
+                                          }}
+                                          className="data-[state=checked]:bg-white data-[state=checked]:text-purple-700"
+                                        />
+                                        <span className={subCategory.color}>{subCategory.icon}</span>
+                                        <div>
+                                          <div className="text-white text-sm font-medium">{subCategory.title}</div>
+                                          <div className="text-xs text-gray-400">{subCategory.description}</div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-xs text-cyan font-mono">
+                                          {(() => {
+                                            const totalSize = subCategory.items.reduce((sum, item) => sum + item.size, 0);
+                                            const selectedSize = subCategory.items
+                                              .filter(item => item.selected)
+                                              .reduce((sum, item) => sum + item.size, 0);
+                                            return `${formatFileSize(selectedSize)} / ${formatFileSize(totalSize)}`;
+                                          })()}
+                                        </span>
+                                        <Badge variant="outline" className="text-xs">
+                                          {subCategory.items.filter(i => i.selected).length}/{subCategory.items.length}
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Sub-category items */}
+                                    <div className="max-h-60 overflow-y-auto divide-y divide-white/5">
+                                      {subCategory.items.map((item, index) => {
+                                        const itemIndex = category.items.findIndex(catItem => catItem.path === item.path);
+                                        const actualItem = category.items[itemIndex];
+                                        return (
+                                          <div
+                                            key={`${item.path}-${index}`}
+                                            className={`flex items-center gap-3 px-6 py-2 hover:bg-white/5 ${
+                                              'matchStrength' in item && item.matchStrength === 'weak'
+                                                ? 'bg-amber-500/5 border-l-2 border-amber-500'
+                                                : ''
+                                            }`}
+                                          >
+                                            <Checkbox
+                                              checked={actualItem ? actualItem.selected : false}
+                                              onCheckedChange={() => toggleItem(category.id, itemIndex)}
+                                            />
+                                            <div className="flex-1 text-xs">
+                                              <div className="text-white font-mono">{item.name}</div>
+                                              <div className="text-gray-400">{formatFileSize(item.size)} • {item.path}</div>
+                                            </div>
+                                            <div className="flex gap-1">
+                                              {supportsPreview(item.name) ? (
+                                                <Button
+                                                  variant="ghost"
+                                                  size="sm"
+                                                  className="h-6 w-6 p-0 flex-shrink-0"
+                                                  onClick={() => loadPreview(item)}
+                                                  title="Preview image"
+                                                >
+                                                  <ImageIcon className="h-3 w-3" />
+                                                </Button>
+                                              ) : (
+                                                <div className="h-6 w-6" />
+                                              )}
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-6 w-6 p-0 flex-shrink-0"
+                                                onClick={() => revealInFinder(item.path)}
+                                                title="Copy file path"
+                                              >
+                                                <Folder className="h-3 w-3" />
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <>
+                                {/* Quick actions */}
+                                <div className="px-4 py-2 bg-black/20 flex gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => selectAllInCategory(category.id, true)}
+                                    className="text-xs h-7"
+                                  >
+                                    <CheckSquare className="mr-1 h-3 w-3" />
+                                    Select All
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => selectAllInCategory(category.id, false)}
+                                    className="text-xs h-7"
+                                  >
+                                    <Square className="mr-1 h-3 w-3" />
+                                    Deselect All
+                                  </Button>
+                                </div>
 
-                            {/* Items list */}
-                            <div className="max-h-80 overflow-y-auto divide-y divide-white/5">
-                              {category.items.map((item, index) => (
+                                {/* Items list */}
+                                <div className="max-h-80 overflow-y-auto divide-y divide-white/5">
+                                  {category.items.map((item, index) => (
                                 <div
                                   key={`${item.path}-${index}`}
                                   className={`flex items-center gap-3 px-4 py-2 hover:bg-white/5 ${
@@ -1029,21 +1613,36 @@ export default function ProjectCleanup() {
 
                                   <div className="flex items-center gap-2 flex-shrink-0">
                                     <span className="text-xs text-gray-500">{formatFileSize(item.size)}</span>
-                                    {'category' in item && RAW_EXTENSIONS.includes(item.extension) && (
+                                    <div className="flex gap-1">
+                                      {supportsPreview(item.name) ? (
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-6 w-6 p-0"
+                                          onClick={() => loadPreview(item)}
+                                          title="Preview image"
+                                        >
+                                          <ImageIcon className="h-3 w-3" />
+                                        </Button>
+                                      ) : (
+                                        <div className="h-6 w-6" />
+                                      )}
                                       <Button
                                         variant="ghost"
                                         size="sm"
                                         className="h-6 w-6 p-0"
-                                        onClick={() => loadPreview(item as OrphanedRAW)}
-                                        title="Preview"
+                                        onClick={() => revealInFinder(item.path)}
+                                        title="Copy file path"
                                       >
-                                        <Eye className="h-3 w-3" />
+                                        <Folder className="h-3 w-3" />
                                       </Button>
-                                    )}
+                                    </div>
                                   </div>
                                 </div>
-                              ))}
-                            </div>
+                                  ))}
+                                </div>
+                              </>
+                            )}
                           </CardContent>
                         </CollapsibleContent>
                       </Collapsible>
@@ -1053,8 +1652,8 @@ export default function ProjectCleanup() {
               </>
             )}
 
-            {/* Empty state */}
-            {directoryHandle && categories.length === 0 && !isScanning && (
+            {/* Empty state - only show after scan is completed */}
+            {directoryHandle && categories.length === 0 && !isScanning && isCompleted && (
               <Card className="tool-card-gradient border-white/10">
                 <CardContent className="p-12 text-center">
                   <Shield className="h-12 w-12 mx-auto mb-4 text-green-500" />
@@ -1106,10 +1705,15 @@ export default function ProjectCleanup() {
               <AlertDialogCancel className="border-gray-600">Close</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => {
-                  toggleItem(
-                    categories.find(c => c.items.includes(previewFile))?.id || '',
-                    categories.find(c => c.items.includes(previewFile))?.items.indexOf(previewFile) || 0
+                  // Find the category and item index by path
+                  const categoryWithItem = categories.find(c => 
+                    c.items.some(item => item.path === previewFile.path)
                   );
+                  const itemIndex = categoryWithItem?.items.findIndex(item => item.path === previewFile.path) ?? -1;
+                  
+                  if (categoryWithItem && itemIndex !== -1) {
+                    toggleItem(categoryWithItem.id, itemIndex);
+                  }
                   setPreviewFile(null);
                 }}
                 className={previewFile.selected ? 'bg-green-600 hover:bg-green-700' : 'bg-red-500 hover:bg-red-600'}
