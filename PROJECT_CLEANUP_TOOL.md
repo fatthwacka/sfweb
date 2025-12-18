@@ -34,6 +34,41 @@ The Project Cleanup Tool is an intelligent file management utility designed for 
 - **Match Strength Indicators**: Highlights weak matches (files in different folders)
 - **Preview Integration**: View supported image files before deletion
 
+### 🏗️ **Detailed View Architecture (Technical)**
+
+The detailed view uses a complex nested structure to handle photographer file organization patterns:
+
+```
+📁 DETAILED CATEGORIES
+└── 🗃️ Category Card (e.g., "Orphaned RAW Files")
+    ├── ☐ Category Checkbox + [CollapsibleTrigger] → ✅ WORKING
+    └── 📋 CollapsibleContent
+        │
+        ├── **BRANCH A: SubCategories Path** 
+        │   └── 📂 SubCategories (e.g., "With associated JPG")
+        │       ├── ☐ SubCategory Checkbox → ✅ WORKING  
+        │       └── 📄 Individual Files (directly listed) → ✅ WORKING
+        │
+        └── **BRANCH B: FolderGroups Path** 
+            │
+            ├── **Multiple Folders** (converted to SubCategories)
+            │   └── 📁 FolderGroups ("Raws", "Lifestyle", etc.)
+            │       ├── ☐ Folder Checkbox + [Expansion Trigger] → ✅ WORKING
+            │       └── 📄 Expanded Individual Files → ✅ WORKING
+            │
+            └── **Single Folder** (fallback)
+                └── 📄 Individual Files (directly listed) → ✅ WORKING
+```
+
+**Branching Logic**: 
+- **SubCategories Path**: Files organized by metadata relationships (AI enhanced, with exports, etc.)
+- **Multiple Folders Path**: Files span multiple directories (`folderGroups.length > 1`) 
+- **Single Folder Path**: Files contained in one directory (clean organization)
+
+**Click Event Architecture**: All checkbox interactions use proper event isolation to prevent interference between expansion triggers and selection controls. Indeterminate states cascade properly through the hierarchy.
+
+**December 2025 Update**: All categories now use the unified SubCategory architecture for consistent, working checkbox interactions. The previous FolderGroups pattern had click interference issues and has been replaced with the proven SubCategory pattern across all file types (RAW, JPG, PSD exports).
+
 ### 🛡️ **Safety Features**
 - **Conservative Defaults**: Only orphaned RAW files selected by default
 - **Relationship Preservation**: Exported JPG/PSD files unchecked by default

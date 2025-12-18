@@ -735,6 +735,27 @@ export default function ProjectCleanup() {
     return subCategories;
   }, []);
 
+  // Create subcategories for export files (JPG, PSD) by grouping them by folder
+  const createExportSubCategories = useCallback((exportFiles: (MatchedExport | OrphanedJPG)[], categoryId: string) => {
+    const folderGroups = groupFilesByFolder(exportFiles);
+    const subCategories: SubCategory[] = [];
+    
+    // Create a subcategory for each folder
+    for (const folder of folderGroups) {
+      subCategories.push({
+        id: `${categoryId}-folder-${folder.folderPath}`,
+        title: folder.folderName,
+        description: `${folder.items.length} files in this folder`,
+        icon: <Folder className="h-4 w-4" />,
+        color: 'text-purple-400',
+        defaultSelected: false,
+        items: folder.items,
+      });
+    }
+    
+    return subCategories;
+  }, []);
+
   // Enhanced analysis of orphaned RAWs with improved cross-folder matching
   const analyseOrphanedRAWs = useCallback((allFiles: FileInfo[]): OrphanedRAW[] => {
     const rawFiles = allFiles.filter(f => RAW_EXTENSIONS.includes(f.extension));
@@ -929,6 +950,7 @@ export default function ProjectCleanup() {
       const hasEdits = orphanedRAWs.filter(r => r.category === 'has-edit');
 
       if (trueOrphans.length > 0) {
+        const subCategories = createSubCategories(trueOrphans, 'orphan-raw');
         newCategories.push({
           id: 'orphan-raw',
           title: `Orphaned RAW Files (${trueOrphans.length})`,
@@ -939,6 +961,7 @@ export default function ProjectCleanup() {
           items: trueOrphans,
           expanded: false,
           folderGroups: groupFilesByFolder(trueOrphans),
+          subCategories,
         });
       }
 
@@ -1033,6 +1056,7 @@ export default function ProjectCleanup() {
 
       // Add JPG exports category
       if (matchedJPGs.length > 0) {
+        const subCategories = createExportSubCategories(matchedJPGs, 'matched-jpg-exports');
         newCategories.push({
           id: 'matched-jpg-exports',
           title: `JPG Exports (${matchedJPGs.length})`,
@@ -1043,11 +1067,13 @@ export default function ProjectCleanup() {
           items: matchedJPGs,
           expanded: false,
           folderGroups: groupFilesByFolder(matchedJPGs),
+          subCategories,
         });
       }
 
       // Add PSD exports category
       if (matchedPSDs.length > 0) {
+        const subCategories = createExportSubCategories(matchedPSDs, 'matched-psd-exports');
         newCategories.push({
           id: 'matched-psd-exports',
           title: `PSD Exports (${matchedPSDs.length})`,
@@ -1058,12 +1084,14 @@ export default function ProjectCleanup() {
           items: matchedPSDs,
           expanded: false,
           folderGroups: groupFilesByFolder(matchedPSDs),
+          subCategories,
         });
       }
 
       // Find and add truly orphaned JPGs (JPGs without corresponding RAW or PSD files)
       const orphanedJPGs = findOrphanedJPGs(allFiles, orphanedRAWs);
       if (orphanedJPGs.length > 0) {
+        const subCategories = createExportSubCategories(orphanedJPGs, 'orphaned-jpgs');
         newCategories.push({
           id: 'orphaned-jpgs',
           title: `Orphaned JPG Files (${orphanedJPGs.length})`,
@@ -1074,6 +1102,7 @@ export default function ProjectCleanup() {
           items: orphanedJPGs,
           expanded: false,
           folderGroups: groupFilesByFolder(orphanedJPGs),
+          subCategories,
         });
       }
 
@@ -1733,51 +1762,84 @@ export default function ProjectCleanup() {
 
                 {/* Detailed Categories */}
                 <div className="space-y-4">
-                  {categories.map(category => (
+                  {categories.map(category => {
+                    const allSelected = category.items.every(item => item.selected);
+                    const someSelected = category.items.some(item => item.selected);
+                    
+                    return (
                     <Card key={category.id} id={`category-${category.id}`} className="tool-card-gradient border-white/10 overflow-hidden">
                       <Collapsible open={category.expanded} onOpenChange={() => toggleCategoryExpanded(category.id)}>
-                        <CollapsibleTrigger asChild>
-                          <CardHeader className="cursor-pointer hover:bg-white/5 transition-colors py-4">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <span className={category.color}>{category.icon}</span>
-                                <div>
-                                  <CardTitle className="text-white text-base">{category.title}</CardTitle>
-                                  <CardDescription className="text-xs">{category.description}</CardDescription>
+                        <CardHeader className="py-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <IndeterminateCheckbox
+                                checked={allSelected}
+                                indeterminate={someSelected && !allSelected}
+                                onCheckedChange={(checked) => {
+                                  selectAllInCategory(category.id, checked === true);
+                                }}
+                                className="data-[state=checked]:bg-white data-[state=checked]:text-purple-700"
+                              />
+                              <CollapsibleTrigger asChild>
+                                <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
+                                  <span className={category.color}>{category.icon}</span>
+                                  <div>
+                                    <CardTitle className="text-white text-base">{category.title}</CardTitle>
+                                    <CardDescription className="text-xs">{category.description}</CardDescription>
+                                  </div>
+                                  {category.expanded ? (
+                                    <ChevronDown className="h-5 w-5 text-gray-400 ml-2" />
+                                  ) : (
+                                    <ChevronRight className="h-5 w-5 text-gray-400 ml-2" />
+                                  )}
                                 </div>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                {/* Category size - selected / total */}
-                                <span className="text-xs text-cyan font-mono">
-                                  {(() => {
-                                    const sizes = getCategorySize(category.items);
-                                    return `${formatFileSize(sizes.selected)} / ${formatFileSize(sizes.total)}`;
-                                  })()}
-                                </span>
-                                <Badge variant="outline" className="text-xs">
-                                  {category.items.filter(i => i.selected).length}/{category.items.length}
-                                </Badge>
-                                {category.expanded ? (
-                                  <ChevronDown className="h-5 w-5 text-gray-400" />
-                                ) : (
-                                  <ChevronRight className="h-5 w-5 text-gray-400" />
-                                )}
-                              </div>
+                              </CollapsibleTrigger>
                             </div>
-                          </CardHeader>
-                        </CollapsibleTrigger>
+                            <div className="flex items-center gap-3">
+                              {/* Category size - selected / total */}
+                              <span className="text-xs text-cyan font-mono">
+                                {(() => {
+                                  const sizes = getCategorySize(category.items);
+                                  return `${formatFileSize(sizes.selected)} / ${formatFileSize(sizes.total)}`;
+                                })()}
+                              </span>
+                              <Badge variant="outline" className="text-xs">
+                                {category.items.filter(i => i.selected).length}/{category.items.length}
+                              </Badge>
+                            </div>
+                          </div>
+                        </CardHeader>
 
                         <CollapsibleContent>
                           <CardContent className="p-0 border-t border-white/10">
                             {/* Show sub-categories if they exist */}
                             {category.subCategories && category.subCategories.length > 0 ? (
                               <div className="space-y-4 p-4">
-                                {category.subCategories.map(subCategory => (
-                                  <div key={subCategory.id} className="bg-black/30 rounded-lg overflow-hidden">
-                                    {/* Sub-category header */}
-                                    <div className="flex items-center justify-between px-4 py-3 bg-black/20">
-                                      <div className="flex items-center gap-3">
-                                        <IndeterminateCheckbox
+                                {category.subCategories.map(subCategory => {
+                                  const isSubCategoryExpanded = expandedSubCategories.has(subCategory.id);
+                                  
+                                  return (
+                                    <div key={subCategory.id} className="bg-black/30 rounded-lg overflow-hidden">
+                                      {/* Sub-category header */}
+                                      <div className="flex items-center justify-between px-4 py-3 bg-black/20">
+                                        <div className="flex items-center gap-3">
+                                          <button
+                                            onClick={() => {
+                                              setExpandedSubCategories(prev => {
+                                                const newSet = new Set(prev);
+                                                if (newSet.has(subCategory.id)) {
+                                                  newSet.delete(subCategory.id);
+                                                } else {
+                                                  newSet.add(subCategory.id);
+                                                }
+                                                return newSet;
+                                              });
+                                            }}
+                                            className="h-4 w-4 p-0 text-gray-400 hover:text-white transition-colors"
+                                          >
+                                            {isSubCategoryExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                                          </button>
+                                          <IndeterminateCheckbox
                                           checked={(() => {
                                             const subCategoryPaths = new Set(subCategory.items.map(item => item.path));
                                             const actualSubItems = category.items.filter(item => subCategoryPaths.has(item.path));
@@ -1812,21 +1874,28 @@ export default function ProjectCleanup() {
                                       <div className="flex items-center gap-2">
                                         <span className="text-xs text-cyan font-mono">
                                           {(() => {
-                                            const totalSize = subCategory.items.reduce((sum, item) => sum + item.size, 0);
-                                            const selectedSize = subCategory.items
+                                            const subCategoryPaths = new Set(subCategory.items.map(item => item.path));
+                                            const actualSubItems = category.items.filter(item => subCategoryPaths.has(item.path));
+                                            const totalSize = actualSubItems.reduce((sum, item) => sum + item.size, 0);
+                                            const selectedSize = actualSubItems
                                               .filter(item => item.selected)
                                               .reduce((sum, item) => sum + item.size, 0);
                                             return `${formatFileSize(selectedSize)} / ${formatFileSize(totalSize)}`;
                                           })()}
                                         </span>
                                         <Badge variant="outline" className="text-xs">
-                                          {subCategory.items.filter(i => i.selected).length}/{subCategory.items.length}
+                                          {(() => {
+                                            const subCategoryPaths = new Set(subCategory.items.map(item => item.path));
+                                            const actualSubItems = category.items.filter(item => subCategoryPaths.has(item.path));
+                                            return `${actualSubItems.filter(i => i.selected).length}/${actualSubItems.length}`;
+                                          })()}
                                         </Badge>
                                       </div>
                                     </div>
                                     
-                                    {/* Sub-category items */}
-                                    <div className="max-h-60 overflow-y-auto divide-y divide-white/5">
+                                    {/* Sub-category items - only show when expanded */}
+                                    {isSubCategoryExpanded && (
+                                      <div className="max-h-60 overflow-y-auto divide-y divide-white/5">
                                       {subCategory.items.map((item, index) => {
                                         const itemIndex = category.items.findIndex(catItem => catItem.path === item.path);
                                         const actualItem = category.items[itemIndex];
@@ -1874,9 +1943,11 @@ export default function ProjectCleanup() {
                                           </div>
                                         );
                                       })}
-                                    </div>
+                                      </div>
+                                    )}
                                   </div>
-                                ))}
+                                  );
+                                })}
                               </div>
                             ) : (
                               <>
@@ -1914,27 +1985,10 @@ export default function ProjectCleanup() {
                                       return (
                                         <div key={folder.folderPath} className="border-b border-white/5">
                                           {/* Folder header */}
-                                          <div 
-                                            className="flex items-center gap-3 px-4 py-2 bg-black/10 hover:bg-black/20 cursor-pointer"
-                                            onClick={() => {
-                                              setExpandedFolders(prev => {
-                                                const newSet = new Set(prev);
-                                                const key = `${category.id}-${folder.folderPath}`;
-                                                if (newSet.has(key)) {
-                                                  newSet.delete(key);
-                                                } else {
-                                                  newSet.add(key);
-                                                }
-                                                return newSet;
-                                              });
-                                            }}
-                                          >
-                                            <Button
-                                              variant="ghost"
-                                              size="sm"
-                                              className="h-4 w-4 p-0 text-gray-400 hover:text-white"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
+                                          <div className="flex items-center gap-3 px-4 py-2 bg-black/10">
+                                            <div
+                                              className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+                                              onClick={() => {
                                                 setExpandedFolders(prev => {
                                                   const newSet = new Set(prev);
                                                   const key = `${category.id}-${folder.folderPath}`;
@@ -1947,12 +2001,13 @@ export default function ProjectCleanup() {
                                                 });
                                               }}
                                             >
-                                              {isFolderExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-                                            </Button>
+                                              {isFolderExpanded ? <ChevronDown className="h-3 w-3 text-gray-400" /> : <ChevronRight className="h-3 w-3 text-gray-400" />}
+                                            </div>
                                             <IndeterminateCheckbox
                                               checked={folderAllSelected}
                                               indeterminate={folderSomeSelected && !folderAllSelected}
                                               onCheckedChange={(checked) => {
+                                                console.log('Folder checkbox clicked:', folder.folderName, checked);
                                                 // Update all items in this folder
                                                 setCategories(prev => prev.map(cat => {
                                                   if (cat.id !== category.id) return cat;
@@ -1965,7 +2020,6 @@ export default function ProjectCleanup() {
                                                   };
                                                 }));
                                               }}
-                                              onClick={(e) => e.stopPropagation()}
                                               className="data-[state=checked]:bg-white data-[state=checked]:text-purple-700"
                                             />
                                             <Folder className="h-4 w-4 text-purple-400" />
@@ -1986,14 +2040,15 @@ export default function ProjectCleanup() {
                                                 return (
                                                   <div
                                                     key={`${item.path}-${index}`}
-                                                    className="flex items-center gap-3 px-4 py-2 hover:bg-white/5"
+                                                    className="flex items-center gap-3 px-4 py-2"
                                                   >
                                                     <Checkbox
                                                       checked={item.selected}
                                                       onCheckedChange={() => toggleItem(category.id, itemIndex)}
+                                                      className="flex-shrink-0"
                                                     />
 
-                                                    <div className="flex-1 min-w-0">
+                                                    <div className="flex-1 min-w-0 hover:bg-white/5 rounded px-2 py-1 -mx-2 -my-1">
                                                       <div className="flex items-center gap-2">
                                                         <span className="text-white text-sm truncate">{item.name}</span>
                                       {'matchedFiles' in item && item.matchedFiles && item.matchedFiles.length > 0 && 'matchStrength' in item && (
@@ -2084,14 +2139,15 @@ export default function ProjectCleanup() {
                                       {category.items.map((item, index) => (
                                         <div
                                           key={`${item.path}-${index}`}
-                                          className="flex items-center gap-3 px-4 py-2 hover:bg-white/5"
+                                          className="flex items-center gap-3 px-4 py-2"
                                         >
                                           <Checkbox
                                             checked={item.selected}
                                             onCheckedChange={() => toggleItem(category.id, index)}
+                                            className="flex-shrink-0"
                                           />
 
-                                          <div className="flex-1 min-w-0">
+                                          <div className="flex-1 min-w-0 hover:bg-white/5 rounded px-2 py-1 -mx-2 -my-1">
                                             <div className="flex items-center gap-2">
                                               <span className="text-white text-sm truncate">{item.name}</span>
                                               {'matchedFiles' in item && item.matchedFiles && item.matchedFiles.length > 0 && 'matchStrength' in item && (
@@ -2179,7 +2235,8 @@ export default function ProjectCleanup() {
                         </CollapsibleContent>
                       </Collapsible>
                     </Card>
-                  ))}
+                    );
+                  })}
                 </div>
               </>
             )}
