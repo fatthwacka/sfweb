@@ -4,7 +4,7 @@
  * Uses File System Access API (Chrome/Edge/Opera 86+)
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Link } from 'wouter';
 import {
   FolderOpen,
@@ -26,6 +26,8 @@ import {
   FileCheck,
   Folder,
   ImageIcon,
+  CheckCircle2,
+  Minus,
 } from 'lucide-react';
 import { ProcessFlow, LoadingOverlay, type ProcessStep } from '@/components/tools/process-flow';
 
@@ -51,6 +53,49 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+
+// Custom IndeterminateCheckbox component
+const IndeterminateCheckbox = React.forwardRef<
+  HTMLButtonElement,
+  {
+    checked: boolean;
+    indeterminate?: boolean;
+    onCheckedChange: (checked: boolean) => void;
+    onClick?: (e: React.MouseEvent) => void;
+    className?: string;
+  }
+>(({ checked, indeterminate, onCheckedChange, onClick, className }, ref) => {
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
+  
+  React.useEffect(() => {
+    if (buttonRef.current) {
+      (buttonRef.current as any).indeterminate = indeterminate;
+    }
+  }, [indeterminate]);
+  
+  React.useImperativeHandle(ref, () => buttonRef.current!, []);
+  
+  const displayChecked = checked || (indeterminate ?? false);
+  
+  return (
+    <div className="relative inline-flex">
+      <Checkbox
+        ref={buttonRef}
+        checked={displayChecked}
+        onCheckedChange={onCheckedChange}
+        onClick={onClick}
+        className={`${className} ${indeterminate && !checked ? 'data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600' : ''}`}
+      />
+      {indeterminate && !checked && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <Minus className="h-3 w-3 text-white" strokeWidth={3} />
+        </div>
+      )}
+    </div>
+  );
+});
+
+IndeterminateCheckbox.displayName = 'IndeterminateCheckbox';
 
 // Types for File System Access API
 interface FileSystemDirectoryHandle {
@@ -128,7 +173,7 @@ interface JunkFile extends FileInfo {
 interface OrphanedRAW extends FileInfo {
   category: 'orphan' | 'has-acr' | 'has-xmp' | 'has-edit';
   matchedFiles: FileInfo[];
-  matchStrength: 'strong' | 'weak';  // strong = same parent folder
+  matchStrength: 'strong' | 'moderate' | 'weak';  // strong = same folder, moderate = adjacent folder, weak = distant folder
   selected: boolean;
   previewUrl?: string;
 }
@@ -149,6 +194,16 @@ interface MatchedExport extends FileInfo {
   previewUrl?: string;
 }
 
+interface FolderGroup {
+  folderPath: string;
+  folderName: string;  // Just the folder name, not full path
+  items: (JunkFile | OrphanedRAW | MatchedExport)[];
+  expanded: boolean;
+  totalSize: number;
+  allSelected: boolean;
+  someSelected: boolean;
+}
+
 interface SubCategory {
   id: string;
   title: string;
@@ -157,6 +212,7 @@ interface SubCategory {
   color: string;
   defaultSelected: boolean;
   items: (JunkFile | OrphanedRAW | MatchedExport)[];
+  folderGroups?: FolderGroup[];  // Grouped by folder
 }
 
 type CleanupCategory = {
@@ -169,6 +225,7 @@ type CleanupCategory = {
   items: (JunkFile | OrphanedRAW | MatchedExport)[];
   expanded: boolean;
   subCategories?: SubCategory[];  // Optional sub-categories for nested control
+  folderGroups?: FolderGroup[];  // Direct folder grouping for categories without subcategories
 };
 
 // === HELPER FUNCTIONS ===
@@ -180,6 +237,44 @@ const getExtension = (filename: string): string => {
 const getBaseName = (filename: string): string => {
   const lastDot = filename.lastIndexOf('.');
   return lastDot === -1 ? filename : filename.substring(0, lastDot);
+};
+
+// Group files by their parent folder
+const groupFilesByFolder = (items: (JunkFile | OrphanedRAW | MatchedExport)[]): FolderGroup[] => {
+  const folderMap = new Map<string, (JunkFile | OrphanedRAW | MatchedExport)[]>();
+  
+  // Group items by parentPath
+  for (const item of items) {
+    const folderPath = item.parentPath;
+    if (!folderMap.has(folderPath)) {
+      folderMap.set(folderPath, []);
+    }
+    folderMap.get(folderPath)!.push(item);
+  }
+  
+  // Convert to FolderGroup array and sort by path
+  const folderGroups: FolderGroup[] = Array.from(folderMap.entries())
+    .map(([path, items]) => {
+      const totalSize = items.reduce((sum, item) => sum + item.size, 0);
+      const selectedCount = items.filter(item => item.selected).length;
+      
+      // Extract folder name from path
+      const pathParts = path.split('/');
+      const folderName = pathParts[pathParts.length - 1] || path;
+      
+      return {
+        folderPath: path,
+        folderName,
+        items,
+        expanded: false,
+        totalSize,
+        allSelected: selectedCount === items.length && items.length > 0,
+        someSelected: selectedCount > 0 && selectedCount < items.length,
+      };
+    })
+    .sort((a, b) => a.folderPath.localeCompare(b.folderPath));
+  
+  return folderGroups;
 };
 
 // Extract camera base name (e.g., DSC04173 from DSC04173-green-final.jpg)
@@ -331,6 +426,7 @@ export default function ProjectCleanup() {
   const [categories, setCategories] = useState<CleanupCategory[]>([]);
   const [previewFile, setPreviewFile] = useState<PreviewableFile | null>(null);
   const [expandedSubCategories, setExpandedSubCategories] = useState<Set<string>>(new Set());
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
 
   // Settings
   const [includeJunk, setIncludeJunk] = useState(true);
@@ -489,9 +585,10 @@ export default function ProjectCleanup() {
     return { allFiles, junkFiles, junkFolders };
   }, [includeJunk]);
 
-  // Helper function to find orphaned JPGs (JPGs without corresponding RAW files)
+  // Enhanced function to find truly orphaned JPGs (JPGs without corresponding RAW or PSD files)
   const findOrphanedJPGs = useCallback((allFiles: FileInfo[], rawFiles: OrphanedRAW[]) => {
     const jpgFiles = allFiles.filter(f => ['jpg', 'jpeg'].includes(f.extension.toLowerCase()));
+    const psdFiles = allFiles.filter(f => f.extension.toLowerCase() === 'psd');
     const allMatchedJPGs = new Set<string>();
     
     // Collect all JPG files that are matched to RAW files
@@ -503,8 +600,51 @@ export default function ProjectCleanup() {
       }
     }
     
-    // Find JPGs that don't have corresponding RAW files
-    const orphanedJPGs = jpgFiles.filter(jpg => !allMatchedJPGs.has(jpg.path));
+    // Now check remaining JPGs against PSD files using flexible matching
+    const orphanedJPGs = jpgFiles.filter(jpg => {
+      // Already matched to a RAW? Not orphaned
+      if (allMatchedJPGs.has(jpg.path)) {
+        return false;
+      }
+      
+      // Check if this JPG matches any PSD file (even across folders)
+      const jpgBaseName = jpg.cameraBaseName || jpg.baseName;
+      const jpgParent = jpg.parentPath;
+      
+      // Look for matching PSD files
+      const hasMatchingPSD = psdFiles.some(psd => {
+        const psdBaseName = psd.cameraBaseName || psd.baseName;
+        
+        // First priority: exact camera name match
+        if (jpgBaseName && psdBaseName && jpgBaseName === psdBaseName) {
+          return true;
+        }
+        
+        // Second priority: flexible name matching
+        if (isFlexibleMatch(jpg.baseName, psd.baseName)) {
+          return true;
+        }
+        
+        // Third priority: check if PSD name contains JPG base name
+        if (psd.baseName.toUpperCase().includes(jpgBaseName.toUpperCase())) {
+          return true;
+        }
+        
+        // Fourth priority: check for common editing suffixes
+        const suffixes = ['-edit', '-edited', '_edit', '_edited', '-final', '_final', '-export', '_export'];
+        for (const suffix of suffixes) {
+          if (psd.baseName.toUpperCase() === (jpgBaseName + suffix).toUpperCase() ||
+              jpgBaseName.toUpperCase() === (psd.baseName.replace(/[-_](edit|edited|final|export)$/i, '')).toUpperCase()) {
+            return true;
+          }
+        }
+        
+        return false;
+      });
+      
+      // If JPG has a matching PSD, it's not orphaned
+      return !hasMatchingPSD;
+    });
     
     return orphanedJPGs.map(jpg => ({
       ...jpg,
@@ -531,34 +671,71 @@ export default function ProjectCleanup() {
     
     const subCategories: SubCategory[] = [];
     
+    // Create overall sub-categories first (these will be at the top)
     if (withJPG.length > 0) {
       subCategories.push({
         id: `${categoryId}-with-jpg`,
-        title: `✅ With associated JPG (${withJPG.length} files)`,
+        title: `With associated JPG (${withJPG.length} files)`,
         description: 'Already exported to JPG - safe to delete',
         icon: <FileCheck className="h-4 w-4" />,
         color: 'text-green-400',
         defaultSelected: true, // Safe to delete by default
         items: withJPG,
+        folderGroups: groupFilesByFolder(withJPG), // Add folder grouping
       });
     }
     
     if (withoutJPG.length > 0) {
       subCategories.push({
         id: `${categoryId}-without-jpg`,
-        title: `⚠️ Without associated JPG (${withoutJPG.length} files)`,
+        title: `Without associated JPG (${withoutJPG.length} files)`,
         description: 'Not yet exported - review before deleting',
         icon: <AlertTriangle className="h-4 w-4" />,
         color: 'text-amber-400',
         defaultSelected: false, // Preserve by default
         items: withoutJPG,
+        folderGroups: groupFilesByFolder(withoutJPG), // Add folder grouping
       });
+    }
+    
+    // Then create per-folder breakdown for more granular control
+    // Only show folder breakdown if there are multiple folders
+    const folderGroups = groupFilesByFolder(rawFiles);
+    if (folderGroups.length > 1) {
+      for (const folder of folderGroups) {
+        const folderWithJPG = folder.items.filter(item => {
+          const raw = item as OrphanedRAW;
+          return raw.matchedFiles.some(file => 
+            ['jpg', 'jpeg'].includes(file.extension.toLowerCase())
+          );
+        });
+        
+        const folderWithoutJPG = folder.items.filter(item => {
+          const raw = item as OrphanedRAW;
+          return !raw.matchedFiles.some(file => 
+            ['jpg', 'jpeg'].includes(file.extension.toLowerCase())
+          );
+        });
+        
+        // Create a combined folder entry with both counts
+        if (folderWithJPG.length > 0 || folderWithoutJPG.length > 0) {
+          subCategories.push({
+            id: `${categoryId}-folder-${folder.folderPath}`,
+            title: folder.folderName,
+            description: `✅ ${folderWithJPG.length} with JPG | ⚠️ ${folderWithoutJPG.length} without JPG`,
+            icon: <Folder className="h-4 w-4" />,
+            color: 'text-purple-400',
+            defaultSelected: false,
+            items: folder.items,
+          });
+        }
+      }
     }
     
     return subCategories;
   }, []);
 
-  // Analyse orphaned RAWs
+  // Enhanced analysis of orphaned RAWs with improved cross-folder matching
   const analyseOrphanedRAWs = useCallback((allFiles: FileInfo[]): OrphanedRAW[] => {
     const rawFiles = allFiles.filter(f => RAW_EXTENSIONS.includes(f.extension));
     const editFiles = allFiles.filter(f => EDIT_EXTENSIONS.includes(f.extension));
@@ -570,61 +747,119 @@ export default function ProjectCleanup() {
       const rawBaseName = raw.cameraBaseName;
       const rawParent = raw.parentPath;
 
-      // Find matching sidecars (XMP, ACR)
+      // Find matching sidecars (XMP, ACR) - search across ALL folders
       const matchingACR = sidecarFiles.filter(f =>
         f.extension === 'acr' &&
-        f.cameraBaseName === rawBaseName
+        (f.cameraBaseName === rawBaseName || 
+         isFlexibleMatch(raw.baseName, f.baseName))
       );
       const matchingXMP = sidecarFiles.filter(f =>
         f.extension === 'xmp' &&
-        f.cameraBaseName === rawBaseName
-      );
-
-      // Find matching edits (JPG, PSD, etc.) using flexible matching
-      // Priority: same parent folder first
-      const sameParentEdits = editFiles.filter(f =>
-        f.parentPath === rawParent &&
         (f.cameraBaseName === rawBaseName || 
-         f.baseName.toUpperCase().includes(rawBaseName) ||
          isFlexibleMatch(raw.baseName, f.baseName))
       );
 
-      const otherParentEdits = editFiles.filter(f =>
-        f.parentPath !== rawParent &&
-        (f.cameraBaseName === rawBaseName || 
-         f.baseName.toUpperCase().includes(rawBaseName) ||
-         isFlexibleMatch(raw.baseName, f.baseName))
+      // Enhanced matching for edits - more aggressive cross-folder search
+      const allMatchingEdits = editFiles.filter(f => {
+        const editBaseName = f.cameraBaseName || f.baseName;
+        
+        // 1. Exact camera name match (strongest)
+        if (rawBaseName && editBaseName && rawBaseName === editBaseName) {
+          return true;
+        }
+        
+        // 2. Flexible pattern matching
+        if (isFlexibleMatch(raw.baseName, f.baseName)) {
+          return true;
+        }
+        
+        // 3. Edit contains raw base name
+        if (f.baseName.toUpperCase().includes(rawBaseName.toUpperCase())) {
+          return true;
+        }
+        
+        // 4. Check for common Lightroom/Photoshop export patterns
+        // e.g., DSC1234 → DSC1234-Edit, DSC1234_edited, DSC1234-2, etc.
+        const patterns = [
+          new RegExp(`^${rawBaseName}[-_]?(edit|edited|final|export|[0-9]+)`, 'i'),
+          new RegExp(`^${rawBaseName}$`, 'i'), // Exact match
+        ];
+        
+        return patterns.some(pattern => pattern.test(editBaseName));
+      });
+
+      // Separate matches by folder location
+      const sameParentEdits = allMatchingEdits.filter(f => f.parentPath === rawParent);
+      const adjacentFolderEdits = allMatchingEdits.filter(f => {
+        // Consider edits in parent or sibling folders as "adjacent"
+        const rawParentParts = rawParent.split('/');
+        const editParentParts = f.parentPath.split('/');
+        
+        // Same depth (sibling folders)
+        if (rawParentParts.length === editParentParts.length) {
+          // Check if they share the same parent folder
+          const rawGrandparent = rawParentParts.slice(0, -1).join('/');
+          const editGrandparent = editParentParts.slice(0, -1).join('/');
+          return rawGrandparent === editGrandparent && f.parentPath !== rawParent;
+        }
+        
+        // One level up or down
+        return Math.abs(rawParentParts.length - editParentParts.length) === 1;
+      });
+      const distantFolderEdits = allMatchingEdits.filter(f => 
+        f.parentPath !== rawParent && 
+        !adjacentFolderEdits.includes(f)
       );
 
-      // Determine category
+      // Determine category with enhanced logic
       let category: OrphanedRAW['category'] = 'orphan';
       let matchedFiles: FileInfo[] = [];
-      let matchStrength: OrphanedRAW['matchStrength'] = 'strong';
+      let matchStrength: OrphanedRAW['matchStrength'] | undefined;
 
       if (matchingACR.length > 0) {
         category = 'has-acr';
-        matchedFiles = [...matchingACR, ...sameParentEdits];
+        // Include ALL matching edits when there's an ACR file
+        matchedFiles = [...matchingACR, ...allMatchingEdits];
+        // Determine match strength based on edit file locations
+        if (sameParentEdits.length > 0) {
+          matchStrength = 'strong';
+        } else if (adjacentFolderEdits.length > 0) {
+          matchStrength = 'moderate';
+        } else if (distantFolderEdits.length > 0) {
+          matchStrength = 'weak';
+        }
       } else if (matchingXMP.length > 0) {
         category = 'has-xmp';
-        matchedFiles = [...matchingXMP, ...sameParentEdits];
+        // Include ALL matching edits when there's an XMP file
+        matchedFiles = [...matchingXMP, ...allMatchingEdits];
+        // Determine match strength based on edit file locations
+        if (sameParentEdits.length > 0) {
+          matchStrength = 'strong';
+        } else if (adjacentFolderEdits.length > 0) {
+          matchStrength = 'moderate';
+        } else if (distantFolderEdits.length > 0) {
+          matchStrength = 'weak';
+        }
       } else if (sameParentEdits.length > 0) {
         category = 'has-edit';
-        matchedFiles = sameParentEdits;
+        matchedFiles = [...sameParentEdits, ...adjacentFolderEdits];
         matchStrength = 'strong';
-      } else if (otherParentEdits.length > 0) {
-        // Check if any of those edits also exist in the RAW's parent folder
-        // If not, it might be a weak match
+      } else if (adjacentFolderEdits.length > 0) {
         category = 'has-edit';
-        matchedFiles = otherParentEdits;
+        matchedFiles = adjacentFolderEdits;
+        matchStrength = 'moderate';
+      } else if (distantFolderEdits.length > 0) {
+        category = 'has-edit';
+        matchedFiles = distantFolderEdits;
         matchStrength = 'weak';
       }
-      // If no matches at all, it stays as 'orphan'
+      // If no matches at all, it stays as 'orphan' with no matchStrength
 
       orphans.push({
         ...raw,
         category,
         matchedFiles,
-        matchStrength,
+        matchStrength: matchStrength || (category === 'orphan' ? 'weak' : 'strong'), // Only set for items with matches
         selected: category === 'orphan', // Only orphans selected by default
       });
     }
@@ -668,6 +903,7 @@ export default function ProjectCleanup() {
           defaultSelected: true,
           items: junkFiles,
           expanded: false,
+          folderGroups: groupFilesByFolder(junkFiles),
         });
       }
 
@@ -682,6 +918,7 @@ export default function ProjectCleanup() {
           defaultSelected: true,
           items: junkFolders,
           expanded: false,
+          folderGroups: groupFilesByFolder(junkFolders),
         });
       }
 
@@ -701,6 +938,7 @@ export default function ProjectCleanup() {
           defaultSelected: true,
           items: trueOrphans,
           expanded: false,
+          folderGroups: groupFilesByFolder(trueOrphans),
         });
       }
 
@@ -715,6 +953,7 @@ export default function ProjectCleanup() {
           defaultSelected: false,
           items: acrEdited,
           expanded: false,
+          folderGroups: groupFilesByFolder(acrEdited),
           subCategories,
         });
       }
@@ -730,22 +969,37 @@ export default function ProjectCleanup() {
           defaultSelected: false,
           items: xmpEdited,
           expanded: false,
+          folderGroups: groupFilesByFolder(xmpEdited),
           subCategories,
         });
       }
 
       if (hasEdits.length > 0) {
+        const strongMatches = hasEdits.filter(h => h.matchStrength === 'strong').length;
+        const moderateMatches = hasEdits.filter(h => h.matchStrength === 'moderate').length;
         const weakMatches = hasEdits.filter(h => h.matchStrength === 'weak').length;
+        
+        // Build description with match strength breakdown
+        let matchDescription = 'Has matching JPG/PSD files';
+        const matchTypes: string[] = [];
+        if (strongMatches > 0) matchTypes.push(`${strongMatches} same folder`);
+        if (moderateMatches > 0) matchTypes.push(`${moderateMatches} adjacent folder`);
+        if (weakMatches > 0) matchTypes.push(`${weakMatches} distant folder`);
+        if (matchTypes.length > 0) {
+          matchDescription += ` (${matchTypes.join(', ')})`;
+        }
+        
         const subCategories = createSubCategories(hasEdits, 'has-edits');
         newCategories.push({
           id: 'has-edits',
           title: `RAW with Exports (${hasEdits.length})`,
-          description: `Has matching JPG/PSD files${weakMatches > 0 ? ` (${weakMatches} in different folders)` : ''}`,
+          description: matchDescription,
           icon: <Image className="h-5 w-5" />,
           color: 'text-green-400',
           defaultSelected: false,
           items: hasEdits,
           expanded: false,
+          folderGroups: groupFilesByFolder(hasEdits),
           subCategories,
         });
       }
@@ -788,6 +1042,7 @@ export default function ProjectCleanup() {
           defaultSelected: false,
           items: matchedJPGs,
           expanded: false,
+          folderGroups: groupFilesByFolder(matchedJPGs),
         });
       }
 
@@ -802,21 +1057,23 @@ export default function ProjectCleanup() {
           defaultSelected: false,
           items: matchedPSDs,
           expanded: false,
+          folderGroups: groupFilesByFolder(matchedPSDs),
         });
       }
 
-      // Find and add orphaned JPGs (JPGs without corresponding RAW files)
+      // Find and add truly orphaned JPGs (JPGs without corresponding RAW or PSD files)
       const orphanedJPGs = findOrphanedJPGs(allFiles, orphanedRAWs);
       if (orphanedJPGs.length > 0) {
         newCategories.push({
           id: 'orphaned-jpgs',
           title: `Orphaned JPG Files (${orphanedJPGs.length})`,
-          description: 'JPG files with no corresponding RAW file - possibly exported from other sessions',
+          description: 'JPG files with no corresponding RAW or PSD files - standalone exports or downloads',
           icon: <AlertTriangle className="h-5 w-5" />,
           color: 'text-amber-400',
           defaultSelected: false, // Don't delete by default - might be important
           items: orphanedJPGs,
           expanded: false,
+          folderGroups: groupFilesByFolder(orphanedJPGs),
         });
       }
 
@@ -1180,7 +1437,7 @@ export default function ProjectCleanup() {
 
                 {/* Smart Summary Section */}
                 <Card className="overflow-hidden mb-6">
-                  <div className="bg-gradient-to-r from-purple-900 via-purple-800 to-indigo-900 p-4">
+                  <div className="bg-gradient-to-r from-purple-950 via-purple-900 to-indigo-950 p-4">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-white text-lg font-bold">Quick Selection</h3>
                       <div className="text-white font-bold text-lg text-right" style={{ marginRight: '60px' }}>
@@ -1226,7 +1483,9 @@ export default function ProjectCleanup() {
                         };
 
                         const hasSubCategories = category.subCategories && category.subCategories.length > 0;
+                        const hasFolderGroups = category.folderGroups && category.folderGroups.length > 1; // Only show if more than 1 folder
                         const isExpanded = expandedSubCategories.has(category.id);
+                        const isFoldersExpanded = expandedFolders.has(category.id);
                         
                         return (
                           <div key={category.id} className="space-y-2">
@@ -1234,13 +1493,9 @@ export default function ProjectCleanup() {
                             <div className="grid grid-cols-12 items-center bg-white/10 rounded p-2 gap-2">
                               {/* Left: Checkbox + Title (6 columns) */}
                               <div className="col-span-6 flex items-center gap-3">
-                                <Checkbox
+                                <IndeterminateCheckbox
                                   checked={allSelected}
-                                  ref={(el) => {
-                                    if (el) {
-                                      el.indeterminate = someSelected && !allSelected;
-                                    }
-                                  }}
+                                  indeterminate={someSelected && !allSelected}
                                   onCheckedChange={(checked) => {
                                     selectAllInCategory(category.id, checked === true);
                                   }}
@@ -1295,6 +1550,79 @@ export default function ProjectCleanup() {
                               </div>
                             </div>
                             
+                            {/* Folder groups if they exist and are expanded */}
+                            {hasFolderGroups && isFoldersExpanded && category.folderGroups!.map(folder => {
+                              const folderAllSelected = folder.items.every(item => item.selected);
+                              const folderSomeSelected = folder.items.some(item => item.selected);
+                              const folderSizes = {
+                                selected: folder.items.filter(item => item.selected).reduce((sum, item) => sum + item.size, 0),
+                                total: folder.totalSize
+                              };
+                              
+                              return (
+                                <div 
+                                  key={folder.folderPath} 
+                                  className="grid grid-cols-12 items-center bg-black/10 rounded p-2 gap-2 ml-6 cursor-pointer hover:bg-black/20 transition-colors border-l-2 border-purple-500/30"
+                                  onClick={() => {
+                                    // Toggle all items in this folder
+                                    const newSelected = !folderAllSelected;
+                                    setCategories(prev => prev.map(cat => {
+                                      if (cat.id !== category.id) return cat;
+                                      return {
+                                        ...cat,
+                                        items: cat.items.map(item => {
+                                          const isInFolder = item.parentPath === folder.folderPath;
+                                          return isInFolder ? { ...item, selected: newSelected } : item;
+                                        })
+                                      };
+                                    }));
+                                  }}
+                                >
+                                  {/* Left: Checkbox + Folder name (6 columns) */}
+                                  <div className="col-span-6 flex items-center gap-3">
+                                    <IndeterminateCheckbox
+                                      checked={folderAllSelected}
+                                      indeterminate={folderSomeSelected && !folderAllSelected}
+                                      onCheckedChange={(checked) => {
+                                        // Update all items in this folder
+                                        setCategories(prev => prev.map(cat => {
+                                          if (cat.id !== category.id) return cat;
+                                          return {
+                                            ...cat,
+                                            items: cat.items.map(item => {
+                                              const isInFolder = item.parentPath === folder.folderPath;
+                                              return isInFolder ? { ...item, selected: checked === true } : item;
+                                            })
+                                          };
+                                        }));
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="data-[state=checked]:bg-white data-[state=checked]:text-purple-700"
+                                    />
+                                    <Folder className="h-3 w-3 text-purple-300" />
+                                    <div className="flex-1">
+                                      <span className="text-gray-300 text-xs font-medium">{folder.folderName}</span>
+                                      <span className="text-gray-500 text-xs ml-2">({folder.folderPath})</span>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Center: File Count (3 columns) */}
+                                  <div className="col-span-3 text-left">
+                                    <span className="text-xs text-purple-300 bg-purple-500/10 px-2 py-0.5 rounded">
+                                      {folder.items.filter(item => item.selected).length} / {folder.items.length} files
+                                    </span>
+                                  </div>
+                                  
+                                  {/* Right: Size (3 columns) */}
+                                  <div className="col-span-3 text-right">
+                                    <span className="text-xs text-gray-300 font-mono">
+                                      {formatFileSize(folderSizes.selected)} / {formatFileSize(folderSizes.total)}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                            
                             {/* Sub-categories if they exist and are expanded */}
                             {hasSubCategories && isExpanded && category.subCategories!.map(subCategory => {
                               // Find actual selected state from the main category items
@@ -1308,10 +1636,18 @@ export default function ProjectCleanup() {
                                 total: actualSubCategoryItems.reduce((sum, item) => sum + item.size, 0)
                               };
                               
+                              // Check if this is an overall category (with/without JPG) or a folder-specific one
+                              const isOverallCategory = subCategory.id.endsWith('-with-jpg') || subCategory.id.endsWith('-without-jpg');
+                              const isFolderCategory = subCategory.title.startsWith('📁');
+                              
                               return (
                                 <div 
                                   key={subCategory.id} 
-                                  className="grid grid-cols-12 items-center bg-black/20 rounded p-2 gap-2 cursor-pointer hover:bg-black/30 transition-colors border-l-2 border-white/20"
+                                  className={`grid grid-cols-12 items-center rounded p-2 gap-2 cursor-pointer hover:bg-black/30 transition-colors ${
+                                    isOverallCategory 
+                                      ? 'bg-black/20 border-l-2 border-white/20 ml-6' 
+                                      : 'bg-black/10 border-l-2 border-purple-500/30 ml-10'
+                                  }`}
                                   onClick={() => {
                                     // Toggle all items in this sub-category
                                     const newSelected = !subAllSelected;
@@ -1329,13 +1665,9 @@ export default function ProjectCleanup() {
                                 >
                                   {/* Left: Checkbox + Title (6 columns) */}
                                   <div className="col-span-6 flex items-center gap-3">
-                                    <Checkbox
+                                    <IndeterminateCheckbox
                                       checked={subAllSelected}
-                                      ref={(el) => {
-                                        if (el) {
-                                          el.indeterminate = subSomeSelected && !subAllSelected;
-                                        }
-                                      }}
+                                      indeterminate={subSomeSelected && !subAllSelected}
                                       onCheckedChange={(checked) => {
                                         // Update all items in this sub-category
                                         setCategories(prev => prev.map(cat => {
@@ -1445,20 +1777,17 @@ export default function ProjectCleanup() {
                                     {/* Sub-category header */}
                                     <div className="flex items-center justify-between px-4 py-3 bg-black/20">
                                       <div className="flex items-center gap-3">
-                                        <Checkbox
+                                        <IndeterminateCheckbox
                                           checked={(() => {
                                             const subCategoryPaths = new Set(subCategory.items.map(item => item.path));
                                             const actualSubItems = category.items.filter(item => subCategoryPaths.has(item.path));
                                             return actualSubItems.every(item => item.selected);
                                           })()}
-                                          ref={(el) => {
-                                            if (el) {
-                                              const subCategoryPaths = new Set(subCategory.items.map(item => item.path));
-                                              const actualSubItems = category.items.filter(item => subCategoryPaths.has(item.path));
-                                              el.indeterminate = actualSubItems.some(item => item.selected) && 
-                                                               !actualSubItems.every(item => item.selected);
-                                            }
-                                          }}
+                                          indeterminate={(() => {
+                                            const subCategoryPaths = new Set(subCategory.items.map(item => item.path));
+                                            const actualSubItems = category.items.filter(item => subCategoryPaths.has(item.path));
+                                            return actualSubItems.some(item => item.selected) && !actualSubItems.every(item => item.selected);
+                                          })()}
                                           onCheckedChange={(checked) => {
                                             // Update all items in this sub-category
                                             setCategories(prev => prev.map(cat => {
@@ -1573,35 +1902,138 @@ export default function ProjectCleanup() {
                                   </Button>
                                 </div>
 
-                                {/* Items list */}
-                                <div className="max-h-80 overflow-y-auto divide-y divide-white/5">
-                                  {category.items.map((item, index) => (
-                                <div
-                                  key={`${item.path}-${index}`}
-                                  className={`flex items-center gap-3 px-4 py-2 hover:bg-white/5 ${
-                                    'matchStrength' in item && item.matchStrength === 'weak'
-                                      ? 'bg-amber-500/5 border-l-2 border-amber-500'
-                                      : ''
-                                  }`}
-                                >
-                                  <Checkbox
-                                    checked={item.selected}
-                                    onCheckedChange={() => toggleItem(category.id, index)}
-                                  />
+                                {/* Items list - now grouped by folder */}
+                                <div className="max-h-80 overflow-y-auto">
+                                  {category.folderGroups && category.folderGroups.length > 1 ? (
+                                    // Show folder groups if there are multiple folders
+                                    category.folderGroups.map(folder => {
+                                      const isFolderExpanded = expandedFolders.has(`${category.id}-${folder.folderPath}`);
+                                      const folderAllSelected = folder.items.every(item => item.selected);
+                                      const folderSomeSelected = folder.items.some(item => item.selected);
+                                      
+                                      return (
+                                        <div key={folder.folderPath} className="border-b border-white/5">
+                                          {/* Folder header */}
+                                          <div 
+                                            className="flex items-center gap-3 px-4 py-2 bg-black/10 hover:bg-black/20 cursor-pointer"
+                                            onClick={() => {
+                                              setExpandedFolders(prev => {
+                                                const newSet = new Set(prev);
+                                                const key = `${category.id}-${folder.folderPath}`;
+                                                if (newSet.has(key)) {
+                                                  newSet.delete(key);
+                                                } else {
+                                                  newSet.add(key);
+                                                }
+                                                return newSet;
+                                              });
+                                            }}
+                                          >
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              className="h-4 w-4 p-0 text-gray-400 hover:text-white"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setExpandedFolders(prev => {
+                                                  const newSet = new Set(prev);
+                                                  const key = `${category.id}-${folder.folderPath}`;
+                                                  if (newSet.has(key)) {
+                                                    newSet.delete(key);
+                                                  } else {
+                                                    newSet.add(key);
+                                                  }
+                                                  return newSet;
+                                                });
+                                              }}
+                                            >
+                                              {isFolderExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                                            </Button>
+                                            <IndeterminateCheckbox
+                                              checked={folderAllSelected}
+                                              indeterminate={folderSomeSelected && !folderAllSelected}
+                                              onCheckedChange={(checked) => {
+                                                // Update all items in this folder
+                                                setCategories(prev => prev.map(cat => {
+                                                  if (cat.id !== category.id) return cat;
+                                                  return {
+                                                    ...cat,
+                                                    items: cat.items.map(item => {
+                                                      const isInFolder = item.parentPath === folder.folderPath;
+                                                      return isInFolder ? { ...item, selected: checked === true } : item;
+                                                    })
+                                                  };
+                                                }));
+                                              }}
+                                              onClick={(e) => e.stopPropagation()}
+                                              className="data-[state=checked]:bg-white data-[state=checked]:text-purple-700"
+                                            />
+                                            <Folder className="h-4 w-4 text-purple-400" />
+                                            <div className="flex-1">
+                                              <span className="text-white text-sm font-medium">{folder.folderName}</span>
+                                              <span className="text-gray-500 text-xs ml-2">({folder.items.length} files)</span>
+                                            </div>
+                                            <span className="text-xs text-gray-400 font-mono">
+                                              {formatFileSize(folder.totalSize)}
+                                            </span>
+                                          </div>
+                                          
+                                          {/* Folder contents when expanded */}
+                                          {isFolderExpanded && (
+                                            <div className="divide-y divide-white/5 ml-8">
+                                              {folder.items.map((item, index) => {
+                                                const itemIndex = category.items.findIndex(catItem => catItem.path === item.path);
+                                                return (
+                                                  <div
+                                                    key={`${item.path}-${index}`}
+                                                    className="flex items-center gap-3 px-4 py-2 hover:bg-white/5"
+                                                  >
+                                                    <Checkbox
+                                                      checked={item.selected}
+                                                      onCheckedChange={() => toggleItem(category.id, itemIndex)}
+                                                    />
 
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-white text-sm truncate">{item.name}</span>
-                                      {'matchStrength' in item && item.matchStrength === 'weak' && (
-                                        <span title="Match in different folder">
-                                          <AlertTriangle className="h-3 w-3 text-amber-500 flex-shrink-0" />
-                                        </span>
+                                                    <div className="flex-1 min-w-0">
+                                                      <div className="flex items-center gap-2">
+                                                        <span className="text-white text-sm truncate">{item.name}</span>
+                                      {'matchedFiles' in item && item.matchedFiles && item.matchedFiles.length > 0 && 'matchStrength' in item && (
+                                        <>
+                                          {item.matchStrength === 'strong' && (
+                                            <Badge variant="outline" className="text-green-500 border-green-500 px-1 py-0 text-[10px]">
+                                              Same Folder
+                                            </Badge>
+                                          )}
+                                          {item.matchStrength === 'moderate' && (
+                                            <Badge variant="outline" className="text-blue-500 border-blue-500 px-1 py-0 text-[10px]">
+                                              Adjacent
+                                            </Badge>
+                                          )}
+                                          {item.matchStrength === 'weak' && (
+                                            <Badge variant="outline" className="text-amber-500 border-amber-500 px-1 py-0 text-[10px]">
+                                              Distant
+                                            </Badge>
+                                          )}
+                                        </>
                                       )}
                                     </div>
                                     <div className="text-xs text-gray-500 truncate">{item.path}</div>
                                     {'matchedFiles' in item && item.matchedFiles.length > 0 && (
                                       <div className="text-xs text-gray-600 mt-1">
-                                        Matched: {item.matchedFiles.map(f => f.name).join(', ')}
+                                        <details className="cursor-pointer">
+                                          <summary className="hover:text-gray-400">
+                                            Matched {item.matchedFiles.length} file{item.matchedFiles.length !== 1 ? 's' : ''}: {item.matchedFiles.slice(0, 2).map(f => f.name).join(', ')}{item.matchedFiles.length > 2 ? '...' : ''}
+                                          </summary>
+                                          <div className="mt-1 ml-2 space-y-0.5">
+                                            {item.matchedFiles.map((f, idx) => (
+                                              <div key={idx} className="text-xs">
+                                                <span className="text-gray-400">{f.extension.toUpperCase()}:</span> {f.name}
+                                                {f.parentPath !== item.parentPath && (
+                                                  <span className="text-gray-500 ml-1">({f.parentPath})</span>
+                                                )}
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </details>
                                       </div>
                                     )}
                                     {'matchedRAW' in item && (
@@ -1637,9 +2069,109 @@ export default function ProjectCleanup() {
                                         <Folder className="h-3 w-3" />
                                       </Button>
                                     </div>
-                                  </div>
-                                </div>
-                                  ))}
+                                                    </div>
+                                                  </div>
+                                                );
+                                              })}
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    })
+                                  ) : (
+                                    // Show items directly if there's only one folder or no folder groups
+                                    <div className="divide-y divide-white/5">
+                                      {category.items.map((item, index) => (
+                                        <div
+                                          key={`${item.path}-${index}`}
+                                          className="flex items-center gap-3 px-4 py-2 hover:bg-white/5"
+                                        >
+                                          <Checkbox
+                                            checked={item.selected}
+                                            onCheckedChange={() => toggleItem(category.id, index)}
+                                          />
+
+                                          <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-white text-sm truncate">{item.name}</span>
+                                              {'matchedFiles' in item && item.matchedFiles && item.matchedFiles.length > 0 && 'matchStrength' in item && (
+                                                <>
+                                                  {item.matchStrength === 'strong' && (
+                                                    <Badge variant="outline" className="text-green-500 border-green-500 px-1 py-0 text-[10px]">
+                                                      Same Folder
+                                                    </Badge>
+                                                  )}
+                                                  {item.matchStrength === 'moderate' && (
+                                                    <Badge variant="outline" className="text-blue-500 border-blue-500 px-1 py-0 text-[10px]">
+                                                      Adjacent
+                                                    </Badge>
+                                                  )}
+                                                  {item.matchStrength === 'weak' && (
+                                                    <Badge variant="outline" className="text-amber-500 border-amber-500 px-1 py-0 text-[10px]">
+                                                      Distant
+                                                    </Badge>
+                                                  )}
+                                                </>
+                                              )}
+                                            </div>
+                                            <div className="text-xs text-gray-500 truncate">{item.path}</div>
+                                            {'matchedFiles' in item && item.matchedFiles.length > 0 && (
+                                              <div className="text-xs text-gray-600 mt-1">
+                                                <details className="cursor-pointer">
+                                                  <summary className="hover:text-gray-400">
+                                                    Matched {item.matchedFiles.length} file{item.matchedFiles.length !== 1 ? 's' : ''}: {item.matchedFiles.slice(0, 2).map(f => f.name).join(', ')}{item.matchedFiles.length > 2 ? '...' : ''}
+                                                  </summary>
+                                                  <div className="mt-1 ml-2 space-y-0.5">
+                                                    {item.matchedFiles.map((f, idx) => (
+                                                      <div key={idx} className="text-xs">
+                                                        <span className="text-gray-400">{f.extension.toUpperCase()}:</span> {f.name}
+                                                        {f.parentPath !== item.parentPath && (
+                                                          <span className="text-gray-500 ml-1">({f.parentPath})</span>
+                                                        )}
+                                                      </div>
+                                                    ))}
+                                                  </div>
+                                                </details>
+                                              </div>
+                                            )}
+                                            {'matchedRAW' in item && (
+                                              <div className="text-xs text-emerald-600 mt-1">
+                                                From: {item.matchedRAW}
+                                              </div>
+                                            )}
+                                          </div>
+
+                                          <div className="flex items-center gap-2 flex-shrink-0">
+                                            <span className="text-xs text-gray-500">{formatFileSize(item.size)}</span>
+                                            <div className="flex gap-1">
+                                              {supportsPreview(item.name) ? (
+                                                <Button
+                                                  variant="ghost"
+                                                  size="sm"
+                                                  className="h-6 w-6 p-0"
+                                                  onClick={() => loadPreview(item)}
+                                                  title="Preview image"
+                                                >
+                                                  <ImageIcon className="h-3 w-3" />
+                                                </Button>
+                                              ) : (
+                                                <div className="h-6 w-6" />
+                                              )}
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-6 w-6 p-0"
+                                                onClick={() => revealInFinder(item.path)}
+                                                title="Copy file path"
+                                              >
+                                                <Folder className="h-3 w-3" />
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
                                 </div>
                               </>
                             )}
