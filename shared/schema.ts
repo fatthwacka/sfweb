@@ -4,14 +4,25 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Main user profiles table (this is what we'll use for our app users)
+// Role hierarchy: super_admin > staff > client > user
+// - super_admin: Full admin access
+// - staff: Team members with admin panel access
+// - client: Photography customers (linked to shoots, albums)
+// - user: Generic signups (tools, newsletter, etc.)
 export const profiles = pgTable("profiles", {
   id: uuid("id").primaryKey(),
   email: text("email").notNull(),
   fullName: text("full_name"),
-  role: text("role").notNull().default("client"), // "super_admin", "staff", or "client"
+  role: text("role").notNull().default("user"), // "super_admin", "staff", "client", or "user"
   profileImageUrl: text("profile_image_url"),
   bannerImageUrl: text("banner_image_url"),
   themePreference: text("theme_preference").default("light"),
+  // Subscription fields for tools hub
+  subscriptionTier: text("subscription_tier").default("free"), // "free", "pro", "enterprise"
+  subscriptionExpiresAt: timestamp("subscription_expires_at", { withTimezone: true }),
+  emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
+  emailVerificationToken: text("email_verification_token"),
+  emailVerificationExpiresAt: timestamp("email_verification_expires_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
 });

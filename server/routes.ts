@@ -81,15 +81,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get user profile from our profiles table
       const { data: profile } = await supabase
         .from('profiles')
-        .select('id, email, full_name, role')
+        .select('id, email, full_name, role, subscription_tier, email_verified_at, theme_preference')
         .eq('id', data.user.id)
         .single();
 
       const user = {
         id: data.user.id,
         email: data.user.email!,
-        role: profile?.role || 'client',
-        fullName: profile?.full_name || profile?.email?.split('@')[0]
+        role: profile?.role || 'user',
+        fullName: profile?.full_name || profile?.email?.split('@')[0],
+        themePreference: profile?.theme_preference || 'light',
+        subscriptionTier: profile?.subscription_tier || 'free',
+        emailVerifiedAt: profile?.email_verified_at || null
       };
       
       return res.json({ user });
@@ -138,24 +141,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Import createSupabaseUser dynamically to avoid circular imports
       const { createSupabaseUser } = await import("./supabase-auth");
 
-      // Create user with Supabase (clients only for public signup)
+      // Create user with Supabase
+      // 'user' role = generic signups (tools, newsletter, etc.)
+      // 'client' role = photography customers (assigned manually when they book)
       const result = await createSupabaseUser({
         email: email.toLowerCase().trim(),
         password,
         fullName: fullName.trim(),
-        role: 'client',
+        role: 'user',
         themePreference: 'light'
       });
 
-      console.log(`✅ New client registered: ${email}`);
+      console.log(`✅ New user registered: ${email}`);
 
       // Return user data for auto-login
       const user = {
         id: result.authUser.id,
         email: result.authUser.email,
-        role: result.profile?.role || 'client',
+        role: result.profile?.role || 'user',
         fullName: result.profile?.full_name || fullName,
-        themePreference: result.profile?.theme_preference || 'light'
+        themePreference: result.profile?.theme_preference || 'light',
+        subscriptionTier: result.profile?.subscription_tier || 'free',
+        emailVerifiedAt: result.profile?.email_verified_at || null
       };
 
       res.status(201).json({ user, message: "Account created successfully" });
@@ -5126,6 +5133,245 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Visitor history error:", error);
       res.status(500).json({ error: "Failed to get visitor history" });
+    }
+  });
+
+  // ============================================
+  // TOOLS HUB API ENDPOINTS
+  // ============================================
+  
+  // Get tool usage for rate limiting
+  app.get("/api/tools/usage/:toolSlug", async (req, res) => {
+    try {
+      const { toolSlug } = req.params;
+      const { userId, sessionId } = req.query;
+      
+      // Get tool configuration from registry
+      const { getToolBySlug } = await import('@shared/config/tools-registry');
+      const tool = getToolBySlug(toolSlug);
+      
+      if (!tool) {
+        return res.status(404).json({ error: "Tool not found" });
+      }
+      
+      // For now, return mock usage data
+      // In production, this would query the tool_usage table
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      res.json({
+        toolSlug,
+        usedToday: 0,
+        limit: tool.limits.anonymous || 100,
+        remainingToday: tool.limits.anonymous || 100,
+        resetsAt: tomorrow.toISOString(),
+      });
+    } catch (error) {
+      console.error("Tool usage error:", error);
+      res.status(500).json({ error: "Failed to get tool usage" });
+    }
+  });
+  
+  // Track tool usage
+  app.post("/api/tools/usage", async (req, res) => {
+    try {
+      const { toolSlug, userId, sessionId, action } = req.body;
+      
+      // In production, this would insert into tool_usage table
+      // For now, just acknowledge the request
+      
+      res.json({
+        success: true,
+        tracked: true,
+      });
+    } catch (error) {
+      console.error("Tool usage tracking error:", error);
+      res.status(500).json({ error: "Failed to track tool usage" });
+    }
+  });
+  
+  // Airtable proxy - List articles
+  app.get("/api/tools/articles", async (req, res) => {
+    try {
+      // Check if user has access (would check auth in production)
+      
+      if (!process.env.AIRTABLE_TOKEN || !process.env.AIRTABLE_BASE_ID) {
+        return res.status(500).json({ 
+          error: "Airtable configuration missing",
+          records: [] // Return empty array to prevent UI errors
+        });
+      }
+      
+      const response = await fetch(
+        `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/Articles?maxRecords=100&view=Grid%20view`,
+        {
+          headers: {
+            'Authorization': `Bearer ${process.env.AIRTABLE_TOKEN}`,
+          },
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error(`Airtable API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      res.json(data);
+    } catch (error: any) {
+      console.error("Airtable fetch error:", error);
+      res.status(500).json({ 
+        error: error.message || "Failed to fetch articles",
+        records: [] // Return empty array to prevent UI errors
+      });
+    }
+  });
+  
+  // Airtable proxy - Update article
+  app.patch("/api/tools/articles/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { fields } = req.body;
+      
+      if (!process.env.AIRTABLE_TOKEN || !process.env.AIRTABLE_BASE_ID) {
+        return res.status(500).json({ error: "Airtable configuration missing" });
+      }
+      
+      const response = await fetch(
+        `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/Articles/${id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${process.env.AIRTABLE_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ fields }),
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error(`Airtable API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      res.json(data);
+    } catch (error: any) {
+      console.error("Airtable update error:", error);
+      res.status(500).json({ error: error.message || "Failed to update article" });
+    }
+  });
+  
+  // AI content enhancement endpoint
+  app.post("/api/tools/ai/enhance-content", async (req, res) => {
+    try {
+      const { content, title, operation } = req.body;
+      
+      if (!process.env.GEMINI_API_KEY) {
+        return res.status(500).json({ error: "AI service not configured" });
+      }
+      
+      // Use Gemini API to enhance content
+      const prompt = operation === 'improve' 
+        ? `Improve this article content. Make it more engaging and professional while maintaining the same length and key points:\n\nTitle: ${title}\n\nContent: ${content}`
+        : operation === 'expand'
+        ? `Expand this article content by adding more relevant details and examples:\n\nTitle: ${title}\n\nContent: ${content}`
+        : `Summarize this article content concisely:\n\nTitle: ${title}\n\nContent: ${content}`;
+      
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${process.env.GEMINI_API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: prompt
+              }]
+            }],
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 1000,
+            }
+          })
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error(`Gemini API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const enhancedContent = data.candidates?.[0]?.content?.parts?.[0]?.text || content;
+      
+      res.json({ enhancedContent });
+    } catch (error: any) {
+      console.error("AI enhancement error:", error);
+      res.status(500).json({ error: error.message || "Failed to enhance content" });
+    }
+  });
+  
+  // File analysis endpoint for AI-powered tools
+  app.post("/api/tools/ai/analyse-files", async (req, res) => {
+    try {
+      const { filenames, operation } = req.body;
+      
+      if (!process.env.GEMINI_API_KEY) {
+        return res.status(500).json({ error: "AI service not configured" });
+      }
+      
+      const prompt = operation === 'organize'
+        ? `Suggest folder names to organize these files:\n${filenames.join('\n')}\n\nReturn a JSON object with filename as key and suggested folder as value.`
+        : operation === 'find-duplicates'
+        ? `Identify potential duplicate files from this list:\n${filenames.join('\n')}\n\nReturn a JSON array of filename pairs that might be duplicates.`
+        : `Suggest better names for these files:\n${filenames.join('\n')}\n\nReturn a JSON object with original filename as key and suggested name as value.`;
+      
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${process.env.GEMINI_API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: prompt
+              }]
+            }],
+            generationConfig: {
+              temperature: 0.5,
+              maxOutputTokens: 500,
+            }
+          })
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error(`Gemini API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+      
+      // Try to parse as JSON, fallback to simple format
+      let suggestions;
+      try {
+        suggestions = JSON.parse(textResponse);
+      } catch {
+        // Parse simple text format as fallback
+        suggestions = {};
+        const lines = textResponse.split('\n');
+        for (const line of lines) {
+          const [original, suggestion] = line.split('->').map(s => s.trim());
+          if (original && suggestion) {
+            suggestions[original] = suggestion;
+          }
+        }
+      }
+      
+      res.json({ suggestions });
+    } catch (error: any) {
+      console.error("AI file analysis error:", error);
+      res.status(500).json({ error: error.message || "Failed to analyse files" });
     }
   });
 

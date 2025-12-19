@@ -3,10 +3,12 @@ import { useState, useEffect, createContext, useContext, ReactNode } from "react
 interface User {
   id: string;
   email: string;
-  role: "super_admin" | "staff" | "client";
+  role: "super_admin" | "staff" | "client" | "user";
   fullName?: string;
   profileImage?: string | null;
   themePreference?: string;
+  subscriptionTier?: "free" | "pro" | "enterprise";
+  emailVerifiedAt?: string | null;
 }
 
 interface AuthContextType {

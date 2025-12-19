@@ -18,8 +18,8 @@
   --input: hsl(260, 15%, 23%);
   --primary: hsl(16, 100%, 73%);
   --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(180, 100%, 50%);
-  --secondary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(180, 100%, 85%);
+  --secondary-foreground: hsl(210, 40%, 8%);
   --accent: hsl(180, 50%, 65%);
   --accent-foreground: hsl(0, 0%, 100%);
   --destructive: hsl(0, 84%, 60%);
@@ -31,10 +31,10 @@
   --salmon: hsl(8, 90%, 63%);         /* More red, darker */
   --salmon-muted: hsl(8, 80%, 60%);
   --salmon-dark: hsl(8, 60%, 30%);
-  --cyan: hsl(172, 90%, 45%);         /* More green, darker */
-  --cyan-muted: hsl(172, 80%, 55%);
+  --cyan: hsl(180, 100%, 50%);        /* Bright cyan that works with dark text */
+  --cyan-muted: hsl(180, 90%, 60%);
   --cyan-dark: hsl(172, 40%, 15%);
-  --cyan-bright: hsl(172, 90%, 60%);
+  --cyan-bright: hsl(180, 100%, 55%);
   --purple-dark: hsl(260, 40%, 21%);
   --grey-dark: hsl(220, 15%, 19%);
   
