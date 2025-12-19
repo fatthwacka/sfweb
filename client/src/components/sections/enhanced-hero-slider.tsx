@@ -170,10 +170,10 @@ export function EnhancedHeroSlider() {
       {/* Content Overlay */}
       <div className="relative z-20 text-center max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div>
-          {/* Main Title */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-corinthia text-white leading-tight hero-title-white" style={{ marginBottom: '-0.5rem' }}>
+          {/* Main Title - uses h2 since page has sr-only h1 for SEO */}
+          <h2 className="text-4xl md:text-6xl lg:text-7xl font-corinthia text-white leading-tight hero-title-white" style={{ marginBottom: '-0.5rem' }}>
             {currentSlideData.title}
-          </h1>
+          </h2>
           
           {/* Subtitle */}
           <h3 className="text-lg md:text-xl text-white font-quicksand font-light mb-4">

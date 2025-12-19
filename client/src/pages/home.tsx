@@ -10,6 +10,9 @@ import { ContactSection } from "@/components/sections/contact-section";
 export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground background-gradient-blobs">
+      {/* Static SEO content - loads immediately before dynamic content */}
+      <h1 className="sr-only">SlyFox Studios - Professional Photography & Videography in Durban, South Africa</h1>
+
       <Navigation />
       <EnhancedHeroSlider />
       <ServicesOverview />

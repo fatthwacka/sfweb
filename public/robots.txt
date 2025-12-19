@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Disallow admin and private areas
+Disallow: /admin
+Disallow: /client-portal
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://slyfox.co.za/sitemap.xml
