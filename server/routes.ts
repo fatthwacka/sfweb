@@ -283,6 +283,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============================================
+  // Stats Proxy Endpoints (bypass ad blockers)
+  // Uses obscure paths to avoid pattern matching
+  // ============================================
+
+  // GA4 script proxy - obscured path
+  app.get("/api/sf/v.js", async (req, res) => {
+    try {
+      const measurementId = req.query.id || 'G-3W8SJ9EPEF';
+      const response = await fetch(`https://www.googletagmanager.com/gtag/js?id=${measurementId}`);
+      const script = await response.text();
+      res.setHeader('Content-Type', 'application/javascript');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      res.send(script);
+    } catch (error) {
+      console.error('Stats proxy error:', error);
+      res.status(500).send('// proxy error');
+    }
+  });
+
+  // GA4 data proxy - forwards to Google (supports both paths)
+  const ga4CollectHandler = async (req: any, res: any) => {
+    try {
+      const queryString = new URLSearchParams(req.query as Record<string, string>).toString();
+      const gaUrl = `https://www.google-analytics.com/g/collect?${queryString}`;
+
+      const response = await fetch(gaUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain',
+          'User-Agent': req.headers['user-agent'] || 'Mozilla/5.0',
+        },
+        body: req.body ? JSON.stringify(req.body) : undefined
+      });
+
+      res.status(response.status).send();
+    } catch (error) {
+      console.error('Stats data proxy error:', error);
+      res.status(204).send();
+    }
+  };
+
+  // GA4 collect - multiple path variants to handle different blocking scenarios
+  app.post("/api/sf/g/collect", ga4CollectHandler);
+  app.post("/api/sf/r", ga4CollectHandler);  // Short path for manual calls
+  app.get("/api/sf/r", ga4CollectHandler);   // GET variant for beacon/pixel
+
+  // Metricool script proxy - obscured path
+  app.get("/api/sf/m.js", async (req, res) => {
+    try {
+      const response = await fetch('https://tracker.metricool.com/resources/be.js');
+      let script = await response.text();
+      // Rewrite the tracking URL to use our proxy (handle both http and https)
+      const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+      const host = req.headers.host;
+      script = script.replace(/https?:\/\/tracker\.metricool\.com/g, `${protocol}://${host}/api/sf/t`);
+      res.setHeader('Content-Type', 'application/javascript');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      res.send(script);
+    } catch (error) {
+      console.error('Stats m proxy error:', error);
+      res.status(500).send('// proxy error');
+    }
+  });
+
+  // Metricool tracking proxy - catch all
+  app.all("/api/sf/t/*", async (req, res) => {
+    try {
+      const metricoolPath = req.path.replace('/api/sf/t', '');
+      const queryString = new URLSearchParams(req.query as Record<string, string>).toString();
+      const metricoolUrl = `https://tracker.metricool.com${metricoolPath}${queryString ? '?' + queryString : ''}`;
+
+      const response = await fetch(metricoolUrl, {
+        method: req.method,
+        headers: {
+          'Content-Type': req.headers['content-type'] || 'application/json',
+          'User-Agent': req.headers['user-agent'] || 'Mozilla/5.0',
+        },
+        body: ['POST', 'PUT'].includes(req.method) ? JSON.stringify(req.body) : undefined
+      });
+
+      const data = await response.text();
+      res.status(response.status).send(data);
+    } catch (error) {
+      console.error('Stats t proxy error:', error);
+      res.status(204).send();
+    }
+  });
+
+  console.log('📊 Stats proxy endpoints registered');
+
   // Contact form endpoint
   app.post("/api/contact", async (req, res) => {
     try {

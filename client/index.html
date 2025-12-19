@@ -28,19 +28,22 @@
     <!-- Google reCAPTCHA v3 -->
     <script src="https://www.google.com/recaptcha/api.js?render=6Le3Y7YrAAAAAJn-74S3y_kLoDIax3vY6MyisDPs" async defer></script>
 
-    <!-- Google Analytics GA4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3W8SJ9EPEF"></script>
+    <!-- Site visitor tracking -->
+    <script async src="/api/sf/v.js?id=G-3W8SJ9EPEF"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-3W8SJ9EPEF');
+      gtag('config', 'G-3W8SJ9EPEF', {
+        transport_url: window.location.origin + '/api/sf',
+        first_party_collection: true
+      });
     </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- Metricool Analytics -->
-    <script>function loadScript(a){var b=document.getElementsByTagName("head")[0],c=document.createElement("script");c.type="text/javascript",c.src="https://tracker.metricool.com/resources/be.js",c.onreadystatechange=a,c.onload=a,b.appendChild(c)}loadScript(function(){beTracker.t({hash:"a3e8654831a8c3870479528bc528b9fc"})});</script>
+    <!-- Site metrics -->
+    <script>function loadScript(a){var b=document.getElementsByTagName("head")[0],c=document.createElement("script");c.type="text/javascript",c.src="/api/sf/m.js",c.onreadystatechange=a,c.onload=a,b.appendChild(c)}loadScript(function(){beTracker.t({hash:"a3e8654831a8c3870479528bc528b9fc"})});</script>
   </body>
 </html>
