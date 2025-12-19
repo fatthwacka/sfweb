@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useRoute } from 'wouter';
 import { Navigation } from '@/components/layout/navigation';
 import { Footer } from '@/components/layout/footer';
+import { trackPageView } from '@/lib/analytics';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { apiRequest } from '@/lib/queryClient';
@@ -47,6 +48,13 @@ export function Story() {
   const [gradientLoaded, setGradientLoaded] = useState(false);
   
   const slug = params?.slug || '';
+
+  // Track page view for dynamic story pages
+  useEffect(() => {
+    if (slug) {
+      trackPageView(`/stories/${slug}`);
+    }
+  }, [slug]);
 
   // Fetch the blog post by slug - must be called even if no slug
   const { data: post, isLoading: postLoading, error } = useQuery<BlogPost>({

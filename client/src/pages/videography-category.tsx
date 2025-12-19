@@ -1,4 +1,5 @@
 import { useParams } from "wouter";
+import { useEffect } from "react";
 import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,7 @@ import { Link } from "wouter";
 import { ArrowLeft, Video, Check, Play } from "lucide-react";
 import { YouTubeHero } from "@/components/common/youtube-hero";
 import { GradientBackground } from "@/components/common/gradient-background";
+import { trackPageView } from "@/lib/analytics";
 
 const categoryData: Record<string, {
   name: string;
@@ -286,7 +288,14 @@ const categoryData: Record<string, {
 export default function VideographyCategory() {
   const params = useParams();
   const category = params.category;
-  
+
+  // Track page view for dynamic category pages
+  useEffect(() => {
+    if (category) {
+      trackPageView(`/videography/${category}`);
+    }
+  }, [category]);
+
   if (!category || !categoryData[category]) {
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">

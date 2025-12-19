@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'wouter';
 import { Navigation } from '@/components/layout/navigation';
@@ -7,6 +7,7 @@ import { GradientBackground } from '@/components/common/gradient-background';
 import { PortfolioCard } from '@/components/portfolio/portfolio-card';
 import { PortfolioGrid } from '@/components/portfolio/portfolio-grid';
 import { ArrowLeft, FolderOpen } from 'lucide-react';
+import { trackPageView } from '@/lib/analytics';
 import type { Client } from '@shared/schema';
 
 interface PortfolioGroupData {
@@ -32,11 +33,19 @@ interface PortfolioGroupData {
 
 export function PortfolioGroup() {
   const { groupName, slug } = useParams();
-  
+
   // Use slug if available (from /portfolio/client-slug or /project/group-name routes)
   // or groupName (from direct /project route)
   const parameterValue = slug || groupName;
-  
+
+  // Track page view for dynamic portfolio/project pages
+  useEffect(() => {
+    if (parameterValue) {
+      const path = slug ? `/portfolio/${slug}` : `/project/${groupName}`;
+      trackPageView(path);
+    }
+  }, [parameterValue, slug, groupName]);
+
   // Try to fetch as portfolio group first
   const { data: groupData, isLoading: groupLoading, error: groupError } = useQuery<PortfolioGroupData>({
     queryKey: ['portfolio-group', parameterValue],

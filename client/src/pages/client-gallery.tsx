@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ImageUrl } from "@/lib/image-utils";
 import { VideoUrl } from "@/lib/video-utils";
 import { Link } from "wouter";
+import { trackPageView } from "@/lib/analytics";
 import {
   Download,
   Share2,
@@ -163,6 +164,13 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
   }, [modalImageIndex]);
   
   const slug = shootId || params.slug;
+
+  // Track page view for dynamic gallery pages
+  useEffect(() => {
+    if (slug) {
+      trackPageView(`/gallery/${slug}`);
+    }
+  }, [slug]);
 
   // Load user interactions from localStorage on mount
   useEffect(() => {
