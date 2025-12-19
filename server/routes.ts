@@ -303,21 +303,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GA4 data proxy - forwards to Google (supports both paths)
+  // GA4 data proxy - forwards to Google (supports GET and POST)
   const ga4CollectHandler = async (req: any, res: any) => {
     try {
       const queryString = new URLSearchParams(req.query as Record<string, string>).toString();
       const gaUrl = `https://www.google-analytics.com/g/collect?${queryString}`;
 
+      // Use same method as incoming request
       const response = await fetch(gaUrl, {
-        method: 'POST',
+        method: req.method,
         headers: {
-          'Content-Type': 'text/plain',
+          'Content-Type': req.headers['content-type'] || 'text/plain',
           'User-Agent': req.headers['user-agent'] || 'Mozilla/5.0',
         },
-        body: req.body ? JSON.stringify(req.body) : undefined
+        body: ['POST', 'PUT'].includes(req.method) && req.body ? JSON.stringify(req.body) : undefined
       });
 
+      console.log(`📊 GA4 proxy: ${req.method} ${req.path} -> Google responded ${response.status}`);
       res.status(response.status).send();
     } catch (error) {
       console.error('Stats data proxy error:', error);
@@ -325,10 +327,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
 
-  // GA4 collect - multiple path variants to handle different blocking scenarios
+  // GA4 collect - support both GET and POST for all paths
+  app.get("/api/sf/g/collect", ga4CollectHandler);
   app.post("/api/sf/g/collect", ga4CollectHandler);
-  app.post("/api/sf/r", ga4CollectHandler);  // Short path for manual calls
-  app.get("/api/sf/r", ga4CollectHandler);   // GET variant for beacon/pixel
+  app.get("/api/sf/r", ga4CollectHandler);
+  app.post("/api/sf/r", ga4CollectHandler);
 
   // Metricool script proxy - obscured path
   app.get("/api/sf/m.js", async (req, res) => {
