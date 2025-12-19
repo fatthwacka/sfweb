@@ -6,13 +6,16 @@ declare global {
   }
 }
 
+// GA4 Measurement ID - hardcoded for reliability (also in index.html)
+const GA_MEASUREMENT_ID = 'G-3W8SJ9EPEF';
+
 // Initialize Google Analytics
 export const initGA = () => {
   try {
-    const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
+    const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID || GA_MEASUREMENT_ID;
 
     if (!measurementId) {
-      console.warn('Missing required Google Analytics key: VITE_GA_MEASUREMENT_ID');
+      console.warn('Missing required Google Analytics key');
       return;
     }
 
@@ -48,10 +51,9 @@ export const initGA = () => {
 // Track page views - useful for single-page applications
 export const trackPageView = (url: string) => {
   if (typeof window === 'undefined' || !window.gtag) return;
-  
-  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
-  if (!measurementId) return;
-  
+
+  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID || GA_MEASUREMENT_ID;
+
   window.gtag('config', measurementId, {
     page_path: url
   });
