@@ -142,8 +142,8 @@ export const siteConfig = {
    */
   photography: {
     hero: {
-      title: "Professional Photography",
-      subtitle: "Capturing life's beautiful moments",
+      title: "Analog Intelligence",
+      subtitle: "Human Soul. Machine Efficiency",
       backgroundImage: "/images/hero/photography-hero.jpg",
       overlayOpacity: 0.5
     },

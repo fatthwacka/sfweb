@@ -1,9 +1,9 @@
 import { Link } from "wouter";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Cpu } from "lucide-react";
 import { GradientBackground } from "@/components/common/gradient-background";
 
-export function ServicesOverview() {
-  // Hardcoded services data - current as of Sept 2025
+export function HomepageServicesOverview() {
+  // Homepage-specific services data
   const services = [
     {
       id: "photography-service",
@@ -33,13 +33,13 @@ export function ServicesOverview() {
       link: "/social-media"
     },
     {
-      id: "product-photography-service",
-      title: "Product Photography",
-      description: "Professional product photography, and product adverts",
-      image: "/uploads/DSC08628_1764950084559.jpg",
+      id: "web-apps-service",
+      title: "Web & Apps",
+      description: "Slick Websites, Apps and Ai automations that help your business",
+      image: "/uploads/Slyfox-Ai-Automation-and-AppDev-02_1757855053671.jpg",
       ctaText: "Explore Service",
       color: "salmon",
-      link: "/photography/products"
+      link: "/web-apps"
     }
   ];
 
@@ -56,11 +56,21 @@ export function ServicesOverview() {
     <GradientBackground section="services" className="pt-4 pb-20" id="services">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
+          <div className="flex justify-center mb-6">
+            <img 
+              src="/uploads/trees-20.png" 
+              alt="Analog Intelligence" 
+              className="w-16 h-16 opacity-90"
+            />
+          </div>
           <h1 className="mb-12 leading-tight">
-            Professional Photography
+            Analog Intelligence
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Studio photography and videography covering portraits, brands, products, weddings, and social media.
+            We combine the emotive power of professional photography and video production with the precision and efficiency of modern ai automation.
+          </p>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mt-4">
+            We don't just capture your story through the lens of our studio, we build web apps, ai automations and intelligent tools, that ensures your business runs as beautifully as it looks.
           </p>
         </div>
 

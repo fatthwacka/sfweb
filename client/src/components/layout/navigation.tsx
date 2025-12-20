@@ -55,15 +55,7 @@ const NavigationComponent = memo(function Navigation() {
                 ? "text-orange-200" 
                 : "text-blue-100 hover:text-cyan-bright"
             )}>
-              Photography
-            </Link>
-            <Link href="/videography" className={cn(
-              "transition-colors duration-300 font-barlow font-light",
-              location.startsWith('/videography') 
-                ? "text-orange-200" 
-                : "text-blue-100 hover:text-cyan-bright"
-            )}>
-              Videography
+              Photo & Video
             </Link>
             <Link href="/social-media" className={cn(
               "transition-colors duration-300 font-barlow font-light",
@@ -137,14 +129,7 @@ const NavigationComponent = memo(function Navigation() {
                 className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Photography
-              </Link>
-              <Link
-                href="/videography"
-                className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Videography
+                Photo & Video
               </Link>
               <Link
                 href="/social-media"
