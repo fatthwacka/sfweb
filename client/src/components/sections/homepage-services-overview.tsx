@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ArrowRight, Cpu } from "lucide-react";
+import { ArrowRight, Cpu, Bot, Cog, Camera } from "lucide-react";
 import { GradientBackground } from "@/components/common/gradient-background";
 
 export function HomepageServicesOverview() {
@@ -53,7 +53,7 @@ export function HomepageServicesOverview() {
   };
 
   return (
-    <GradientBackground section="services" className="pt-4 pb-20" id="services">
+    <GradientBackground section="services" className="pt-12 pb-20" id="services">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <div className="flex justify-center mb-6">
@@ -63,42 +63,98 @@ export function HomepageServicesOverview() {
               className="w-16 h-16 opacity-90"
             />
           </div>
-          <h1 className="mb-12 leading-tight">
+          <h1 className="mb-4 leading-tight">
             Analog Intelligence
           </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            We combine the emotive power of professional photography and video production with the precision and efficiency of modern ai automation.
+          <p className="text-lg text-muted-foreground mb-12 max-w-4xl mx-auto">
+            We provide professional studio content production and business automation tools to small and medium sized businesses.
           </p>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mt-4">
-            We don't just capture your story through the lens of our studio, we build web apps, ai automations and intelligent tools, that ensures your business runs as beautifully as it looks.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {services.map((service, index) => {
-            const colorClasses = getColorClasses(service.color);
-
-            return (
-              <Link key={service.id} href={service.link}>
-                <div className="group cursor-pointer bg-gradient-to-br from-slate-800/60 to-gray-900/80 rounded-xl overflow-hidden shadow-lg hover:shadow-gold/20 transition-all duration-500 transform hover:scale-[1.02] h-full">
-                  <div className="relative h-40 overflow-hidden">
-                    <img
-                      src={service.image}
-                      alt={`${service.title} services`}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
-                  </div>
-
-                  <div className="p-4">
-                    <h3 className="text-2xl text-white mb-3 font-light">{service.title}</h3>
-                    <p className="text-muted-foreground text-sm line-clamp-2">{service.description}</p>
-                  </div>
+          
+          {/* New content in stylish cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-12">
+            <div 
+              className="rounded-xl p-6 text-center"
+              style={{
+                background: 'linear-gradient(135deg, rgba(15, 15, 25, 0.9) 0%, rgba(40, 20, 40, 0.6) 50%, rgba(10, 10, 15, 0.95) 100%)',
+                border: '1px solid rgba(236, 72, 153, 0.3)'
+              }}
+            >
+              <div className="flex justify-center mb-4">
+                <div 
+                  className="w-16 h-16 rounded-full flex items-center justify-center"
+                  style={{
+                    background: 'rgba(0, 0, 0, 0.3)',
+                    boxShadow: '0 0 20px rgba(236, 72, 153, 0.4), inset 0 0 20px rgba(236, 72, 153, 0.1)'
+                  }}
+                >
+                  <Bot className="w-8 h-8" style={{ color: '#ec4899' }} />
                 </div>
-              </Link>
-            );
-          })}
+              </div>
+              <h3 className="text-salmon text-lg font-semibold mb-4">Beyond AI Gimmicks</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Prompt-generated AI images can look impressive on screen, but they fall apart in real-world business use.
+              </p>
+              <p className="text-muted-foreground text-sm leading-relaxed mt-3">
+                Serious brands need organic, high-resolution professional production that doesn't get deranked by algorithms.
+              </p>
+            </div>
+            
+            <div 
+              className="rounded-xl p-6 text-center"
+              style={{
+                background: 'linear-gradient(135deg, rgba(15, 15, 25, 0.9) 0%, rgba(20, 40, 20, 0.6) 50%, rgba(10, 10, 15, 0.95) 100%)',
+                border: '1px solid rgba(34, 197, 94, 0.3)'
+              }}
+            >
+              <div className="flex justify-center mb-4">
+                <div 
+                  className="w-16 h-16 rounded-full flex items-center justify-center"
+                  style={{
+                    background: 'rgba(0, 0, 0, 0.3)',
+                    boxShadow: '0 0 20px rgba(34, 197, 94, 0.4), inset 0 0 20px rgba(34, 197, 94, 0.1)'
+                  }}
+                >
+                  <Cog className="w-8 h-8" style={{ color: '#22c55e' }} />
+                </div>
+              </div>
+              <h3 className="text-cyan text-lg font-semibold mb-4">Engineered Workflows</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                We use our own AI tools alongside professional photo and video production to work faster without losing quality.
+              </p>
+              <p className="text-muted-foreground text-sm leading-relaxed mt-3">
+                The result is detailed, high-resolution visuals that go far beyond standard AI generation.
+              </p>
+            </div>
+            
+            <div 
+              className="rounded-xl p-6 text-center"
+              style={{
+                background: 'linear-gradient(135deg, rgba(15, 15, 25, 0.9) 0%, rgba(20, 20, 40, 0.6) 50%, rgba(10, 10, 15, 0.95) 100%)',
+                border: '1px solid rgba(59, 130, 246, 0.3)'
+              }}
+            >
+              <div className="flex justify-center mb-4">
+                <div 
+                  className="w-16 h-16 rounded-full flex items-center justify-center"
+                  style={{
+                    background: 'rgba(0, 0, 0, 0.3)',
+                    boxShadow: '0 0 20px rgba(59, 130, 246, 0.4), inset 0 0 20px rgba(59, 130, 246, 0.1)'
+                  }}
+                >
+                  <Camera className="w-8 h-8" style={{ color: '#3b82f6' }} />
+                </div>
+              </div>
+              <h3 className="text-salmon text-lg font-semibold mb-4">High-End Production</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Premium, billboard-ready visuals built to enterprise-grade quality—at a fraction of the cost.
+              </p>
+              <p className="text-muted-foreground text-sm leading-relaxed mt-3">
+                We also build custom tools and AI automations that help businesses deploy, manage, and scale their operations.
+              </p>
+            </div>
+          </div>
         </div>
+
       </div>
     </GradientBackground>
   );

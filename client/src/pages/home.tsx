@@ -5,9 +5,9 @@ import { Link } from "wouter";
 import { ChevronDown } from "lucide-react";
 import { photography as defaultPhotography } from "@/config/site-config";
 import { HomepageServicesOverview } from "@/components/sections/homepage-services-overview";
+import { AboutApproach } from "@/components/sections/about-approach";
 import { HomepageCTA } from "@/components/sections/homepage-cta";
 import { Testimonials } from "@/components/sections/testimonials";
-import { ContactSection } from "@/components/sections/contact-section";
 
 export default function Home() {
   const config = defaultPhotography;
@@ -20,9 +20,9 @@ export default function Home() {
       <Navigation />
 
       {/* Hero Section */}
-      <section className="relative w-full aspect-video overflow-hidden flex items-center justify-center">
+      <section className="relative w-full aspect-video overflow-hidden flex items-center justify-center pt-16">
         {/* YouTube Video Background */}
-        <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-16 left-0 right-0 bottom-0 overflow-hidden">
           {/* Placeholder cover image */}
           <div
             className="absolute inset-0 bg-cover bg-center z-10"
@@ -85,9 +85,9 @@ export default function Home() {
       </section>
 
       <HomepageServicesOverview />
+      <AboutApproach />
 
       <HomepageCTA />
-      <ContactSection />
       <Testimonials />
       <Footer />
     </div>
