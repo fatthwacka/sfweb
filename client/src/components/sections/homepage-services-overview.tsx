@@ -67,7 +67,7 @@ export function HomepageServicesOverview() {
             Analog Intelligence
           </h1>
           <p className="text-lg text-muted-foreground mb-12 max-w-4xl mx-auto">
-            We provide professional studio content production and business automation tools to small and medium sized businesses.
+            We provide professional studio Photography & Videography, and AI business automation tools suited to small and medium sized businesses.
           </p>
           
           {/* New content in stylish cards */}

@@ -3,15 +3,12 @@ import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { ChevronDown } from "lucide-react";
-import { photography as defaultPhotography } from "@/config/site-config";
 import { HomepageServicesOverview } from "@/components/sections/homepage-services-overview";
 import { AboutApproach } from "@/components/sections/about-approach";
 import { HomepageCTA } from "@/components/sections/homepage-cta";
 import { Testimonials } from "@/components/sections/testimonials";
 
 export default function Home() {
-  const config = defaultPhotography;
-
   return (
     <div className="min-h-screen bg-background text-foreground background-gradient-blobs">
       {/* Static SEO content - loads immediately before dynamic content */}
@@ -19,8 +16,8 @@ export default function Home() {
 
       <Navigation />
 
-      {/* Hero Section */}
-      <section className="relative w-full aspect-video overflow-hidden flex items-center justify-center pt-16">
+      {/* Hero Section - Full width, min 40vh on mobile portrait, 16:9 on desktop */}
+      <section className="relative w-full min-h-[40vh] md:aspect-video overflow-hidden flex items-center justify-center pt-16">
         {/* YouTube Video Background */}
         <div className="absolute top-16 left-0 right-0 bottom-0 overflow-hidden">
           {/* Placeholder cover image */}
@@ -32,11 +29,11 @@ export default function Home() {
           >
             <div className="absolute inset-0 hero-gradient"></div>
           </div>
-          
-          {/* YouTube iframe with 16:9 aspect ratio */}
+
+          {/* YouTube iframe - scales to cover full width on mobile */}
           <div className="absolute inset-0 w-full h-full z-20">
             <iframe
-              className="absolute top-1/2 left-1/2 w-[120%] h-[120%] -translate-x-1/2 -translate-y-1/2"
+              className="absolute top-1/2 left-1/2 w-[177.77vh] min-w-full h-[56.25vw] min-h-full -translate-x-1/2 -translate-y-1/2"
               src="https://www.youtube.com/embed/m0bYSSHSvRg?autoplay=1&mute=1&loop=1&playlist=m0bYSSHSvRg&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&iv_load_policy=3&cc_load_policy=0&start=1"
               title="Hero Video Background"
               frameBorder="0"
@@ -52,10 +49,10 @@ export default function Home() {
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-corinthia text-white leading-tight hero-title-white" style={{ marginBottom: '-0.5rem' }}>
-            {config.hero.title}
+            Analog Intelligence
           </h1>
           <h3 className="text-lg md:text-xl text-white font-quicksand font-light mb-4">
-            {config.hero.subtitle}
+            We provide professional studio Photography & Videography, and AI business automation tools suited to small and medium sized businesses.
           </h3>
 
           {/* Scroll Down Button */}

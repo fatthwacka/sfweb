@@ -1784,7 +1784,7 @@ html, body {
 [data-gradient-section="contact"] h6,
 [data-gradient-section="contact"] p,
 [data-gradient-section="contact"] .text-muted-foreground {
-  color: var(--contact-text-tertiary, #94a3b8) !important;
+  color: var(--contact-text-tertiary, #d4dfe9) !important;
 }
 
 /* WHITE BACKGROUNDS inside gradient sections - override with dark text */
@@ -1817,7 +1817,7 @@ html, body {
 [data-gradient-section="portfolio"] h6,
 [data-gradient-section="portfolio"] p,
 [data-gradient-section="portfolio"] .text-muted-foreground {
-  color: var(--portfolio-text-tertiary, #94a3b8) !important;
+  color: var(--portfolio-text-tertiary, #d4dfe9) !important;
 }
 [data-gradient-section="privateGallery"] h1,
 [data-gradient-section="privateGallery"] h2 {
@@ -1849,7 +1849,7 @@ html, body {
 [data-gradient-section="services"] h6,
 [data-gradient-section="services"] p,
 [data-gradient-section="services"] .text-muted-foreground {
-  color: var(--services-text-tertiary, #94a3b8) !important;
+  color: var(--services-text-tertiary, #d4dfe9) !important;
 }
 [data-gradient-section="testimonials"] h1,
 [data-gradient-section="testimonials"] h2 {
@@ -1865,7 +1865,7 @@ html, body {
 [data-gradient-section="testimonials"] h6,
 [data-gradient-section="testimonials"] p,
 [data-gradient-section="testimonials"] .text-muted-foreground {
-  color: var(--testimonials-text-tertiary, #94a3b8) !important;
+  color: var(--testimonials-text-tertiary, #d4dfe9) !important;
 }
 [data-gradient-section="photography-corporate-packages"] h1,
 [data-gradient-section="photography-corporate-packages"] h2 {
