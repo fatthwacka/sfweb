@@ -987,7 +987,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
         portfolioItems.push(bundledCard);
       }
-      
+
+      // Note: Randomization is now handled on frontend for better UX
+      // (different order on each page load, not just server restart)
       res.json(portfolioItems);
     } catch (error) {
       console.error("Fetch portfolio cards error:", error);

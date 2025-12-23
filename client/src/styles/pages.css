@@ -448,7 +448,8 @@
   }
 
   .portfolio-card-overlay {
-    @apply absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300;
+    /* Removed darkening effect - only scale/grow on hover */
+    @apply absolute inset-0 bg-black/0 transition-all duration-300;
   }
 
   .portfolio-card-footer {

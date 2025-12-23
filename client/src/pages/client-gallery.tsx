@@ -1294,10 +1294,9 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
             }}
           />
         ) : null}
-        
-        {/* Optional dark overlay for better text contrast */}
-        <div className="absolute inset-0 bg-black/20" />
-        
+
+        {/* No overlay - full brightness (100%) for cover images/videos */}
+
         {/* Hero content removed - titles now in navbar */}
       </section>
 

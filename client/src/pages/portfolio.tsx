@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Navigation } from '@/components/layout/navigation';
 import { Footer } from '@/components/layout/footer';
 import { PortfolioGrid } from '@/components/portfolio/portfolio-grid';
@@ -36,7 +36,7 @@ interface Shoot {
 export function Portfolio() {
   const [currentPage, setCurrentPage] = useState(1);
   
-  const { data: allItems = [], isLoading, error } = useQuery<Shoot[]>({
+  const { data: fetchedItems = [], isLoading, error } = useQuery<Shoot[]>({
     queryKey: ['portfolio', 'cards'],
     queryFn: async () => {
       const response = await fetch('/api/portfolio/cards');
@@ -46,6 +46,18 @@ export function Portfolio() {
       return response.json();
     }
   });
+
+  // Randomize items on each page load using Fisher-Yates shuffle
+  const allItems = useMemo(() => {
+    if (fetchedItems.length === 0) return [];
+
+    const items = [...fetchedItems]; // Create a copy to avoid mutating original
+    for (let i = items.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [items[i], items[j]] = [items[j], items[i]];
+    }
+    return items;
+  }, [fetchedItems]);
 
   const totalItems = allItems.length;
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);

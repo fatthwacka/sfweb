@@ -51,43 +51,35 @@ const NavigationComponent = memo(function Navigation() {
           <div className="hidden md:flex items-center space-x-8">
             <Link href="/photography" className={cn(
               "transition-colors duration-300 font-barlow font-light",
-              location.startsWith('/photography') 
-                ? "text-orange-200" 
+              location.startsWith('/photography')
+                ? "text-orange-200"
                 : "text-blue-100 hover:text-cyan-bright"
             )}>
               Photo & Video
             </Link>
-            <Link href="/social-media" className={cn(
-              "transition-colors duration-300 font-barlow font-light",
-              location === '/social-media' 
-                ? "text-orange-200" 
-                : "text-blue-100 hover:text-cyan-bright"
-            )}>
-              Social Media
-            </Link>
             <Link href="/web-apps" className={cn(
               "transition-colors duration-300 font-barlow font-light",
-              location === '/web-apps' 
-                ? "text-orange-200" 
+              location === '/web-apps'
+                ? "text-orange-200"
                 : "text-blue-100 hover:text-cyan-bright"
             )}>
               Web & Apps
             </Link>
+            <Link href="/social-media" className={cn(
+              "transition-colors duration-300 font-barlow font-light",
+              location === '/social-media'
+                ? "text-orange-200"
+                : "text-blue-100 hover:text-cyan-bright"
+            )}>
+              Social Media
+            </Link>
             <Link href="/stories" className={cn(
               "transition-colors duration-300 font-barlow font-light",
-              location.startsWith('/stories') 
-                ? "text-orange-200" 
+              location.startsWith('/stories')
+                ? "text-orange-200"
                 : "text-blue-100 hover:text-cyan-bright"
             )}>
               Stories
-            </Link>
-            <Link href="/about" className={cn(
-              "transition-colors duration-300 font-barlow font-light",
-              location === '/about' 
-                ? "text-orange-200" 
-                : "text-blue-100 hover:text-cyan-bright"
-            )}>
-              About
             </Link>
             <Link href="/contact" className={cn(
               "transition-colors duration-300 font-barlow font-light",
@@ -132,13 +124,6 @@ const NavigationComponent = memo(function Navigation() {
                 Photo & Video
               </Link>
               <Link
-                href="/social-media"
-                className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Social Media
-              </Link>
-              <Link
                 href="/web-apps"
                 className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -146,18 +131,18 @@ const NavigationComponent = memo(function Navigation() {
                 Web & Apps
               </Link>
               <Link
+                href="/social-media"
+                className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Social Media
+              </Link>
+              <Link
                 href="/stories"
                 className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Stories
-              </Link>
-              <Link
-                href="/about"
-                className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                About
               </Link>
               <Link
                 href="/contact"
