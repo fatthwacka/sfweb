@@ -6,6 +6,22 @@
 import { ToolDefinition, ToolCategory, TIER_HIERARCHY, AccessTier } from '../types/tools';
 
 export const TOOLS_REGISTRY: ToolDefinition[] = [
+  // === AI CONTENT CREATION (verified minimum) ===
+  {
+    slug: 'web-page-content-creator',
+    name: 'Web Page Content Creator',
+    description: 'Transform any webpage into structured, professional content using AI analysis',
+    icon: '🌐',
+    category: 'ai-powered',
+    minTier: 'verified',
+    requiresAuth: true,
+    usesAI: true,
+    usesLocalFiles: false,
+    limits: { verified: 10, pro: 100, enterprise: null },
+    badge: 'new',
+    customAction: 'n8n-workflow', // Special flag for n8n workflow integration
+  },
+
   // === FILE MANAGEMENT (mostly anonymous) ===
   {
     slug: 'file-renamer',

@@ -47,6 +47,15 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD}
       VITE_GA_MEASUREMENT_ID: ${VITE_GA_MEASUREMENT_ID}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GOOGLE_VERTEX_API_KEY: ${GOOGLE_VERTEX_API_KEY}
+      GOOGLE_PROJECT_ID: ${GOOGLE_PROJECT_ID}
+      GOOGLE_VERTEX_LOCATION: ${GOOGLE_VERTEX_LOCATION}
+      UNSPLASH_ACCESS_KEY: ${UNSPLASH_ACCESS_KEY}
+      AIRTABLE_TOKEN: ${AIRTABLE_TOKEN}
+      AIRTABLE_BASE_ID: ${AIRTABLE_BASE_ID}
+      AIRTABLE_TABLE_ID: ${AIRTABLE_TABLE_ID}
+      N8N_HOST: ${N8N_HOST}
+      N8N_API_KEY: ${N8N_API_KEY}
     volumes:
       # Mount source code for development hot reload
       - .:/app
@@ -61,13 +70,11 @@ services:
     # No dependency on local postgres since we're using Supabase
     networks:
       - sfweb-network
-      - root_default
     restart: unless-stopped
     command: npm run dev
     labels:
       # Enable Traefik
       - "traefik.enable=true"
-      - "traefik.docker.network=root_default"
       
       # HTTP to HTTPS redirect
       - "traefik.http.routers.slyfox-http.rule=Host(`slyfox.co.za`)"
@@ -110,5 +117,3 @@ volumes:
 networks:
   sfweb-network:
     driver: bridge
-  root_default:
-    external: true

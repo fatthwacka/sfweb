@@ -5377,6 +5377,307 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // N8N MCP Integration API
+  app.post("/api/n8n/mcp-execute", async (req, res) => {
+    try {
+      const { workflowName, input } = req.body;
+      
+      if (!workflowName) {
+        return res.status(400).json({ error: "Workflow name is required" });
+      }
+
+      // n8n instance configuration
+      const n8nHost = process.env.N8N_HOST || "http://168.231.86.89:5678";
+      const n8nApiKey = process.env.N8N_API_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyNmJjNTRhMC1jNDU0LTRjYTYtODdkYy03MGJiNDJiNDY4YTAiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzY2NzYwODk1LCJleHAiOjE3NzQ0Nzk2MDB9.aOpPh0BTOZF4s-EJN4ALttl9igX3VKKsdiFzy8Hdsc0";
+      
+      // Workflow name to ID mapping based on N8N_INTEGRATION.md
+      const workflowMap: Record<string, string> = {
+        "Rip page and make content (Gemini)": "aZ45BRkUzOn6js0h",
+        "Veo 3 Video Generator": "VqlWfaH28rOy84x0",
+        "Tavily and ElevenLabs": "4eAEEuHw7u2XJYDP",
+        "Google Maps Scraper": "k6qtAyr3FOX8CIej",
+        "Create articles not repetitive": "TG9oJx66C2uF96CB",
+        "META Auto Responder": "ZlmsEnvZjDzSyCX1",
+        "Rip page and make content": "5ZZxNtNzg3Fxqxuf"
+      };
+
+      const workflowId = workflowMap[workflowName];
+      if (!workflowId) {
+        return res.status(400).json({ 
+          error: "Unknown workflow name", 
+          availableWorkflows: Object.keys(workflowMap)
+        });
+      }
+      
+      console.log(`Executing n8n workflow '${workflowName}' (ID: ${workflowId})`);
+      console.log('Input data:', input);
+      
+      // Execute workflow via n8n REST API
+      // Try POST to trigger endpoint first, then fall back to execute
+      let n8nResponse = await fetch(`${n8nHost}/api/v1/workflows/${workflowId}/trigger`, {
+        method: 'POST',
+        headers: {
+          'X-N8N-API-KEY': n8nApiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(input || {})
+      });
+
+      // If trigger fails, try execute endpoint
+      if (!n8nResponse.ok && n8nResponse.status === 405) {
+        n8nResponse = await fetch(`${n8nHost}/api/v1/workflows/${workflowId}/execute`, {
+          method: 'POST',
+          headers: {
+            'X-N8N-API-KEY': n8nApiKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(input || {})
+        });
+      }
+
+      if (!n8nResponse.ok) {
+        const errorText = await n8nResponse.text();
+        throw new Error(`n8n API error (${n8nResponse.status}): ${errorText}`);
+      }
+
+      const result = await n8nResponse.json();
+      
+      res.json({
+        success: true,
+        message: `Workflow '${workflowName}' executed successfully`,
+        workflowName,
+        workflowId,
+        input,
+        result,
+        executionId: result.data?.executionId || result.executionId
+      });
+
+    } catch (error: any) {
+      console.error('N8N execution error:', error);
+      res.status(500).json({ 
+        error: 'Failed to execute n8n workflow',
+        details: error.message 
+      });
+    }
+  });
+
+  // N8N Webhook Integration API
+  app.post("/api/n8n/webhook-execute", async (req, res) => {
+    try {
+      const { url } = req.body;
+      
+      if (!url) {
+        return res.status(400).json({ error: "URL is required" });
+      }
+
+      // n8n webhook configuration
+      const n8nHost = process.env.N8N_HOST || 'http://168.231.86.89:5678';
+      const webhookPath = '/webhook/rip-content';
+      const webhookUrl = `${n8nHost}${webhookPath}`;
+      
+      console.log(`Triggering n8n webhook: ${webhookUrl}`);
+      console.log('URL to process:', url);
+      
+      // Call the n8n webhook directly
+      const webhookResponse = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url }),
+      });
+
+      if (!webhookResponse.ok) {
+        throw new Error(`Webhook request failed: ${webhookResponse.status} ${webhookResponse.statusText}`);
+      }
+
+      const webhookResult = await webhookResponse.json();
+      console.log('N8N webhook response:', webhookResult);
+      
+      res.json({
+        success: true,
+        message: 'Workflow triggered successfully via webhook',
+        webhookUrl,
+        url,
+        result: webhookResult
+      });
+
+    } catch (error: any) {
+      console.error('N8N webhook execution error:', error);
+      res.status(500).json({ 
+        error: 'Failed to execute webhook workflow',
+        details: error.message 
+      });
+    }
+  });
+
+  // Enhanced Web Page Content Creator API
+  app.post("/api/content/web-page-creator", async (req, res) => {
+    try {
+      const { url, useSiteImages = true, scrapingOptions = {} } = req.body;
+      
+      if (!url) {
+        return res.status(400).json({ error: "URL is required" });
+      }
+
+      console.log(`Starting enhanced web page content creation for: ${url}`);
+      
+      // Set default scraping options
+      const defaultOptions = {
+        includeMetaData: true,
+        extractHeadings: true,
+        maxContentLength: 10000,
+        imageQualityThreshold: 'medium' as const,
+        enableJavaScript: false,
+        includeSchemaData: true
+      };
+      
+      const options = { ...defaultOptions, ...scrapingOptions };
+      
+      // Step 1: Extract content from webpage
+      const { WebContentExtractor } = await import('./services/web-content-extractor');
+      const contentExtractor = new WebContentExtractor();
+      const extractedContent = await contentExtractor.extractContent(url, options);
+      
+      console.log(`Content extracted: ${extractedContent.stats.contentLength} chars, ${extractedContent.stats.imageCount} images`);
+      
+      // Step 2: Assess and enhance images
+      const { ImageEnhancementService } = await import('./services/image-enhancement-service');
+      const imageService = new ImageEnhancementService();
+      const imageAssessment = await imageService.assessAndEnhanceImages(
+        extractedContent.images,
+        extractedContent.cleanText,
+        url
+      );
+      
+      console.log(`Image assessment complete: ${imageAssessment.usableImages.length} usable, ${imageAssessment.fallbackImages.length} fallback`);
+      
+      // Step 3: Generate content with Gemini
+      const { GeminiContentGenerator } = await import('./services/gemini-content-generator');
+      const geminiGenerator = new GeminiContentGenerator();
+      const contentResult = await geminiGenerator.generateContent(
+        extractedContent,
+        imageAssessment,
+        useSiteImages
+      );
+      
+      console.log(`Content generation complete: ${contentResult.articles.length} articles created`);
+      
+      // Step 4: Save to Airtable
+      let airtableResponse = null;
+      try {
+        const { AirtableService } = await import('./services/airtable-service');
+        const airtableService = new AirtableService();
+        airtableResponse = await airtableService.saveArticles(
+          contentResult.articles,
+          url,
+          extractedContent.title
+        );
+        console.log(`✅ Saved ${airtableResponse.records.length} articles to Airtable`);
+      } catch (airtableError: any) {
+        console.error('⚠️ Airtable save failed (continuing without):', airtableError.message);
+        // Continue without Airtable - don't fail the entire request
+      }
+      
+      // Step 5: Prepare response
+      const response = {
+        success: true,
+        data: {
+          ...contentResult,
+          extractionStats: extractedContent.stats,
+          imageStrategy: imageAssessment.recommendations.reasoning,
+          processingTime: Date.now(),
+          airtableSaved: airtableResponse ? airtableResponse.records.length : 0,
+          airtableRecords: airtableResponse?.records.map(record => ({
+            id: record.id,
+            createdTime: record.createdTime
+          })) || []
+        },
+        metadata: {
+          sourceUrl: url,
+          sourceTitle: extractedContent.title,
+          processingOptions: options,
+          generatedAt: new Date().toISOString()
+        }
+      };
+      
+      res.json(response);
+      
+    } catch (error: any) {
+      console.error('Enhanced web page content creation failed:', error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Content creation failed',
+        details: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  // Test endpoint for debugging Airtable connection
+  app.post('/api/content/test-airtable', async (req, res) => {
+    try {
+      console.log('🔍 Starting Airtable test...');
+      
+      // Test environment variables first
+      const token = process.env.AIRTABLE_TOKEN;
+      const baseId = process.env.AIRTABLE_BASE_ID;
+      const tableId = process.env.AIRTABLE_TABLE_ID;
+      
+      console.log('📋 Environment check:');
+      console.log('  - Token:', token ? `${token.substring(0, 20)}...` : 'MISSING');
+      console.log('  - Base ID:', baseId || 'MISSING');
+      console.log('  - Table ID:', tableId || 'MISSING');
+      
+      if (!token || !baseId || !tableId) {
+        return res.status(500).json({
+          success: false,
+          error: 'Environment variables missing',
+          details: { token: !!token, baseId: !!baseId, tableId: !!tableId },
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      console.log('📦 Importing AirtableService...');
+      const { AirtableService } = await import('./services/airtable-service');
+      console.log('✅ Import successful');
+      
+      console.log('🏗️ Creating service instance...');
+      const airtableService = new AirtableService();
+      console.log('✅ Instance created');
+      
+      console.log('📡 Testing connection...');
+      const connectionTest = await airtableService.testConnection();
+      console.log('📊 Connection result:', connectionTest);
+      
+      if (connectionTest) {
+        res.json({
+          success: true,
+          message: 'Airtable connection successful',
+          credentials: { token: !!token, baseId: !!baseId, tableId: !!tableId },
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          error: 'Airtable connection failed',
+          credentials: { token: !!token, baseId: !!baseId, tableId: !!tableId },
+          timestamp: new Date().toISOString()
+        });
+      }
+    } catch (error: any) {
+      console.error('💥 Airtable test endpoint error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Test failed',
+        details: error.message,
+        stack: error.stack,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -44,6 +44,9 @@ export interface ToolDefinition {
 
   // Route path (defaults to /tools/{slug})
   customPath?: string;
+  
+  // Custom action type for special integrations
+  customAction?: 'n8n-workflow' | 'popup-form';
 }
 
 // Modal types for access control popups

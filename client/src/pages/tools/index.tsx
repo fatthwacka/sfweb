@@ -14,6 +14,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ToolCard } from '@/components/tools/tool-card';
 import { AccessModal } from '@/components/tools/access-modal';
+import { EnhancedWebPageContentModal } from '@/components/tools/web-page-content-enhanced-modal';
+import { ProgressModal } from '@/components/tools/progress-modal';
 import { useToolAccess } from '@/hooks/use-tool-access';
 
 import {
@@ -33,6 +35,12 @@ export default function ToolsHub() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeModal, setActiveModal] = useState<AccessModalType | null>(null);
   const [selectedTool, setSelectedTool] = useState<ToolDefinition | null>(null);
+  const [isWebPageModalOpen, setIsWebPageModalOpen] = useState(false);
+  const [isWorkflowRunning, setIsWorkflowRunning] = useState(false);
+  const [progressStage, setProgressStage] = useState('');
+  const [isProgressModalOpen, setIsProgressModalOpen] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   // Filter tools based on search
   const filteredTools = useMemo(() => {
@@ -53,6 +61,9 @@ export default function ToolsHub() {
     if (modalType) {
       setSelectedTool(tool);
       setActiveModal(modalType);
+    } else if (tool.customAction === 'n8n-workflow') {
+      // Handle web page content creator specifically
+      setIsWebPageModalOpen(true);
     } else {
       setLocation(getToolPath(tool));
     }
@@ -62,6 +73,86 @@ export default function ToolsHub() {
   const handleModalClose = () => {
     setActiveModal(null);
     setSelectedTool(null);
+  };
+
+  // Handle enhanced web page content submission
+  const handleWebPageContentSubmit = async (request: { url: string; useSiteImages: boolean; scrapingOptions: any }) => {
+    try {
+      setIsWorkflowRunning(true);
+      setIsWebPageModalOpen(false);
+      setIsProgressModalOpen(true);
+      setIsCompleted(false);
+      setHasError(false);
+      
+      // Progress stage cycling
+      const stages = [
+        '🌐 Connecting to webpage...',
+        '🔍 Scraping and analyzing content...',
+        '📝 Extracting key information...',
+        '🎯 Identifying engagement opportunities...',
+        '🖼️ Processing images and visuals...',
+        '🤖 AI crafting compelling headlines...',
+        '✨ Generating punchy content...',
+        '🔥 Adding viral hooks...',
+        '📊 Optimizing for maximum impact...',
+        '🎨 Selecting perfect images...',
+        '💾 Saving to your content library...',
+        '🚀 Finalizing professional articles...'
+      ];
+      
+      let stageIndex = 0;
+      setProgressStage(stages[0]);
+      
+      // Cycle through stages every 2-4 seconds
+      const progressInterval = setInterval(() => {
+        stageIndex = (stageIndex + 1) % stages.length;
+        setProgressStage(stages[stageIndex]);
+      }, Math.random() * 2000 + 2000); // 2-4 second intervals
+
+      // Call enhanced native API
+      const response = await fetch('/api/content/web-page-creator', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || 'Failed to create content');
+      }
+
+      const result = await response.json();
+      console.log('Enhanced content creation completed:', result);
+      
+      // Clear progress and show success
+      clearInterval(progressInterval);
+      setProgressStage('✅ Content creation completed successfully!');
+      setIsCompleted(true);
+      
+      // Auto-hide success modal after 3 seconds
+      setTimeout(() => {
+        setIsWorkflowRunning(false);
+        setIsProgressModalOpen(false);
+        setIsCompleted(false);
+        setProgressStage('');
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Error creating enhanced content:', error);
+      clearInterval(progressInterval);
+      setProgressStage('❌ Content creation failed');
+      setHasError(true);
+      
+      // Auto-hide error modal after 5 seconds
+      setTimeout(() => {
+        setIsWorkflowRunning(false);
+        setIsProgressModalOpen(false);
+        setHasError(false);
+        setProgressStage('');
+      }, 5000);
+    }
   };
 
   // Count accessible tools
@@ -113,6 +204,7 @@ export default function ToolsHub() {
                     key={tool.slug}
                     tool={tool}
                     onClick={() => handleToolClick(tool)}
+                    isLoading={isWorkflowRunning && tool.slug === 'web-page-content-creator'}
                   />
                 ))}
               </div>
@@ -163,6 +255,23 @@ export default function ToolsHub() {
       <AccessModal
         modalType={activeModal}
         onClose={handleModalClose}
+      />
+
+      {/* Enhanced Web Page Content Creator Modal */}
+      <EnhancedWebPageContentModal
+        isOpen={isWebPageModalOpen}
+        onClose={() => setIsWebPageModalOpen(false)}
+        onSubmit={handleWebPageContentSubmit}
+        isLoading={isWorkflowRunning}
+        progressStage={progressStage}
+      />
+
+      {/* Progress Modal */}
+      <ProgressModal
+        isOpen={isProgressModalOpen}
+        progressStage={progressStage}
+        isCompleted={isCompleted}
+        hasError={hasError}
       />
 
       <Footer />
