@@ -38,9 +38,12 @@ export default function ToolsHub() {
   const [isWebPageModalOpen, setIsWebPageModalOpen] = useState(false);
   const [isWorkflowRunning, setIsWorkflowRunning] = useState(false);
   const [progressStage, setProgressStage] = useState('');
+  const [progressPercentage, setProgressPercentage] = useState(0);
   const [isProgressModalOpen, setIsProgressModalOpen] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [createdContentClient, setCreatedContentClient] = useState<string>('');
+  const [createdContentSourceTitle, setCreatedContentSourceTitle] = useState<string>('');
 
   // Filter tools based on search
   const filteredTools = useMemo(() => {
@@ -86,6 +89,8 @@ export default function ToolsHub() {
       setIsProgressModalOpen(true);
       setIsCompleted(false);
       setHasError(false);
+      setProgressPercentage(0);
+      setCreatedContentClient('');
       
       // Progress stage cycling
       const stages = [
@@ -99,17 +104,20 @@ export default function ToolsHub() {
         '🔥 Adding viral hooks...',
         '📊 Optimizing for maximum impact...',
         '🎨 Selecting perfect images...',
-        '💾 Saving to your content library...',
-        '🚀 Finalizing professional articles...'
+        '💾 Saving to content database...',
+        '🚀 Finalizing viral articles...'
       ];
       
+      const totalStages = stages.length;
       let stageIndex = 0;
       setProgressStage(stages[0]);
+      setProgressPercentage(Math.round((stageIndex + 1) / totalStages * 100));
       
       // Cycle through stages every 2-4 seconds
       const progressInterval = setInterval(() => {
         stageIndex = (stageIndex + 1) % stages.length;
         setProgressStage(stages[stageIndex]);
+        setProgressPercentage(Math.round((stageIndex + 1) / totalStages * 100));
       }, Math.random() * 2000 + 2000); // 2-4 second intervals
 
       // Call enhanced native API
@@ -129,32 +137,94 @@ export default function ToolsHub() {
       const result = await response.json();
       console.log('Enhanced content creation completed:', result);
       
-      // Clear progress and show success
+      // Extract client name for filtering
+      if (result.data.articlesForAirtable && result.data.articlesForAirtable.length > 0) {
+        const clientName = result.data.articlesForAirtable[0]['Client'] || '';
+        setCreatedContentClient(clientName);
+      }
+      
+      // Update progress for database upload phase
       clearInterval(progressInterval);
-      setProgressStage('✅ Content creation completed successfully!');
+      setProgressStage('💾 Saving articles to content database...');
+      setProgressPercentage(95);
+      
+      // Save articles to Airtable using client-side approach (like Article Editor)
+      if (result.data.articlesForAirtable && result.data.articlesForAirtable.length > 0) {
+        try {
+          // Get Airtable config (using same endpoint as Article Editor)
+          const configResponse = await fetch('/api/airtable/config', {
+            headers: {
+              'Authorization': 'Bearer staff-token' // Same as Article Editor
+            }
+          });
+          
+          if (!configResponse.ok) {
+            throw new Error('Could not get Airtable configuration');
+          }
+          
+          const config = await configResponse.json();
+          console.log(`📝 Uploading ${result.data.articlesForAirtable.length} articles to Airtable...`);
+          
+          // Upload each article to Airtable
+          let uploadedCount = 0;
+          for (const article of result.data.articlesForAirtable) {
+            try {
+              const airtableResponse = await fetch(`https://api.airtable.com/v0/${config.airtable.baseId}/${config.airtable.tableId}`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${config.airtable.token}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  fields: article
+                })
+              });
+
+              if (airtableResponse.ok) {
+                uploadedCount++;
+                setProgressStage(`💾 Saved ${uploadedCount}/${result.data.articlesForAirtable.length} articles...`);
+              } else {
+                console.error('Failed to upload article:', await airtableResponse.text());
+              }
+            } catch (articleError: any) {
+              console.error('Error uploading individual article:', articleError);
+            }
+          }
+          
+          console.log(`✅ Successfully uploaded ${uploadedCount}/${result.data.articlesForAirtable.length} articles to database`);
+          setProgressStage(`✅ Content creation and database upload completed! (${uploadedCount} articles saved)`);
+          setProgressPercentage(100);
+          
+        } catch (databaseError: any) {
+          console.error('Database upload failed:', databaseError);
+          setProgressStage('✅ Content creation completed (database upload failed)');
+          setProgressPercentage(100);
+        }
+      } else {
+        setProgressStage('✅ Content creation completed successfully!');
+        setProgressPercentage(100);
+      }
+      
       setIsCompleted(true);
       
-      // Auto-hide success modal after 3 seconds
+      // Auto-hide success modal after 5 seconds (longer to read the result)
       setTimeout(() => {
         setIsWorkflowRunning(false);
         setIsProgressModalOpen(false);
         setIsCompleted(false);
         setProgressStage('');
-      }, 3000);
+      }, 5000);
       
     } catch (error) {
       console.error('Error creating enhanced content:', error);
-      clearInterval(progressInterval);
+      if (typeof progressInterval !== 'undefined') {
+        clearInterval(progressInterval);
+      }
       setProgressStage('❌ Content creation failed');
       setHasError(true);
+      setProgressPercentage(0);
       
-      // Auto-hide error modal after 5 seconds
-      setTimeout(() => {
-        setIsWorkflowRunning(false);
-        setIsProgressModalOpen(false);
-        setHasError(false);
-        setProgressStage('');
-      }, 5000);
+      // No auto-dismiss - user manually closes
     }
   };
 
@@ -273,8 +343,44 @@ export default function ToolsHub() {
       <ProgressModal
         isOpen={isProgressModalOpen}
         progressStage={progressStage}
+        progressPercentage={progressPercentage}
         isCompleted={isCompleted}
         hasError={hasError}
+        clientName={createdContentClient}
+        sourceTitle={createdContentSourceTitle}
+        onClose={() => {
+          // Manual close handler
+          setIsProgressModalOpen(false);
+          setIsWorkflowRunning(false);
+          setIsCompleted(false);
+          setHasError(false);
+          setProgressStage('');
+          setProgressPercentage(0);
+          setCreatedContentClient('');
+          setCreatedContentSourceTitle('');
+        }}
+        onViewContent={() => {
+          // Close the progress modal first
+          setIsProgressModalOpen(false);
+          setIsWorkflowRunning(false);
+          setIsCompleted(false);
+          setProgressStage('');
+          setProgressPercentage(0);
+          setCreatedContentClient('');
+          setCreatedContentSourceTitle('');
+          
+          // Navigate to Article Editor with client AND source title filters
+          const params = new URLSearchParams();
+          if (createdContentClient) {
+            params.append('client', createdContentClient);
+          }
+          if (createdContentSourceTitle) {
+            params.append('source', createdContentSourceTitle);
+          }
+          const queryString = params.toString();
+          const url = `/tools/article-editor${queryString ? '?' + queryString : ''}`;
+          window.open(url, '_blank');
+        }}
       />
 
       <Footer />

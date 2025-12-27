@@ -5563,23 +5563,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`Content generation complete: ${contentResult.articles.length} articles created`);
       
-      // Step 4: Save to Airtable
-      let airtableResponse = null;
-      try {
-        const { AirtableService } = await import('./services/airtable-service');
-        const airtableService = new AirtableService();
-        airtableResponse = await airtableService.saveArticles(
-          contentResult.articles,
-          url,
-          extractedContent.title
-        );
-        console.log(`✅ Saved ${airtableResponse.records.length} articles to Airtable`);
-      } catch (airtableError: any) {
-        console.error('⚠️ Airtable save failed (continuing without):', airtableError.message);
-        // Continue without Airtable - don't fail the entire request
-      }
+      // Step 4: Prepare response with articles for client-side Airtable handling
+      // NOTE: Airtable integration now handled in browser (like Article Editor)
+      console.log(`📤 Returning ${contentResult.articles.length} articles for client-side Airtable integration`);
       
-      // Step 5: Prepare response
       const response = {
         success: true,
         data: {
@@ -5587,17 +5574,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
           extractionStats: extractedContent.stats,
           imageStrategy: imageAssessment.recommendations.reasoning,
           processingTime: Date.now(),
-          airtableSaved: airtableResponse ? airtableResponse.records.length : 0,
-          airtableRecords: airtableResponse?.records.map(record => ({
-            id: record.id,
-            createdTime: record.createdTime
-          })) || []
+          // Articles ready for client-side Airtable upload
+          // NOTE: Using exact field names from Airtable table structure
+          articlesForAirtable: contentResult.articles.map(article => ({
+            'Headline': article.headline,
+            'Hook': article.hook,
+            'Content': article.content,
+            'Hashtags': article.hashtags.join(', '),
+            'Focus Angle': article.focusAngle,
+            'Image URL': article.assignedImageUrl,
+            'Image Placement': article.imagePlacement,
+            'Client': article.clientName, // Fixed: 'Client' not 'Client Name'
+            'Tone': article.tone,
+            'Status': 'Draft',
+            'Source Title': extractedContent.title,
+            'Source URL': url
+          }))
         },
         metadata: {
           sourceUrl: url,
           sourceTitle: extractedContent.title,
           processingOptions: options,
-          generatedAt: new Date().toISOString()
+          generatedAt: new Date().toISOString(),
+          instructions: 'Articles ready for client-side Airtable upload'
         }
       };
       
@@ -5718,6 +5717,270 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Airtable config endpoint error:', error);
       res.status(500).json({ error: 'Failed to provide configuration' });
+    }
+  });
+
+  // === AI IMAGE GENERATION ENDPOINTS ===
+
+  // AI Prompt Analysis - Analyze article content and suggest image prompts
+  app.post('/api/ai/analyze-image-prompt', async (req, res) => {
+    try {
+      const { articleContext, artStyle, imageStyle } = req.body;
+
+      if (!articleContext) {
+        return res.status(400).json({
+          success: false,
+          error: 'Article context is required',
+        });
+      }
+
+      console.log('🧠 Starting AI prompt analysis...');
+
+      const { AIPromptAnalyzer } = await import('./services/ai-prompt-analyzer');
+      const analyzer = new AIPromptAnalyzer();
+
+      const result = await analyzer.analyzeContent({
+        articleContext,
+        artStyle: artStyle || 'photorealistic',
+        imageStyle: imageStyle || 'hero',
+      });
+
+      console.log('✅ AI prompt analysis completed');
+
+      res.json({
+        success: true,
+        suggestedPrompt: result.suggestedPrompt,
+        analysisReasoning: result.analysisReasoning,
+        alternativePrompts: result.alternativePrompts,
+        keyVisualElements: result.keyVisualElements,
+        timestamp: new Date().toISOString(),
+      });
+
+    } catch (error: any) {
+      console.error('💥 AI prompt analysis error:', error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Prompt analysis failed',
+        details: error.message,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  });
+
+  // AI Image Generation - Generate images using Vertex AI
+  app.post('/api/ai/generate-image', async (req, res) => {
+    try {
+      const {
+        prompt,
+        includeTitle,
+        includeSubtitle,
+        artStyle,
+        imageStyle,
+        resolution,
+        aspectRatio,
+        articleContext
+      } = req.body;
+
+      if (!prompt || !prompt.trim()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Image prompt is required',
+        });
+      }
+
+      console.log('🎨 Starting AI image generation...');
+
+      const { VertexAIImageGenerator } = await import('./services/vertex-ai-image-generator');
+      const generator = new VertexAIImageGenerator();
+
+      const result = await generator.generateImage({
+        prompt: prompt.trim(),
+        includeTitle: includeTitle || false,
+        includeSubtitle: includeSubtitle || false,
+        artStyle: artStyle || 'photorealistic',
+        imageStyle: imageStyle || 'hero',
+        resolution: resolution || '1500',
+        aspectRatio: aspectRatio || '16:9',
+        articleContext,
+      });
+
+      console.log('✅ AI image generation completed');
+
+      res.json({
+        success: true,
+        imageUrl: result.imageUrl,
+        prompt: result.prompt,
+        metadata: result.metadata,
+        timestamp: new Date().toISOString(),
+      });
+
+    } catch (error: any) {
+      console.error('💥 AI image generation error:', error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Image generation failed',
+        details: error.message,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  });
+
+  // === UNSPLASH INTEGRATION ENDPOINTS ===
+
+  // AI-powered Unsplash search term generation
+  app.post('/api/ai/generate-unsplash-search', async (req, res) => {
+    try {
+      const { articleContext, artStyle, imageStyle } = req.body;
+
+      if (!articleContext) {
+        return res.status(400).json({
+          success: false,
+          error: 'Article context is required',
+        });
+      }
+
+      console.log('🧠 Generating AI-powered Unsplash search term...');
+
+      // Use Gemini to generate search terms
+      const prompt = `
+You are an expert at creating effective search terms for stock photography. Analyze the following article content and generate 1-3 optimal search terms for finding relevant Unsplash images.
+
+ARTICLE CONTENT:
+${articleContext.headline ? `Headline: "${articleContext.headline}"` : ''}
+${articleContext.hook ? `Hook: "${articleContext.hook}"` : ''}
+${articleContext.content ? `Content Preview: "${articleContext.content.slice(0, 300)}..."` : ''}
+
+TARGET STYLE: ${artStyle} ${imageStyle}
+
+REQUIREMENTS:
+1. Generate search terms that will find relevant, high-quality images on Unsplash
+2. Consider the article topic, mood, and intended image style
+3. Keep terms broad enough to return results but specific enough to be relevant
+4. Avoid overly specific terms that might have zero results
+5. Consider visual metaphors and symbolic representations
+
+Respond with only the best search term (2-4 words maximum). No explanation needed.
+
+Examples of good search terms:
+- "business team meeting"
+- "modern technology"
+- "health wellness"
+- "financial growth"
+- "creative workspace"
+
+Your search term:`;
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${process.env.GEMINI_API_KEY}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: prompt
+              }]
+            }],
+            generationConfig: {
+              temperature: 0.3, // Lower temperature for more consistent results
+              topK: 10,
+              topP: 0.8,
+              maxOutputTokens: 50,
+            },
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Gemini API error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      const searchTerm = result.candidates[0].content.parts[0].text.trim();
+
+      console.log('✅ AI search term generated:', searchTerm);
+
+      res.json({
+        success: true,
+        searchTerm,
+        timestamp: new Date().toISOString(),
+      });
+
+    } catch (error: any) {
+      console.error('💥 AI search term generation error:', error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Search term generation failed',
+        details: error.message,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  });
+
+  // Unsplash image search
+  app.post('/api/unsplash/search', async (req, res) => {
+    try {
+      const { query, per_page = 6, orientation = 'all' } = req.body;
+
+      if (!query || !query.trim()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Search query is required',
+        });
+      }
+
+      const unsplashAccessKey = process.env.UNSPLASH_ACCESS_KEY;
+      if (!unsplashAccessKey) {
+        throw new Error('Unsplash access key not configured');
+      }
+
+      console.log(`🔍 Searching Unsplash for: "${query}" (${per_page} images, ${orientation} orientation)`);
+
+      const searchUrl = new URL('https://api.unsplash.com/search/photos');
+      searchUrl.searchParams.append('query', query.trim());
+      searchUrl.searchParams.append('per_page', per_page.toString());
+      searchUrl.searchParams.append('orientation', orientation);
+      searchUrl.searchParams.append('content_filter', 'high'); // High quality images only
+
+      const response = await fetch(searchUrl.toString(), {
+        headers: {
+          'Authorization': `Client-ID ${unsplashAccessKey}`,
+          'Accept-Version': 'v1',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('❌ Unsplash API error:', response.status, errorData);
+        throw new Error(`Unsplash API error: ${response.status} - ${errorData}`);
+      }
+
+      const result = await response.json();
+      
+      console.log(`✅ Found ${result.results.length} Unsplash images`);
+
+      res.json({
+        success: true,
+        results: result.results,
+        total: result.total,
+        total_pages: result.total_pages,
+        timestamp: new Date().toISOString(),
+      });
+
+    } catch (error: any) {
+      console.error('💥 Unsplash search error:', error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Unsplash search failed',
+        details: error.message,
+        timestamp: new Date().toISOString(),
+      });
     }
   });
 

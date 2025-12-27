@@ -5,7 +5,8 @@
  */
 
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Upload, ArrowLeft, ArrowRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Upload, ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
+import { useLocation } from 'wouter';
 
 import { Navigation } from '@/components/layout/navigation';
 import { Footer } from '@/components/layout/footer';
@@ -16,6 +17,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ImageGeneratorModal, type ImageGenerationResult } from '@/components/tools/image-generator-modal';
+import { toast } from '@/hooks/use-toast';
+import { Toaster } from '@/components/ui/toaster';
 
 // Types (matching the HTML version exactly)
 interface AirtableArticle {
@@ -53,6 +57,8 @@ interface Filters {
 }
 
 export default function ArticleEditor() {
+  const [location] = useLocation();
+  
   // State (matching HTML version)
   const [articles, setArticles] = useState<AirtableArticle[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -86,9 +92,29 @@ export default function ArticleEditor() {
     sourceTitle: 'All'
   });
 
+  // Parse URL parameters for initial filter state
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const clientParam = urlParams.get('client');
+    const statusParam = urlParams.get('status');
+    const sourceParam = urlParams.get('source');
+    
+    if (clientParam || statusParam || sourceParam) {
+      setFilters(prev => ({
+        status: statusParam || prev.status,
+        client: clientParam || prev.client,
+        sourceTitle: sourceParam || prev.sourceTitle
+      }));
+    }
+  }, [location]);
+
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSearchIndex, setSelectedSearchIndex] = useState(0);
+
+  // AI Image Generation States
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
   // Load configuration on mount
   useEffect(() => {
@@ -631,6 +657,44 @@ export default function ArticleEditor() {
     }
   };
 
+  // AI Image Generation Handlers
+  const handleOpenImageGenerator = () => {
+    setIsImageModalOpen(true);
+  };
+
+  const handleCloseImageGenerator = () => {
+    setIsImageModalOpen(false);
+  };
+
+  const handleImageGenerated = async (result: ImageGenerationResult) => {
+    try {
+      // Update the current article with the generated image URL
+      handleFieldChange('Image URL', result.imageUrl);
+      
+      toast({
+        title: 'Image Generated',
+        description: 'AI-generated image has been added to the article. Remember to save your changes.',
+      });
+    } catch (error: any) {
+      console.error('Error handling generated image:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to add generated image to article.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Get article context for AI analysis
+  const getArticleContext = () => {
+    return {
+      headline: displayCurrentArticle?.Headline || '',
+      hook: displayCurrentArticle?.Hook || '',
+      content: displayCurrentArticle?.Content ? displayCurrentArticle.Content.slice(0, 500) : '',
+    };
+  };
+
+
   // Loading state
   if (loading) {
     return (
@@ -1047,7 +1111,17 @@ export default function ArticleEditor() {
                   <CardTitle className="text-lg text-orange-400">Image</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* Image Upload Area - TODO: Implement drag & drop */}
+                  {/* AI Generate Image Button */}
+                  <Button
+                    onClick={handleOpenImageGenerator}
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium"
+                    disabled={!displayCurrentArticle || isGeneratingImage}
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    {isGeneratingImage ? 'Generating...' : 'AI Generate Image'}
+                  </Button>
+
+                  {/* Image Upload Area */}
                   <div 
                     className={`border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200 min-h-[120px] flex items-center justify-center ${
                       dragOver 
@@ -1083,23 +1157,6 @@ export default function ArticleEditor() {
                     )}
                   </div>
 
-                  {/* Image URL Input */}
-                  <div className="flex space-x-2">
-                    <Input
-                      value={displayCurrentArticle['Image URL'] || ''}
-                      onChange={(e) => handleFieldChange('Image URL', e.target.value)}
-                      placeholder="Or paste image URL..."
-                      className="flex-1"
-                      disabled={!!searchQuery}
-                    />
-                    <Button variant="outline" size="sm" title="Previous image">
-                      <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm" title="Next image">
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-
                   {/* Image Preview */}
                   <div className="border border-slate-600 rounded-lg overflow-hidden bg-slate-700/30">
                     {displayCurrentArticle['Image URL'] ? (
@@ -1117,6 +1174,23 @@ export default function ArticleEditor() {
                       </div>
                     )}
                   </div>
+
+                  {/* Image URL Input and Navigation - Moved below preview */}
+                  <div className="flex space-x-2">
+                    <Input
+                      value={displayCurrentArticle['Image URL'] || ''}
+                      onChange={(e) => handleFieldChange('Image URL', e.target.value)}
+                      placeholder="Or paste image URL..."
+                      className="flex-1"
+                      disabled={!!searchQuery}
+                    />
+                    <Button variant="outline" size="sm" title="Previous image">
+                      <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm" title="Next image">
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -1127,6 +1201,16 @@ export default function ArticleEditor() {
         </div>
       </div>
 
+      {/* AI Image Generator Modal */}
+      <ImageGeneratorModal
+        isOpen={isImageModalOpen}
+        onClose={handleCloseImageGenerator}
+        onImageGenerated={handleImageGenerated}
+        articleContext={getArticleContext()}
+        isLoading={isGeneratingImage}
+      />
+
+      <Toaster />
       <Footer />
     </div>
   );

@@ -272,13 +272,12 @@ Respond in JSON format:
       }
     }
     
-    // Prioritize content opportunities over image constraints
-    // Images can be reused across posts - don't limit content based on image count
-    const maxPosts = Math.min(plans.length, 15); // Max 15 posts total for performance
-    const minPosts = 6; // Always create at least 6 posts for rich content
+    // Generate 5-10 viral articles for maximum content impact
+    const maxPosts = Math.min(plans.length, 10); // Max 10 posts for viral content variety
+    const minPosts = 5; // Always create at least 5 posts for rich viral content
     
-    const finalPostCount = Math.max(Math.min(maxPosts, 15), Math.min(minPosts, plans.length));
-    console.log(`Strategic planning: ${plans.length} opportunities → ${finalPostCount} posts planned (${availableImages} images available)`);
+    const finalPostCount = Math.max(Math.min(maxPosts, 10), Math.min(minPosts, plans.length));
+    console.log(`🔥 VIRAL MODE: Generating ${finalPostCount} punchy articles (${plans.length} opportunities available, ${availableImages} images available)`);
     
     return plans.slice(0, finalPostCount);
   }
@@ -368,44 +367,44 @@ Each post must be STRATEGICALLY DIFFERENT, focusing on ONE specific topic while 
 1. TOPIC FOCUS: Each post covers ONE topic from the plan above
 2. FRESH PERSPECTIVE: Sound different from their existing webpage content 
 3. INDUSTRY INSIGHT: Include current ${analysis.industry} trends or challenges
-4. PUNCHY STYLE: Hook readers in first 3 words, benefit-focused headlines
+4. VIRAL STYLE: Attention-grabbing, benefit-driven, scroll-stopping headlines
 5. STRATEGIC VALUE: Position ${clientName} as the solution/expert
 
-✅ WRITING STYLE EXAMPLES:
-"SECURITY BREAKTHROUGH REVEALED", "COST-CUTTING HACK DISCOVERED", "COMPLIANCE JUST GOT EASIER"
-❌ AVOID: Generic business speak, academic language, obvious promotional content
+✅ VIRAL WRITING EXAMPLES:
+"SHOCKING COST EXPOSED", "SECRET HACK REVEALED", "INDUSTRY STUNNED", "GAME-CHANGER DISCOVERED"
+❌ AVOID: Generic business speak, academic language, boring corporate content
 
-📋 ARTICLE SPECIFICATIONS:
-- Headline: 3-6 words maximum, topic-specific and benefit-driven
-- Hook: 4-6 words maximum, emotion/urgency related to that specific topic
-- Content: 80-120 words, focus on 1-2 key points only (not everything)
-- Include industry insight that connects to the specific topic
-- End with: "Full details: ${content.url}"
-- Hashtags: Mix of general and topic-specific tags
+📋 VIRAL ARTICLE SPECIFICATIONS:
+- Headline: 2-4 words maximum, shocking/intriguing and benefit-driven
+- Hook: 3-5 words maximum, creates urgency or curiosity gap
+- Content: 60-90 words, punchy sentences, focus on ONE shocking insight
+- Include surprising industry fact that grabs attention
+- End with: "Details: ${content.url}"
+- Hashtags: Mix viral trends + industry tags
 
 🖼️ AVAILABLE IMAGES (use exact URLs):
 ["${imageUrls}"]
 
-🎯 STRATEGIC EXAMPLES:
-Security Tech Post: Focus only on "biometric access" with cost-saving angle
-Food Benefits Post: Focus only on "sugar-free benefits" with health trend connection  
-Service Post: Focus only on "implementation process" with time-saving angle
+🎯 VIRAL EXAMPLES:
+Security: "SHOCKING COST" + "Hidden expense exposed" + shocking stat
+Health: "SECRET REVEALED" + "Industry coverup exposed" + surprising fact
+Business: "GAME-CHANGER" + "Everything changed overnight" + shocking benefit
 
 OUTPUT FORMAT (valid JSON only):
 {
   "articles": [
     {
       "articleNumber": 1,
-      "headline": "SECURITY COSTS SLASHED",
-      "hook": "Biometric systems save thousands monthly",
-      "content": "Most facilities overspend on outdated access control. Smart managers are switching to biometric systems and cutting security costs by 40%.\\n\\nThe latest ${analysis.industry} trend shows biometric ROI within 6 months. No more expensive key cards or security breaches.\\n\\nFull details: ${content.url}",
-      "hashtags": ["#SecurityTech", "#CostSavings", "#BiometricAccess", "#FacilityManagement"],
+      "headline": "SHOCKING COST",
+      "hook": "Hidden expense exposed",
+      "content": "Most facilities waste £40,000 yearly on outdated security. Smart managers discovered biometric systems slash costs 60%.\\n\\nShocking fact: ROI hits in 4 months. Zero key cards. Zero breaches.\\n\\nDetails: ${content.url}",
+      "hashtags": ["#SecurityHack", "#CostShock", "#BiometricReveal", "#MoneyLeaks"],
       "focusAngle": "${postPlan[0]?.angle || 'Strategic benefits'}",
       "assignedImageUrl": "[exact URL from available images]",
       "imagePlacement": "Professional context illustration",
       "clientName": "${clientName}",
       "tone": "${postPlan[0]?.toneStrategy || 'Professional and engaging'}",
-      "wordCount": 95
+      "wordCount": 75
     }
   ],
   "totalArticles": ${postPlan.length}
