@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duplicate File Finder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .controls {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .btn {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+        }
+        .duplicate-group {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 15px 0;
+            overflow: hidden;
+            background: #fafafa;
+        }
+        .group-header {
+            background: #e8f4f8;
+            padding: 10px 15px;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 1px solid #ddd;
+        }
+        .file-comparison {
+            display: flex;
+            background: white;
+        }
+        .file-card {
+            flex: 1;
+            padding: 15px;
+            border-right: 1px solid #eee;
+            position: relative;
+        }
+        .file-card:last-child {
+            border-right: none;
+        }
+        .file-card.recommended {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+        }
+        .checkbox-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .delete-checkbox {
+            transform: scale(1.3);
+        }
+        .thumbnail-container {
+            width: 120px;
+            height: 80px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .thumbnail {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+        .file-icon {
+            font-size: 40px;
+            color: #666;
+        }
+        .filename {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+            word-break: break-all;
+        }
+        .file-details {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+        }
+        .file-size {
+            font-weight: bold;
+            color: #2196F3;
+        }
+        .path {
+            font-style: italic;
+            color: #888;
+            margin-top: 5px;
+        }
+        .path-segments {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px;
+            margin-top: 5px;
+        }
+        .path-segment {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .path-segment-0 { background-color: #e3f2fd; }
+        .path-segment-1 { background-color: #f3e5f5; }
+        .path-segment-2 { background-color: #e8f5e8; }
+        .path-segment-3 { background-color: #fff3e0; }
+        .path-segment-4 { background-color: #fce4ec; }
+        .path-segment-5 { background-color: #e0f2f1; }
+        .path-segment-6 { background-color: #f9fbe7; }
+        .path-segment-different {
+            background-color: #ffcdd2 !important;
+            color: #c62828;
+        }
+        .settings h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .filter-count {
+            font-size: 12px;
+            color: #666;
+            margin-left: 8px;
+            font-weight: normal;
+        }
+        .quick-select {
+            width: 50px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            background: #f8f9fa;
+            padding: 8px 4px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-right: 15px;
+            flex-shrink: 0;
+            align-self: center;
+        }
+        .group-content {
+            display: flex;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2196F3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .stats-bar {
+            background: #e8f4f8;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #333;
+        }
+        .quick-select-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .quick-select-icon:hover {
+            background: #e3f2fd;
+            border-color: #2196F3;
+            transform: scale(1.05);
+        }
+        .duplicate-group {
+            position: relative;
+        }
+        .bulk-controls {
+            margin: 20px 0;
+            text-align: center;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .bulk-btn {
+            background: #2196F3;
+            margin: 0 5px;
+        }
+        .bulk-btn:hover {
+            background: #1976D2;
+        }
+        .delete-btn {
+            background: #f44336;
+            font-size: 18px;
+            padding: 15px 30px;
+        }
+        .delete-btn:hover {
+            background: #d32f2f;
+        }
+        .match-type {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .exact-match {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        .fuzzy-match {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        .ai-match {
+            background: #e8f5e8;
+            color: #4caf50;
+        }
+        .identical-match {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .error {
+            background: #ffebee;
+            border-left-color: #f44336;
+            color: #c62828;
+        }
+        .success {
+            background: #e8f5e8;
+            border-left-color: #4caf50;
+            color: #2e7d32;
+        }
+        .settings {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .setting-group {
+            display: inline-block;
+            margin-right: 20px;
+        }
+        .setting-group label {
+            font-weight: bold;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Duplicate File Finder</h1>
+        
+        
+        <div class="controls">
+            <button class="btn" onclick="selectFolder()">📁 Select Folder</button>
+            <button class="btn" id="scanBtn" onclick="scanForDuplicates()" disabled>🔍 Find Duplicates</button>
+        </div>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <div id="results" style="display: none;">
+            <div class="settings">
+                <h3>Filter Results:</h3>
+                <div class="setting-group">
+                    <label>
+                        <input type="radio" name="matchFilter" value="all" checked onchange="filterResults()"> 
+                        Show All Matches<span id="countAll" class="filter-count"></span>
+                    </label>
+                </div>
+                <div class="setting-group">
+                    <label>
+                        <input type="radio" name="matchFilter" value="exact" onchange="filterResults()"> 
+                        Exact filename + different extension<span id="countExact" class="filter-count"></span>
+                    </label>
+                </div>
+                <div class="setting-group">
+                    <label>
+                        <input type="radio" name="matchFilter" value="fuzzy" onchange="filterResults()"> 
+                        Fuzzy filename matching<span id="countFuzzy" class="filter-count"></span>
+                    </label>
+                </div>
+                <div class="setting-group">
+                    <label>
+                        <input type="radio" name="matchFilter" value="identical" onchange="filterResults()"> 
+                        Identical filenames<span id="countIdentical" class="filter-count"></span>
+                    </label>
+                </div>
+                <div class="setting-group">
+                    <label>Fuzzy match length:</label>
+                    <input type="range" id="fuzzyLength" min="5" max="30" value="10" 
+                           oninput="updateFuzzyLength()" onchange="filterResults()">
+                    <span id="fuzzyLengthValue">10</span> chars
+                </div>
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="skipLargeFiles"> 
+                        Skip files > 100MB (for Dropbox online-only)
+                    </label>
+                </div>
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="useAI"> 
+                        🤖 Use local AI for smarter matching (requires Ollama)
+                    </label>
+                </div>
+            </div>
+            
+            <div id="statsBar" class="stats-bar" style="display: none;">
+                <span>📊 <span id="visibleCount">0</span> groups shown</span>
+                <span>✅ <span id="selectedCount">0</span> files selected</span>
+                <span>💾 <span id="totalSizeSelected">0 B</span> to delete</span>
+            </div>
+            
+            <div class="bulk-controls">
+                <button class="btn bulk-btn" onclick="selectAllRecommended()">✅ Select All Recommended</button>
+                <button class="btn bulk-btn" onclick="selectAll()">☑️ Select All</button>
+                <button class="btn bulk-btn" onclick="deselectAll()">❌ Deselect All</button>
+                <button class="btn delete-btn" onclick="deleteSelected()">🗑️ Delete Selected Files</button>
+            </div>
+            <div id="duplicateGroups"></div>
+        </div>
+    </div>
+
+    <script>
+        let directoryHandle = null;
+        let duplicateGroups = [];
+        let allFiles = [];
+
+        // Check browser support
+        if (!window.showDirectoryPicker) {
+            document.body.innerHTML = `
+                <div class="container">
+                    <h1>❌ Browser Not Supported</h1>
+                    <p>This tool requires Chrome 86+, Edge 86+, or Opera 72+</p>
+                </div>
+            `;
+        }
+
+        async function selectFolder() {
+            try {
+                showStatus('📁 Opening folder picker...', 'info');
+                directoryHandle = await window.showDirectoryPicker();
+                showStatus(`✅ Selected folder: ${directoryHandle.name}`, 'success');
+                document.getElementById('scanBtn').disabled = false;
+                document.getElementById('results').style.display = 'none';
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    showStatus(`❌ Error selecting folder: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function scanForDuplicates() {
+            if (!directoryHandle) {
+                showStatus('❌ Please select a folder first', 'error');
+                return;
+            }
+
+            showStatusWithSpinner('🔍 Scanning for files...', 'info');
+            allFiles = [];
+            duplicateGroups = [];
+
+            try {
+                await scanDirectory(directoryHandle);
+                showStatusWithSpinner(`📊 Found ${allFiles.length} files, analyzing for duplicates...`, 'info');
+                
+                await findDuplicates();
+                
+                if (duplicateGroups.length === 0) {
+                    showStatus('✅ No duplicate files found!', 'success');
+                } else {
+                    showStatus(`🎯 Found ${duplicateGroups.length} duplicate groups with ${getTotalDuplicates()} files`, 'success');
+                    await displayDuplicates();
+                }
+            } catch (error) {
+                showStatus(`❌ Error scanning: ${error.message}`, 'error');
+            }
+        }
+
+        async function scanDirectory(dirHandle, path = '') {
+            const skipLargeFiles = document.getElementById('skipLargeFiles')?.checked ?? false;
+            const maxFileSize = 100 * 1024 * 1024; // 100MB
+            
+            for await (const entry of dirHandle.values()) {
+                if (entry.kind === 'file') {
+                    try {
+                        // For Dropbox online-only files, this will trigger download
+                        // We check size first to avoid downloading huge files
+                        const file = await entry.getFile();
+                        
+                        // Skip large files if option is enabled
+                        if (skipLargeFiles && file.size > maxFileSize) {
+                            console.log(`Skipping large file: ${entry.name} (${formatFileSize(file.size)})`);
+                            continue;
+                        }
+                        
+                        allFiles.push({
+                            handle: entry,
+                            parentHandle: dirHandle,
+                            name: entry.name,
+                            path: path,
+                            size: file.size,
+                            lastModified: new Date(file.lastModified),
+                            type: file.type,
+                            file: file
+                        });
+                        
+                        // Update status periodically
+                        if (allFiles.length % 50 === 0) {
+                            showStatus(`📊 Scanned ${allFiles.length} files so far...`, 'info');
+                        }
+                    } catch (error) {
+                        console.warn(`Error reading file ${entry.name}:`, error);
+                        // Continue with other files even if one fails
+                    }
+                } else if (entry.kind === 'directory') {
+                    const subPath = path ? `${path}/${entry.name}` : entry.name;
+                    await scanDirectory(entry, subPath);
+                }
+            }
+        }
+
+        async function findDuplicates() {
+            const fuzzyLength = parseInt(document.getElementById('fuzzyLength').value);
+            const useAI = document.getElementById('useAI')?.checked ?? false;
+            const groups = new Map();
+
+            for (let i = 0; i < allFiles.length; i++) {
+                for (let j = i + 1; j < allFiles.length; j++) {
+                    const file1 = allFiles[i];
+                    const file2 = allFiles[j];
+                    
+                    let matchType = null;
+                    
+                    // Check special exclusion rules first
+                    if (shouldIgnoreMatch(file1, file2)) {
+                        continue;
+                    }
+                    
+                    // Identical filename + extension
+                    if (file1.name === file2.name) {
+                        matchType = 'identical';
+                    }
+                    // Exact filename + different extension
+                    else {
+                        const name1 = getNameWithoutExtension(file1.name);
+                        const name2 = getNameWithoutExtension(file2.name);
+                        const ext1 = getExtension(file1.name);
+                        const ext2 = getExtension(file2.name);
+                        
+                        if (name1 === name2 && ext1 !== ext2) {
+                            matchType = 'exact';
+                        }
+                        // AI-powered semantic matching or fallback to fuzzy
+                        else {
+                            if (useAI) {
+                                try {
+                                    matchType = await checkAIMatch(file1, file2);
+                                } catch (error) {
+                                    console.warn('AI matching failed, falling back to fuzzy:', error);
+                                    // Fallback to fuzzy matching
+                                    const prefix1 = file1.name.substring(0, fuzzyLength).toLowerCase();
+                                    const prefix2 = file2.name.substring(0, fuzzyLength).toLowerCase();
+                                    
+                                    if (prefix1 === prefix2 && file1.name !== file2.name) {
+                                        matchType = 'fuzzy';
+                                    }
+                                }
+                            } else {
+                                // Standard fuzzy matching
+                                const prefix1 = file1.name.substring(0, fuzzyLength).toLowerCase();
+                                const prefix2 = file2.name.substring(0, fuzzyLength).toLowerCase();
+                                
+                                if (prefix1 === prefix2 && file1.name !== file2.name) {
+                                    matchType = 'fuzzy';
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (matchType) {
+                        const groupKey = matchType === 'identical' ? 
+                            `identical_${file1.name}` :
+                            matchType === 'exact' ? 
+                            getNameWithoutExtension(file1.name) : 
+                            matchType === 'ai' ?
+                            `ai_${file1.name}_${file2.name}` :
+                            `${file1.name.substring(0, fuzzyLength)}_fuzzy`;
+                        
+                        if (!groups.has(groupKey)) {
+                            groups.set(groupKey, { type: matchType, files: [] });
+                        }
+                        
+                        const group = groups.get(groupKey);
+                        if (!group.files.some(f => f.name === file1.name && f.path === file1.path)) {
+                            group.files.push(file1);
+                        }
+                        if (!group.files.some(f => f.name === file2.name && f.path === file2.path)) {
+                            group.files.push(file2);
+                        }
+                    }
+                }
+            }
+
+            duplicateGroups = Array.from(groups.values()).filter(group => group.files.length > 1);
+            
+            // Add recommendations
+            duplicateGroups.forEach(group => {
+                group.files.forEach(file => {
+                    file.recommended = makeRecommendation(file, group.files, group.type);
+                });
+            });
+        }
+
+        async function checkAIMatch(file1, file2) {
+            const prompt = `Analyze these two filenames and determine if they likely represent the same content or duplicates:
+
+Filename 1: "${file1.name}"
+File size: ${formatFileSize(file1.size)}
+Path: ${file1.path || 'root'}
+Modified: ${file1.lastModified.toISOString()}
+
+Filename 2: "${file2.name}"  
+File size: ${formatFileSize(file2.size)}
+Path: ${file2.path || 'root'}
+Modified: ${file2.lastModified.toISOString()}
+
+Consider:
+- Similar naming patterns (IMG_001 vs IMG_002)
+- Version numbers or dates in filenames
+- Different but related content (thumbnail vs full size)
+- Backup or copy patterns
+- File extensions and formats
+
+Respond with only one word: "duplicate" if they are likely duplicates/similar content, or "different" if they are clearly different files.`;
+
+            try {
+                const response = await fetch('http://localhost:11434/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: 'llama3.2:1b',
+                        messages: [{ role: 'user', content: prompt }],
+                        max_tokens: 10,
+                        temperature: 0.1
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                const result = data.choices[0]?.message?.content?.toLowerCase().trim();
+                
+                return result?.includes('duplicate') ? 'ai' : null;
+            } catch (error) {
+                console.error('AI API error:', error);
+                throw error;
+            }
+        }
+
+        function shouldIgnoreMatch(file1, file2) {
+            const ext1 = getExtension(file1.name).toLowerCase();
+            const ext2 = getExtension(file2.name).toLowerCase();
+            
+            // Rule 1: Skip ARW duplicates unless identical file size
+            if (ext1 === 'arw' && ext2 === 'arw') {
+                return file1.size !== file2.size;
+            }
+            
+            // Rule 2: Ignore PSD and JPG matches
+            if ((ext1 === 'psd' && ext2 === 'jpg') || (ext1 === 'jpg' && ext2 === 'psd')) {
+                return true;
+            }
+            
+            // Rule 4: Ignore ARW and XMP matches
+            if ((ext1 === 'arw' && ext2 === 'xmp') || (ext1 === 'xmp' && ext2 === 'arw')) {
+                return true;
+            }
+            
+            return false;
+        }
+
+        function makeRecommendation(file, groupFiles, matchType) {
+            const ext = getExtension(file.name).toLowerCase();
+            
+            // Rule 3: MP3 vs WAV - prefer MP3, mark WAV for deletion
+            const hasMP3 = groupFiles.some(f => getExtension(f.name).toLowerCase() === 'mp3');
+            const hasWAV = groupFiles.some(f => getExtension(f.name).toLowerCase() === 'wav');
+            if (hasMP3 && hasWAV && ext === 'wav') return true;
+            
+            // Rule 3: MP4 vs MOV - prefer MP4, mark MOV for deletion
+            const hasMP4 = groupFiles.some(f => getExtension(f.name).toLowerCase() === 'mp4');
+            const hasMOV = groupFiles.some(f => getExtension(f.name).toLowerCase() === 'mov');
+            if (hasMP4 && hasMOV && ext === 'mov') return true;
+            
+            // Rule 5: For identical filenames, mark the one with longest path
+            if (matchType === 'identical') {
+                const maxPathLength = Math.max(...groupFiles.map(f => f.path.length));
+                if (file.path.length === maxPathLength) return true;
+            }
+            
+            // General rules
+            const maxSize = Math.max(...groupFiles.map(f => f.size));
+            
+            // Prefer larger files (but not for identical files where path matters more)
+            if (matchType !== 'identical' && file.size < maxSize * 0.8) return true;
+            
+            // Prefer certain video formats
+            const videoFormats = ['mp4', 'mov', 'avi', 'mkv'];
+            if (videoFormats.includes(ext)) {
+                const hasMP4 = groupFiles.some(f => getExtension(f.name).toLowerCase() === 'mp4');
+                if (hasMP4 && ext !== 'mp4' && ext !== 'mov') return true; // MOV handled above
+            }
+            
+            // Prefer certain image formats
+            const imageFormats = ['jpg', 'jpeg', 'png', 'gif'];
+            if (imageFormats.includes(ext)) {
+                const hasJPG = groupFiles.some(f => ['jpg', 'jpeg'].includes(getExtension(f.name).toLowerCase()));
+                if (hasJPG && !['jpg', 'jpeg'].includes(ext)) return true;
+            }
+            
+            return false;
+        }
+
+        async function displayDuplicates() {
+            const container = document.getElementById('duplicateGroups');
+            container.innerHTML = '';
+
+            for (let i = 0; i < duplicateGroups.length; i++) {
+                const group = duplicateGroups[i];
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'duplicate-group';
+
+                const header = document.createElement('div');
+                header.className = 'group-header';
+                header.innerHTML = `
+                    <span class="match-type ${group.type}-match">
+                        ${group.type === 'exact' ? 'EXACT MATCH' : 
+                          group.type === 'fuzzy' ? 'FUZZY MATCH' : 
+                          group.type === 'ai' ? '🤖 AI DETECTED MATCH' : 'IDENTICAL FILES'}
+                    </span>
+                    Group ${i + 1}: ${group.files.length} files
+                `;
+                groupDiv.appendChild(header);
+
+                // Create group content with quick select + file comparison
+                const groupContent = document.createElement('div');
+                groupContent.className = 'group-content';
+
+                // Add quick select controls
+                const quickSelect = document.createElement('div');
+                quickSelect.className = 'quick-select';
+                quickSelect.innerHTML = `
+                    <div class="quick-select-icon" onclick="quickSelectLeft(${i})" title="Select left file">◀</div>
+                    <div class="quick-select-icon" onclick="quickSelectRight(${i})" title="Select right file">▶</div>
+                    <div class="quick-select-icon" onclick="quickDeselectBoth(${i})" title="Deselect both files">❌</div>
+                    <div class="quick-select-icon" onclick="quickSelectBoth(${i})" title="Select both files">✅</div>
+                `;
+                groupContent.appendChild(quickSelect);
+
+                const comparison = document.createElement('div');
+                comparison.className = 'file-comparison';
+                comparison.style.flex = '1'; // Take remaining space
+
+                for (let j = 0; j < group.files.length; j++) {
+                    const file = group.files[j];
+                    const fileCard = document.createElement('div');
+                    fileCard.className = `file-card ${file.recommended ? 'recommended' : ''}`;
+                    fileCard.innerHTML = await createFileCard(file, i, j, group.files);
+                    comparison.appendChild(fileCard);
+                }
+
+                groupContent.appendChild(comparison);
+                groupDiv.appendChild(groupContent);
+                container.appendChild(groupDiv);
+            }
+
+            updateFilterCounts();
+            updateStats();
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('statsBar').style.display = 'flex';
+        }
+
+        async function createFileCard(file, groupIndex, fileIndex, allGroupFiles) {
+            const thumbnail = await generateThumbnail(file);
+            const pathDisplay = createPathDisplay(file, allGroupFiles);
+            
+            return `
+                <div class="checkbox-container">
+                    <input type="checkbox" class="delete-checkbox" 
+                           id="file_${groupIndex}_${fileIndex}" 
+                           ${file.recommended ? 'checked' : ''}
+                           onchange="updateStats()">
+                </div>
+                <div class="thumbnail-container">
+                    ${thumbnail}
+                </div>
+                <div class="filename">${file.name}</div>
+                <div class="file-details">
+                    <div class="file-size">${formatFileSize(file.size)}</div>
+                    <div>Modified: ${file.lastModified.toLocaleDateString()}</div>
+                    <div>Time: ${file.lastModified.toLocaleTimeString()}</div>
+                    ${pathDisplay}
+                </div>
+            `;
+        }
+
+        function createPathDisplay(file, allGroupFiles) {
+            if (!file.path) return '<div class="path">Root folder</div>';
+            
+            const currentSegments = file.path.split('/');
+            const allPaths = allGroupFiles.map(f => f.path.split('/'));
+            
+            // Find common prefix length
+            let commonLength = 0;
+            if (allPaths.length > 1) {
+                const minLength = Math.min(...allPaths.map(p => p.length));
+                for (let i = 0; i < minLength; i++) {
+                    const firstPath = allPaths[0][i];
+                    if (allPaths.every(path => path[i] === firstPath)) {
+                        commonLength = i + 1;
+                    } else {
+                        break;
+                    }
+                }
+            }
+            
+            const segments = currentSegments.map((segment, index) => {
+                const isDifferent = index >= commonLength;
+                const colorClass = isDifferent && file.recommended ? 'path-segment-different' : `path-segment-${index % 7}`;
+                return `<span class="path-segment ${colorClass}">${segment}</span>`;
+            }).join('');
+            
+            return `<div class="path-segments">${segments}</div>`;
+        }
+
+        async function generateThumbnail(file) {
+            const ext = getExtension(file.name).toLowerCase();
+            
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+                const url = URL.createObjectURL(file.file);
+                return `<img src="${url}" class="thumbnail" alt="Preview">`;
+            } else if (['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(ext)) {
+                return `<div class="file-icon">🎬</div>`;
+            } else if (['pdf'].includes(ext)) {
+                return `<div class="file-icon">📄</div>`;
+            } else {
+                return `<div class="file-icon">📄</div>`;
+            }
+        }
+
+        function getNameWithoutExtension(filename) {
+            const lastDot = filename.lastIndexOf('.');
+            return lastDot === -1 ? filename : filename.substring(0, lastDot);
+        }
+
+        function getExtension(filename) {
+            const lastDot = filename.lastIndexOf('.');
+            return lastDot === -1 ? '' : filename.substring(lastDot + 1);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        function getTotalDuplicates() {
+            return duplicateGroups.reduce((total, group) => total + group.files.length, 0);
+        }
+
+
+        async function deleteSelected() {
+            const checkboxes = document.querySelectorAll('.delete-checkbox:checked');
+            if (checkboxes.length === 0) {
+                showStatus('❌ Please select files to delete', 'error');
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to delete ${checkboxes.length} file(s)?`)) {
+                return;
+            }
+
+            showStatusWithSpinner('🗑️ Deleting files...', 'info');
+            
+            let successCount = 0;
+            let errors = [];
+
+            for (const checkbox of checkboxes) {
+                try {
+                    const [groupIndex, fileIndex] = checkbox.id.split('_').slice(1).map(Number);
+                    const file = duplicateGroups[groupIndex].files[fileIndex];
+                    
+                    await file.parentHandle.removeEntry(file.name);
+                    successCount++;
+                } catch (error) {
+                    errors.push(`Error deleting file: ${error.message}`);
+                }
+            }
+
+            if (errors.length > 0) {
+                showStatus(`⚠️ Deleted ${successCount} files. Errors: ${errors.slice(0, 3).join(', ')}`, 'error');
+            } else {
+                showStatus(`✅ Successfully deleted ${successCount} files!`, 'success');
+            }
+
+            // Refresh the scan
+            await scanForDuplicates();
+        }
+
+        function updateFuzzyLength() {
+            const value = document.getElementById('fuzzyLength').value;
+            document.getElementById('fuzzyLengthValue').textContent = value;
+        }
+
+        function updateFilterCounts() {
+            const counts = { all: 0, exact: 0, fuzzy: 0, identical: 0 };
+            
+            duplicateGroups.forEach(group => {
+                counts.all++;
+                counts[group.type]++;
+            });
+            
+            document.getElementById('countAll').textContent = `(${counts.all} groups)`;
+            document.getElementById('countExact').textContent = `(${counts.exact} groups)`;
+            document.getElementById('countFuzzy').textContent = `(${counts.fuzzy} groups)`;
+            document.getElementById('countIdentical').textContent = `(${counts.identical} groups)`;
+        }
+
+        function filterResults() {
+            const filter = document.querySelector('input[name="matchFilter"]:checked').value;
+            const groups = document.querySelectorAll('.duplicate-group');
+            
+            groups.forEach(group => {
+                const matchType = group.querySelector('.match-type');
+                if (!matchType) return;
+                
+                const type = matchType.classList.contains('exact-match') ? 'exact' :
+                           matchType.classList.contains('fuzzy-match') ? 'fuzzy' :
+                           matchType.classList.contains('ai-match') ? 'ai' :
+                           matchType.classList.contains('identical-match') ? 'identical' : '';
+                
+                if (filter === 'all' || filter === type) {
+                    group.style.display = 'block';
+                } else {
+                    group.style.display = 'none';
+                }
+            });
+            
+            // Update status
+            const visibleGroups = document.querySelectorAll('.duplicate-group[style="display: block"], .duplicate-group:not([style])');
+            const totalFiles = Array.from(visibleGroups).reduce((sum, group) => {
+                return sum + group.querySelectorAll('.file-card').length;
+            }, 0);
+            
+            if (visibleGroups.length === 0) {
+                showStatus(`No ${filter === 'all' ? '' : filter + ' '}matches found`, 'info');
+            } else {
+                showStatus(`Showing ${visibleGroups.length} ${filter === 'all' ? '' : filter + ' '}groups with ${totalFiles} files`, 'success');
+            }
+            
+            updateStats();
+        }
+
+        function quickSelectLeft(groupIndex) {
+            const group = document.querySelectorAll('.duplicate-group')[groupIndex];
+            const checkboxes = group.querySelectorAll('.delete-checkbox');
+            if (checkboxes.length >= 1) {
+                checkboxes[0].checked = true;
+                if (checkboxes.length >= 2) checkboxes[1].checked = false;
+            }
+            updateStats();
+        }
+
+        function quickSelectRight(groupIndex) {
+            const group = document.querySelectorAll('.duplicate-group')[groupIndex];
+            const checkboxes = group.querySelectorAll('.delete-checkbox');
+            if (checkboxes.length >= 2) {
+                checkboxes[0].checked = false;
+                checkboxes[1].checked = true;
+            }
+            updateStats();
+        }
+
+        function quickDeselectBoth(groupIndex) {
+            const group = document.querySelectorAll('.duplicate-group')[groupIndex];
+            const checkboxes = group.querySelectorAll('.delete-checkbox');
+            checkboxes.forEach(cb => cb.checked = false);
+            updateStats();
+        }
+
+        function quickSelectBoth(groupIndex) {
+            const group = document.querySelectorAll('.duplicate-group')[groupIndex];
+            const checkboxes = group.querySelectorAll('.delete-checkbox');
+            checkboxes.forEach(cb => cb.checked = true);
+            updateStats();
+        }
+
+        function updateStats() {
+            const visibleGroups = document.querySelectorAll('.duplicate-group[style="display: block"], .duplicate-group:not([style*="none"])');
+            const selectedCheckboxes = document.querySelectorAll('.delete-checkbox:checked');
+            
+            let totalSize = 0;
+            selectedCheckboxes.forEach(checkbox => {
+                const [groupIndex, fileIndex] = checkbox.id.split('_').slice(1).map(Number);
+                if (duplicateGroups[groupIndex] && duplicateGroups[groupIndex].files[fileIndex]) {
+                    totalSize += duplicateGroups[groupIndex].files[fileIndex].size;
+                }
+            });
+            
+            document.getElementById('visibleCount').textContent = visibleGroups.length;
+            document.getElementById('selectedCount').textContent = selectedCheckboxes.length;
+            document.getElementById('totalSizeSelected').textContent = formatFileSize(totalSize);
+        }
+
+        function selectAllRecommended() {
+            document.querySelectorAll('.delete-checkbox').forEach(checkbox => {
+                const fileCard = checkbox.closest('.file-card');
+                checkbox.checked = fileCard.classList.contains('recommended');
+            });
+            updateStats();
+        }
+
+        function selectAll() {
+            document.querySelectorAll('.delete-checkbox').forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            updateStats();
+        }
+
+        function deselectAll() {
+            document.querySelectorAll('.delete-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateStats();
+        }
+
+        function showStatusWithSpinner(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<span class="spinner"></span>${message}`;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Renamer Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .controls {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .btn {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+        }
+        .file-list {
+            margin-top: 20px;
+        }
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            background: #fafafa;
+        }
+        .file-item:hover {
+            background: #f0f0f0;
+        }
+        .checkbox {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+        .filename {
+            flex: 1;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .original {
+            color: #666;
+        }
+        .arrow {
+            margin: 0 10px;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .new {
+            color: #2196F3;
+            font-weight: bold;
+        }
+        .bulk-controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .bulk-btn {
+            background: #2196F3;
+            margin: 0 5px;
+        }
+        .bulk-btn:hover {
+            background: #1976D2;
+        }
+        .rename-btn {
+            background: #FF9800;
+            font-size: 18px;
+            padding: 15px 30px;
+        }
+        .rename-btn:hover {
+            background: #F57C00;
+        }
+        .error {
+            background: #ffebee;
+            border-left-color: #f44336;
+            color: #c62828;
+        }
+        .success {
+            background: #e8f5e8;
+            border-left-color: #4caf50;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗂️ File Renamer Tool</h1>
+        
+        <div class="controls">
+            <button class="btn" onclick="selectFolder()">📁 Select Folder</button>
+            <button class="btn" id="scanBtn" onclick="scanFiles()" disabled>🔍 Scan for Files</button>
+        </div>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <div id="fileList" class="file-list" style="display: none;">
+            <div class="bulk-controls">
+                <button class="btn bulk-btn" onclick="selectAll()">✅ Select All</button>
+                <button class="btn bulk-btn" onclick="deselectAll()">❌ Deselect All</button>
+                <button class="btn rename-btn" onclick="renameFiles()">🚀 Rename Selected Files</button>
+            </div>
+            <div id="files"></div>
+        </div>
+    </div>
+
+    <script>
+        let directoryHandle = null;
+        let filesToRename = [];
+
+        // Check if File System Access API is supported
+        if (!window.showDirectoryPicker) {
+            document.body.innerHTML = `
+                <div class="container">
+                    <h1>❌ Browser Not Supported</h1>
+                    <p>This tool requires a modern browser with File System Access API support.</p>
+                    <p>Please use:</p>
+                    <ul>
+                        <li>Chrome 86+</li>
+                        <li>Edge 86+</li>
+                        <li>Opera 72+</li>
+                    </ul>
+                    <p>Firefox and Safari don't support this API yet.</p>
+                </div>
+            `;
+        }
+
+        async function selectFolder() {
+            try {
+                showStatus('📁 Opening folder picker...', 'info');
+                directoryHandle = await window.showDirectoryPicker();
+                showStatus(`✅ Selected folder: ${directoryHandle.name}`, 'success');
+                document.getElementById('scanBtn').disabled = false;
+                document.getElementById('fileList').style.display = 'none';
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    showStatus(`❌ Error selecting folder: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function scanFiles() {
+            if (!directoryHandle) {
+                showStatus('❌ Please select a folder first', 'error');
+                return;
+            }
+
+            showStatus('🔍 Scanning files...', 'info');
+            filesToRename = [];
+
+            try {
+                await scanDirectory(directoryHandle);
+                
+                if (filesToRename.length === 0) {
+                    showStatus('ℹ️ No files found matching the pattern. Looking for files ending with: -YYYY-MM-DD-HH-MM-SS-utc', 'info');
+                    document.getElementById('fileList').style.display = 'none';
+                } else {
+                    showStatus(`🎯 Found ${filesToRename.length} files to rename`, 'success');
+                    displayFiles();
+                }
+            } catch (error) {
+                showStatus(`❌ Error scanning files: ${error.message}`, 'error');
+            }
+        }
+
+        async function scanDirectory(dirHandle, path = '') {
+            for await (const entry of dirHandle.values()) {
+                if (entry.kind === 'file') {
+                    const filename = entry.name;
+                    const match = filename.match(/^(.+)-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}-utc(\..+)$/);
+                    
+                    if (match) {
+                        const newName = match[1] + match[2];
+                        filesToRename.push({
+                            handle: entry,
+                            parentHandle: dirHandle,  // Store the parent directory handle
+                            original: filename,
+                            new: newName,
+                            path: path,
+                            selected: true
+                        });
+                    }
+                } else if (entry.kind === 'directory') {
+                    const subPath = path ? `${path}/${entry.name}` : entry.name;
+                    await scanDirectory(entry, subPath);
+                }
+            }
+        }
+
+        function displayFiles() {
+            const filesDiv = document.getElementById('files');
+            filesDiv.innerHTML = '';
+
+            filesToRename.forEach((file, index) => {
+                const fileDiv = document.createElement('div');
+                fileDiv.className = 'file-item';
+                fileDiv.innerHTML = `
+                    <input type="checkbox" class="checkbox" ${file.selected ? 'checked' : ''} 
+                           onchange="toggleFile(${index})">
+                    <div class="filename">
+                        <span class="original">${file.path ? file.path + '/' : ''}${file.original}</span>
+                        <span class="arrow">→</span>
+                        <span class="new">${file.path ? file.path + '/' : ''}${file.new}</span>
+                    </div>
+                `;
+                filesDiv.appendChild(fileDiv);
+            });
+
+            document.getElementById('fileList').style.display = 'block';
+        }
+
+        function toggleFile(index) {
+            filesToRename[index].selected = !filesToRename[index].selected;
+        }
+
+        function selectAll() {
+            filesToRename.forEach(file => file.selected = true);
+            displayFiles();
+        }
+
+        function deselectAll() {
+            filesToRename.forEach(file => file.selected = false);
+            displayFiles();
+        }
+
+        async function renameFiles() {
+            const selectedFiles = filesToRename.filter(file => file.selected);
+            
+            if (selectedFiles.length === 0) {
+                showStatus('❌ Please select files to rename', 'error');
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to rename ${selectedFiles.length} file(s)?`)) {
+                return;
+            }
+
+            showStatus('🔄 Renaming files...', 'info');
+            
+            let successCount = 0;
+            let errors = [];
+
+            for (const file of selectedFiles) {
+                try {
+                    // Use the stored parent directory handle for in-place renaming
+                    const parent = file.parentHandle;
+                    
+                    // Create new file with new name in the same directory
+                    const newFileHandle = await parent.getFileHandle(file.new, { create: true });
+                    
+                    // Copy content
+                    const originalFile = await file.handle.getFile();
+                    const writable = await newFileHandle.createWritable();
+                    await writable.write(originalFile);
+                    await writable.close();
+                    
+                    // Remove original file
+                    await parent.removeEntry(file.original);
+                    
+                    successCount++;
+                } catch (error) {
+                    errors.push(`${file.original}: ${error.message}`);
+                }
+            }
+
+            if (errors.length > 0) {
+                showStatus(`⚠️ Renamed ${successCount} files. Errors: ${errors.slice(0, 3).join(', ')}${errors.length > 3 ? '...' : ''}`, 'error');
+            } else {
+                showStatus(`✅ Successfully renamed ${successCount} files!`, 'success');
+            }
+
+            // Refresh the list
+            await scanFiles();
+        }
+
+        // This function is no longer needed since we store parentHandle directly
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

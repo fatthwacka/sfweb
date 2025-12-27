@@ -22,6 +22,42 @@ export interface GeneratedArticle {
   imageAttribution?: string;
 }
 
+export interface ContentAnalysis {
+  industry: string;
+  businessModel: string;
+  keyTopics: ContentTopic[];
+  targetAudience: string;
+  competitiveAdvantages: string[];
+  industryTrends: string[];
+  recommendedPosts: number;
+  contentOpportunities: ContentOpportunity[];
+}
+
+export interface ContentTopic {
+  name: string;
+  category: string; // 'technology', 'benefit', 'service', 'feature', 'process'
+  importance: number; // 1-5 scale
+  postPotential: number; // How many posts this topic can support
+  angles: string[]; // Different ways to approach this topic
+}
+
+export interface ContentOpportunity {
+  topic: string;
+  angle: string;
+  postType: 'news' | 'insight' | 'benefit' | 'comparison' | 'story' | 'tip';
+  priority: number; // 1-5 scale
+}
+
+export interface PostPlan {
+  postNumber: number;
+  topic: string;
+  angle: string;
+  postType: string;
+  focusPoints: string[]; // 1-2 key points to cover
+  toneStrategy: string;
+  industryConnection: string;
+}
+
 export interface ContentGenerationResult {
   articles: GeneratedArticle[];
   totalArticles: number;
@@ -45,38 +81,35 @@ export class GeminiContentGenerator {
     imageAssessment: ImageAssessment,
     useSiteImages: boolean
   ): Promise<ContentGenerationResult> {
-    console.log('Starting enhanced content generation with Gemini');
+    console.log('Starting intelligent content strategy analysis with Gemini');
 
-    // Select images based on assessment
+    // Step 1: Analyze content for industry, topics, and opportunities
+    const contentAnalysis = await this.analyzeContentStrategy(extractedContent);
+    console.log(`Industry: ${contentAnalysis.industry}, ${contentAnalysis.keyTopics.length} topics identified, ${contentAnalysis.recommendedPosts} posts recommended`);
+
+    // Step 2: Select images based on assessment
     const selectedImages = this.selectBestImages(imageAssessment, useSiteImages);
     
-    // Extract client name from URL
+    // Step 3: Extract client name from URL
     const clientName = this.extractClientName(extractedContent.url);
     
-    // Generate focus angles
-    const focusAngles = this.generateFocusAngles(extractedContent);
-    
-    // Calculate number of articles based on available images and content
-    const numArticles = Math.min(
-      Math.max(selectedImages.length, 1), 
-      Math.min(focusAngles.length, 8)
-    );
+    // Step 4: Generate strategic post plan based on analysis
+    const postPlan = this.generateStrategicPostPlan(contentAnalysis, selectedImages.length);
+    console.log(`Strategic plan: ${postPlan.length} posts planned across ${contentAnalysis.keyTopics.length} topics`);
 
-    console.log(`Generating ${numArticles} articles with ${selectedImages.length} images`);
-
-    // Create enhanced prompt
-    const prompt = this.createEnhancedPrompt(
+    // Step 5: Create enhanced prompt with industry intelligence
+    const prompt = await this.createIntelligentPrompt(
       extractedContent,
       selectedImages,
-      focusAngles,
-      clientName,
-      numArticles
+      contentAnalysis,
+      postPlan,
+      clientName
     );
 
-    // Call Gemini API
+    // Step 6: Call Gemini API with enhanced prompt
     const geminiResponse = await this.callGeminiAPI(prompt);
     
-    // Parse and validate response
+    // Step 7: Parse and validate response
     const articles = this.parseAndValidateResponse(
       geminiResponse,
       selectedImages,
@@ -90,7 +123,7 @@ export class GeminiContentGenerator {
       sourceUrl: extractedContent.url,
       sourceTitle: extractedContent.title,
       generatedAt: new Date().toISOString(),
-      imageStrategy: imageAssessment.recommendations.reasoning
+      imageStrategy: `${contentAnalysis.industry} strategy: ${articles.length} posts across ${contentAnalysis.keyTopics.length} topics`
     };
   }
 
@@ -123,117 +156,292 @@ export class GeminiContentGenerator {
     }
   }
 
-  private generateFocusAngles(content: ExtractedContent): string[] {
-    // Generate focus angles based on content analysis
-    const baseAngles = [
-      'Game-changing innovation that disrupts industries',
-      'Proven methods that deliver instant results',
-      'Hidden opportunities competitors are missing',
-      'Simple solutions to complex problems',
-      'Emerging trends that create massive value',
-      'Cost-cutting strategies that boost profits',
-      'Time-saving hacks for busy professionals',
-      'Revenue-generating tactics that actually work',
-      'Market insights that drive smart decisions',
-      'Success stories that inspire action'
-    ];
-
-    // If we have headings, try to generate content-specific angles
-    if (content.headings.length > 0) {
-      const contentAngles = content.headings
-        .slice(0, 5)
-        .map(heading => `${heading.text} - strategic analysis and implementation`)
-        .filter(angle => angle.length < 80);
-      
-      return [...contentAngles, ...baseAngles].slice(0, 10);
-    }
-
-    return baseAngles;
-  }
-
-  private createEnhancedPrompt(
-    content: ExtractedContent,
-    images: Array<ExtractedImage | UnsplashImage>,
-    focusAngles: string[],
-    clientName: string,
-    numArticles: number
-  ): string {
-    const imageUrls = images.map(img => img.url).join('", "');
+  private async analyzeContentStrategy(content: ExtractedContent): Promise<ContentAnalysis> {
+    console.log('Analyzing content for strategic opportunities...');
     
-    return `You are a punchy, engaging LinkedIn content creator for ${clientName}. Write like a successful entrepreneur, not an academic consultant. Create compelling posts that grab attention and drive engagement.
+    const analysisPrompt = `Analyze this webpage content for intelligent content marketing strategy:
 
-SOURCE CONTENT ANALYSIS:
 URL: ${content.url}
 Title: ${content.title}
-Content: ${content.cleanText.substring(0, 1500)}
+Content: ${content.cleanText.substring(0, 2000)}
+Headings: ${content.headings.map(h => h.text).join(', ')}
 
-AVAILABLE IMAGES (use exact URLs provided):
+As an expert content strategist, analyze this content and identify:
+
+1. INDUSTRY CLASSIFICATION: What industry/sector is this business in?
+2. BUSINESS MODEL: What type of business is this (service, product, consultancy, etc.)?
+3. KEY TOPICS: Extract all major topics, features, benefits, technologies, or services mentioned
+4. TARGET AUDIENCE: Who would be interested in this content?
+5. COMPETITIVE ADVANTAGES: What makes this business unique or valuable?
+6. CONTENT OPPORTUNITIES: Based on the topics found, how many strategic posts can be created?
+
+STRATEGIC THINKING:
+- If security company mentions 7 technologies → 10-14 posts (2 per tech, some combined)
+- If health food mentions 5 benefits → 7-10 posts (1-2 per benefit, industry insights)
+- If consulting mentions 3 services → 6-9 posts (2-3 per service, case studies)
+
+Respond in JSON format:
+{
+  "industry": "Security Technology",
+  "businessModel": "service provider",
+  "keyTopics": [
+    {
+      "name": "Biometric Access Control",
+      "category": "technology",
+      "importance": 5,
+      "postPotential": 2,
+      "angles": ["security benefits", "ROI analysis", "implementation tips"]
+    }
+  ],
+  "targetAudience": "Facility managers and security directors",
+  "competitiveAdvantages": ["30 years experience", "custom solutions"],
+  "industryTrends": ["Zero-trust security", "Remote monitoring"],
+  "recommendedPosts": 12,
+  "contentOpportunities": [
+    {
+      "topic": "Biometric Access Control",
+      "angle": "ROI and cost savings",
+      "postType": "insight",
+      "priority": 5
+    }
+  ]
+}`;
+
+    try {
+      const response = await this.callGeminiAPI(analysisPrompt);
+      const analysis = JSON.parse(this.cleanJsonResponse(response));
+      
+      // Validate and ensure we have reasonable numbers
+      analysis.recommendedPosts = Math.min(Math.max(analysis.recommendedPosts, 6), 15);
+      
+      return analysis;
+    } catch (error) {
+      console.error('Content analysis failed, using fallback:', error);
+      
+      // Fallback analysis based on content length and headings
+      const topics = content.headings.slice(0, 6).map((h, i) => ({
+        name: h.text,
+        category: 'feature',
+        importance: 3,
+        postPotential: 2,
+        angles: ['benefits', 'implementation']
+      }));
+      
+      return {
+        industry: 'Business Services',
+        businessModel: 'service provider',
+        keyTopics: topics,
+        targetAudience: 'Business professionals',
+        competitiveAdvantages: ['Professional expertise'],
+        industryTrends: ['Digital transformation'],
+        recommendedPosts: Math.max(topics.length * 2, 6),
+        contentOpportunities: topics.map(t => ({
+          topic: t.name,
+          angle: 'strategic benefits',
+          postType: 'insight' as const,
+          priority: 3
+        }))
+      };
+    }
+  }
+
+  private generateStrategicPostPlan(analysis: ContentAnalysis, availableImages: number): PostPlan[] {
+    const plans: PostPlan[] = [];
+    let postNumber = 1;
+    
+    // Create posts for each key topic, following the 1-2 posts per topic rule
+    for (const topic of analysis.keyTopics) {
+      // Number of posts for this topic (1-2, based on importance)
+      const postsForTopic = topic.importance >= 4 ? 2 : 1;
+      
+      for (let i = 0; i < postsForTopic; i++) {
+        const angle = topic.angles[i] || topic.angles[0] || 'strategic benefits';
+        const postType = this.selectPostType(topic.category, i);
+        
+        plans.push({
+          postNumber,
+          topic: topic.name,
+          angle,
+          postType,
+          focusPoints: this.generateFocusPoints(topic, angle),
+          toneStrategy: this.selectToneStrategy(postType),
+          industryConnection: this.createIndustryConnection(analysis.industry, topic.name)
+        });
+        
+        postNumber++;
+      }
+    }
+    
+    // Prioritize content opportunities over image constraints
+    // Images can be reused across posts - don't limit content based on image count
+    const maxPosts = Math.min(plans.length, 15); // Max 15 posts total for performance
+    const minPosts = 6; // Always create at least 6 posts for rich content
+    
+    const finalPostCount = Math.max(Math.min(maxPosts, 15), Math.min(minPosts, plans.length));
+    console.log(`Strategic planning: ${plans.length} opportunities → ${finalPostCount} posts planned (${availableImages} images available)`);
+    
+    return plans.slice(0, finalPostCount);
+  }
+
+  private selectPostType(category: string, index: number): string {
+    const postTypes = {
+      'technology': ['insight', 'benefit'],
+      'benefit': ['story', 'tip'],
+      'service': ['comparison', 'news'],
+      'feature': ['insight', 'benefit'],
+      'process': ['tip', 'story']
+    };
+    
+    const types = postTypes[category] || ['insight', 'benefit'];
+    return types[index] || types[0];
+  }
+
+  private generateFocusPoints(topic: ContentTopic, angle: string): string[] {
+    // Generate 1-2 focused points for each post
+    const basePoints = [
+      `${topic.name} core advantage`,
+      `Implementation strategy for ${topic.name}`,
+      `ROI and business impact of ${topic.name}`,
+      `Industry best practices for ${topic.name}`,
+      `Common mistakes to avoid with ${topic.name}`
+    ];
+    
+    return basePoints.slice(0, 2);
+  }
+
+  private selectToneStrategy(postType: string): string {
+    const strategies = {
+      'news': 'Breaking industry insight',
+      'insight': 'Expert analysis and advice',
+      'benefit': 'Value-focused and results-driven',
+      'comparison': 'Analytical and objective',
+      'story': 'Engaging narrative with lessons',
+      'tip': 'Actionable and practical'
+    };
+    
+    return strategies[postType] || 'Professional and engaging';
+  }
+
+  private createIndustryConnection(industry: string, topic: string): string {
+    return `Connect ${topic} to current ${industry} market trends and challenges`;
+  }
+
+  private async createIntelligentPrompt(
+    content: ExtractedContent,
+    images: Array<ExtractedImage | UnsplashImage>,
+    analysis: ContentAnalysis,
+    postPlan: PostPlan[],
+    clientName: string
+  ): Promise<string> {
+    const imageUrls = images.map(img => img.url).join('", "');
+    
+    // Get industry trends for this industry (simplified for now, can be enhanced)
+    const industryInsights = this.generateIndustryInsights(analysis.industry);
+    
+    return `You are an expert content strategist for ${clientName}, a ${analysis.businessModel} in the ${analysis.industry} sector. Create strategic LinkedIn posts that position them as industry leaders.
+
+🎯 STRATEGIC CONTENT ANALYSIS:
+Industry: ${analysis.industry}
+Business Model: ${analysis.businessModel}
+Target Audience: ${analysis.targetAudience}
+Key Topics Identified: ${analysis.keyTopics.map(t => t.name).join(', ')}
+Competitive Advantages: ${analysis.competitiveAdvantages.join(', ')}
+
+📊 INDUSTRY INTELLIGENCE:
+Current ${analysis.industry} trends: ${industryInsights.join(', ')}
+Market opportunity: Position ${clientName} ahead of competitors using these insights
+
+🎨 STRATEGIC POST PLAN:
+Create ${postPlan.length} targeted posts following this intelligent strategy:
+
+${postPlan.map((plan, index) => `
+POST ${plan.postNumber}: ${plan.topic}
+- Focus: ${plan.angle}
+- Type: ${plan.postType}
+- Key Points: ${plan.focusPoints.join(', ')}
+- Tone Strategy: ${plan.toneStrategy}
+- Industry Connection: ${plan.industryConnection}`).join('')}
+
+📝 CONTENT REQUIREMENTS:
+Each post must be STRATEGICALLY DIFFERENT, focusing on ONE specific topic while maintaining brand connection:
+
+1. TOPIC FOCUS: Each post covers ONE topic from the plan above
+2. FRESH PERSPECTIVE: Sound different from their existing webpage content 
+3. INDUSTRY INSIGHT: Include current ${analysis.industry} trends or challenges
+4. PUNCHY STYLE: Hook readers in first 3 words, benefit-focused headlines
+5. STRATEGIC VALUE: Position ${clientName} as the solution/expert
+
+✅ WRITING STYLE EXAMPLES:
+"SECURITY BREAKTHROUGH REVEALED", "COST-CUTTING HACK DISCOVERED", "COMPLIANCE JUST GOT EASIER"
+❌ AVOID: Generic business speak, academic language, obvious promotional content
+
+📋 ARTICLE SPECIFICATIONS:
+- Headline: 3-6 words maximum, topic-specific and benefit-driven
+- Hook: 4-6 words maximum, emotion/urgency related to that specific topic
+- Content: 80-120 words, focus on 1-2 key points only (not everything)
+- Include industry insight that connects to the specific topic
+- End with: "Full details: ${content.url}"
+- Hashtags: Mix of general and topic-specific tags
+
+🖼️ AVAILABLE IMAGES (use exact URLs):
 ["${imageUrls}"]
 
-WRITING STYLE - MATCH THIS ENERGY:
-✅ GOOD EXAMPLES: "SCHOOL-SAFE SNACKS JUST GOT BETTER", "FITNESS SNACKING DONE RIGHT", "Low-carb fuel to power your day"
-❌ AVOID: "Strategic Implementation Excellence", "Comprehensive Business Analysis", "Professional expertise drives..."
-
-CONTENT REQUIREMENTS:
-Create ${numArticles} engaging LinkedIn posts. Each must be PUNCHY and ATTENTION-GRABBING:
-
-1. IMMEDIATE IMPACT: Hook readers in first 3 words
-2. BENEFIT-FOCUSED: What's in it for the reader?
-3. CONVERSATIONAL: Write like you're talking to a friend
-4. SPECIFIC: Use concrete details, not abstract concepts
-5. EMOTIONAL: Make people feel something (excited, curious, confident)
-
-ARTICLE SPECIFICATIONS:
-- Headline: 3-6 words maximum, PUNCHY and benefit-driven (like "BETTER SNACKS ARE HERE" or "PRODUCTIVITY HACK REVEALED")
-- Hook: 4-6 words maximum, powerful emotion or benefit (like "Game-changing results in 30 days" or "Stop wasting money on this")
-- Content: 80-120 words, 2-3 short paragraphs, conversational tone
-- No academic jargon, no "strategic implementation" - write for real people
-- End with: "Full details: ${content.url}"
-- Use 3-4 hashtags that real people search for
-
-FOCUS ANGLES (select different ones for variety):
-${focusAngles.map((angle, i) => `${i + 1}. ${angle}`).join('\n')}
-
-TONE VARIETIES (use different ones):
-- Exciting Discovery: "This will blow your mind" energy
-- Urgent Warning: "Stop doing this immediately" tone
-- Exclusive Insight: "Here's what insiders know" feel
-- Challenge Convention: "Everyone's doing it wrong" approach
-- Success Story: "Here's how they won big" narrative
-- Simple Solution: "It's easier than you think" angle
-
-CLIENT CONTEXT:
-Extract business insights relevant to ${clientName} and their industry sector. Position content as coming from someone who understands their market and challenges.
+🎯 STRATEGIC EXAMPLES:
+Security Tech Post: Focus only on "biometric access" with cost-saving angle
+Food Benefits Post: Focus only on "sugar-free benefits" with health trend connection  
+Service Post: Focus only on "implementation process" with time-saving angle
 
 OUTPUT FORMAT (valid JSON only):
 {
   "articles": [
     {
       "articleNumber": 1,
-      "headline": "GAME CHANGER REVEALED",
-      "hook": "This changes everything for businesses",
-      "content": "Most companies miss this obvious opportunity. While competitors struggle with old methods, smart businesses are already ahead.\\n\\nThe secret? Simple changes that deliver massive results. No complex strategies needed.\\n\\nFull details: ${content.url}",
-      "hashtags": ["#BusinessGrowth", "#Innovation", "#Success", "#GameChanger"],
-      "focusAngle": "Game-changing innovation that disrupts industries",
+      "headline": "SECURITY COSTS SLASHED",
+      "hook": "Biometric systems save thousands monthly",
+      "content": "Most facilities overspend on outdated access control. Smart managers are switching to biometric systems and cutting security costs by 40%.\\n\\nThe latest ${analysis.industry} trend shows biometric ROI within 6 months. No more expensive key cards or security breaches.\\n\\nFull details: ${content.url}",
+      "hashtags": ["#SecurityTech", "#CostSavings", "#BiometricAccess", "#FacilityManagement"],
+      "focusAngle": "${postPlan[0]?.angle || 'Strategic benefits'}",
       "assignedImageUrl": "[exact URL from available images]",
       "imagePlacement": "Professional context illustration",
       "clientName": "${clientName}",
-      "tone": "Engaging and Direct",
+      "tone": "${postPlan[0]?.toneStrategy || 'Professional and engaging'}",
       "wordCount": 95
     }
   ],
-  "totalArticles": ${numArticles}
+  "totalArticles": ${postPlan.length}
 }
 
-CRITICAL REQUIREMENTS:
+🚨 CRITICAL REQUIREMENTS:
+- Follow the EXACT post plan above - one post per topic/angle
+- Each post focuses on ONE specific topic, not multiple
+- Include current ${analysis.industry} insights for credibility  
 - Use EXACT image URLs from the provided list
-- Never create fictional URLs or modify provided URLs
-- Each article must offer genuine business value and insights
-- Avoid sales language, promotional tone, or desperate marketing speak
-- Write as an industry expert who commands respect and attention
-- Ensure content is actionable and strategically relevant
+- Make each post sound fresh and different from their existing content
+- Position ${clientName} as the expert solution for that specific topic
 
-Generate the JSON response now:`;
+Generate ${postPlan.length} strategic posts now:`;
+  }
+
+  private generateIndustryInsights(industry: string): string[] {
+    // Industry-specific insights (can be enhanced with real API calls later)
+    const insights = {
+      'Security Technology': ['Zero-trust architecture adoption', 'AI-powered threat detection', 'Cloud-based access control'],
+      'Health Food': ['Plant-based protein surge', 'Sugar reduction mandates', 'Functional ingredients trend'],
+      'Business Services': ['Digital transformation acceleration', 'Remote work optimization', 'AI automation adoption'],
+      'Manufacturing': ['Industry 4.0 implementation', 'Supply chain resilience', 'Sustainable production'],
+      'Finance': ['Open banking expansion', 'Regulatory compliance updates', 'Fintech integration'],
+      'Healthcare': ['Telehealth normalization', 'Data privacy regulations', 'Patient experience focus'],
+      'Technology': ['AI integration demands', 'Cybersecurity imperatives', 'Cloud-first strategies']
+    };
+
+    return insights[industry] || ['Digital transformation', 'Market efficiency gains', 'Competitive differentiation'];
+  }
+
+  private cleanJsonResponse(response: string): string {
+    return response
+      .replace(/```json\n?/g, '')
+      .replace(/\n?```/g, '')
+      .trim();
   }
 
   private async callGeminiAPI(prompt: string): Promise<string> {
@@ -282,20 +490,36 @@ Generate the JSON response now:`;
   ): GeneratedArticle[] {
     try {
       // Clean response and extract JSON
-      let jsonString = geminiResponse
-        .replace(/```json\n?/g, '')
-        .replace(/\n?```/g, '')
-        .trim();
+      let jsonString = this.cleanJsonResponse(geminiResponse);
 
-      // Handle truncated JSON by finding the last complete object
+      // Handle truncated JSON by finding the last complete article
       if (!jsonString.endsWith('}')) {
-        console.warn('Detected truncated JSON response, attempting to fix...');
+        console.warn('Detected truncated JSON response, attempting to recover...');
         
-        // Find last complete article object
-        const lastCompleteIndex = jsonString.lastIndexOf('"}');
-        if (lastCompleteIndex > 0) {
-          jsonString = jsonString.substring(0, lastCompleteIndex + 2) + ']}';
-          console.log('Fixed truncated JSON');
+        // Find the last complete article block by looking for the pattern
+        // Look for "},\n    {\n      \"articleNumber\":" to find article boundaries
+        const articlePattern = /},\s*{\s*"articleNumber":\s*\d+/g;
+        const matches: RegExpExecArray[] = [];
+        let match: RegExpExecArray | null;
+        while ((match = articlePattern.exec(jsonString)) !== null) {
+          matches.push(match);
+        }
+        
+        if (matches.length > 0) {
+          // Find the last complete article boundary
+          const lastCompleteArticle = matches[matches.length - 1];
+          const cutoffPoint = lastCompleteArticle.index! + 1; // Just after the }
+          
+          // Truncate to last complete article and close the JSON properly
+          jsonString = jsonString.substring(0, cutoffPoint) + '\n  ],\n  "totalArticles": ' + (matches.length + 1) + '\n}';
+          console.log(`Recovered ${matches.length + 1} articles from truncated response`);
+        } else {
+          // Fallback: look for any complete JSON structure
+          const lastCompleteIndex = jsonString.lastIndexOf('"}');
+          if (lastCompleteIndex > 0) {
+            jsonString = jsonString.substring(0, lastCompleteIndex + 2) + '],"totalArticles": 1}';
+            console.log('Used fallback recovery for single article');
+          }
         }
       }
 
@@ -315,7 +539,7 @@ Generate the JSON response now:`;
           content: this.validateContent(article.content),
           hashtags: this.validateHashtags(article.hashtags),
           focusAngle: article.focusAngle || 'Strategic business analysis',
-          assignedImageUrl: this.validateImageUrl(article.assignedImageUrl, selectedImages),
+          assignedImageUrl: this.validateImageUrl(article.assignedImageUrl, selectedImages, index),
           imagePlacement: article.imagePlacement || 'Professional illustration',
           clientName: clientName,
           tone: article.tone || 'Strategic Advisory',
@@ -343,7 +567,7 @@ Generate the JSON response now:`;
         content: 'Industry leaders recognise that strategic positioning requires comprehensive analysis and decisive action.\\n\\nEffective implementation combines market intelligence with operational excellence, creating sustainable competitive advantages.\\n\\nOrganisations that prioritise strategic thinking and professional development consistently outperform their competitors.',
         hashtags: ['#StrategicAnalysis', '#BusinessTransformation', '#ProfessionalDevelopment', '#IndustryInsights'],
         focusAngle: 'Strategic business analysis',
-        assignedImageUrl: selectedImages[0]?.url || '',
+        assignedImageUrl: this.validateImageUrl('', selectedImages, 0),
         imagePlacement: 'Professional business context',
         clientName: clientName,
         tone: 'Strategic Advisory',
@@ -383,14 +607,23 @@ Generate the JSON response now:`;
     return validTags.slice(0, 4);
   }
 
-  private validateImageUrl(url: string, availableImages: Array<ExtractedImage | UnsplashImage>): string {
-    if (!url || typeof url !== 'string') {
-      return availableImages[0]?.url || '';
+  private validateImageUrl(url: string, availableImages: Array<ExtractedImage | UnsplashImage>, articleIndex: number = 0): string {
+    if (!availableImages || availableImages.length === 0) {
+      return '';
     }
     
-    // Check if URL is in available images
-    const foundImage = availableImages.find(img => img.url === url);
-    return foundImage ? url : availableImages[0]?.url || '';
+    // If URL is provided and valid, use it
+    if (url && typeof url === 'string') {
+      const foundImage = availableImages.find(img => img.url === url);
+      if (foundImage) {
+        return url;
+      }
+    }
+    
+    // Cycle through available images based on article index
+    // This ensures even distribution when we have more posts than images
+    const imageIndex = articleIndex % availableImages.length;
+    return availableImages[imageIndex]?.url || '';
   }
 
   private countWords(text: string): number {

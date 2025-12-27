@@ -1,0 +1,17 @@
+/* CSS Architecture: Split into maintainable modules for better organization */
+/* Total size reduced from 4,323 lines to manageable imports */
+
+/* 1. Base Styles: Fonts, variables, resets, and base layer */
+@import './styles/base.css';
+
+/* 2. Components: Reusable UI components and typography */
+@import './styles/components.css';
+
+/* 3. Pages: Page-specific styles and layout components */
+@import './styles/pages.css';
+
+/* 4. Utilities: Small utility classes and animations */
+@import './styles/utilities.css';
+
+/* 5. Responsive: Media queries, keyframes, and responsive overrides */
+@import './styles/responsive.css';

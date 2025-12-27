@@ -125,17 +125,6 @@
     "hero": {
       "slides": [
         {
-          "id": "slide-1756060030414",
-          "title": "Fashion",
-          "subtitle": "Strong Bold Images",
-          "image": "/uploads/fashion-photography-hero_1756060034755.jpg",
-          "cta": "Learn More",
-          "gradient": [
-            "rgba(0,0,0,0.7)",
-            "rgba(0,0,0,0.3)"
-          ]
-        },
-        {
           "id": "slide-1756052475554",
           "title": "Portraits",
           "subtitle": "Stunning Glossy Magazine Pics",
@@ -147,10 +136,21 @@
           ]
         },
         {
-          "id": "slide-1756060051119",
-          "title": "Headshots",
-          "subtitle": "Profile & Corporate Pics",
-          "image": "/uploads/Celebrity-photography-hero_1756063622855.jpg",
+          "id": "slide-1756060030414",
+          "title": "Fashion",
+          "subtitle": "Strong Bold Images",
+          "image": "/uploads/fashion-photography-hero_1756060034755.jpg",
+          "cta": "Learn More",
+          "gradient": [
+            "rgba(0,0,0,0.7)",
+            "rgba(0,0,0,0.3)"
+          ]
+        },
+        {
+          "id": "slide-1756156317246",
+          "title": "Products",
+          "subtitle": "Make your Brand Radiate",
+          "image": "/uploads/product-photography-med_1756156455626.jpg",
           "cta": "Learn More",
           "gradient": [
             "rgba(0,0,0,0.7)",
@@ -159,8 +159,8 @@
         },
         {
           "id": "test-slide",
-          "title": "Prestige",
-          "subtitle": "Celebrity & Event Photography",
+          "title": "Headshots",
+          "subtitle": "Profile & Corporate Pics ",
           "cta": "Book now",
           "image": "/images/hero/portrait-photography-hero.jpg",
           "gradient": [
@@ -169,10 +169,10 @@
           ]
         },
         {
-          "id": "slide-1756156317246",
-          "title": "Products",
-          "subtitle": "Make your Brand Radiate",
-          "image": "/uploads/product-photography-med_1756156455626.jpg",
+          "id": "slide-1756060051119",
+          "title": "Prestige",
+          "subtitle": "Celebrity & Event Photography",
+          "image": "/uploads/Celebrity-photography-hero_1756063622855.jpg",
           "cta": "Learn More",
           "gradient": [
             "rgba(0,0,0,0.7)",

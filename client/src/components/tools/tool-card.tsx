@@ -3,7 +3,7 @@
  * Clean card design with large icon, title/description, and icon-based badges
  */
 
-import { Lock, Sparkles, Clock, HardDrive, UserCheck, Crown, Users, Globe, FolderOpen, Wrench, Zap } from 'lucide-react';
+import { Lock, Sparkles, Clock, HardDrive, UserCheck, Crown, Users, Globe, FolderOpen, Wrench, Zap, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ToolDefinition, ToolCategory, CATEGORY_LABELS } from '@shared/types/tools';
 import { useToolAccess } from '@/hooks/use-tool-access';
@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 interface ToolCardProps {
   tool: ToolDefinition;
   onClick: () => void;
+  isLoading?: boolean;
 }
 
 // Category icons for the indicator
@@ -30,7 +31,7 @@ const CATEGORY_GRADIENTS: Record<string, string> = {
   'automation': 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
 };
 
-export function ToolCard({ tool, onClick }: ToolCardProps) {
+export function ToolCard({ tool, onClick, isLoading = false }: ToolCardProps) {
   const { canAccessTool, isToolLocked } = useToolAccess();
 
   const hasAccess = canAccessTool(tool);
@@ -61,9 +62,10 @@ export function ToolCard({ tool, onClick }: ToolCardProps) {
       className={cn(
         'tool-card group',
         isLocked && 'is-locked',
-        isComingSoon && 'is-coming-soon'
+        isComingSoon && 'is-coming-soon',
+        isLoading && 'is-loading'
       )}
-      onClick={isComingSoon ? undefined : onClick}
+      onClick={isComingSoon || isLoading ? undefined : onClick}
     >
       {/* Icon Header Section */}
       <div
@@ -71,7 +73,13 @@ export function ToolCard({ tool, onClick }: ToolCardProps) {
         style={{ background: CATEGORY_GRADIENTS[tool.category] }}
       >
         {/* Large centered icon */}
-        <div className="tool-card-icon-large">{tool.icon}</div>
+        <div className="tool-card-icon-large">
+          {isLoading ? (
+            <Loader2 className="h-12 w-12 animate-spin text-white" />
+          ) : (
+            tool.icon
+          )}
+        </div>
 
         {/* Top-right badges */}
         <div className="tool-card-status-badges">

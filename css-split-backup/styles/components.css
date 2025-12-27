@@ -1,0 +1,754 @@
+@layer components {
+  .font-saira {
+    font-family: 'Saira Condensed', sans-serif;
+  }
+  
+  .font-vibes {
+    font-family: 'Great Vibes', cursive;
+  }
+  
+  .font-forum {
+    font-family: 'Forum', serif;
+  }
+  
+  .font-barlow {
+    font-family: 'Barlow Semi Condensed', sans-serif;
+  }
+  
+  .font-righteous {
+    font-family: 'Righteous', cursive;
+  }
+  
+  .font-corinthia {
+    font-family: 'Corinthia', cursive;
+  }
+
+  /* Card System Classes */
+  .studio-card {
+    @apply rounded-2xl p-6 shadow-2xl transition-all duration-500;
+    background: linear-gradient(to bottom, hsl(16, 30%, 15%) 0%, hsl(280, 45%, 25%) 50%, hsl(300, 40%, 28%) 100%);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 107, 107, 0.1);
+  }
+
+  /* Admin panel specific card - no hover expansion */
+  .admin-settings-card {
+    @apply rounded-2xl p-8 shadow-2xl transition-all duration-500;
+    background: linear-gradient(135deg, hsl(260, 25%, 25%) 0%, hsl(220, 20%, 22%) 100%);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 107, 107, 0.1);
+  }
+
+  /* Universal Button Classes - replace all inline button styling */
+  .btn-salmon {
+    @apply px-8 py-4 rounded-lg font-barlow font-semibold text-lg transition-all duration-300;
+    background: linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(16, 80%, 65%) 100%);
+    color: white;
+    border: none;
+  }
+  
+  .btn-salmon:hover {
+    background: linear-gradient(135deg, hsl(180, 100%, 50%) 0%, hsl(180, 80%, 45%) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3);
+  }
+
+  .btn-cyan {
+    @apply px-8 py-4 rounded-lg font-barlow font-semibold text-lg transition-all duration-300;
+    background: linear-gradient(135deg, hsl(180, 100%, 50%) 0%, hsl(180, 80%, 45%) 100%);
+    color: hsl(0, 0%, 20%) !important;
+    border: none;
+  }
+  
+  .btn-cyan:hover {
+    background: linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(16, 80%, 65%) 100%);
+    color: hsl(0, 0%, 20%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+  }
+
+  .btn-outline-salmon {
+    @apply px-8 py-4 rounded-full font-barlow font-semibold text-lg transition-all duration-300;
+    background: transparent;
+    color: hsl(16, 100%, 73%);
+    border: none;
+  }
+  
+  .btn-outline-salmon:hover {
+    background: linear-gradient(135deg, hsl(180, 100%, 50%) 0%, hsl(180, 80%, 45%) 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3);
+  }
+
+  .btn-outline-cyan {
+    @apply px-8 py-4 rounded-full font-barlow font-semibold text-lg transition-all duration-300;
+    background: transparent;
+    color: hsl(180, 100%, 50%);
+    border: none;
+  }
+  
+  .btn-outline-cyan:hover {
+    background: linear-gradient(135deg, hsl(16, 100%, 73%) 0%, hsl(16, 80%, 65%) 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+  }
+
+  /* Elegant Button - Global site-wide elegant button style */
+  .btn-elegant {
+    @apply px-6 py-2 rounded-lg font-barlow font-medium text-sm transition-all duration-300;
+    background: linear-gradient(135deg, hsl(280, 30%, 20%) 0%, hsl(220, 20%, 25%) 100%);
+    border: 1px solid hsl(0, 0%, 40%);
+    color: hsl(0, 0%, 75%);
+  }
+  
+  .btn-elegant:hover {
+    background: linear-gradient(135deg, hsl(280, 50%, 35%) 0%, hsl(220, 40%, 40%) 50%, hsl(260, 45%, 35%) 100%);
+    border-color: hsl(0, 0%, 50%);
+    color: hsl(0, 0%, 85%);
+    transform: translateY(-1px);
+    box-shadow: 0 0 20px rgba(138, 43, 226, 0.3), 0 4px 15px rgba(138, 43, 226, 0.2);
+  }
+
+  /* Old studio card button styles removed - using unified accent system only */
+  
+  /* Contact Section Styling */
+  .contact-info-card {
+    @apply rounded-xl p-6 border transition-all duration-300 hover:scale-105;
+    background: linear-gradient(135deg, hsl(180, 30%, 12%) 0%, hsl(260, 25%, 10%) 100%);
+    border-color: rgba(78, 205, 196, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  .contact-info-card:hover {
+    border-color: rgba(78, 205, 196, 0.6);
+    box-shadow: 0 8px 30px rgba(78, 205, 196, 0.2);
+  }
+  
+  .contact-info-icon {
+    @apply mb-4;
+    color: hsl(180, 100%, 50%);
+    filter: drop-shadow(0 0 8px rgba(78, 205, 196, 0.6));
+  }
+  
+  .contact-info-icon-salmon {
+    @apply mb-4;
+    color: hsl(16, 100%, 73%);
+    filter: drop-shadow(0 0 8px rgba(255, 107, 107, 0.6));
+  }
+  
+  .contact-info-icon-cyan {
+    @apply mb-4 flex justify-center;
+    color: hsl(180, 100%, 50%);
+    filter: drop-shadow(0 0 8px rgba(78, 205, 196, 0.6));
+  }
+
+  /* Phone card - red/orange */
+  .contact-info-card-phone {
+    @apply rounded-xl p-6 border transition-all duration-300 hover:scale-105;
+    background: linear-gradient(135deg, hsl(15, 30%, 12%) 0%, hsl(30, 25%, 10%) 100%);
+    border-color: rgba(255, 107, 107, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  .contact-info-card-phone:hover {
+    border-color: rgba(255, 107, 107, 0.6);
+    box-shadow: 0 8px 30px rgba(255, 107, 107, 0.2);
+  }
+
+  .contact-info-icon-phone {
+    @apply mb-4 flex justify-center;
+    color: hsl(15, 100%, 50%);
+    filter: drop-shadow(0 0 8px rgba(255, 107, 107, 0.6));
+  }
+
+  /* Email card - cyan (same as original) */
+  .contact-info-card-email {
+    @apply rounded-xl p-6 border transition-all duration-300 hover:scale-105;
+    background: linear-gradient(135deg, hsl(180, 30%, 12%) 0%, hsl(260, 25%, 10%) 100%);
+    border-color: rgba(78, 205, 196, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  .contact-info-card-email:hover {
+    border-color: rgba(78, 205, 196, 0.6);
+    box-shadow: 0 8px 30px rgba(78, 205, 196, 0.2);
+  }
+
+  .contact-info-icon-email {
+    @apply mb-4 flex justify-center;
+    color: hsl(180, 100%, 50%);
+    filter: drop-shadow(0 0 8px rgba(78, 205, 196, 0.6));
+  }
+
+  /* WhatsApp card - green */
+  .contact-info-card-whatsapp {
+    @apply rounded-xl p-6 border transition-all duration-300 hover:scale-105;
+    background: linear-gradient(135deg, hsl(120, 30%, 12%) 0%, hsl(140, 25%, 10%) 100%);
+    border-color: rgba(37, 211, 102, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  .contact-info-card-whatsapp:hover {
+    border-color: rgba(37, 211, 102, 0.6);
+    box-shadow: 0 8px 30px rgba(37, 211, 102, 0.2);
+  }
+
+  .contact-info-icon-whatsapp {
+    @apply mb-4 flex justify-center;
+    color: hsl(120, 100%, 50%);
+    filter: drop-shadow(0 0 8px rgba(37, 211, 102, 0.6));
+  }
+
+  /* Visit Us card - pink/purple */
+  .contact-info-card-location {
+    @apply rounded-xl p-6 border transition-all duration-300 hover:scale-105;
+    background: linear-gradient(135deg, hsl(300, 30%, 12%) 0%, hsl(320, 25%, 10%) 100%);
+    border-color: rgba(219, 112, 147, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  .contact-info-card-location:hover {
+    border-color: rgba(219, 112, 147, 0.6);
+    box-shadow: 0 8px 30px rgba(219, 112, 147, 0.2);
+  }
+
+  .contact-info-icon-location {
+    @apply mb-4 flex justify-center;
+    color: hsl(300, 100%, 50%);
+    filter: drop-shadow(0 0 8px rgba(219, 112, 147, 0.6));
+  }
+
+  /* Instagram Contact Card */
+  .contact-info-card-instagram {
+    @apply rounded-xl p-6 border transition-all duration-300 hover:scale-105;
+    background: linear-gradient(135deg, hsl(330, 60%, 15%) 0%, hsl(280, 50%, 12%) 25%, hsl(250, 70%, 10%) 100%);
+    border-color: rgba(238, 42, 123, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  .contact-info-card-instagram:hover {
+    border-color: rgba(238, 42, 123, 0.6);
+    box-shadow: 0 8px 30px rgba(238, 42, 123, 0.2);
+  }
+
+  .contact-info-icon-instagram {
+    @apply mb-4 flex justify-center;
+    color: hsl(330, 100%, 70%);
+    filter: drop-shadow(0 0 8px rgba(238, 42, 123, 0.6));
+  }
+
+  /* Facebook Contact Card */
+  .contact-info-card-facebook {
+    @apply rounded-xl p-6 border transition-all duration-300 hover:scale-105;
+    background: linear-gradient(135deg, hsl(220, 60%, 15%) 0%, hsl(210, 50%, 12%) 100%);
+    border-color: rgba(66, 103, 178, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  .contact-info-card-facebook:hover {
+    border-color: rgba(66, 103, 178, 0.6);
+    box-shadow: 0 8px 30px rgba(66, 103, 178, 0.2);
+  }
+
+  .contact-info-icon-facebook {
+    @apply mb-4 flex justify-center;
+    color: hsl(220, 100%, 60%);
+    filter: drop-shadow(0 0 8px rgba(66, 103, 178, 0.6));
+  }
+  
+  /* General icon styling classes for alternating sections */
+  .icon-salmon {
+    color: hsl(16, 100%, 73%);
+    filter: drop-shadow(0 0 8px rgba(255, 107, 107, 0.6));
+  }
+  
+  .icon-cyan {
+    color: hsl(180, 100%, 50%);
+    filter: drop-shadow(0 0 8px rgba(78, 205, 196, 0.6));
+  }
+
+  /* Gallery Hero Section */
+  .gallery-hero-section {
+    height: 70vh;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+
+  /* Masonry Grid Layout */
+  .masonry-grid {
+    columns: 1;
+    column-gap: 1rem;
+    margin: 0;
+  }
+
+  @media (min-width: 640px) {
+    .masonry-grid {
+      columns: 2;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .masonry-grid {
+      columns: 3;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .masonry-grid {
+      columns: 4;
+    }
+  }
+
+  .masonry-item {
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 1rem;
+    break-inside: avoid;
+  }
+
+  /* Seamless Masonry Grid Layout - Instagram Style */
+  .masonry-grid-seamless {
+    columns: 2;
+    column-gap: 0;
+    margin: 0;
+  }
+
+  @media (min-width: 640px) {
+    .masonry-grid-seamless {
+      columns: 3;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .masonry-grid-seamless {
+      columns: 4;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .masonry-grid-seamless {
+      columns: 4;
+    }
+  }
+
+  /* Remove all !important overrides to allow inline styles to work */
+
+  .masonry-grid-seamless > * {
+    display: inline-block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    break-inside: avoid;
+    vertical-align: top;
+  }
+
+  .masonry-grid-seamless img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+  }
+
+  /* Additional utilities for seamless grids */
+  .grid-seamless {
+    gap: 0;
+  }
+
+  .grid-seamless > * {
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Ensure images fit perfectly in containers */
+  .seamless-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* 
+   * UNIFIED GALLERY GRID SYSTEM
+   * ===========================
+   * 
+   * Use these classes for consistent breakpoints across ALL gallery components:
+   * - gallery-live-preview.tsx (admin panel preview)
+   * - gallery-preview.tsx (client gallery component) 
+   * - client-gallery.tsx (public client gallery page)
+   * - enhanced-gallery-editor.tsx (admin gallery editor)
+   * 
+   * Standard Breakpoints:
+   * - Mobile: 2 columns (default)
+   * - MD (768px+): 3 columns
+   * - LG (1024px+): 4 columns  
+   * - 2XL (1536px+): 5 columns
+   * 
+   * To update breakpoints, modify these classes only - all gallery components will inherit the changes.
+   */
+  .gallery-grid-square {
+    @apply grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5;
+  }
+
+  .gallery-grid-masonry {
+    @apply masonry-grid-seamless;
+  }
+
+  .gallery-grid-automatic-landscape {
+    @apply grid-cols-2 md:grid-cols-3;
+  }
+
+  .gallery-grid-automatic-portrait {
+    @apply grid-cols-3 md:grid-cols-4 2xl:grid-cols-5;
+  }
+
+  .gallery-grid-automatic-default {
+    @apply grid-cols-3 md:grid-cols-4;
+  }
+
+  /* Mobile and Tablet Gallery Overrides */
+  .gallery-grid-mobile {
+    @apply grid-cols-2;
+  }
+
+  .gallery-grid-tablet {
+    @apply grid-cols-3;
+  }
+
+  /* 
+   * SIMPLIFIED GALLERY STYLING SYSTEM 
+   * ==============================
+   * Essential gallery classes only to avoid conflicts
+   */
+
+  /* === BASE GALLERY CONTAINERS === */
+  .gallery-container {
+    @apply w-full;
+  }
+
+  .gallery-container-admin {
+    @apply w-full scale-75 origin-top-left transform;
+  }
+
+  .gallery-container-client {
+    @apply w-full;
+  }
+
+  .gallery-container-public {
+    @apply w-full max-w-none;
+  }
+
+  /* === GALLERY SPACING SYSTEM === */
+  .gallery-spacing-tight {
+    gap: 2px;
+  }
+
+  .gallery-spacing-normal {
+    gap: 8px;
+  }
+
+  .gallery-spacing-loose {
+    gap: 16px;
+  }
+
+  /* Masonry spacing (uses margin-bottom instead of gap) */
+  .gallery-spacing-tight .gallery-masonry-item {
+    margin-bottom: 2px;
+  }
+
+  .gallery-spacing-normal .gallery-masonry-item {
+    margin-bottom: 8px;
+  }
+
+  .gallery-spacing-loose .gallery-masonry-item {
+    margin-bottom: 16px;
+  }
+
+  /* === GALLERY PADDING SYSTEM === */
+  .gallery-padding-tight {
+    @apply p-2;
+  }
+
+  .gallery-padding-normal {
+    @apply p-4;
+  }
+
+  .gallery-padding-loose {
+    @apply p-6;
+  }
+
+  /* === GALLERY BACKGROUND COLORS === */
+  .gallery-bg-black {
+    @apply bg-black;
+  }
+
+  .gallery-bg-dark-grey {
+    @apply bg-slate-800;
+  }
+
+  .gallery-bg-grey {
+    @apply bg-slate-600;
+  }
+
+  .gallery-bg-white {
+    @apply bg-white;
+  }
+
+  .gallery-bg-warm-grey {
+    background-color: #2d2d2d;
+  }
+
+  .gallery-bg-cool-grey {
+    background-color: #1e293b;
+  }
+
+  /* === GALLERY IMAGE STYLES === */
+  .gallery-image {
+    @apply relative cursor-pointer overflow-hidden transition-all duration-300;
+  }
+
+  .gallery-image:hover {
+    @apply brightness-90;
+  }
+
+  .gallery-image-overlay {
+    @apply absolute inset-0 bg-black/0 transition-colors duration-300;
+  }
+
+  .gallery-image:hover .gallery-image-overlay {
+    @apply bg-black/20;
+  }
+
+  /* === GALLERY IMAGE BORDER STYLES === */
+  .gallery-image-sharp {
+    @apply rounded-none;
+  }
+
+  .gallery-image-rounded {
+    @apply rounded-lg;
+  }
+
+  .gallery-image-circular {
+    @apply rounded-full aspect-square;
+  }
+
+  /* === GALLERY IMAGE ASPECT RATIOS === */
+  .gallery-image-square {
+    @apply aspect-square;
+  }
+
+  .gallery-image-landscape {
+    @apply aspect-[4/3];
+  }
+
+  .gallery-image-portrait {
+    @apply aspect-[3/4];
+  }
+
+  .gallery-image-auto {
+    @apply h-auto;
+  }
+
+  /* === GALLERY IMAGE CONTENT === */
+  .gallery-image-content {
+    @apply w-full h-full object-cover;
+  }
+
+  .gallery-image-content-masonry {
+    @apply w-full h-auto object-cover;
+  }
+
+  /* === MASONRY SPECIFIC CLASSES === */
+  .gallery-masonry-item {
+    @apply break-inside-avoid;
+  }
+
+  /* === GRID LAYOUT COMPOSITIONS === */
+  .gallery-layout-square {
+    @apply grid;
+  }
+
+  .gallery-layout-masonry {
+    @apply masonry-grid-seamless;
+  }
+
+  .gallery-layout-automatic {
+    @apply grid;
+  }
+
+  /* === MODAL AND INTERACTION CLASSES === */
+  .gallery-modal-backdrop {
+    @apply fixed inset-0 bg-black/90 z-50 flex items-center justify-center;
+  }
+
+  .gallery-modal-content {
+    @apply max-w-full max-h-full p-4;
+  }
+
+  .gallery-modal-image {
+    @apply max-w-full max-h-full object-contain;
+  }
+
+  .gallery-modal-nav {
+    @apply absolute top-1/2 -translate-y-1/2 text-white hover:bg-white/20 z-10;
+  }
+
+  .gallery-modal-nav-left {
+    @apply absolute top-1/2 -translate-y-1/2 text-white hover:bg-white/20 z-10 left-4;
+  }
+
+  .gallery-modal-nav-right {
+    @apply absolute top-1/2 -translate-y-1/2 text-white hover:bg-white/20 z-10 right-4;
+  }
+
+  .gallery-modal-close {
+    @apply absolute top-4 right-4 text-white hover:bg-white/20 z-10;
+  }
+
+  .gallery-modal-counter {
+    @apply absolute bottom-4 left-1/2 -translate-x-1/2 text-white bg-black/50 px-4 py-2 rounded-full;
+  }
+
+  /* === COMPOSITE GALLERY CLASSES === */
+  /* Pre-built combinations for common use cases */
+  
+  .gallery-square-tight {
+    @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5;
+    gap: 2px;
+  }
+
+  .gallery-square-normal {
+    @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5;
+    gap: 8px;
+  }
+
+  .gallery-square-loose {
+    @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5;
+    gap: 16px;
+  }
+
+  .gallery-masonry-tight {
+    @apply masonry-grid-seamless;
+  }
+
+  .gallery-masonry-normal {
+    @apply masonry-grid-seamless;
+  }
+
+  .gallery-masonry-loose {
+    @apply masonry-grid-seamless;
+  }
+
+  .gallery-masonry-tight .gallery-masonry-item {
+    margin-bottom: 2px;
+  }
+
+  .gallery-masonry-normal .gallery-masonry-item {
+    margin-bottom: 8px;
+  }
+
+  .gallery-masonry-loose .gallery-masonry-item {
+    margin-bottom: 16px;
+  }
+
+  /* === HELPER UTILITY FUNCTIONS === */
+  /* JavaScript can use these CSS custom properties to get consistent values */
+  
+  :root {
+    --gallery-spacing-tight: 2px;
+    --gallery-spacing-normal: 8px;
+    --gallery-spacing-loose: 16px;
+    --gallery-padding-tight: 0.5rem;
+    --gallery-padding-normal: 1rem;
+    --gallery-padding-loose: 1.5rem;
+  }
+
+  /* Gallery Modal Styles */
+  .gallery-modal {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  /* Touch/swipe support for mobile */
+  @media (max-width: 768px) {
+    .gallery-modal img {
+      touch-action: pan-x;
+    }
+  }
+  
+  .studio-card:hover {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 107, 107, 0.3);
+    border-color: rgba(255, 107, 107, 0.7);
+  }
+  
+  .studio-card-premium {
+    @apply rounded-2xl p-6 shadow-2xl transition-all duration-500;
+    background: linear-gradient(to bottom, hsl(180, 35%, 12%) 0%, hsl(280, 45%, 22%) 50%, hsl(310, 40%, 25%) 100%);
+    border: 2px solid rgba(0, 255, 255, 0.4);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 255, 255, 0.2);
+  }
+
+  .studio-card-pink {
+    @apply rounded-2xl p-8 shadow-2xl transition-all duration-500;
+    background: linear-gradient(to bottom, hsl(330, 30%, 15%) 0%, hsl(320, 45%, 25%) 50%, hsl(315, 40%, 28%) 100%);
+    border: 2px solid rgba(255, 105, 180, 0.3);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 105, 180, 0.1);
+  }
+
+  .studio-card-green {
+    @apply rounded-2xl p-8 shadow-2xl transition-all duration-500;
+    background: linear-gradient(to bottom, hsl(120, 30%, 15%) 0%, hsl(140, 45%, 25%) 50%, hsl(160, 40%, 28%) 100%);
+    border: 2px solid rgba(34, 197, 94, 0.4);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(34, 197, 94, 0.2);
+  }
+
+  .studio-card-orange {
+    @apply rounded-2xl p-8 shadow-2xl transition-all duration-500;
+    background: linear-gradient(to bottom, hsl(25, 30%, 15%) 0%, hsl(30, 45%, 25%) 50%, hsl(35, 40%, 28%) 100%);
+    border: 2px solid rgba(249, 115, 22, 0.3);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(249, 115, 22, 0.1);
+  }
+
+  .studio-card-cyan {
+    @apply rounded-2xl p-8 shadow-2xl transition-all duration-500;
+    background: linear-gradient(to bottom, hsl(180, 30%, 15%) 0%, hsl(185, 45%, 25%) 50%, hsl(190, 40%, 28%) 100%);
+    border: 2px solid rgba(34, 211, 238, 0.4);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(34, 211, 238, 0.2);
+  }
+  
+  .studio-card-premium:hover {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 255, 255, 0.4);
+    border-color: rgba(0, 255, 255, 0.8);
+  }
+
+  .studio-card-pink:hover {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 105, 180, 0.3);
+    border-color: rgba(255, 105, 180, 0.7);
+  }
+
+  .studio-card-green:hover {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(34, 197, 94, 0.4);
+    border-color: rgba(34, 197, 94, 0.8);
+  }
+
+  .studio-card-orange:hover {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(249, 115, 22, 0.3);
+    border-color: rgba(249, 115, 22, 0.7);
+  }
+
+  .studio-card-cyan:hover {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(34, 211, 238, 0.4);
+    border-color: rgba(34, 211, 238, 0.8);
+  }
+  
+  .studio-card-title {
+    @apply text-2xl mb-4 font-semibold;
+    color: hsl(16, 100%, 73%);
+  }
+  
+  .studio-card-premium .studio-card-title {
+    color: hsl(180, 100%, 50%);
+  }
+}

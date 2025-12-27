@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk File Mover</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .controls {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .btn {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+        }
+        .file-list {
+            margin-top: 20px;
+        }
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            background: #fafafa;
+        }
+        .file-item:hover {
+            background: #f0f0f0;
+        }
+        .checkbox {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+        .filename {
+            flex: 1;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .original {
+            color: #666;
+        }
+        .arrow {
+            margin: 0 10px;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .new {
+            color: #2196F3;
+            font-weight: bold;
+        }
+        .bulk-controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .bulk-btn {
+            background: #2196F3;
+            margin: 0 5px;
+        }
+        .bulk-btn:hover {
+            background: #1976D2;
+        }
+        .rename-btn {
+            background: #FF9800;
+            font-size: 18px;
+            padding: 15px 30px;
+        }
+        .rename-btn:hover {
+            background: #F57C00;
+        }
+        .error {
+            background: #ffebee;
+            border-left-color: #f44336;
+            color: #c62828;
+        }
+        .success {
+            background: #e8f5e8;
+            border-left-color: #4caf50;
+            color: #2e7d32;
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .success-animation {
+            display: inline-block;
+            margin-right: 10px;
+            animation: bounce 0.6s ease-in-out;
+        }
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            80% { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📁 Bulk File Mover</h1>
+        
+        <div class="controls">
+            <button class="btn" onclick="selectFolder()">📁 Select Source Folder</button>
+            <button class="btn" id="scanBtn" onclick="scanFiles()" disabled>🔍 Scan for Files</button>
+        </div>
+        
+        <div class="mode-selection" style="text-align: center; margin-bottom: 20px; display: none;" id="modeSelection">
+            <h3>📦 Processing Mode:</h3>
+            <label style="margin: 0 15px;">
+                <input type="radio" name="processingMode" value="rename" checked>
+                🔄 Rename in place (overwrite originals)
+            </label>
+            <label style="margin: 0 15px;">
+                <input type="radio" name="processingMode" value="consolidate">
+                📂 Rename and move to target folder
+            </label>
+        </div>
+        
+        <div class="target-folder" style="text-align: center; margin-bottom: 20px; display: none;" id="targetFolderSection">
+            <h4>📥 Target Folder:</h4>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 10px;">
+                <input type="text" id="targetFolderPath" readonly style="flex: 1; max-width: 400px; padding: 8px;">
+                <button class="btn" onclick="selectTargetFolder()">📁 Choose Target Folder</button>
+            </div>
+        </div>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <div id="fileList" class="file-list" style="display: none;">
+            <div class="bulk-controls">
+                <button class="btn bulk-btn" onclick="selectAll()">✅ Select All</button>
+                <button class="btn bulk-btn" onclick="deselectAll()">❌ Deselect All</button>
+                <button class="btn rename-btn" onclick="processFiles()">🚀 Process Selected Files</button>
+            </div>
+            <div id="files"></div>
+        </div>
+    </div>
+
+    <script>
+        let directoryHandle = null;
+        let targetDirectoryHandle = null;
+        let filesToRename = [];
+
+        // Check if File System Access API is supported
+        if (!window.showDirectoryPicker) {
+            document.body.innerHTML = `
+                <div class="container">
+                    <h1>❌ Browser Not Supported</h1>
+                    <p>This tool requires a modern browser with File System Access API support.</p>
+                    <p>Please use:</p>
+                    <ul>
+                        <li>Chrome 86+</li>
+                        <li>Edge 86+</li>
+                        <li>Opera 72+</li>
+                    </ul>
+                    <p>Firefox and Safari don't support this API yet.</p>
+                </div>
+            `;
+        }
+
+        async function selectFolder() {
+            try {
+                showStatus('📁 Opening folder picker...', 'info');
+                directoryHandle = await window.showDirectoryPicker();
+                showStatus(`✅ Selected source folder: ${directoryHandle.name}`, 'success');
+                document.getElementById('scanBtn').disabled = false;
+                document.getElementById('fileList').style.display = 'none';
+                
+                // Show mode selection after folder is selected
+                document.getElementById('modeSelection').style.display = 'block';
+                setupModeToggle();
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    showStatus(`❌ Error selecting folder: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function selectTargetFolder() {
+            try {
+                showStatus('📁 Opening target folder picker...', 'info');
+                targetDirectoryHandle = await window.showDirectoryPicker();
+                document.getElementById('targetFolderPath').value = targetDirectoryHandle.name;
+                showStatus(`✅ Selected target folder: ${targetDirectoryHandle.name}`, 'success');
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    showStatus(`❌ Error selecting target folder: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        function setupModeToggle() {
+            const radios = document.querySelectorAll('input[name="processingMode"]');
+            radios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const targetSection = document.getElementById('targetFolderSection');
+                    if (this.value === 'consolidate') {
+                        targetSection.style.display = 'block';
+                    } else {
+                        targetSection.style.display = 'none';
+                    }
+                    updateFileDisplay();
+                });
+            });
+        }
+
+        async function scanFiles() {
+            if (!directoryHandle) {
+                showStatus('❌ Please select a folder first', 'error');
+                return;
+            }
+
+            showStatus('🔍 Scanning files...', 'info');
+            filesToRename = [];
+
+            try {
+                await scanDirectory(directoryHandle);
+                
+                if (filesToRename.length === 0) {
+                    showStatus('ℹ️ No files found matching the pattern. Looking for files ending with: -YYYY-MM-DD-HH-MM-SS-utc', 'info');
+                    document.getElementById('fileList').style.display = 'none';
+                } else {
+                    showStatus(`🎯 Found ${filesToRename.length} files to rename`, 'success');
+                    displayFiles();
+                }
+            } catch (error) {
+                showStatus(`❌ Error scanning files: ${error.message}`, 'error');
+            }
+        }
+
+        async function scanDirectory(dirHandle, path = '') {
+            for await (const entry of dirHandle.values()) {
+                if (entry.kind === 'file') {
+                    const filename = entry.name;
+                    const match = filename.match(/^(.+)-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}-utc(\..+)$/);
+                    
+                    if (match) {
+                        const newName = match[1] + match[2];
+                        filesToRename.push({
+                            handle: entry,
+                            parentHandle: dirHandle,  // Store the parent directory handle
+                            original: filename,
+                            new: newName,
+                            path: path,
+                            selected: true
+                        });
+                    }
+                } else if (entry.kind === 'directory') {
+                    const subPath = path ? `${path}/${entry.name}` : entry.name;
+                    await scanDirectory(entry, subPath);
+                }
+            }
+        }
+
+        function displayFiles() {
+            updateFileDisplay();
+            document.getElementById('fileList').style.display = 'block';
+        }
+
+        function updateFileDisplay() {
+            const filesDiv = document.getElementById('files');
+            filesDiv.innerHTML = '';
+            
+            const mode = document.querySelector('input[name="processingMode"]:checked')?.value || 'rename';
+            const targetFolderName = targetDirectoryHandle?.name || 'Target Folder';
+
+            filesToRename.forEach((file, index) => {
+                const fileDiv = document.createElement('div');
+                fileDiv.className = 'file-item';
+                
+                let displayText;
+                if (mode === 'consolidate') {
+                    // Show source → target folder
+                    const sourcePath = file.path ? `${file.path}/${file.original}` : file.original;
+                    const targetPath = `${targetFolderName}/${file.new}`;
+                    displayText = `
+                        <span class="original">${sourcePath}</span>
+                        <span class="arrow">→</span>
+                        <span class="new">${targetPath}</span>
+                    `;
+                } else {
+                    // Show in-place rename
+                    const basePath = file.path ? file.path + '/' : '';
+                    displayText = `
+                        <span class="original">${basePath}${file.original}</span>
+                        <span class="arrow">→</span>
+                        <span class="new">${basePath}${file.new}</span>
+                    `;
+                }
+                
+                fileDiv.innerHTML = `
+                    <input type="checkbox" class="checkbox" ${file.selected ? 'checked' : ''} 
+                           onchange="toggleFile(${index})">
+                    <div class="filename">
+                        ${displayText}
+                    </div>
+                `;
+                filesDiv.appendChild(fileDiv);
+            });
+        }
+
+        function toggleFile(index) {
+            filesToRename[index].selected = !filesToRename[index].selected;
+        }
+
+        function selectAll() {
+            filesToRename.forEach(file => file.selected = true);
+            displayFiles();
+        }
+
+        function deselectAll() {
+            filesToRename.forEach(file => file.selected = false);
+            displayFiles();
+        }
+
+        async function processFiles() {
+            const selectedFiles = filesToRename.filter(file => file.selected);
+            const mode = document.querySelector('input[name="processingMode"]:checked')?.value || 'rename';
+            
+            if (selectedFiles.length === 0) {
+                showStatus('❌ Please select files to process', 'error');
+                return;
+            }
+
+            // Check if target folder is required and selected
+            if (mode === 'consolidate' && !targetDirectoryHandle) {
+                showStatus('❌ Please select a target folder for consolidation mode', 'error');
+                return;
+            }
+
+            const actionText = mode === 'consolidate' ? 'rename and move' : 'rename';
+            if (!confirm(`Are you sure you want to ${actionText} ${selectedFiles.length} file(s)?`)) {
+                return;
+            }
+
+            showStatusWithSpinner(`${mode === 'consolidate' ? 'Moving and renaming' : 'Renaming'} files...`, 'info');
+            
+            let successCount = 0;
+            let errors = [];
+            let overwriteAll = null; // null = ask, true = yes to all, false = no to all
+
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+                try {
+                    // Update progress
+                    showStatusWithSpinner(`Processing ${i + 1}/${selectedFiles.length}: ${file.original}`, 'info');
+                    
+                    // Check for overwrite conflicts
+                    const overwriteResult = await checkAndConfirmOverwrite(file, mode, overwriteAll);
+                    if (overwriteResult.skip) {
+                        continue; // Skip this file
+                    }
+                    overwriteAll = overwriteResult.overwriteAll; // Update for future files
+                    
+                    if (mode === 'consolidate') {
+                        // Move and rename to target folder
+                        await moveAndRenameFile(file, overwriteResult.shouldOverwrite);
+                    } else {
+                        // Rename in place (original behavior)
+                        await renameInPlace(file, overwriteResult.shouldOverwrite);
+                    }
+                    
+                    successCount++;
+                } catch (error) {
+                    errors.push(`${file.original}: ${error.message}`);
+                }
+            }
+
+            if (errors.length > 0) {
+                showStatus(`⚠️ Processed ${successCount} files. Errors: ${errors.slice(0, 3).join(', ')}${errors.length > 3 ? '...' : ''}`, 'error');
+            } else {
+                const action = mode === 'consolidate' ? 'moved and renamed' : 'renamed';
+                showSuccessMessage(`🎉 Successfully ${action} ${successCount} files!`);
+            }
+
+            // Refresh the list
+            await scanFiles();
+        }
+
+        async function renameInPlace(file, shouldOverwrite = true) {
+            // Original rename functionality - rename in same directory
+            const parent = file.parentHandle;
+            
+            // Create new file with new name in the same directory
+            const newFileHandle = await parent.getFileHandle(file.new, { create: shouldOverwrite });
+            
+            // Copy content
+            const originalFile = await file.handle.getFile();
+            const writable = await newFileHandle.createWritable();
+            await writable.write(originalFile);
+            await writable.close();
+            
+            // Verify the new file was created successfully
+            const verifyHandle = await parent.getFileHandle(file.new);
+            const verifyFile = await verifyHandle.getFile();
+            if (verifyFile.size !== originalFile.size) {
+                throw new Error('File copy verification failed - size mismatch');
+            }
+            
+            // Remove original file only after verification
+            await parent.removeEntry(file.original);
+            
+            // Final verification that original is gone
+            try {
+                await parent.getFileHandle(file.original);
+                throw new Error('Original file still exists after deletion attempt');
+            } catch (error) {
+                if (error.name !== 'NotFoundError') {
+                    throw error;
+                }
+                // NotFoundError is expected - original file successfully deleted
+            }
+        }
+
+        async function moveAndRenameFile(file, shouldOverwrite = true) {
+            // Move and rename to target folder
+            if (!targetDirectoryHandle) {
+                throw new Error('Target directory not selected');
+            }
+            
+            // Create new file in target directory with renamed filename
+            const newFileHandle = await targetDirectoryHandle.getFileHandle(file.new, { create: shouldOverwrite });
+            
+            // Copy content from original file
+            const originalFile = await file.handle.getFile();
+            const writable = await newFileHandle.createWritable();
+            await writable.write(originalFile);
+            await writable.close();
+            
+            // Verify the new file was created successfully in target folder
+            const verifyHandle = await targetDirectoryHandle.getFileHandle(file.new);
+            const verifyFile = await verifyHandle.getFile();
+            if (verifyFile.size !== originalFile.size) {
+                throw new Error('File copy verification failed - size mismatch');
+            }
+            
+            // Remove original file from source directory only after verification
+            await file.parentHandle.removeEntry(file.original);
+            
+            // Final verification that original is gone
+            try {
+                await file.parentHandle.getFileHandle(file.original);
+                throw new Error('Original file still exists after deletion attempt');
+            } catch (error) {
+                if (error.name !== 'NotFoundError') {
+                    throw error;
+                }
+                // NotFoundError is expected - original file successfully deleted
+            }
+        }
+
+        async function checkAndConfirmOverwrite(file, mode, overwriteAll) {
+            const targetHandle = mode === 'consolidate' ? targetDirectoryHandle : file.parentHandle;
+            
+            try {
+                // Check if target file exists
+                await targetHandle.getFileHandle(file.new);
+                
+                // File exists, need to handle overwrite
+                if (overwriteAll === true) {
+                    return { shouldOverwrite: true, overwriteAll: true, skip: false };
+                } else if (overwriteAll === false) {
+                    return { shouldOverwrite: false, overwriteAll: false, skip: true };
+                } else {
+                    // Ask user what to do
+                    const response = await showOverwriteDialog(file.new);
+                    return response;
+                }
+            } catch (error) {
+                if (error.name === 'NotFoundError') {
+                    // File doesn't exist, no overwrite needed
+                    return { shouldOverwrite: true, overwriteAll: overwriteAll, skip: false };
+                }
+                throw error;
+            }
+        }
+
+        function showOverwriteDialog(filename) {
+            return new Promise((resolve) => {
+                const modal = document.createElement('div');
+                modal.style.cssText = `
+                    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                    background: rgba(0,0,0,0.5); display: flex; align-items: center; 
+                    justify-content: center; z-index: 1000;
+                `;
+                
+                modal.innerHTML = `
+                    <div style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; text-align: center;">
+                        <h3>File Already Exists</h3>
+                        <p><strong>${filename}</strong> already exists.</p>
+                        <p>What would you like to do?</p>
+                        <div style="margin-top: 20px;">
+                            <button onclick="resolveOverwrite('yes')" style="margin: 5px; padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">Yes</button>
+                            <button onclick="resolveOverwrite('yes-all')" style="margin: 5px; padding: 10px 20px; background: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer;">Yes to All</button>
+                            <button onclick="resolveOverwrite('no')" style="margin: 5px; padding: 10px 20px; background: #FF9800; color: white; border: none; border-radius: 5px; cursor: pointer;">Skip</button>
+                            <button onclick="resolveOverwrite('no-all')" style="margin: 5px; padding: 10px 20px; background: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer;">Skip All</button>
+                        </div>
+                    </div>
+                `;
+                
+                window.resolveOverwrite = (choice) => {
+                    document.body.removeChild(modal);
+                    delete window.resolveOverwrite;
+                    
+                    switch(choice) {
+                        case 'yes':
+                            resolve({ shouldOverwrite: true, overwriteAll: null, skip: false });
+                            break;
+                        case 'yes-all':
+                            resolve({ shouldOverwrite: true, overwriteAll: true, skip: false });
+                            break;
+                        case 'no':
+                            resolve({ shouldOverwrite: false, overwriteAll: null, skip: true });
+                            break;
+                        case 'no-all':
+                            resolve({ shouldOverwrite: false, overwriteAll: false, skip: true });
+                            break;
+                    }
+                };
+                
+                document.body.appendChild(modal);
+            });
+        }
+
+        function showStatusWithSpinner(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<span class="spinner"></span>${message}`;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+
+        function showSuccessMessage(message) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<span class="success-animation">🎉</span>${message}`;
+            statusDiv.className = 'status success';
+            statusDiv.style.display = 'block';
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

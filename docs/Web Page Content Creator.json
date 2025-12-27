@@ -1,0 +1,639 @@
+{
+  "name": "Web Page Content Creator",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {
+          "redirect": {},
+          "timeout": 30000
+        }
+      },
+      "id": "fee95f9a-15e0-4987-ade3-f6fb3946e5a7",
+      "name": "Fetch Blog Content",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1648,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Manual HTML scraping - no external dependencies\nconst rawData = $input.first().json;\nconst blogUrl = $('On form submission').first().json.url;\n\n// Extract HTML string from the response\nlet html = '';\nif (typeof rawData === 'string') {\n  html = rawData;\n} else if (rawData.data) {\n  html = rawData.data;\n} else if (rawData.body) {\n  html = rawData.body;\n} else {\n  html = String(rawData);\n}\n\nif (!html || html.length < 100) {\n  throw new Error('Failed to fetch page content or content too short');\n}\n\n// Extract title\nlet title = '';\nconst titleMatch = html.match(/<title[^>]*>([^<]+)<\\/title>/i);\nif (titleMatch) {\n  title = titleMatch[1]\n    .replace(/&[^;]+;/g, ' ')\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\n\n// If no title, try h1 tags\nif (!title) {\n  const h1Match = html.match(/<h1[^>]*>([^<]+)<\\/h1>/i);\n  if (h1Match) {\n    title = h1Match[1].replace(/<[^>]*>/g, '').trim();\n  }\n}\n\ntitle = title || 'Blog Post';\n\n// Remove unwanted elements\nlet cleanHtml = html\n  .replace(/<script[^>]*>.*?<\\/script>/gis, '')\n  .replace(/<style[^>]*>.*?<\\/style>/gis, '')\n  .replace(/<nav[^>]*>.*?<\\/nav>/gis, '')\n  .replace(/<footer[^>]*>.*?<\\/footer>/gis, '')\n  .replace(/<header[^>]*class=\"[^\"]*header[^\"]*\"[^>]*>.*?<\\/header>/gis, '')\n  .replace(/<div[^>]*class=\"[^\"]*nav[^\"]*\"[^>]*>.*?<\\/div>/gis, '')\n  .replace(/<div[^>]*class=\"[^\"]*menu[^\"]*\"[^>]*>.*?<\\/div>/gis, '')\n  .replace(/<div[^>]*class=\"[^\"]*sidebar[^\"]*\"[^>]*>.*?<\\/div>/gis, '')\n  .replace(/<aside[^>]*>.*?<\\/aside>/gis, '');\n\n// Try to find main content area\nconst contentSelectors = [\n  /<main[^>]*>(.*?)<\\/main>/is,\n  /<article[^>]*>(.*?)<\\/article>/is,\n  /<div[^>]*class=\"[^\"]*content[^\"]*\"[^>]*>(.*?)<\\/div>/is,\n  /<div[^>]*class=\"[^\"]*post[^\"]*\"[^>]*>(.*?)<\\/div>/is,\n  /<div[^>]*class=\"[^\"]*entry[^\"]*\"[^>]*>(.*?)<\\/div>/is,\n  /<div[^>]*id=\"[^\"]*content[^\"]*\"[^>]*>(.*?)<\\/div>/is\n];\n\nlet mainContent = cleanHtml;\nfor (const selector of contentSelectors) {\n  const match = cleanHtml.match(selector);\n  if (match && match[1].length > 300) {\n    mainContent = match[1];\n    console.log('Found content using selector pattern');\n    break;\n  }\n}\n\n// Convert HTML to plain text\nconst textContent = mainContent\n  .replace(/<br[^>]*>/gi, '\\n')\n  .replace(/<\\/p>/gi, '\\n\\n')\n  .replace(/<\\/h[1-6]>/gi, '\\n\\n')\n  .replace(/<\\/div>/gi, '\\n')\n  .replace(/<\\/li>/gi, '\\n')\n  .replace(/<[^>]*>/g, ' ')\n  .replace(/&nbsp;/g, ' ')\n  .replace(/&amp;/g, '&')\n  .replace(/&lt;/g, '<')\n  .replace(/&gt;/g, '>')\n  .replace(/&quot;/g, '\"')\n  .replace(/&#39;/g, \"'\")\n  .replace(/&#8211;/g, '–')\n  .replace(/&#8217;/g, \"'\")\n  .replace(/\\s+/g, ' ')\n  .trim();\n\n// Extract paragraphs more intelligently by preserving HTML structure\nconst paragraphRegex = /<p[^>]*>(.*?)<\\/p>/gis;\nconst headingRegex = /<h[1-6][^>]*>(.*?)<\\/h[1-6]>/gis;\nconst paragraphs = [];\n\n// First extract all <p> tags\nlet match;\nwhile ((match = paragraphRegex.exec(mainContent)) !== null) {\n  const text = match[1]\n    .replace(/<[^>]*>/g, ' ')\n    .replace(/&nbsp;/g, ' ')\n    .replace(/&amp;/g, '&')\n    .replace(/&lt;/g, '<')\n    .replace(/&gt;/g, '>')\n    .replace(/&quot;/g, '\"')\n    .replace(/&#39;/g, \"'\")\n    .replace(/&#8211;/g, '–')\n    .replace(/&#8217;/g, \"'\")\n    .replace(/\\s+/g, ' ')\n    .trim();\n  \n  if (text.length > 50 && \n      !text.toLowerCase().includes('cookie') &&\n      !text.toLowerCase().includes('menu') &&\n      !text.toLowerCase().includes('navigation')) {\n    paragraphs.push(text);\n  }\n}\n\n// Also extract headings as they often introduce new sections\nwhile ((match = headingRegex.exec(mainContent)) !== null) {\n  const text = match[1]\n    .replace(/<[^>]*>/g, '')\n    .replace(/&[^;]+;/g, ' ')\n    .replace(/\\s+/g, ' ')\n    .trim();\n  \n  if (text.length > 10 && text.length < 200) {\n    // Add heading as context for the next paragraph\n    const headingContext = `${text}:`;\n    if (!paragraphs.some(p => p.startsWith(headingContext))) {\n      // Find if there's content after this heading\n      const headingIndex = match.index + match[0].length;\n      const nextContent = mainContent.substring(headingIndex, headingIndex + 500);\n      const nextPara = nextContent.match(/<p[^>]*>(.*?)<\\/p>/si);\n      \n      if (nextPara) {\n        const paraText = nextPara[1]\n          .replace(/<[^>]*>/g, ' ')\n          .replace(/&[^;]+;/g, ' ')\n          .replace(/\\s+/g, ' ')\n          .trim();\n        \n        if (paraText.length > 50) {\n          paragraphs.push(`${text}: ${paraText}`);\n        }\n      }\n    }\n  }\n}\n\n// If no paragraphs found with <p> tags, fall back to line break splitting\nif (paragraphs.length === 0) {\n  console.log('No <p> tags found, falling back to line break splitting');\n  const textContent = mainContent\n    .replace(/<br[^>]*>/gi, '\\n')\n    .replace(/<\\/div>/gi, '\\n')\n    .replace(/<\\/li>/gi, '\\n')\n    .replace(/<[^>]*>/g, ' ')\n    .replace(/&[^;]+;/g, ' ')\n    .replace(/\\s+/g, ' ')\n    .trim();\n  \n  const lines = textContent.split(/\\n+/);\n  for (const line of lines) {\n    const cleaned = line.trim();\n    if (cleaned.length > 50) {\n      paragraphs.push(cleaned);\n    }\n  }\n}\n\nconst finalParagraphs = paragraphs;\n\n// Extract images with better filtering\nconst images = [];\nconst imgRegex = /<img[^>]+src=[\"\\']([^\"\\']+)[\"\\'][^>]*>/gi;\nlet imgMatch;\nlet totalImagesFound = 0;\nlet skippedImages = [];\n\nwhile ((imgMatch = imgRegex.exec(html)) !== null && images.length < 15) {\n  totalImagesFound++;\n  const fullImgTag = imgMatch[0];\n  let src = imgMatch[1];\n  \n  // Extract alt text\n  const altMatch = fullImgTag.match(/alt=[\"\\']([^\"\\']*)[\"\\']]/);\n  const alt = altMatch ? altMatch[1] : '';\n  \n  // Extract width and height if present in HTML\n  const widthMatch = fullImgTag.match(/width=[\"\\']?(\\d+)[\"\\']?/);\n  const heightMatch = fullImgTag.match(/height=[\"\\']?(\\d+)[\"\\']?/);\n  const htmlWidth = widthMatch ? parseInt(widthMatch[1]) : null;\n  const htmlHeight = heightMatch ? parseInt(heightMatch[1]) : null;\n  \n  // Skip if dimensions are explicitly set and too small\n  if (htmlWidth && htmlHeight && (htmlWidth < 400 || htmlHeight < 400)) {\n    skippedImages.push({reason: 'HTML dimensions too small', src: src});\n    continue;\n  }\n  \n  // Extended list of junk patterns - now includes spinners and preloaders\n  const skipPatterns = [\n    'logo', 'icon', 'avatar', 'button', 'arrow', 'social', 'badge', 'pixel',\n    'spinner', 'loader', 'loading', 'preloader', 'placeholder',\n    'tiny', 'micro', 'mini', 'tracking', 'analytics'\n  ];\n  \n  const shouldSkip = skipPatterns.some(pattern => \n    src.toLowerCase().includes(pattern) || \n    alt.toLowerCase().includes(pattern)\n  );\n  \n  if (shouldSkip) {\n    skippedImages.push({reason: 'Matched skip pattern', src: src});\n    continue;\n  }\n  \n  if (src.includes('data:image')) {\n    skippedImages.push({reason: 'Data URI', src: src.substring(0, 50) + '...'});\n    continue;\n  }\n  \n  // Skip SVGs as they're often icons/graphics\n  if (src.toLowerCase().includes('.svg')) {\n    skippedImages.push({reason: 'SVG file', src: src});\n    continue;\n  }\n  \n  // Convert relative URLs to absolute\n  if (!src.startsWith('http')) {\n    try {\n      if (src.startsWith('//')) {\n        src = 'https:' + src;\n      } else if (src.startsWith('/')) {\n        const baseUrl = new URL(blogUrl);\n        src = baseUrl.origin + src;\n      } else {\n        const baseUrl = new URL(blogUrl);\n        src = new URL(src, baseUrl.href).href;\n      }\n    } catch (e) {\n      console.log('Failed to process image URL:', src);\n      continue;\n    }\n  }\n  \n  // Check URL for dimension hints - but be careful with WordPress-style URLs\n  const urlDimensionMatch = src.match(/[-_](\\d{2,4})x(\\d{2,4})(?:\\.|$)/);\n  if (urlDimensionMatch) {\n    const urlWidth = parseInt(urlDimensionMatch[1]);\n    const urlHeight = parseInt(urlDimensionMatch[2]);\n    // Only skip if BOTH dimensions are small - WordPress often has one large dimension\n    if (urlWidth < 400 && urlHeight < 400) {\n      skippedImages.push({reason: 'URL dimensions too small', src: src});\n      continue;\n    }\n  }\n  \n  // Skip images with dimension parameters in query string that are too small\n  const queryMatch = src.match(/[?&](w|width|h|height|size)=(\\d+)/gi);\n  if (queryMatch) {\n    let tooSmall = false;\n    for (const param of queryMatch) {\n      const size = parseInt(param.split('=')[1]);\n      if (size < 400) {\n        tooSmall = true;\n        break;\n      }\n    }\n    if (tooSmall) continue;\n  }\n  \n  // Check if it's a proper image format\n  const hasImageExtension = src.match(/\\.(jpg|jpeg|png|gif|webp)(\\?|$)/i);\n  const looksLikeImage = src.includes('/image') || src.includes('/photo') || \n                         src.includes('/upload') || src.includes('/media') ||\n                         src.includes('/content') || src.includes('/assets');\n  \n  if (hasImageExtension || looksLikeImage) {\n    images.push({\n      url: src,\n      alt: alt,\n      width: htmlWidth || 800,  // Default to decent size if unknown\n      height: htmlHeight || 600,\n      possibleDimensions: urlDimensionMatch ? `${urlDimensionMatch[1]}x${urlDimensionMatch[2]}` : null\n    });\n  } else {\n    skippedImages.push({reason: 'No image extension or path pattern', src: src});\n  }\n}\n\nconsole.log(`Extracted: ${paragraphs.length} paragraphs, ${images.length} quality images`);\nconsole.log(`Total images found in HTML: ${totalImagesFound}`);\nconsole.log(`Skipped images: ${skippedImages.length}`);\nif (skippedImages.length > 0 && skippedImages.length <= 10) {\n  console.log('Skip reasons:', JSON.stringify(skippedImages, null, 2));\n}\n\nif (paragraphs.length === 0) {\n  console.log('Warning: No paragraphs found, content might not have been extracted properly');\n}\n\nreturn [{\n  blogUrl: blogUrl,\n  title: title,\n  content: textContent,\n  paragraphs: finalParagraphs.slice(0, 20), // Limit to 20 best paragraphs\n  images: images.slice(0, 10), // Limit to 10 best images\n  totalParagraphs: finalParagraphs.length,\n  totalImages: images.length,\n  contentLength: textContent.length,\n  recommendedPostCount: Math.max(finalParagraphs.length, images.length), // Whichever is higher\n  contentType: images.length > finalParagraphs.length ? 'image-heavy' : 'text-heavy',\n  debug: {\n    totalImagesFoundInHtml: totalImagesFound,\n    totalImagesSkipped: skippedImages.length,\n    totalImagesAccepted: images.length,\n    skippedImages: skippedImages.slice(0, 20), // First 20 to avoid huge output\n    acceptedImageUrls: images.map(img => img.url)\n  }\n}];"
+      },
+      "id": "05e08d0e-0f92-431a-bb31-c7b3c9f4417e",
+      "name": "Extract Content & Images",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1408,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "3c994d7f-af66-45ce-a6ad-10721b657bb0",
+              "leftValue": "={{ $json.images.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "fce21ce3-c618-462a-a75a-b2bc5ee079b5",
+      "name": "Check Images Found",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appE5EmeKwxQh72OQ",
+          "mode": "list",
+          "cachedResultName": "appBlog2LinkedInContent",
+          "cachedResultUrl": "https://airtable.com/appE5EmeKwxQh72OQ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl7oJGWlzTE9iQqz",
+          "mode": "list",
+          "cachedResultName": "tblSocialMediaPosts",
+          "cachedResultUrl": "https://airtable.com/appE5EmeKwxQh72OQ/tbl7oJGWlzTE9iQqz"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {
+            "Post Number": 0,
+            "Total Posts": 0,
+            "Word Count": 0,
+            "Engagement Score": 0
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Blog URL",
+              "displayName": "Blog URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Blog Title",
+              "displayName": "Blog Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Sample Blog Post Title",
+                  "value": "Sample Blog Post Title"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Post Number",
+              "displayName": "Post Number",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Total Posts",
+              "displayName": "Total Posts",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Content Section",
+              "displayName": "Content Section",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Linkedin Heading",
+              "displayName": "Linkedin Heading",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Post",
+              "displayName": "LinkedIn Post",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Image URL",
+              "displayName": "Image URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Image Alt",
+              "displayName": "Image Alt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Draft",
+                  "value": "Draft"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created Date",
+              "displayName": "Created Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Word Count",
+              "displayName": "Word Count",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Publish Date",
+              "displayName": "Publish Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Engagement Score",
+              "displayName": "Engagement Score",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Modified",
+              "displayName": "Last Modified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "b6f81a14-77cc-4263-b35d-4c4bfdc0164d",
+      "name": "Save to Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1248,
+        -160
+      ],
+      "executeOnce": false,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "80JmEmCu5UtjhwAy",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "URL skirmish",
+        "formDescription": "Giz the URL to whip fru",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "url",
+              "placeholder": "https://dcsafrica.co.za/landreform/"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -1888,
+        -144
+      ],
+      "id": "39e89e2b-cc1c-4c53-8a59-926b8d5d8bca",
+      "name": "On form submission",
+      "webhookId": "aae9ca84-07fb-49b1-9d36-e3319fa234a3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Calculate article strategy based on images found\nconst data = $input.first().json;\n// Get actual values from the correct field names\nconst totalImages = data.totalImages || 0;\nconst totalParagraphs = data.totalParagraphs || 0;\nconst content = data.content || '';\nconst images = data.images || [];\nconst paragraphs = data.paragraphs || [];\n\nconsole.log(`Found ${totalImages} images, ${totalParagraphs} paragraphs, content length: ${content.length}`);\n\n// Filter out tiny images, icons, and thumbnails\nconst validImages = images.filter(img => {\n  // Check if image has dimensions\n  if (!img.width || !img.height) return false;\n  \n  // Reject tiny images (likely icons)\n  if (img.width < 150 || img.height < 150) return false;\n  \n  // Reject extremely thin images (likely banners/dividers)\n  const aspectRatio = Math.max(img.width, img.height) / Math.min(img.width, img.height);\n  if (aspectRatio > 5) return false;\n  \n  // Reject tiny file sizes (likely low quality thumbnails)\n  if (img.fileSize && img.fileSize < 5000) return false;\n  \n  // Check URL patterns for common icon/thumbnail indicators\n  const url = img.src || img.url || '';\n  const suspiciousPatterns = /\\b(icon|thumb|avatar|logo|badge|button|social)\\b/i;\n  if (suspiciousPatterns.test(url)) return false;\n  \n  return true;\n});\n\nconsole.log(`Filtered ${images.length} images down to ${validImages.length} valid images`);\n\n// Determine number of articles based on valid images only\nconst numArticles = Math.min(Math.max(validImages.length, 1), 10);\n\n// Since we have mostly one big content chunk, split it by words for variety\nconst words = content.split(' ');\nconst wordsPerArticle = Math.ceil(words.length / numArticles);\n\n// Create content chunks for each article\nconst articleSources = [];\nfor (let i = 0; i < numArticles; i++) {\n  const startWordIndex = i * wordsPerArticle;\n  const endWordIndex = Math.min(startWordIndex + wordsPerArticle + 100, words.length);\n  \n  const contentChunk = words.slice(startWordIndex, endWordIndex).join(' ');\n  \n  const focusAngles = [\n    'technical infrastructure and security systems',\n    'project management and implementation', \n    'business impact and strategic value',\n    'technology integration and innovation',\n    'compliance and regulatory standards',\n    'collaboration and partnership success',\n    'facilities and architectural design',\n    'future-proofing and scalability',\n    'local economic development impact',\n    'operational excellence and performance'\n  ];\n  \n  articleSources.push({\n    articleNumber: i + 1,\n    focusAngle: focusAngles[i % focusAngles.length],\n    contentChunk: contentChunk,\n    assignedImage: validImages[i] || validImages[0], // Use valid images only\n    wordRange: `${startWordIndex}-${endWordIndex}`,\n    chunkLength: contentChunk.length\n  });\n}\n\nconsole.log(`Creating ${numArticles} articles from ${words.length} words using ${validImages.length} valid images`);\n\nreturn [{\n  originalData: data,\n  numArticles: numArticles,\n  totalImages: totalImages,\n  validImages: validImages.length,\n  totalParagraphs: totalParagraphs,\n  contentLength: content.length,\n  articleSources: articleSources,\n  strategy: `Creating ${numArticles} unique articles from ${words.length} words, filtered ${images.length} images down to ${validImages.length} valid ones`\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -928,
+        -160
+      ],
+      "id": "19ee7ccd-ce05-47ae-9248-7be871838b6d",
+      "name": "Calculate Article Strategy"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract articles from OpenAI response and prepare for Airtable\nconst openAIData = $input.first().json;\nconst content = $('OpenAI copy writer').first().json.message.content;\n\n// Parse the JSON from the markdown\nconst jsonStr = content.replace(/```json\\n/, '').replace(/\\n```$/, '');\nconst data = JSON.parse(jsonStr);\n\n// Get source info from Calculate Article Strategy node\nconst strategyData = $('Calculate Article Strategy').first().json;\n\n// Transform each article into Airtable format\nconst airtableRecords = data.articles.map(article => ({\n  json: {\n    'Headline': article.headline,\n    'Hook': article.hook,\n    'Client': article.clientname,\n    'Content': article.content,\n    'Focus Angle': article.focusAngle,\n    'Tone': article.tone,\n    'Word Count': article.wordCount,\n    'Image URL': article.assignedImageUrl,\n    'Image Placement': article.imagePlacement,\n    'Status': 'Draft',\n    'Generated Date': new Date().toISOString().split('T')[0],\n    'Source URL': strategyData.originalData.blogUrl,\n    'Source Title': strategyData.originalData.title || strategyData.originalData.blogTitle\n  }\n}));\n\nconsole.log(`Prepared ${airtableRecords.length} articles for Airtable`);\n\nreturn airtableRecords;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        -160
+      ],
+      "id": "f4212814-4779-4d0d-a561-cb219eefa74a",
+      "name": "Prepare for Airtable"
+    },
+    {
+      "parameters": {
+        "html": "{{ $json.html }}"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        784,
+        -160
+      ],
+      "id": "e8689a7d-4362-4f5e-969d-80f46cda1e1a",
+      "name": "HTML Preview"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Code node to generate HTML for all articles\nconst articles = $input.first().json.articles || [];\n\n\n// Generate HTML string\nconst html = `<!DOCTYPE html>\n<html>\n<head>\n    <title>Generated Articles</title>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n</head>\n<body style=\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; margin: 0; padding: 20px;\">\n    \n    <div style=\"text-align: center; margin-bottom: 30px;\">\n        <h1 style=\"color: #2c3e50; margin-bottom: 10px;\">Generated Articles</h1>\n        <p style=\"font-size: 1.2em; color: #27ae60; font-weight: 600;\">\n            ${articles.length} Articles Generated Successfully\n        </p>\n        <div style=\"margin: 20px 0;\">\n            <button onclick=\"exportJSON()\" style=\"background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; margin-right: 10px;\">Export JSON</button>\n            <button onclick=\"window.print()\" style=\"background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;\">Print/PDF</button>\n        </div>\n    </div>\n\n    <div style=\"display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; max-width: 1400px; margin: 0 auto;\">\n        ${articles.map(article => `\n            <div style=\"background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; transition: all 0.3s ease; border: 1px solid #e0e0e0;\">\n                \n                <div style=\"background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 20px;\">\n                    <h2 style=\"margin: 0; font-size: 1.1em; opacity: 0.9;\">Article ${article.articleNumber}</h2>\n                </div>\n                \n                <div style=\"padding: 20px;\">\n                    <div style=\"margin-bottom: 15px;\">\n                        <h3 style=\"color: #2c3e50; margin: 0 0 10px 0; font-size: 1.3em; line-height: 1.4;\">${article.headline}</h3>\n                    </div>\n                    \n                    <div style=\"margin-bottom: 15px;\">\n                        <strong style=\"color: #e74c3c; font-size: 1.1em; font-weight: 600;\">${article.hook}</strong>\n                    </div>\n                    \n                    <div style=\"margin-bottom: 15px;\">\n\n<img src=\"${article.assignedImageUrl || ''}\" alt=\"Article ${article.articleNumber}\" style=\"width: 100%; height: auto; border-radius: 8px; border: 1px solid #ddd;\">\n\n</div>\n                    \n                    <div style=\"margin-bottom: 15px; line-height: 1.6; color: #34495e;\">\n                        ${article.content.replace(/\\n/g, '<br>')}\n                    </div>\n                    \n                    <div style=\"margin-bottom: 15px; color: #3498db; font-weight: 500;\">\n                        ${article.hashtags ? article.hashtags.join(' ') : ''}\n                    </div>\n                    \n                    <div style=\"background: #f8f9fa; padding: 12px; border-radius: 6px; font-size: 0.85em; color: #6c757d; border: 1px solid #e9ecef;\">\n                        <div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 8px;\">\n                            <div><strong>Focus:</strong> ${article.focusAngle}</div>\n                            <div><strong>Tone:</strong> ${article.tone}</div>\n                            <div style=\"color: #27ae60;\"><strong>Words:</strong> ${article.wordCount}</div>\n                            <div><strong>Image:</strong> ${article.imagePlacement}</div>\n                        </div>\n                    </div>\n                </div>\n            </div>\n        `).join('')}\n    </div>\n    \n    <div style=\"text-align: center; margin-top: 30px; padding: 20px; background: #ecf0f1; border-radius: 8px; max-width: 1400px; margin: 30px auto 0;\">\n        <p style=\"margin: 0; color: #7f8c8d; font-size: 0.9em;\">\nArticles generated from: <strong>OpenAI Assistant</strong><br>\n            Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}\n        </p>\n    </div>\n\n    <script>\n        // Store article data for export\n        const articleData = ${JSON.stringify({\n            articles: articles,\n            totalArticles: articles.length,\n            generatedAt: new Date().toISOString(),\n            source: 'n8n workflow'\n        }, null, 2)};\n        \n        function exportJSON() {\n            const dataStr = JSON.stringify(articleData, null, 2);\n            const dataBlob = new Blob([dataStr], { type: 'application/json' });\n            const url = URL.createObjectURL(dataBlob);\n            const link = document.createElement('a');\n            link.href = url;\n            link.download = 'articles-' + new Date().toISOString().split('T')[0] + '.json';\n            link.click();\n            URL.revokeObjectURL(url);\n        }\n    </script>\n</body>\n</html>`;\n\n// Return the HTML\nreturn [{ \n  json: { \n    html: html,\n    articleCount: articles.length,\n    generatedAt: new Date().toISOString()\n  } \n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        -160
+      ],
+      "id": "70a0decc-b12c-4f30-a0e7-0d7372a831ec",
+      "name": "Prep html script"
+    },
+    {
+      "parameters": {
+        "content": "## working static html path\n### after ai node",
+        "height": 280,
+        "width": 1080
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        144,
+        -256
+      ],
+      "id": "26cfd728-aaf5-4f77-acb2-140162e2a294",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        144,
+        -80
+      ],
+      "id": "4efe2004-7a1e-48b0-ba1a-123ae77de8ee"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": "=const articles = $input.all().map(item => item.json);\n// rest of your code..."
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -96,
+        -160
+      ],
+      "id": "c75b47b6-1213-48db-925f-05a32d745372",
+      "name": "Fat Blob Splitter"
+    },
+    {
+      "parameters": {
+        "jsCode": "const openAIData = $input.first().json;\nconst content = openAIData.message.content;\n\n// Parse the articles data  \nconst jsonStr = content.replace(/```json\\n/, '').replace(/\\n```$/, '');\nconst data = JSON.parse(jsonStr);\n\nreturn [{ json: data }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -368,
+        -160
+      ],
+      "id": "18d0e303-222a-49c1-b6df-84381a2700ff",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an expert content strategist creating LinkedIn articles from blog content. Using the provided blog content and images, create {< $ison.validImages }} unique articles with these specifications:\nORIGINAL SOURCE:\nURL: {< $json.originalData. blogUrl }}\nTITLE: {< $json. originalData. title }}\nAVAILABLE IMAGES (you MUST use these exact URLs) :\n{{JSON.stringify($json.originalData.images)}}\nCREATE 11 $json. validImages 3} COMPLETELY DIFFERENT ARTICLES using these specifications:\nCRITICAL REQUIREMENTS:\n1. Each article must have a COMPLETELY DIFFERENT angle and tone\n2. Use different hooks, headlines, and writing styles\n3. No repetitive content between articles\n4. Each should feel like it was written by a different expert\n5. Vary the structure, length, and focus dramatically\n6. For assignedImage, you MUST select from the exact image URLs provided above - do NOT create fake URLs\nREQUIREMENTS:\n- Headline: Maximum 7 words - punchy and attention grabbing, in all uppercase.\n- Hook: Maximum 12 words - punchy and attention-grabbing\n- Content: Aim for 120-180 words maximum with 2-3 paragraph breaks for readability\n- At the end of the content add: \"Read the full story: k $json.originalData.blogUrl }}\"\n- Then after the full story link, add 2 line breaks and add 3 or 4 hashtags\n- Duplicate the hashtags into the separate hashtags array\n- Structure your content with natural paragraph breaks using double line breaks- Include 3-5 relevant hashtags at the end using LinkedIn best practices\n- DO NOT lift wording directly from the source blog - paraphrase and rewrite with fresh angles\n- Each article must have a completely different focus and tone\n- Use the assigned images meaningfully\n- Determine the Client Name, by inspecting the URL and extracting the primary domain name. For example www.naturalelixir.co.za/blogblogblog would become naturalelixir as the client name.\n\nRespond with valid JSON:\n\"articles\": [\n\"articleNumber\": 1,\n\"headline\": \"Compelling LinkedIn headline\"\n\"hook\": \"Engaging opening that grabs attention in\nunder 9 words\"\n/\n\"content\": \"First paragraph with engaging opening. \\n nSecond paragraph with key details and insights. n nFinal paragraph with conclusion.\"\n\"hashtags\": [\"#tag1\", \"#tag2\".\n, \"#tag3\"]\n\"focusAngle\": \"The angle used\" ,\n\"assignedImageUrl\": \"[select one actual URL from the\nimages array above]\"\n\"imagePlacement\": \"how to use\nthe image\"\n\"clientname\": \"client name extracted from primary URL\ndomain name\"\n\"tone\": \"Professional/Casual/Technical/etc\"\n\"wordCount\": 160,\n\"hashtags\": [\"#tag1\", \"#tag2\", \"#tag3\"]\n\"totalArticles\": {{ $json. validImages }}\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        -160
+      ],
+      "id": "d97fde93-540a-4419-aec5-a563326ea471",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "cCZPXH2B23e7Wg4I",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Fetch Blog Content": {
+      "main": [
+        [
+          {
+            "node": "Extract Content & Images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Content & Images": {
+      "main": [
+        [
+          {
+            "node": "Check Images Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Images Found": {
+      "main": [
+        [
+          {
+            "node": "Calculate Article Strategy",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Save to Airtable": {
+      "main": [
+        []
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Fetch Blog Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Article Strategy": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare for Airtable": {
+      "main": [
+        [
+          {
+            "node": "Save to Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Preview": {
+      "main": [
+        [
+          {
+            "node": "Prepare for Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prep html script": {
+      "main": [
+        [
+          {
+            "node": "HTML Preview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Fat Blob Splitter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fat Blob Splitter": {
+      "main": [
+        [
+          {
+            "node": "Prep html script",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Fat Blob Splitter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "db4a919e-32a6-445d-803a-747864cf7ce9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "57e41ebe79c34ba091ef7ff5dcabfcc55fc50407233e701025c1abb8f0c975e4"
+  },
+  "id": "4OaovPuDh1hdVTeK",
+  "tags": []
+}

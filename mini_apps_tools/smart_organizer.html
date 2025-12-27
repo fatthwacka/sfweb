@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart File Organizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .controls {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .btn {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+        }
+        .error {
+            background: #ffebee;
+            border-left-color: #f44336;
+            color: #c62828;
+        }
+        .success {
+            background: #e8f5e8;
+            border-left-color: #4caf50;
+            color: #2e7d32;
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .file-list {
+            margin-top: 20px;
+        }
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            background: #fafafa;
+        }
+        .file-item:hover {
+            background: #f0f0f0;
+        }
+        .checkbox {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+        .file-details {
+            flex: 1;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .source-path {
+            color: #666;
+            display: block;
+        }
+        .arrow {
+            margin: 5px 0;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .target-path {
+            color: #2196F3;
+            font-weight: bold;
+            display: block;
+        }
+        .new-folder {
+            background: #fff3e0;
+            color: #f57c00;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            margin-left: 10px;
+        }
+        .bulk-controls {
+            margin: 20px 0;
+            text-align: center;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .bulk-btn {
+            background: #2196F3;
+            margin: 0 5px;
+        }
+        .bulk-btn:hover {
+            background: #1976D2;
+        }
+        .organize-btn {
+            background: #FF9800;
+            font-size: 18px;
+            padding: 15px 30px;
+        }
+        .organize-btn:hover {
+            background: #F57C00;
+        }
+        .folder-structure {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .ai-note {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Smart File Organizer</h1>
+        
+        <div class="ai-note">
+            <strong>🧠 AI-Powered Organization</strong><br>
+            Uses intelligent analysis to categorize media files (videos, images, PSDs) into logical folder structures<br>
+            <small>Automatically filters out generic camera files (IMG_1234.jpg, etc.)</small>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" onclick="selectSourceFolder()">📁 Select Source Folder</button>
+            <button class="btn" onclick="selectTargetFolder()">🎯 Select Assets Root Folder</button>
+            <button class="btn" id="analyzeBtn" onclick="analyzeFiles()" disabled>🔍 Analyze & Categorize</button>
+        </div>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <div id="folderStructure" style="display: none;">
+            <h3>📂 Existing Folder Structure:</h3>
+            <div id="structureDisplay" class="folder-structure"></div>
+        </div>
+        
+        <div id="fileList" class="file-list" style="display: none;">
+            <div class="bulk-controls">
+                <button class="btn bulk-btn" onclick="selectAll()">✅ Select All</button>
+                <button class="btn bulk-btn" onclick="deselectAll()">❌ Deselect All</button>
+                <button class="btn organize-btn" onclick="organizeFiles()">🚀 Organize Selected Files</button>
+            </div>
+            <div id="files"></div>
+        </div>
+    </div>
+
+    <script>
+        let sourceDirectoryHandle = null;
+        let targetDirectoryHandle = null;
+        let filesToOrganize = [];
+        let folderStructure = new Map();
+
+        // Check browser support
+        if (!window.showDirectoryPicker) {
+            document.body.innerHTML = `
+                <div class="container">
+                    <h1>❌ Browser Not Supported</h1>
+                    <p>This tool requires Chrome 86+, Edge 86+, or Opera 72+</p>
+                </div>
+            `;
+        }
+
+        async function selectSourceFolder() {
+            try {
+                showStatus('📁 Opening source folder picker...', 'info');
+                sourceDirectoryHandle = await window.showDirectoryPicker();
+                showStatus(`✅ Selected source folder: ${sourceDirectoryHandle.name}`, 'success');
+                checkReadyToAnalyze();
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    showStatus(`❌ Error selecting source folder: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function selectTargetFolder() {
+            try {
+                showStatus('🎯 Opening target assets folder picker...', 'info');
+                targetDirectoryHandle = await window.showDirectoryPicker();
+                showStatus(`✅ Selected assets folder: ${targetDirectoryHandle.name}`, 'success');
+                checkReadyToAnalyze();
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    showStatus(`❌ Error selecting target folder: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        function checkReadyToAnalyze() {
+            if (sourceDirectoryHandle && targetDirectoryHandle) {
+                document.getElementById('analyzeBtn').disabled = false;
+            }
+        }
+
+        async function analyzeFiles() {
+            if (!sourceDirectoryHandle || !targetDirectoryHandle) {
+                showStatus('❌ Please select both source and target folders first', 'error');
+                return;
+            }
+
+            console.log('=== STARTING ANALYSIS ===');
+            showStatusWithSpinner('🔍 Scanning folders and analyzing files...', 'info');
+            
+            try {
+                // Step 1: Build folder structure from target directory
+                console.log('Step 1: Building folder structure...');
+                await buildFolderStructure();
+                console.log(`Built folder structure with ${folderStructure.size} folders`);
+                
+                // Step 2: Find media files in source directory  
+                console.log('Step 2: Finding media files...');
+                const videoFiles = await findVideoFiles();
+                console.log(`Found ${videoFiles.length} media files`);
+                
+                if (videoFiles.length === 0) {
+                    showStatus('ℹ️ No media files found in source folder', 'info');
+                    console.log('No media files found, stopping analysis');
+                    return;
+                }
+
+                // Step 3: Categorize files using AI logic
+                console.log('Step 3: Starting categorization...');
+                showStatusWithSpinner(`🤖 Analyzing ${videoFiles.length} media files...`, 'info');
+                
+                filesToOrganize = await categorizeFiles(videoFiles);
+                console.log(`Categorization complete: ${filesToOrganize.length} files processed`);
+                
+                // Step 4: Display results
+                console.log('Step 4: Displaying results...');
+                displayFolderStructure();
+                displayFilesToOrganize();
+                
+                console.log('=== ANALYSIS COMPLETE ===');
+                showStatus(`🎯 Analyzed ${filesToOrganize.length} media files for organization`, 'success');
+                
+            } catch (error) {
+                console.error('=== ANALYSIS ERROR ===', error);
+                showStatus(`❌ Error during analysis: ${error.message}`, 'error');
+                
+                // Log more details about the error
+                console.error('Error stack:', error.stack);
+                console.error('Current state:', {
+                    sourceFolder: sourceDirectoryHandle?.name,
+                    targetFolder: targetDirectoryHandle?.name,
+                    folderStructureSize: folderStructure?.size,
+                    filesToOrganizeLength: filesToOrganize?.length
+                });
+            }
+        }
+
+        async function buildFolderStructure() {
+            folderStructure.clear();
+            await scanDirectoryStructure(targetDirectoryHandle, '');
+        }
+
+        async function scanDirectoryStructure(dirHandle, path) {
+            for await (const entry of dirHandle.values()) {
+                if (entry.kind === 'directory') {
+                    const fullPath = path ? `${path}/${entry.name}` : entry.name;
+                    folderStructure.set(fullPath.toLowerCase(), {
+                        handle: entry,
+                        path: fullPath,
+                        parentHandle: dirHandle
+                    });
+                    
+                    // Recursively scan subdirectories
+                    await scanDirectoryStructure(entry, fullPath);
+                }
+            }
+        }
+
+        async function findVideoFiles() {
+            const mediaFiles = [];
+            const mediaExtensions = ['mp4', 'mov', 'avi', 'mkv', 'webm', 'm4v', 'flv', 'wmv', 'jpg', 'jpeg', 'psd'];
+            
+            try {
+                console.log(`Starting media file scan in source directory: ${sourceDirectoryHandle.name}`);
+                await scanForVideos(sourceDirectoryHandle, '', mediaFiles, mediaExtensions);
+                console.log(`Media file scan complete: Found ${mediaFiles.length} files total`);
+                
+                // Filter out camera raw files (generic naming patterns)
+                const filteredFiles = mediaFiles.filter(file => {
+                    const filename = file.name.toLowerCase();
+                    const nameWithoutExt = filename.replace(/\.(jpg|jpeg|psd|mp4|mov|avi|mkv|webm|m4v|flv|wmv)$/i, '');
+                    
+                    // Skip generic camera raw patterns
+                    const cameraPatterns = [
+                        /^img[_-]?\d+$/,           // IMG_1234, IMG1234
+                        /^dsc[_-]?\d+$/,           // DSC_5678, DSC5678  
+                        /^p\d{7,}$/,               // P1234567 (7+ digits)
+                        /^\d{8,}$/,                // 12345678 (8+ digits only)
+                        /^[a-z]{3}\d{4,}$/,        // ABC1234 (3 letters + 4+ digits)
+                        /^screenshot.*/,           // Screenshot files
+                        /^untitled.*/,             // Untitled files
+                        /^copy.*/,                 // Copy files
+                        /^image.*/                 // Generic "image" files
+                    ];
+                    
+                    const isGenericFile = cameraPatterns.some(pattern => pattern.test(nameWithoutExt));
+                    
+                    if (isGenericFile) {
+                        console.log(`Skipping generic file: ${file.name}`);
+                        return false;
+                    }
+                    
+                    // Keep files with descriptive names (has at least 2 words or meaningful content)
+                    const words = nameWithoutExt.split(/[-_\s]+/).filter(word => word.length > 2);
+                    const hasDescriptiveContent = words.length >= 2 || 
+                                                nameWithoutExt.length > 10 ||
+                                                /[a-z]{4,}/.test(nameWithoutExt); // Has a word of 4+ letters
+                    
+                    if (!hasDescriptiveContent) {
+                        console.log(`Skipping non-descriptive file: ${file.name}`);
+                        return false;
+                    }
+                    
+                    return true;
+                });
+                
+                console.log(`After filtering: ${filteredFiles.length} files remaining (removed ${mediaFiles.length - filteredFiles.length} generic files)`);
+                
+                // Log some sample filenames for debugging
+                if (filteredFiles.length > 0) {
+                    console.log('Sample media files found:');
+                    filteredFiles.slice(0, 5).forEach((file, i) => {
+                        console.log(`  ${i + 1}. ${file.name} (${file.path || 'root'})`);
+                    });
+                    if (filteredFiles.length > 5) {
+                        console.log(`  ... and ${filteredFiles.length - 5} more files`);
+                    }
+                }
+                
+                return filteredFiles;
+            } catch (error) {
+                console.error('Error scanning for media files:', error);
+                throw new Error(`Failed to scan media files: ${error.message}`);
+            }
+        }
+
+        async function scanForVideos(dirHandle, path, videoFiles, extensions) {
+            try {
+                for await (const entry of dirHandle.values()) {
+                    try {
+                        if (entry.kind === 'file') {
+                            const extension = entry.name.split('.').pop().toLowerCase();
+                            if (extensions.includes(extension)) {
+                                videoFiles.push({
+                                    handle: entry,
+                                    parentHandle: dirHandle,
+                                    name: entry.name,
+                                    path: path,
+                                    fullPath: path ? `${path}/${entry.name}` : entry.name
+                                });
+                                
+                                // Progress update every 50 files
+                                if (videoFiles.length % 50 === 0) {
+                                    showStatusWithSpinner(`📹 Found ${videoFiles.length} video files so far...`, 'info');
+                                }
+                            }
+                        } else if (entry.kind === 'directory') {
+                            const subPath = path ? `${path}/${entry.name}` : entry.name;
+                            await scanForVideos(entry, subPath, videoFiles, extensions);
+                        }
+                    } catch (entryError) {
+                        console.warn(`Error processing entry ${entry.name}:`, entryError);
+                        // Continue with other files
+                    }
+                }
+            } catch (dirError) {
+                console.error(`Error scanning directory ${path}:`, dirError);
+                throw dirError;
+            }
+        }
+
+        async function categorizeFiles(videoFiles) {
+            const categorized = [];
+            console.log(`Starting categorization of ${videoFiles.length} video files`);
+            
+            for (let i = 0; i < videoFiles.length; i++) {
+                const file = videoFiles[i];
+                try {
+                    // Update progress more frequently for debugging
+                    if (i % 5 === 0 || i === videoFiles.length - 1) {
+                        showStatusWithSpinner(`🤖 Analyzing ${i + 1}/${videoFiles.length} files...`, 'info');
+                        console.log(`Processing file ${i + 1}/${videoFiles.length}: ${file.name}`);
+                    }
+                    
+                    // Add timeout protection
+                    const categoryPromise = categorizeFile(file);
+                    const timeoutPromise = new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Categorization timeout')), 5000)
+                    );
+                    
+                    const category = await Promise.race([categoryPromise, timeoutPromise]);
+                    
+                    categorized.push({
+                        ...file,
+                        category: category.category,
+                        targetPath: category.targetPath,
+                        needsNewFolder: category.needsNewFolder || false,
+                        leaveInPlace: category.leaveInPlace || false,
+                        selected: category.leaveInPlace ? false : true // Don't select files to leave in place
+                    });
+                    
+                    console.log(`Successfully categorized file ${i + 1}: ${file.name} → ${category.targetPath}`);
+                    
+                } catch (error) {
+                    console.error(`Error categorizing file ${i + 1} (${file.name}):`, error);
+                    // Add file with fallback category but continue processing
+                    categorized.push({
+                        ...file,
+                        category: 'MISC',
+                        targetPath: 'MISC',
+                        needsNewFolder: false,
+                        leaveInPlace: false,
+                        selected: true
+                    });
+                    console.log(`Added fallback category for file ${i + 1}: ${file.name}`);
+                }
+                
+                // Add small delay to prevent overwhelming the browser
+                if (i % 25 === 0 && i > 0) {
+                    await new Promise(resolve => setTimeout(resolve, 10));
+                }
+            }
+            
+            console.log(`Categorization complete! Processed ${categorized.length} out of ${videoFiles.length} files`);
+            
+            // Verify we didn't lose any files
+            if (categorized.length !== videoFiles.length) {
+                console.error(`FILE COUNT MISMATCH: Started with ${videoFiles.length}, ended with ${categorized.length}`);
+                showStatus(`⚠️ Warning: Processed ${categorized.length} out of ${videoFiles.length} files`, 'error');
+            }
+            
+            return categorized;
+        }
+
+        async function categorizeFile(file) {
+            // AI-powered categorization logic
+            const filename = file.name.toLowerCase();
+            
+            // Extract keywords from filename
+            const keywords = filename
+                .replace(/\.(mp4|mov|avi|mkv|webm|m4v|flv|wmv)$/, '')
+                .split(/[-_\s]+/)
+                .filter(word => word.length > 2);
+
+            // First check: Is the file already in a good location?
+            const currentPath = file.path;
+            if (currentPath && isFileInGoodLocation(keywords, currentPath)) {
+                return {
+                    category: 'CURRENT',
+                    targetPath: currentPath,
+                    needsNewFolder: false,
+                    leaveInPlace: true
+                };
+            }
+
+            // Second, try to find the BEST EXISTING folder match
+            const existingMatch = findBestExistingFolder(keywords, currentPath);
+            if (existingMatch) {
+                return {
+                    category: existingMatch.category,
+                    targetPath: existingMatch.path,
+                    needsNewFolder: false
+                };
+            }
+
+            // If no existing match, try to categorize with conservative new folder creation
+            return categorizeWithConservativeCreation(keywords);
+        }
+
+        function isFileInGoodLocation(keywords, currentPath) {
+            if (!currentPath) return false;
+            
+            const pathLower = currentPath.toLowerCase();
+            const pathParts = pathLower.split('/');
+            
+            // Check if current location matches file content
+            let relevanceScore = 0;
+            
+            for (const keyword of keywords) {
+                for (const pathPart of pathParts) {
+                    if (pathPart === keyword || areSimilarWords(keyword, pathPart)) {
+                        relevanceScore += 10;
+                    }
+                    if (pathPart.includes(keyword) && keyword.length > 3) {
+                        relevanceScore += 5;
+                    }
+                }
+            }
+            
+            // If file is in a specific subfolder that matches its content, leave it
+            return relevanceScore >= 10;
+        }
+
+        function findBestExistingFolder(keywords, currentPath) {
+            let bestMatch = null;
+            let bestScore = 0;
+            let duplicateMatches = []; // Track multiple matches for disambiguation
+
+            // Check each existing folder for keyword matches
+            for (const [folderPathLower, folderInfo] of folderStructure) {
+                // Skip current location to avoid suggesting same place
+                if (currentPath && folderInfo.path === currentPath) {
+                    continue;
+                }
+                
+                const folderName = folderInfo.path.split('/').pop().toLowerCase();
+                const parentPath = folderInfo.path.split('/').slice(0, -1).join('/').toLowerCase();
+                
+                // Calculate relevance score with STRICTER matching
+                let score = 0;
+                let hasDirectMatch = false;
+                
+                // SPECIAL CASE: Jel/Jelly/Jello matching
+                const jelVariations = ['jel', 'jelly', 'jello', 'gel'];
+                const isJelFolder = jelVariations.includes(folderName);
+                const hasJelKeywords = keywords.some(k => jelVariations.includes(k));
+                
+                if (isJelFolder && hasJelKeywords) {
+                    console.log(`Strong Jel match: ${keywords.join(', ')} → ${folderInfo.path}`);
+                    return {
+                        path: folderInfo.path,
+                        category: folderInfo.path.split('/')[0] || 'MISC',
+                        score: 50 // Very high score for Jel matches
+                    };
+                }
+                
+                // EXACT keyword matches in folder name (much higher threshold)
+                for (const keyword of keywords) {
+                    if (folderName === keyword || areSimilarWords(keyword, folderName)) {
+                        score += 25; // Increased from 20
+                        hasDirectMatch = true;
+                        console.log(`Direct match: keyword '${keyword}' matches folder '${folderName}' (+25 points)`);
+                    }
+                    // Partial matches only for longer words and MUCH stricter
+                    else if (keyword.length >= 6 && (folderName.includes(keyword) || keyword.includes(folderName))) {
+                        // Only count if it's a substantial portion of the word
+                        const matchRatio = Math.max(keyword.length, folderName.length) / Math.min(keyword.length, folderName.length);
+                        if (matchRatio <= 1.5) { // Words must be similar length
+                            score += 5; // Reduced from 8
+                            console.log(`Partial match: keyword '${keyword}' partially matches folder '${folderName}' (+5 points)`);
+                        }
+                    }
+                }
+                
+                // Only apply category bonuses if there's already a direct match
+                if (hasDirectMatch) {
+                    // Enhanced context-aware scoring for disambiguation
+                    const contextBonus = getContextualBonus(keywords, parentPath, folderName);
+                    score += contextBonus;
+                    if (contextBonus > 0) {
+                        console.log(`Context bonus: +${contextBonus} points for ${parentPath}`);
+                    }
+                }
+
+                // Lower threshold to catch more potential matches (we'll disambiguate later)
+                if (score >= 15) { // Reduced from 20 to be more aggressive
+                    const match = {
+                        path: folderInfo.path,
+                        category: folderInfo.path.split('/')[0] || 'MISC',
+                        score: score,
+                        folderName: folderName,
+                        parentPath: parentPath
+                    };
+                    
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMatch = match;
+                        duplicateMatches = [match]; // Reset duplicate tracking
+                    } else if (score === bestScore && bestMatch) {
+                        duplicateMatches.push(match); // Track for disambiguation
+                    }
+                    
+                    console.log(`Potential match: ${folderInfo.path} with score ${score}`);
+                }
+            }
+
+            // If we have multiple matches with same score, disambiguate
+            if (duplicateMatches.length > 1) {
+                console.log(`Found ${duplicateMatches.length} duplicate matches, applying disambiguation...`);
+                bestMatch = disambiguateMatches(duplicateMatches, keywords);
+            }
+
+            if (bestMatch) {
+                console.log(`Final best match: ${bestMatch.path} (score: ${bestMatch.score})`);
+            } else {
+                console.log(`No good match found for keywords: ${keywords.join(', ')} - will try more aggressive matching`);
+            }
+
+            return bestMatch;
+        }
+        
+        function getContextualBonus(keywords, parentPath, folderName) {
+            let bonus = 0;
+            
+            // Dessert/pudding context
+            if (parentPath.includes('pudding') || parentPath.includes('dessert') || parentPath.includes('sweet')) {
+                const dessertKeywords = ['pudding', 'dessert', 'sweet', 'cake', 'chocolate', 'vanilla', 'caramel', 'cream', 'mousse', 'custard', 'tart', 'pie'];
+                const dessertIndicators = ['recipe', 'making', 'cooking', 'baking', 'mix', 'ingredient'];
+                if (keywords.some(k => dessertKeywords.includes(k)) || keywords.some(k => dessertIndicators.includes(k))) {
+                    bonus += 8;
+                }
+            }
+            
+            // Fresh fruit context  
+            if (parentPath.includes('fruit') || parentPath.includes('fresh') || parentPath.includes('raw')) {
+                const fruitKeywords = ['fresh', 'raw', 'whole', 'organic', 'ripe', 'natural', 'unprocessed'];
+                const fruitIndicators = ['background', 'texture', 'close', 'macro', 'studio', 'photography'];
+                if (keywords.some(k => fruitKeywords.includes(k)) || keywords.some(k => fruitIndicators.includes(k))) {
+                    bonus += 8;
+                }
+            }
+            
+            // Kitchen/cooking context
+            if (parentPath.includes('kitchen') || parentPath.includes('cooking') || parentPath.includes('recipe')) {
+                const kitchenKeywords = ['cooking', 'baking', 'kitchen', 'chef', 'recipe', 'ingredient', 'pot', 'pan', 'food', 'preparation'];
+                if (keywords.some(k => kitchenKeywords.includes(k))) {
+                    bonus += 5;
+                }
+            }
+
+            // Medical context
+            if (parentPath.includes('medical') || parentPath.includes('health')) {
+                const medicalKeywords = ['doctor', 'medical', 'health', 'hospital', 'medicine', 'treatment', 'nurse', 'clinic'];
+                if (keywords.some(k => medicalKeywords.includes(k))) {
+                    bonus += 5;
+                }
+            }
+            
+            return bonus;
+        }
+        
+        function disambiguateMatches(matches, keywords) {
+            console.log(`Disambiguating between: ${matches.map(m => m.path).join(' vs ')}`);
+            
+            // Rule 1: Prefer specific context over general
+            const hasSpecificContext = matches.filter(m => 
+                m.parentPath.includes('pudding') || m.parentPath.includes('dessert') || 
+                m.parentPath.includes('fruit') || m.parentPath.includes('kitchen')
+            );
+            
+            if (hasSpecificContext.length === 1) {
+                console.log(`Chose specific context: ${hasSpecificContext[0].path}`);
+                return hasSpecificContext[0];
+            }
+            
+            // Rule 2: Use keyword context to choose between fruit/dessert
+            const hasDesertKeywords = keywords.some(k => 
+                ['pudding', 'dessert', 'recipe', 'making', 'cooking', 'sweet', 'cream', 'cake', 'vanilla', 'chocolate'].includes(k)
+            );
+            
+            const hasFruitKeywords = keywords.some(k => 
+                ['fresh', 'background', 'texture', 'natural', 'organic', 'whole', 'raw', 'studio', 'photography'].includes(k)
+            );
+            
+            if (hasDesertKeywords && !hasFruitKeywords) {
+                const dessertMatch = matches.find(m => 
+                    m.parentPath.includes('pudding') || m.parentPath.includes('dessert')
+                );
+                if (dessertMatch) {
+                    console.log(`Chose dessert context based on keywords: ${dessertMatch.path}`);
+                    return dessertMatch;
+                }
+            }
+            
+            if (hasFruitKeywords && !hasDesertKeywords) {
+                const fruitMatch = matches.find(m => m.parentPath.includes('fruit'));
+                if (fruitMatch) {
+                    console.log(`Chose fruit context based on keywords: ${fruitMatch.path}`);
+                    return fruitMatch;
+                }
+            }
+            
+            // Rule 3: Prefer shorter paths (closer to root)
+            const shortestPath = matches.reduce((shortest, current) => 
+                current.path.length < shortest.path.length ? current : shortest
+            );
+            
+            console.log(`Chose shortest path: ${shortestPath.path}`);
+            return shortestPath;
+        }
+
+        function areSimilarWords(word1, word2) {
+            // Handle plurals and common variations
+            const variations = [
+                ['peach', 'peaches'],
+                ['berry', 'berries'], 
+                ['strawberry', 'strawberries'],
+                ['raspberry', 'raspberries'],
+                ['cherry', 'cherries'],
+                ['apple', 'apples'],
+                ['banana', 'bananas'],
+                ['orange', 'oranges'],
+                ['grape', 'grapes'],
+                ['cookie', 'cookies'],
+                ['cake', 'cakes'],
+                ['dessert', 'desserts'],
+                ['background', 'backgrounds'],
+                ['texture', 'textures'],
+                ['kitchen', 'kitchens'],
+                ['shot', 'shots'],
+                ['ingredient', 'ingredients']
+            ];
+
+            for (const [singular, plural] of variations) {
+                if ((word1 === singular && word2 === plural) || 
+                    (word1 === plural && word2 === singular)) {
+                    return true;
+                }
+            }
+
+            // Check for common misspellings and fuzzy matches
+            if (isFuzzyMatch(word1, word2)) {
+                return true;
+            }
+
+            // Check if one word is contained in another (for compound words)
+            if (word1.length > 3 && word2.length > 3) {
+                return word1.includes(word2) || word2.includes(word1);
+            }
+
+            return false;
+        }
+        
+        function isFuzzyMatch(word1, word2) {
+            // Common misspellings and variations
+            const fuzzyMappings = [
+                ['vanilla', 'vannila', 'vanila'],
+                ['chocolate', 'chocolat', 'choclate'],
+                ['strawberry', 'strawbery', 'strawbary'],
+                ['raspberry', 'raspbery', 'rasbery'],
+                ['caramel', 'carmel', 'carammel'],
+                ['cinnamon', 'cinamon', 'cinammon'],
+                ['coconut', 'cocnut', 'coconnut'],
+                ['blueberry', 'bluebery', 'bluebarry'],
+                ['background', 'backgound', 'bakground'],
+                ['beautiful', 'beautifull', 'beutiful'],
+                ['kitchen', 'kichen', 'kithen'],
+                ['recipe', 'recepie', 'recipie'],
+                ['vegetable', 'vegatable', 'vegtable'],
+                ['ingredient', 'ingrediant', 'ingredent']
+            ];
+            
+            // Check direct fuzzy mappings
+            for (const group of fuzzyMappings) {
+                if (group.includes(word1.toLowerCase()) && group.includes(word2.toLowerCase())) {
+                    console.log(`Fuzzy match found: ${word1} ≈ ${word2}`);
+                    return true;
+                }
+            }
+            
+            // Levenshtein distance for close matches (max 2 character differences)
+            if (Math.abs(word1.length - word2.length) <= 2 && word1.length > 4) {
+                const distance = levenshteinDistance(word1.toLowerCase(), word2.toLowerCase());
+                if (distance <= 2) {
+                    console.log(`Close spelling match: ${word1} ≈ ${word2} (distance: ${distance})`);
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        function levenshteinDistance(str1, str2) {
+            const matrix = [];
+            for (let i = 0; i <= str2.length; i++) {
+                matrix[i] = [i];
+            }
+            for (let j = 0; j <= str1.length; j++) {
+                matrix[0][j] = j;
+            }
+            for (let i = 1; i <= str2.length; i++) {
+                for (let j = 1; j <= str1.length; j++) {
+                    if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+            return matrix[str2.length][str1.length];
+        }
+        
+        function soundsLike(word1, word2) {
+            // Simple phonetic matching for common sound substitutions
+            const phoneticMappings = [
+                ['ph', 'f'],
+                ['ck', 'k'], 
+                ['c', 'k'],
+                ['z', 's'],
+                ['x', 'ks'],
+                ['qu', 'kw'],
+                ['oo', 'u'],
+                ['ee', 'e'],
+                ['ie', 'i'],
+                ['ou', 'ow']
+            ];
+            
+            let normalized1 = word1.toLowerCase();
+            let normalized2 = word2.toLowerCase();
+            
+            // Apply phonetic transformations
+            for (const [from, to] of phoneticMappings) {
+                normalized1 = normalized1.replace(new RegExp(from, 'g'), to);
+                normalized2 = normalized2.replace(new RegExp(from, 'g'), to);
+            }
+            
+            // Check if normalized versions are similar
+            return normalized1 === normalized2 || 
+                   normalized1.includes(normalized2) || 
+                   normalized2.includes(normalized1);
+        }
+
+        function categorizeWithConservativeCreation(keywords) {
+            console.log(`Aggressive categorization for keywords: ${keywords.join(', ')}`);
+            
+            // Try more aggressive matching before falling back to MISC
+            // Look for partial keyword matches in any folder name
+            const partialMatches = [];
+            
+            for (const [folderPathLower, folderInfo] of folderStructure) {
+                const folderName = folderInfo.path.split('/').pop().toLowerCase();
+                const parentPath = folderInfo.path.split('/').slice(0, -1).join('/').toLowerCase();
+                
+                for (const keyword of keywords) {
+                    if (keyword.length >= 4) {
+                        // Check if keyword is contained in folder name or vice versa
+                        if (folderName.includes(keyword) || keyword.includes(folderName)) {
+                            partialMatches.push({
+                                path: folderInfo.path,
+                                category: folderInfo.path.split('/')[0],
+                                match: keyword,
+                                folderName: folderName,
+                                parentPath: parentPath
+                            });
+                            console.log(`Aggressive partial match: '${keyword}' found in '${folderName}'`);
+                        }
+                        
+                        // Check for phonetic similarities (common letter swaps)
+                        if (soundsLike(keyword, folderName)) {
+                            partialMatches.push({
+                                path: folderInfo.path,
+                                category: folderInfo.path.split('/')[0],
+                                match: keyword,
+                                folderName: folderName,
+                                parentPath: parentPath
+                            });
+                            console.log(`Phonetic match: '${keyword}' sounds like '${folderName}'`);
+                        }
+                    }
+                }
+            }
+            
+            if (partialMatches.length > 0) {
+                // Prefer the first match (could add smarter selection here)
+                const chosen = partialMatches[0];
+                console.log(`Using aggressive match: ${chosen.path}`);
+                return {
+                    category: chosen.category,
+                    targetPath: chosen.path,
+                    needsNewFolder: false
+                };
+            }
+            
+            // Only after aggressive matching fails, look for existing MISC folder
+            const miscFolder = Array.from(folderStructure.values()).find(f => 
+                f.path.toLowerCase().includes('misc')
+            );
+            
+            if (miscFolder) {
+                console.log(`Using existing MISC folder: ${miscFolder.path}`);
+                return {
+                    category: miscFolder.path.split('/')[0],
+                    targetPath: miscFolder.path,
+                    needsNewFolder: false
+                };
+            }
+            
+            // Only create new folders if there's a VERY clear parent category and no existing alternative
+            
+            // Check if we have clear food-related keywords but no suitable existing food folder
+            const foodKeywords = ['apple', 'banana', 'orange', 'cherry', 'strawberry', 'raspberry', 'kiwi', 'peach', 'grape', 'lemon', 'lime'];
+            const matchedFoods = keywords.filter(k => foodKeywords.includes(k));
+            
+            if (matchedFoods.length > 0) {
+                // Check if there's a fruit parent category
+                const fruitParent = Array.from(folderStructure.keys()).find(path => 
+                    path.includes('fruit') && path.split('/').length <= 2
+                );
+                
+                if (fruitParent) {
+                    // Only create if it's a very specific fruit with no similar existing folder
+                    const food = matchedFoods[0];
+                    const hasCloseMatch = Array.from(folderStructure.keys()).some(path => 
+                        path.toLowerCase().includes(food) || areSimilarWords(food, path.split('/').pop())
+                    );
+                    
+                    if (!hasCloseMatch) {
+                        const fruitPath = Array.from(folderStructure.values()).find(f => 
+                            f.path.toLowerCase().includes('fruit')
+                        );
+                        if (fruitPath) {
+                            console.log(`Creating new fruit folder: ${food}`);
+                            return {
+                                category: fruitPath.path.split('/')[0],
+                                targetPath: `${fruitPath.path}/${food.charAt(0).toUpperCase() + food.slice(1)}`,
+                                needsNewFolder: true
+                            };
+                        }
+                    }
+                }
+            }
+
+            // Fall back to most general existing folder (but prefer MISC-like names)
+            const generalFolders = Array.from(folderStructure.values())
+                .filter(f => {
+                    const name = f.path.toLowerCase();
+                    return name.includes('misc') || name.includes('general') || 
+                           name.includes('other') || name.includes('temp') ||
+                           name.includes('miscellaneous') || f.path.split('/').length === 1;
+                })
+                .sort((a, b) => {
+                    // Prefer folders with "misc" in the name
+                    const aHasMisc = a.path.toLowerCase().includes('misc');
+                    const bHasMisc = b.path.toLowerCase().includes('misc');
+                    if (aHasMisc && !bHasMisc) return -1;
+                    if (!aHasMisc && bHasMisc) return 1;
+                    return a.path.length - b.path.length; // Then prefer shorter paths
+                });
+
+            if (generalFolders.length > 0) {
+                console.log(`Using existing general folder: ${generalFolders[0].path}`);
+                return {
+                    category: generalFolders[0].path.split('/')[0],
+                    targetPath: generalFolders[0].path,
+                    needsNewFolder: false
+                };
+            }
+
+            // Last resort - use a top-level folder (avoid random folders)
+            const topLevelFolders = Array.from(folderStructure.values())
+                .filter(f => f.path.split('/').length === 1)
+                .sort((a, b) => a.path.localeCompare(b.path));
+
+            if (topLevelFolders.length > 0) {
+                console.log(`Using top-level folder: ${topLevelFolders[0].path}`);
+                return {
+                    category: topLevelFolders[0].path,
+                    targetPath: topLevelFolders[0].path,
+                    needsNewFolder: false
+                };
+            }
+
+            // Ultimate fallback - create MISC
+            console.log(`Creating new MISC folder as ultimate fallback`);
+            return {
+                category: 'MISC',
+                targetPath: 'MISC',
+                needsNewFolder: true
+            };
+        }
+
+        function displayFolderStructure() {
+            const structureDiv = document.getElementById('structureDisplay');
+            const paths = Array.from(folderStructure.keys()).sort();
+            
+            structureDiv.innerHTML = paths.map(path => {
+                const depth = path.split('/').length - 1;
+                const indent = '  '.repeat(depth);
+                const folderName = path.split('/').pop();
+                return `${indent}📁 ${folderName}`;
+            }).join('\n');
+            
+            document.getElementById('folderStructure').style.display = 'block';
+        }
+
+        function displayFilesToOrganize() {
+            const filesDiv = document.getElementById('files');
+            filesDiv.innerHTML = '';
+
+            filesToOrganize.forEach((file, index) => {
+                const fileDiv = document.createElement('div');
+                fileDiv.className = 'file-item';
+                
+                if (file.leaveInPlace) {
+                    // File is already in good location
+                    fileDiv.innerHTML = `
+                        <input type="checkbox" class="checkbox" checked disabled>
+                        <div class="file-details">
+                            <span class="source-path">${file.fullPath}</span>
+                            <div class="arrow" style="color: #4CAF50;">✓ Already in correct location</div>
+                            <span class="target-path" style="color: #4CAF50;">${file.targetPath}/${file.name}</span>
+                        </div>
+                    `;
+                } else {
+                    // File needs to be moved
+                    fileDiv.innerHTML = `
+                        <input type="checkbox" class="checkbox" ${file.selected ? 'checked' : ''} 
+                               onchange="toggleFile(${index})">
+                        <div class="file-details">
+                            <span class="source-path">${file.fullPath}</span>
+                            <div class="arrow">↓</div>
+                            <span class="target-path">${file.targetPath}/${file.name}</span>
+                            ${file.needsNewFolder ? '<span class="new-folder">NEW FOLDER</span>' : ''}
+                        </div>
+                    `;
+                }
+                filesDiv.appendChild(fileDiv);
+            });
+
+            document.getElementById('fileList').style.display = 'block';
+        }
+
+        function toggleFile(index) {
+            filesToOrganize[index].selected = !filesToOrganize[index].selected;
+        }
+
+        function selectAll() {
+            filesToOrganize.forEach(file => file.selected = true);
+            displayFilesToOrganize();
+        }
+
+        function deselectAll() {
+            filesToOrganize.forEach(file => file.selected = false);
+            displayFilesToOrganize();
+        }
+
+        async function organizeFiles() {
+            const selectedFiles = filesToOrganize.filter(file => file.selected);
+            
+            if (selectedFiles.length === 0) {
+                showStatus('❌ Please select files to organize', 'error');
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to organize ${selectedFiles.length} file(s)?`)) {
+                return;
+            }
+
+            showStatusWithSpinner('🚀 Organizing files...', 'info');
+            
+            let successCount = 0;
+            let errors = [];
+
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+                try {
+                    showStatusWithSpinner(`Organizing ${i + 1}/${selectedFiles.length}: ${file.name}`, 'info');
+                    
+                    // Create folder structure if needed
+                    const targetHandle = await ensureFolderExists(file.targetPath);
+                    
+                    // Move file
+                    await moveFileToTarget(file, targetHandle);
+                    
+                    successCount++;
+                } catch (error) {
+                    errors.push(`${file.name}: ${error.message}`);
+                }
+            }
+
+            if (errors.length > 0) {
+                showStatus(`⚠️ Organized ${successCount} files. Errors: ${errors.slice(0, 3).join(', ')}${errors.length > 3 ? '...' : ''}`, 'error');
+            } else {
+                showSuccessMessage(`🎉 Successfully organized ${successCount} media files!`);
+            }
+
+            // Refresh analysis
+            await analyzeFiles();
+        }
+
+        async function ensureFolderExists(targetPath) {
+            const pathParts = targetPath.split('/');
+            let currentHandle = targetDirectoryHandle;
+            
+            for (const part of pathParts) {
+                try {
+                    currentHandle = await currentHandle.getDirectoryHandle(part);
+                } catch (error) {
+                    if (error.name === 'NotFoundError') {
+                        // Create the folder
+                        currentHandle = await currentHandle.getDirectoryHandle(part, { create: true });
+                    } else {
+                        throw error;
+                    }
+                }
+            }
+            
+            return currentHandle;
+        }
+
+        async function moveFileToTarget(file, targetHandle) {
+            // Check if file already exists in target
+            try {
+                await targetHandle.getFileHandle(file.name);
+                throw new Error(`File ${file.name} already exists in target folder`);
+            } catch (error) {
+                if (error.name !== 'NotFoundError') {
+                    throw error;
+                }
+            }
+
+            // Create new file in target location
+            const newFileHandle = await targetHandle.getFileHandle(file.name, { create: true });
+            
+            // Copy content
+            const originalFile = await file.handle.getFile();
+            const writable = await newFileHandle.createWritable();
+            await writable.write(originalFile);
+            await writable.close();
+            
+            // Verify copy
+            const verifyFile = await newFileHandle.getFile();
+            if (verifyFile.size !== originalFile.size) {
+                throw new Error('File copy verification failed');
+            }
+            
+            // Remove original
+            await file.parentHandle.removeEntry(file.name);
+        }
+
+        function showStatusWithSpinner(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<span class="spinner"></span>${message}`;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+
+        function showSuccessMessage(message) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `🎉 ${message}`;
+            statusDiv.className = 'status success';
+            statusDiv.style.display = 'block';
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

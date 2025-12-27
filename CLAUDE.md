@@ -74,6 +74,46 @@ Available in root directory:
 
 ---
 
+## 🔄 N8N WORKFLOW AUTOMATION
+
+**⚠️ COMPREHENSIVE DOCUMENTATION: All n8n integration details are in [`N8N_INTEGRATION.md`](./N8N_INTEGRATION.md)**
+
+### **Quick Reference**
+- **n8n Instance**: http://168.231.86.89:5678 (VPS-hosted)
+- **Active MCP Integration**: n8n-workflow server configured
+- **32 Workflows Available**: 4 active, 28 ready for mini-app integration
+- **API Authentication**: JWT token-based (expires 2025-01-31)
+
+### **Common n8n Tasks**
+```bash
+# List all workflows
+"List all my n8n workflows"
+
+# Control workflow state  
+"Activate/deactivate workflow [name or ID]"
+
+# Workflow analysis
+"Show me the structure of [workflow name]"
+
+# Create new automation
+"Create a workflow for [specific purpose]"
+
+# Debug issues
+"Debug the last execution of [workflow name]"
+```
+
+### **Mini-App Integration Strategy**
+High-potential workflows for Slyfox mini-apps:
+- **🎥 Veo 3 Video Generator** - AI video creation
+- **📝 Smart Article Writer** - AI content generation  
+- **🗺️ Local Business Intelligence** - Google Maps data scraping
+- **🔊 Podcast Generator** - Research + voice AI with ElevenLabs
+- **💬 Client Communication** - META auto-responder system
+
+**📋 Complete setup, workflow inventory, and development guide:** [`N8N_INTEGRATION.md`](./N8N_INTEGRATION.md)
+
+---
+
 ## 🏗️ CURRENT ARCHITECTURE (DECEMBER 2025)
 
 **⚠️ HYBRID SYSTEM: HARDCODED CORE + DYNAMIC VISUALS + AI-ENHANCED BLOG**

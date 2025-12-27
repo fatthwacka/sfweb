@@ -1,0 +1,2442 @@
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--charcoal);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gold);
+  border-radius: 4px;
+}
+
+/* === REUSABLE SLIDER CONTROL STYLING === */
+.gallery-slider-container {
+  width: 100%;
+  border: 1px solid hsl(220, 13%, 25%);
+  background: linear-gradient(to right, hsl(220, 13%, 18%), hsl(220, 13%, 15%));
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+
+/* Override max-width for two-column gallery layout */
+.gallery-two-column-layout .gallery-slider-container {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+.gallery-slider-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.gallery-slider-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.gallery-slider-input {
+  width: 4rem;
+  height: 1.75rem;
+  font-size: 0.75rem;
+  text-align: center;
+  border: 1px solid hsl(280, 50%, 30%);
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.gallery-slider-track {
+  position: relative;
+  display: flex;
+  width: 100%;
+  touch-action: none;
+  user-select: none;
+  align-items: center;
+}
+
+/* === COLOR PICKER SWATCHES === */
+.color-swatch {
+  flex: 1;
+  height: 2rem;
+  border-radius: 0.25rem;
+  border: 1px solid hsl(280, 50%, 20%);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.color-swatch:hover {
+  transform: scale(1.1);
+}
+
+.color-swatch.selected {
+  border-color: hsl(16, 100%, 73%);
+  box-shadow: 0 0 0 2px hsla(16, 100%, 73%, 0.5);
+}
+
+.color-swatch.unselected {
+  border-color: hsl(280, 50%, 20%);
+}
+
+.color-swatch.unselected:hover {
+  border-color: hsl(280, 50%, 30%);
+}
+
+/* === GALLERY SELECT DROPDOWN STYLING === */
+.gallery-select-trigger {
+  width: 100% !important;
+  padding: 0.75rem !important;
+  border: 1px solid hsl(280, 50%, 20%) !important;
+  background: linear-gradient(to bottom, hsl(280, 60%, 8%), hsl(280, 50%, 5%)) !important;
+  color: hsl(0, 0%, 95%) !important;
+  border-radius: 0.375rem !important;
+  box-shadow: none !important;
+}
+
+.gallery-select-trigger:hover {
+  border-color: hsl(280, 50%, 30%) !important;
+  background: linear-gradient(to bottom, hsl(280, 60%, 10%), hsl(280, 50%, 7%)) !important;
+  box-shadow: none !important;
+}
+
+.gallery-select-trigger:focus {
+  outline: none !important;
+  border-color: hsl(16, 100%, 73%) !important;
+  box-shadow: 0 0 0 2px hsla(16, 100%, 73%, 0.2) !important;
+}
+
+.gallery-select-trigger[data-state="open"] {
+  border-color: hsl(16, 100%, 73%) !important;
+  box-shadow: 0 0 0 2px hsla(16, 100%, 73%, 0.2) !important;
+}
+
+.gallery-select-content {
+  background: linear-gradient(to bottom, hsl(280, 60%, 8%), hsl(280, 50%, 5%));
+  border: 1px solid hsl(280, 50%, 20%);
+  color: hsl(0, 0%, 95%);
+}
+
+.gallery-select-content [data-radix-select-item] {
+  padding: 0.75rem;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.gallery-select-content [data-radix-select-item]:hover {
+  background: linear-gradient(to bottom, hsl(280, 60%, 15%), hsl(280, 50%, 12%));
+  color: hsl(16, 100%, 73%);
+}
+
+.gallery-select-content [data-radix-select-item][data-state="checked"] {
+  background: linear-gradient(to bottom, hsl(16, 100%, 73%), hsl(16, 90%, 65%));
+  color: hsl(0, 0%, 0%);
+}
+
+/* === MASONRY SPACING REFINEMENT === */
+.masonry-item {
+  display: inline-block;
+  width: 100%;
+  vertical-align: top;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Fine-tune masonry spacing to match slider precisely */
+.masonry-item img {
+  vertical-align: top;
+  display: block;
+}
+
+/* Custom color input styling to override browser defaults */
+.custom-color-input {
+  border: 1px solid rgb(156, 163, 175) !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+
+.custom-color-input::-webkit-color-swatch-wrapper {
+  padding: 0 !important;
+  border: none !important;
+}
+
+.custom-color-input::-webkit-color-swatch {
+  border: none !important;
+  border-radius: 0.375rem !important;
+}
+
+.custom-color-input::-moz-color-swatch {
+  border: none !important;
+  border-radius: 0.375rem !important;
+}
+
+/* Service Card More Button - Small and Subtle */
+.service-card-more-btn {
+  @apply flex items-center px-2 py-1 rounded-md transition-all duration-300 hover:bg-slate-700/50;
+  border: 1px solid rgba(156, 163, 175, 0.2);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.service-card-more-btn:hover {
+  border-color: rgba(156, 163, 175, 0.4);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* Enhanced Hero Slider Effects */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.rotate-y-90 {
+  transform: rotateY(-90deg);
+}
+
+.rotate-y-0 {
+  transform: rotateY(0deg);
+}
+
+/* Morphing Gradient Animation */
+@keyframes morphGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.morph-gradient {
+  background-size: 400% 400%;
+  animation: morphGradient 8s ease infinite;
+}
+
+/* Enhanced Text Animations */
+.animate-slide-up-delay-100 {
+  animation: slideUpFade 0.8s ease-out 0.1s both;
+}
+
+.animate-slide-up-delay-200 {
+  animation: slideUpFade 0.8s ease-out 0.2s both;
+}
+
+.animate-slide-up-delay-300 {
+  animation: slideUpFade 0.8s ease-out 0.3s both;
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Particle Canvas Styling */
+.particles-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* Enhanced Float Animation */
+@keyframes enhancedFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-10px) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-10px) rotate(2deg);
+  }
+}
+
+.animate-enhanced-float {
+  animation: enhancedFloat 6s ease-in-out infinite;
+}
+
+/* Backdrop Blur Support */
+@supports (backdrop-filter: blur(10px)) {
+  .backdrop-blur-sm {
+    backdrop-filter: blur(4px);
+  }
+  
+  .backdrop-blur-md {
+    backdrop-filter: blur(12px);
+  }
+}
+
+/* Fallback for browsers without backdrop-filter */
+@supports not (backdrop-filter: blur(10px)) {
+  .backdrop-blur-sm {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .backdrop-blur-md {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+}
+
+/* 3D Cube Effect Faces */
+.cube-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+}
+
+.cube-front { transform: translateZ(0px); }
+.cube-back { transform: rotateY(180deg) translateZ(0px); }
+.cube-right { transform: rotateY(90deg) translateZ(0px); }
+.cube-left { transform: rotateY(-90deg) translateZ(0px); }
+
+/* Enhanced Hover Effects */
+.hero-control:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .animate-slide-up-delay-100,
+  .animate-slide-up-delay-200,
+  .animate-slide-up-delay-300 {
+    animation-duration: 0.6s;
+  }
+  
+  .perspective-1000 {
+    perspective: 800px;
+  }
+  
+  /* Reduce motion for better mobile performance */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-slide-up-delay-100,
+    .animate-slide-up-delay-200,
+    .animate-slide-up-delay-300 {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* === SECTION-SPECIFIC TEXT COLOR MAPPINGS === */
+
+/* Services Section Text Colors */
+.services-section h1,
+.services-section h2,
+
+
+.services-section p,
+.services-section h3,
+
+
+.services-section .service-card-more-btn span,
+.services-section .text-muted-foreground,
+
+
+/* Testimonials Section Text Colors */
+.testimonials-section h2,
+
+
+.testimonials-section p,
+.testimonials-section blockquote,
+
+
+.testimonials-section .font-saira,
+.testimonials-section .text-muted-foreground,
+
+
+/* Contact Section Text Colors */
+.contact-section h2,
+.contact-section h3,
+
+
+.contact-section p,
+.contact-section h4,
+
+
+.contact-section .text-muted-foreground,
+.contact-section label,
+
+
+/* Private Gallery Section Text Colors */
+.private-gallery-section h2,
+
+
+.private-gallery-section p,
+.private-gallery-section h4,
+
+
+.private-gallery-section .text-muted-foreground,
+
+
+/* Portfolio Section Text Colors */
+.portfolio-section h1,
+.portfolio-section h2,
+
+
+.portfolio-section p,
+.portfolio-section h3,
+
+
+.portfolio-section .text-muted-foreground,
+
+
+/* === CATEGORY PAGE SECTION TEXT COLOR MAPPINGS === */
+
+/* Photography Category Pages - Service Overview Sections REMOVED */
+/* These selectors targeted non-existent -overview sections and caused undefined CSS variables */
+/* Actual components use -services, -packages, -recent-work, -seo sections instead */
+
+/* Photography Category Pages - Package Sections */
+
+
+/* Section subtitle only - controlled by 'Section Subtitle' in admin */
+
+
+/* Card titles (h3) - keep original styling, not controlled by admin */
+
+
+/* Card features only - controlled by 'Card Features' in admin */
+
+
+/* Section subtitle only - exclude card content */
+
+
+/* Photography Category Pages - Recent Work Sections */
+
+
+[data-gradient-section="photography-portraits-work"] h1,
+[data-gradient-section="photography-portraits-work"] h2,
+[data-gradient-section="photography-corporate-work"] h1,
+[data-gradient-section="photography-corporate-work"] h2,
+[data-gradient-section="photography-events-work"] h1,
+[data-gradient-section="photography-events-work"] h2,
+[data-gradient-section="photography-products-work"] h1,
+[data-gradient-section="photography-products-work"] h2,
+[data-gradient-section="photography-graduation-work"] h1,
+[data-gradient-section="photography-graduation-work"] h2 {
+  color: var(--photography-work-text-primary, #ffffff) !important;
+}
+
+
+
+[data-gradient-section="photography-weddings-work"] p,
+[data-gradient-section="photography-weddings-work"] h3,
+[data-gradient-section="photography-portraits-work"] p,
+[data-gradient-section="photography-portraits-work"] h3,
+[data-gradient-section="photography-corporate-work"] p,
+[data-gradient-section="photography-corporate-work"] h3,
+[data-gradient-section="photography-events-work"] p,
+[data-gradient-section="photography-events-work"] h3,
+[data-gradient-section="photography-products-work"] p,
+[data-gradient-section="photography-products-work"] h3,
+[data-gradient-section="photography-graduation-work"] p,
+[data-gradient-section="photography-graduation-work"] h3 {
+  color: var(--photography-work-text-secondary, #e2e8f0) !important;
+}
+
+
+
+[data-gradient-section="photography-weddings-work"] .text-muted-foreground,
+[data-gradient-section="photography-portraits-work"] .text-muted-foreground,
+[data-gradient-section="photography-corporate-work"] .text-muted-foreground,
+[data-gradient-section="photography-events-work"] .text-muted-foreground,
+[data-gradient-section="photography-products-work"] .text-muted-foreground,
+[data-gradient-section="photography-graduation-work"] .text-muted-foreground {
+  color: var(--photography-work-text-tertiary, #94a3b8) !important;
+}
+
+/* Photography Category Pages - SEO Content Sections */
+
+
+[data-gradient-section="photography-portraits-seo"] h1,
+[data-gradient-section="photography-portraits-seo"] h2,
+
+
+
+
+[data-gradient-section="photography-weddings-seo"] p,
+[data-gradient-section="photography-weddings-seo"] h3,
+[data-gradient-section="photography-portraits-seo"] p,
+[data-gradient-section="photography-portraits-seo"] h3,
+
+
+
+
+[data-gradient-section="photography-weddings-seo"] .text-muted-foreground,
+[data-gradient-section="photography-portraits-seo"] .text-muted-foreground,
+
+
+/* Videography Category Pages - Service Overview Sections REMOVED */
+/* These selectors targeted non-existent -overview sections and caused undefined CSS variables */
+/* Actual components use -category-services, -category-packages, -category-recent-work sections instead */
+
+/* Videography Category Pages - Package Sections */
+[data-gradient-section="videography-weddings-packages"] h1,
+[data-gradient-section="videography-weddings-packages"] h2,
+[data-gradient-section="videography-corporate-packages"] h1,
+[data-gradient-section="videography-corporate-packages"] h2,
+[data-gradient-section="videography-events-packages"] h1,
+[data-gradient-section="videography-events-packages"] h2,
+[data-gradient-section="videography-promotional-packages"] h1,
+[data-gradient-section="videography-promotional-packages"] h2,
+[data-gradient-section="videography-documentary-packages"] h1,
+[data-gradient-section="videography-documentary-packages"] h2,
+[data-gradient-section="videography-social-packages"] h1,
+[data-gradient-section="videography-social-packages"] h2 {
+  color: var(--videography-packages-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="videography-weddings-packages"] p,
+[data-gradient-section="videography-weddings-packages"] h3,
+[data-gradient-section="videography-corporate-packages"] p,
+[data-gradient-section="videography-corporate-packages"] h3,
+[data-gradient-section="videography-events-packages"] p,
+[data-gradient-section="videography-events-packages"] h3,
+[data-gradient-section="videography-promotional-packages"] p,
+[data-gradient-section="videography-promotional-packages"] h3,
+[data-gradient-section="videography-documentary-packages"] p,
+[data-gradient-section="videography-documentary-packages"] h3,
+[data-gradient-section="videography-social-packages"] p,
+[data-gradient-section="videography-social-packages"] h3 {
+  color: var(--videography-packages-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="videography-weddings-packages"] .text-muted-foreground,
+[data-gradient-section="videography-corporate-packages"] .text-muted-foreground,
+[data-gradient-section="videography-events-packages"] .text-muted-foreground,
+[data-gradient-section="videography-promotional-packages"] .text-muted-foreground,
+[data-gradient-section="videography-documentary-packages"] .text-muted-foreground,
+[data-gradient-section="videography-social-packages"] .text-muted-foreground {
+  color: var(--videography-packages-text-tertiary, #94a3b8) !important;
+}
+
+/* Videography Category Pages - Recent Work Sections */
+[data-gradient-section="videography-weddings-work"] h1,
+[data-gradient-section="videography-weddings-work"] h2,
+[data-gradient-section="videography-corporate-work"] h1,
+[data-gradient-section="videography-corporate-work"] h2,
+[data-gradient-section="videography-events-work"] h1,
+[data-gradient-section="videography-events-work"] h2,
+[data-gradient-section="videography-promotional-work"] h1,
+[data-gradient-section="videography-promotional-work"] h2,
+[data-gradient-section="videography-documentary-work"] h1,
+[data-gradient-section="videography-documentary-work"] h2,
+[data-gradient-section="videography-social-work"] h1,
+[data-gradient-section="videography-social-work"] h2 {
+  color: var(--videography-work-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="videography-weddings-work"] p,
+[data-gradient-section="videography-weddings-work"] h3,
+[data-gradient-section="videography-corporate-work"] p,
+[data-gradient-section="videography-corporate-work"] h3,
+[data-gradient-section="videography-events-work"] p,
+[data-gradient-section="videography-events-work"] h3,
+[data-gradient-section="videography-promotional-work"] p,
+[data-gradient-section="videography-promotional-work"] h3,
+[data-gradient-section="videography-documentary-work"] p,
+[data-gradient-section="videography-documentary-work"] h3,
+[data-gradient-section="videography-social-work"] p,
+[data-gradient-section="videography-social-work"] h3 {
+  color: var(--videography-work-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="videography-weddings-work"] .text-muted-foreground,
+[data-gradient-section="videography-corporate-work"] .text-muted-foreground,
+[data-gradient-section="videography-events-work"] .text-muted-foreground,
+[data-gradient-section="videography-promotional-work"] .text-muted-foreground,
+[data-gradient-section="videography-documentary-work"] .text-muted-foreground,
+[data-gradient-section="videography-social-work"] .text-muted-foreground {
+  color: var(--videography-work-text-tertiary, #94a3b8) !important;
+}
+
+/* Videography Category Pages - SEO Content Sections */
+[data-gradient-section="videography-weddings-seo"] h1,
+[data-gradient-section="videography-weddings-seo"] h2,
+[data-gradient-section="videography-corporate-seo"] h1,
+[data-gradient-section="videography-corporate-seo"] h2,
+[data-gradient-section="videography-events-seo"] h1,
+[data-gradient-section="videography-events-seo"] h2,
+[data-gradient-section="videography-promotional-seo"] h1,
+[data-gradient-section="videography-promotional-seo"] h2,
+[data-gradient-section="videography-documentary-seo"] h1,
+[data-gradient-section="videography-documentary-seo"] h2,
+[data-gradient-section="videography-social-seo"] h1,
+[data-gradient-section="videography-social-seo"] h2 {
+  color: var(--videography-seo-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="videography-weddings-seo"] p,
+[data-gradient-section="videography-weddings-seo"] h3,
+[data-gradient-section="videography-corporate-seo"] p,
+[data-gradient-section="videography-corporate-seo"] h3,
+[data-gradient-section="videography-events-seo"] p,
+[data-gradient-section="videography-events-seo"] h3,
+[data-gradient-section="videography-promotional-seo"] p,
+[data-gradient-section="videography-promotional-seo"] h3,
+[data-gradient-section="videography-documentary-seo"] p,
+[data-gradient-section="videography-documentary-seo"] h3,
+[data-gradient-section="videography-social-seo"] p,
+[data-gradient-section="videography-social-seo"] h3 {
+  color: var(--videography-seo-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="videography-weddings-seo"] .text-muted-foreground,
+[data-gradient-section="videography-corporate-seo"] .text-muted-foreground,
+[data-gradient-section="videography-events-seo"] .text-muted-foreground,
+[data-gradient-section="videography-promotional-seo"] .text-muted-foreground,
+[data-gradient-section="videography-documentary-seo"] .text-muted-foreground,
+[data-gradient-section="videography-social-seo"] .text-muted-foreground {
+  color: var(--videography-seo-text-tertiary, #94a3b8) !important;
+}
+
+/* === MOBILE IMAGE SELECTION OPTIMIZATIONS === */
+/* Bulletproof mobile viewport lock */
+html, body {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+}
+
+/* Mobile container to prevent horizontal scrolling */
+.mobile-container {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden !important;
+  overflow-y: auto;
+  position: relative;
+  box-sizing: border-box;
+  min-height: 100vh;
+  /* Use same gradient as admin-gradient-card for consistency */
+  background: linear-gradient(135deg, 
+    hsl(320, 40%, 28%) 0%, 
+    hsl(280, 35%, 32%) 25%, 
+    hsl(260, 30%, 25%) 50%, 
+    hsl(220, 25%, 28%) 75%, 
+    hsl(240, 30%, 22%) 100%);
+  border: 1px solid hsl(260, 15%, 40%);
+  box-shadow: 0 4px 20px hsla(280, 50%, 15%, 0.3);
+}
+
+.mobile-safe-area {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin: 0 auto;
+  contain: layout;
+}
+
+.mobile-image-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 0.5rem !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  padding: 0 1rem !important;
+  margin: 0 !important;
+}
+
+/* Ensure individual grid items stay contained */
+.mobile-image-grid > * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Mobile image item container */
+.mobile-image-item {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+/* Mobile image container with proper aspect ratio */
+.mobile-image-container {
+  position: relative !important;
+  width: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+  background-color: rgb(75 85 99) !important;
+  border-radius: 0.5rem !important;
+  overflow: hidden !important;
+  border: 2px solid hsl(var(--border)) !important;
+  transition: border-color 0.2s ease !important;
+}
+
+.mobile-image-container:hover {
+  border-color: hsl(var(--cyan)) !important;
+}
+
+/* Mobile image styling */
+.mobile-image {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  max-width: 100% !important;
+}
+
+/* Mobile image filename overlay */
+.mobile-image-filename {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background-color: rgb(0 0 0 / 0.7) !important;
+  color: white !important;
+  font-size: 0.75rem !important;
+  padding: 0.5rem !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Mobile image view button */
+.mobile-image-view-btn {
+  position: absolute !important;
+  top: 0.5rem !important;
+  right: 0.5rem !important;
+  width: 2rem !important;
+  height: 2rem !important;
+  background-color: rgb(0 0 0 / 0.5) !important;
+  border-radius: 9999px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+  opacity: 0 !important;
+  border: none !important;
+  cursor: pointer !important;
+}
+
+.mobile-image-container:hover .mobile-image-view-btn {
+  opacity: 1 !important;
+  background-color: rgb(0 0 0 / 0.7) !important;
+}
+
+/* Ensure proper containment when grid is in safe area */
+.mobile-safe-area .mobile-image-grid {
+  width: calc(100% + 0px) !important; /* Force recalculation */
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+@media (min-width: 640px) {
+  .mobile-image-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .mobile-image-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 1rem !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mobile-image-grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+  }
+}
+
+/* Touch-friendly button sizing - made smaller to prevent cropping */
+.mobile-touch-button {
+  min-height: 36px;
+  min-width: 36px;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  touch-action: manipulation;
+  transition: transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent; /* Remove iOS tap highlight */
+  user-select: none; /* Prevent text selection on double tap */
+}
+
+.mobile-touch-button:active {
+  transform: scale(0.95);
+}
+
+/* Mobile-specific viewport constraints */
+@media (max-width: 639px) {
+  /* Extra safety for small screens */
+  .mobile-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .mobile-safe-area {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  
+  /* Ensure pagination doesn't cause overflow */
+  .mobile-safe-area button {
+    max-width: 45%;
+    font-size: 0.875rem;
+  }
+}
+
+/* iOS-specific fixes for Safari */
+@supports (-webkit-touch-callout: none) {
+  .mobile-container {
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  }
+  
+  .mobile-image-grid {
+    -webkit-transform: translateZ(0); /* Hardware acceleration */
+    transform: translateZ(0);
+  }
+}
+
+/* About Page Section Text Colors */
+[data-gradient-section="aboutHero"] h1,
+[data-gradient-section="aboutHero"] h2 {
+  color: var(--aboutHero-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="aboutHero"] p,
+[data-gradient-section="aboutHero"] h3 {
+  color: var(--aboutHero-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="aboutHero"] .text-muted-foreground {
+  color: var(--aboutHero-text-tertiary, #94a3b8) !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Photography Portrait Sections */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Photography Corporate Sections */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Photography Event Sections */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Photography Product Sections */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Photography Graduation Sections */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Service Card Gradient Background */
+.service-card-gradient {
+  background: linear-gradient(135deg, hsl(220, 13%, 25%) 0%, hsl(220, 13%, 23%) 50%, hsl(220, 13%, 21%) 100%);
+}
+
+/* Social Media Page Text Colors */
+.text-social-media-hero-primary {
+  color: var(--social-media-hero-text-primary, #ffffff) !important;
+}
+
+.text-social-media-hero-secondary {
+  color: var(--social-media-hero-text-secondary, #e2e8f0) !important;
+}
+
+.text-social-media-hero-tertiary {
+  color: var(--social-media-hero-text-tertiary, #94a3b8) !important;
+}
+
+.text-social-media-services-primary {
+  color: var(--social-media-services-text-primary, #ffffff) !important;
+}
+
+.text-social-media-services-secondary {
+  color: var(--social-media-services-text-secondary, #e2e8f0) !important;
+}
+
+.text-social-media-services-tertiary {
+  color: var(--social-media-services-text-tertiary, #94a3b8) !important;
+}
+
+.text-social-media-why-choose-us-primary {
+  color: var(--social-media-why-choose-us-text-primary, #ffffff) !important;
+}
+
+.text-social-media-why-choose-us-secondary {
+  color: var(--social-media-why-choose-us-text-secondary, #e2e8f0) !important;
+}
+
+.text-social-media-why-choose-us-tertiary {
+  color: var(--social-media-why-choose-us-text-tertiary, #94a3b8) !important;
+}
+
+.text-social-media-process-primary {
+  color: var(--social-media-process-text-primary, #ffffff) !important;
+}
+
+.text-social-media-process-secondary {
+  color: var(--social-media-process-text-secondary, #e2e8f0) !important;
+}
+
+.text-social-media-process-tertiary {
+  color: var(--social-media-process-text-tertiary, #94a3b8) !important;
+}
+
+.text-social-media-cta-primary {
+  color: var(--social-media-cta-text-primary, #ffffff) !important;
+}
+
+.text-social-media-cta-secondary {
+  color: var(--social-media-cta-text-secondary, #e2e8f0) !important;
+}
+
+.text-social-media-cta-tertiary {
+  color: var(--social-media-cta-text-tertiary, #94a3b8) !important;
+}
+
+/* Stories Page - Card Design (extends service-card-gradient) */
+.story-card {
+  @apply relative overflow-hidden rounded-xl cursor-pointer transition-all duration-300 service-card-gradient;
+  border: 1px solid hsl(220, 13%, 30%);
+}
+
+.story-card:hover {
+  border-color: hsl(220, 13%, 40%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.story-card-image {
+  @apply aspect-[3/2] overflow-hidden;
+}
+
+.story-card-image img {
+  @apply w-full h-full object-cover transition-transform duration-500;
+}
+
+.story-card:hover .story-card-image img {
+  transform: scale(1.05);
+}
+
+.story-card-content {
+  @apply p-6;
+}
+
+.story-card-title {
+  @apply text-xl mb-2 line-clamp-2;
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 100;
+  color: white;
+}
+
+.story-card-date {
+  @apply text-sm font-light text-gray-400 mb-3;
+}
+
+.story-card-placeholder {
+  @apply aspect-[3/2] flex items-center justify-center service-card-gradient;
+}
+
+/* Stories Search Bar */
+.stories-search-bar {
+  @apply backdrop-blur-sm rounded-lg service-card-gradient;
+  border: 1px solid hsl(220, 13%, 28%);
+}
+
+/* Stories Page Text Colors - 2 sections: content and cta */
+.text-stories-content-primary {
+  color: var(--stories-content-text-primary, #ffffff) !important;
+}
+
+.text-stories-content-secondary {
+  color: var(--stories-content-text-secondary, #e2e8f0) !important;
+}
+
+.text-stories-content-tertiary {
+  color: var(--stories-content-text-tertiary, #94a3b8) !important;
+}
+
+.text-stories-cta-primary {
+  color: var(--stories-cta-text-primary, #ffffff) !important;
+}
+
+.text-stories-cta-secondary {
+  color: var(--stories-cta-text-secondary, #e2e8f0) !important;
+}
+
+.text-stories-cta-tertiary {
+  color: var(--stories-cta-text-tertiary, #94a3b8) !important;
+}
+
+/* Story Article Prose Styling */
+.story-article {
+  @apply text-gray-300 leading-relaxed;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+}
+
+.story-article p {
+  @apply mb-6 text-gray-300;
+  font-family: 'Roboto', sans-serif !important;
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.85;
+}
+
+/* First paragraph - ensure consistent styling (no special treatment) */
+.story-article > p:first-child,
+.story-article p.lead,
+.story-article p.intro {
+  @apply text-gray-300 mb-6;
+  font-family: 'Roboto', sans-serif !important;
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.85;
+}
+
+.story-article p.conclusion {
+  @apply text-lg text-gray-200 mt-4;
+  line-height: 1.75;
+}
+
+/* SEO H2 Headings - Prominent but reasonable section separators */
+.story-article h2 {
+  @apply text-xl md:text-2xl lg:text-3xl text-white mt-16 mb-6 pb-3;
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+  padding-top: 1rem;
+  margin-left: -1rem;
+  margin-right: -1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+/* First h2 doesn't need top margin */
+.story-article p.lead + h2 {
+  @apply mt-10;
+}
+
+.story-article h3 {
+  @apply text-xl text-white mt-8 mb-3;
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 400;
+}
+
+.story-article h4 {
+  @apply text-lg text-salmon mt-6 mb-2;
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 500;
+}
+
+.story-article strong {
+  @apply text-white font-medium;
+}
+
+.story-article em {
+  @apply text-gray-200;
+}
+
+/* Pull Quote - Visual break between sections */
+.story-article blockquote,
+.story-article .pull-quote {
+  @apply my-14 py-8 px-8 border-l-4 border-salmon rounded-r-lg;
+  font-family: 'Quicksand', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 300;
+  font-style: italic;
+  color: #f8fafc;
+  line-height: 1.5;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(236, 72, 153, 0.05) 100%);
+}
+
+/* Full Width Pull Quote - Enhanced styling for featured section */
+.story-full-width-pull-quote {
+  @apply relative py-12 px-8 border-l-4 border-salmon rounded-r-lg text-center;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(236, 72, 153, 0.08) 100%);
+  backdrop-filter: blur(10px);
+}
+
+.story-full-width-pull-quote-content {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 600;
+  font-style: italic;
+  color: #f8fafc;
+  line-height: 1.4;
+  position: relative;
+  z-index: 2;
+  padding: 1rem 2rem;
+}
+
+.story-full-width-pull-quote::before {
+  content: '"';
+  font-family: Georgia, serif;
+  font-size: 5rem;
+  font-weight: bold;
+  color: rgba(232, 121, 121, 0.6);
+  position: absolute;
+  top: 0rem;
+  left: 1.5rem;
+  line-height: 1;
+  z-index: 1;
+}
+
+.story-full-width-pull-quote::after {
+  content: '"';
+  font-family: Georgia, serif;
+  font-size: 5rem;
+  font-weight: bold;
+  color: rgba(232, 121, 121, 0.6);
+  position: absolute;
+  bottom: -0.5rem;
+  right: 1.5rem;
+  line-height: 1;
+  z-index: 1;
+}
+
+.story-article a {
+  @apply underline underline-offset-2 transition-colors;
+  color: var(--cyan);
+}
+
+.story-article a:hover {
+  opacity: 0.8;
+}
+
+.story-article ul,
+.story-article ol {
+  @apply my-6 pl-6 space-y-2;
+}
+
+.story-article li {
+  @apply text-gray-300;
+}
+
+.story-article ul li::marker {
+  @apply text-salmon;
+}
+
+.story-article ol li::marker {
+  @apply text-salmon font-medium;
+}
+
+/* Post Images - Visual breaks within article content */
+.story-post-image {
+  @apply my-12 overflow-hidden rounded-xl;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.story-post-image img {
+  @apply w-full h-auto object-cover;
+  max-height: 500px;
+}
+
+.story-post-image figcaption {
+  @apply text-sm text-gray-400 text-center mt-3 italic;
+}
+
+/* Two-column layout for story content on larger screens */
+.story-two-column {
+  @apply grid gap-8;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .story-two-column {
+    grid-template-columns: 2fr 1fr;
+    gap: 3rem;
+  }
+}
+
+.story-main-content {
+  @apply min-w-0;
+}
+
+.story-sidebar {
+  @apply space-y-8 hidden lg:block;
+  position: sticky;
+  top: 6rem;
+  align-self: start;
+}
+
+.story-sidebar-card {
+  @apply p-6 rounded-xl;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.story-sidebar-card h3 {
+  @apply text-lg font-medium text-white mb-4;
+  font-family: 'Quicksand', sans-serif;
+}
+
+/* Pull Quote in Sidebar */
+.story-pull-quote {
+  @apply relative p-6 rounded-xl;
+  background: linear-gradient(135deg, rgba(232, 121, 121, 0.15) 0%, rgba(232, 121, 121, 0.05) 100%);
+  border-left: 4px solid rgba(232, 121, 121, 0.6);
+}
+
+.story-pull-quote-mark {
+  @apply absolute -top-2 -left-1 text-6xl leading-none;
+  color: rgba(232, 121, 121, 0.4);
+  font-family: Georgia, serif;
+}
+
+.story-pull-quote-text {
+  @apply text-gray-200 italic text-base leading-relaxed;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+/* Floating post images for desktop */
+.story-float-image {
+  @apply float-right ml-8 mb-6 w-64 rounded-xl overflow-hidden hidden lg:block;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.story-float-image img {
+  @apply w-full h-auto object-cover;
+}
+
+/* Clear floats after sections */
+.story-article::after {
+  content: '';
+  display: table;
+  clear: both;
+}
+
+/* Web Apps Page Text Colors */
+.text-web-apps-hero-primary {
+  color: var(--web-apps-hero-text-primary, #ffffff) !important;
+}
+
+.text-web-apps-hero-secondary {
+  color: var(--web-apps-hero-text-secondary, #e2e8f0) !important;
+}
+
+.text-web-apps-hero-tertiary {
+  color: var(--web-apps-hero-text-tertiary, #94a3b8) !important;
+}
+
+.text-web-apps-services-primary {
+  color: var(--web-apps-services-text-primary, #ffffff) !important;
+}
+
+.text-web-apps-services-secondary {
+  color: var(--web-apps-services-text-secondary, #e2e8f0) !important;
+}
+
+.text-web-apps-services-tertiary {
+  color: var(--web-apps-services-text-tertiary, #94a3b8) !important;
+}
+
+.text-web-apps-process-primary {
+  color: var(--web-apps-process-text-primary, #ffffff) !important;
+}
+
+.text-web-apps-process-secondary {
+  color: var(--web-apps-process-text-secondary, #e2e8f0) !important;
+}
+
+.text-web-apps-process-tertiary {
+  color: var(--web-apps-process-text-tertiary, #94a3b8) !important;
+}
+
+.text-web-apps-cta-primary {
+  color: var(--web-apps-cta-text-primary, #ffffff) !important;
+}
+
+.text-web-apps-cta-secondary {
+  color: var(--web-apps-cta-text-secondary, #e2e8f0) !important;
+}
+
+.text-web-apps-cta-tertiary {
+  color: var(--web-apps-cta-text-tertiary, #94a3b8) !important;
+}
+
+/* Theme Color Background Classes for Gradient Picker */
+.bg-theme-salmon {
+  background-color: var(--salmon) !important;
+}
+
+.bg-theme-cyan {
+  background-color: var(--cyan) !important;
+}
+
+/* New accent color classes (clean slate, no conflicts) */
+.bg-theme-accent-1 {
+  background-color: var(--color-accent-1) !important;
+}
+
+.bg-theme-accent-2 {
+  background-color: var(--color-accent-2) !important;
+}
+
+.text-theme-accent-1 {
+  color: var(--color-accent-1) !important;
+}
+
+.text-theme-accent-2 {
+  color: var(--color-accent-2) !important;
+}
+
+
+/* SEMANTIC HEADER HIERARCHY - AUTO GENERATED */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* SEMANTIC HEADER HIERARCHY - AUTO GENERATED */
+
+[data-gradient-section="aboutCta"] h1,
+[data-gradient-section="aboutCta"] h2 {
+  color: var(--aboutCta-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="aboutCta"] h3:not(.studio-card-title-accent),
+[data-gradient-section="aboutCta"] h4 {
+  color: var(--aboutCta-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="aboutCta"] h5,
+[data-gradient-section="aboutCta"] h6,
+[data-gradient-section="aboutCta"] p,
+[data-gradient-section="aboutCta"] .text-muted-foreground {
+  color: var(--aboutCta-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="aboutLocation"] h1,
+[data-gradient-section="aboutLocation"] h2 {
+  color: var(--aboutLocation-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="aboutLocation"] h3:not(.studio-card-title-accent),
+[data-gradient-section="aboutLocation"] h4 {
+  color: var(--aboutLocation-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="aboutLocation"] h5,
+[data-gradient-section="aboutLocation"] h6,
+[data-gradient-section="aboutLocation"] p,
+[data-gradient-section="aboutLocation"] .text-muted-foreground {
+  color: var(--aboutLocation-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="aboutStory"] h1,
+[data-gradient-section="aboutStory"] h2 {
+  color: var(--aboutStory-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="aboutStory"] h3:not(.studio-card-title-accent),
+[data-gradient-section="aboutStory"] h4 {
+  color: var(--aboutStory-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="aboutStory"] h5,
+[data-gradient-section="aboutStory"] h6,
+[data-gradient-section="aboutStory"] p,
+[data-gradient-section="aboutStory"] .text-muted-foreground {
+  color: var(--aboutStory-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="aboutTeam"] h1,
+[data-gradient-section="aboutTeam"] h2 {
+  color: var(--aboutTeam-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="aboutTeam"] h3:not(.studio-card-title-accent),
+[data-gradient-section="aboutTeam"] h4 {
+  color: var(--aboutTeam-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="aboutTeam"] h5,
+[data-gradient-section="aboutTeam"] h6,
+[data-gradient-section="aboutTeam"] p,
+[data-gradient-section="aboutTeam"] .text-muted-foreground {
+  color: var(--aboutTeam-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="aboutValues"] h1,
+[data-gradient-section="aboutValues"] h2 {
+  color: var(--aboutValues-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="aboutValues"] h3:not(.studio-card-title-accent),
+[data-gradient-section="aboutValues"] h4 {
+  color: var(--aboutValues-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="aboutValues"] h5,
+[data-gradient-section="aboutValues"] h6,
+[data-gradient-section="aboutValues"] p,
+[data-gradient-section="aboutValues"] .text-muted-foreground {
+  color: var(--aboutValues-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="contact"] h1,
+[data-gradient-section="contact"] h2 {
+  color: var(--contact-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="contact"] h3:not(.studio-card-title-accent),
+[data-gradient-section="contact"] h4 {
+  color: var(--contact-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="contact"] h5,
+[data-gradient-section="contact"] h6,
+[data-gradient-section="contact"] p,
+[data-gradient-section="contact"] .text-muted-foreground {
+  color: var(--contact-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="portfolio"] h1,
+[data-gradient-section="portfolio"] h2 {
+  color: var(--portfolio-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="portfolio"] h3:not(.studio-card-title-accent),
+[data-gradient-section="portfolio"] h4 {
+  color: var(--portfolio-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="portfolio"] h5,
+[data-gradient-section="portfolio"] h6,
+[data-gradient-section="portfolio"] p,
+[data-gradient-section="portfolio"] .text-muted-foreground {
+  color: var(--portfolio-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="privateGallery"] h1,
+[data-gradient-section="privateGallery"] h2 {
+  color: var(--privateGallery-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="privateGallery"] h3:not(.studio-card-title-accent),
+[data-gradient-section="privateGallery"] h4 {
+  color: var(--privateGallery-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="privateGallery"] h5,
+[data-gradient-section="privateGallery"] h6,
+[data-gradient-section="privateGallery"] p,
+[data-gradient-section="privateGallery"] .text-muted-foreground {
+  color: var(--privateGallery-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="services"] h1,
+[data-gradient-section="services"] h2 {
+  color: var(--services-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="services"] h3:not(.studio-card-title-accent),
+[data-gradient-section="services"] h4 {
+  color: var(--services-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="services"] h5,
+[data-gradient-section="services"] h6,
+[data-gradient-section="services"] p,
+[data-gradient-section="services"] .text-muted-foreground {
+  color: var(--services-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="testimonials"] h1,
+[data-gradient-section="testimonials"] h2 {
+  color: var(--testimonials-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="testimonials"] h3:not(.studio-card-title-accent),
+[data-gradient-section="testimonials"] h4 {
+  color: var(--testimonials-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="testimonials"] h5,
+[data-gradient-section="testimonials"] h6,
+[data-gradient-section="testimonials"] p,
+[data-gradient-section="testimonials"] .text-muted-foreground {
+  color: var(--testimonials-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-corporate-packages"] h1,
+[data-gradient-section="photography-corporate-packages"] h2 {
+  color: var(--photography-corporate-packages-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-corporate-packages"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-corporate-packages"] h4 {
+  color: var(--photography-corporate-packages-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-corporate-packages"] h5,
+[data-gradient-section="photography-corporate-packages"] h6,
+[data-gradient-section="photography-corporate-packages"] p,
+[data-gradient-section="photography-corporate-packages"] .text-muted-foreground {
+  color: var(--photography-corporate-packages-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-corporate-recent-work"] h1,
+[data-gradient-section="photography-corporate-recent-work"] h2 {
+  color: var(--photography-corporate-recent-work-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-corporate-recent-work"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-corporate-recent-work"] h4 {
+  color: var(--photography-corporate-recent-work-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-corporate-recent-work"] h5,
+[data-gradient-section="photography-corporate-recent-work"] h6,
+[data-gradient-section="photography-corporate-recent-work"] p,
+[data-gradient-section="photography-corporate-recent-work"] .text-muted-foreground {
+  color: var(--photography-corporate-recent-work-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-corporate-seo"] h1,
+[data-gradient-section="photography-corporate-seo"] h2 {
+  color: var(--photography-corporate-seo-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-corporate-seo"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-corporate-seo"] h4 {
+  color: var(--photography-corporate-seo-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-corporate-seo"] h5,
+[data-gradient-section="photography-corporate-seo"] h6,
+[data-gradient-section="photography-corporate-seo"] p,
+[data-gradient-section="photography-corporate-seo"] .text-muted-foreground {
+  color: var(--photography-corporate-seo-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-corporate-services"] h1,
+[data-gradient-section="photography-corporate-services"] h2 {
+  color: var(--photography-corporate-services-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-corporate-services"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-corporate-services"] h4 {
+  color: var(--photography-corporate-services-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-corporate-services"] h5,
+[data-gradient-section="photography-corporate-services"] h6,
+[data-gradient-section="photography-corporate-services"] p,
+[data-gradient-section="photography-corporate-services"] .text-muted-foreground {
+  color: var(--photography-corporate-services-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-event-packages"] h1,
+[data-gradient-section="photography-event-packages"] h2 {
+  color: var(--photography-event-packages-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-event-packages"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-event-packages"] h4 {
+  color: var(--photography-event-packages-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-event-packages"] h5,
+[data-gradient-section="photography-event-packages"] h6,
+[data-gradient-section="photography-event-packages"] p,
+[data-gradient-section="photography-event-packages"] .text-muted-foreground {
+  color: var(--photography-event-packages-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-event-recent-work"] h1,
+[data-gradient-section="photography-event-recent-work"] h2 {
+  color: var(--photography-event-recent-work-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-event-recent-work"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-event-recent-work"] h4 {
+  color: var(--photography-event-recent-work-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-event-recent-work"] h5,
+[data-gradient-section="photography-event-recent-work"] h6,
+[data-gradient-section="photography-event-recent-work"] p,
+[data-gradient-section="photography-event-recent-work"] .text-muted-foreground {
+  color: var(--photography-event-recent-work-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-event-seo"] h1,
+[data-gradient-section="photography-event-seo"] h2 {
+  color: var(--photography-event-seo-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-event-seo"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-event-seo"] h4 {
+  color: var(--photography-event-seo-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-event-seo"] h5,
+[data-gradient-section="photography-event-seo"] h6,
+[data-gradient-section="photography-event-seo"] p,
+[data-gradient-section="photography-event-seo"] .text-muted-foreground {
+  color: var(--photography-event-seo-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-event-services"] h1,
+[data-gradient-section="photography-event-services"] h2 {
+  color: var(--photography-event-services-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-event-services"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-event-services"] h4 {
+  color: var(--photography-event-services-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-event-services"] h5,
+[data-gradient-section="photography-event-services"] h6,
+[data-gradient-section="photography-event-services"] p,
+[data-gradient-section="photography-event-services"] .text-muted-foreground {
+  color: var(--photography-event-services-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-graduation-packages"] h1,
+[data-gradient-section="photography-graduation-packages"] h2 {
+  color: var(--photography-graduation-packages-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-graduation-packages"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-graduation-packages"] h4 {
+  color: var(--photography-graduation-packages-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-graduation-packages"] h5,
+[data-gradient-section="photography-graduation-packages"] h6,
+[data-gradient-section="photography-graduation-packages"] p,
+[data-gradient-section="photography-graduation-packages"] .text-muted-foreground {
+  color: var(--photography-graduation-packages-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-graduation-recent-work"] h1,
+[data-gradient-section="photography-graduation-recent-work"] h2 {
+  color: var(--photography-graduation-recent-work-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-graduation-recent-work"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-graduation-recent-work"] h4 {
+  color: var(--photography-graduation-recent-work-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-graduation-recent-work"] h5,
+[data-gradient-section="photography-graduation-recent-work"] h6,
+[data-gradient-section="photography-graduation-recent-work"] p,
+[data-gradient-section="photography-graduation-recent-work"] .text-muted-foreground {
+  color: var(--photography-graduation-recent-work-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-graduation-seo"] h1,
+[data-gradient-section="photography-graduation-seo"] h2 {
+  color: var(--photography-graduation-seo-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-graduation-seo"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-graduation-seo"] h4 {
+  color: var(--photography-graduation-seo-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-graduation-seo"] h5,
+[data-gradient-section="photography-graduation-seo"] h6,
+[data-gradient-section="photography-graduation-seo"] p,
+[data-gradient-section="photography-graduation-seo"] .text-muted-foreground {
+  color: var(--photography-graduation-seo-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-graduation-services"] h1,
+[data-gradient-section="photography-graduation-services"] h2 {
+  color: var(--photography-graduation-services-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-graduation-services"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-graduation-services"] h4 {
+  color: var(--photography-graduation-services-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-graduation-services"] h5,
+[data-gradient-section="photography-graduation-services"] h6,
+[data-gradient-section="photography-graduation-services"] p,
+[data-gradient-section="photography-graduation-services"] .text-muted-foreground {
+  color: var(--photography-graduation-services-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-portrait-packages"] h1,
+[data-gradient-section="photography-portrait-packages"] h2 {
+  color: var(--photography-portrait-packages-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-portrait-packages"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-portrait-packages"] h4 {
+  color: var(--photography-portrait-packages-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-portrait-packages"] h5,
+[data-gradient-section="photography-portrait-packages"] h6,
+[data-gradient-section="photography-portrait-packages"] p,
+[data-gradient-section="photography-portrait-packages"] .text-muted-foreground {
+  color: var(--photography-portrait-packages-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-portrait-recent-work"] h1,
+[data-gradient-section="photography-portrait-recent-work"] h2 {
+  color: var(--photography-portrait-recent-work-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-portrait-recent-work"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-portrait-recent-work"] h4 {
+  color: var(--photography-portrait-recent-work-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-portrait-recent-work"] h5,
+[data-gradient-section="photography-portrait-recent-work"] h6,
+[data-gradient-section="photography-portrait-recent-work"] p,
+[data-gradient-section="photography-portrait-recent-work"] .text-muted-foreground {
+  color: var(--photography-portrait-recent-work-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-portrait-seo"] h1,
+[data-gradient-section="photography-portrait-seo"] h2 {
+  color: var(--photography-portrait-seo-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-portrait-seo"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-portrait-seo"] h4 {
+  color: var(--photography-portrait-seo-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-portrait-seo"] h5,
+[data-gradient-section="photography-portrait-seo"] h6,
+[data-gradient-section="photography-portrait-seo"] p,
+[data-gradient-section="photography-portrait-seo"] .text-muted-foreground {
+  color: var(--photography-portrait-seo-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-portrait-services"] h1,
+[data-gradient-section="photography-portrait-services"] h2 {
+  color: var(--photography-portrait-services-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-portrait-services"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-portrait-services"] h4 {
+  color: var(--photography-portrait-services-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-portrait-services"] h5,
+[data-gradient-section="photography-portrait-services"] h6,
+[data-gradient-section="photography-portrait-services"] p,
+[data-gradient-section="photography-portrait-services"] .text-muted-foreground {
+  color: var(--photography-portrait-services-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-product-packages"] h1,
+[data-gradient-section="photography-product-packages"] h2 {
+  color: var(--photography-product-packages-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-product-packages"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-product-packages"] h4 {
+  color: var(--photography-product-packages-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-product-packages"] h5,
+[data-gradient-section="photography-product-packages"] h6,
+[data-gradient-section="photography-product-packages"] p,
+[data-gradient-section="photography-product-packages"] .text-muted-foreground {
+  color: var(--photography-product-packages-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-product-recent-work"] h1,
+[data-gradient-section="photography-product-recent-work"] h2 {
+  color: var(--photography-product-recent-work-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-product-recent-work"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-product-recent-work"] h4 {
+  color: var(--photography-product-recent-work-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-product-recent-work"] h5,
+[data-gradient-section="photography-product-recent-work"] h6,
+[data-gradient-section="photography-product-recent-work"] p,
+[data-gradient-section="photography-product-recent-work"] .text-muted-foreground {
+  color: var(--photography-product-recent-work-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-product-seo"] h1,
+[data-gradient-section="photography-product-seo"] h2 {
+  color: var(--photography-product-seo-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-product-seo"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-product-seo"] h4 {
+  color: var(--photography-product-seo-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-product-seo"] h5,
+[data-gradient-section="photography-product-seo"] h6,
+[data-gradient-section="photography-product-seo"] p,
+[data-gradient-section="photography-product-seo"] .text-muted-foreground {
+  color: var(--photography-product-seo-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-product-services"] h1,
+[data-gradient-section="photography-product-services"] h2 {
+  color: var(--photography-product-services-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-product-services"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-product-services"] h4 {
+  color: var(--photography-product-services-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-product-services"] h5,
+[data-gradient-section="photography-product-services"] h6,
+[data-gradient-section="photography-product-services"] p,
+[data-gradient-section="photography-product-services"] .text-muted-foreground {
+  color: var(--photography-product-services-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-wedding-packages"] h1,
+[data-gradient-section="photography-wedding-packages"] h2 {
+  color: var(--photography-wedding-packages-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-wedding-packages"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-wedding-packages"] h4 {
+  color: var(--photography-wedding-packages-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-wedding-packages"] h5,
+[data-gradient-section="photography-wedding-packages"] h6,
+[data-gradient-section="photography-wedding-packages"] p,
+[data-gradient-section="photography-wedding-packages"] .text-muted-foreground {
+  color: var(--photography-wedding-packages-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-wedding-recent-work"] h1,
+[data-gradient-section="photography-wedding-recent-work"] h2 {
+  color: var(--photography-wedding-recent-work-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-wedding-recent-work"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-wedding-recent-work"] h4 {
+  color: var(--photography-wedding-recent-work-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-wedding-recent-work"] h5,
+[data-gradient-section="photography-wedding-recent-work"] h6,
+[data-gradient-section="photography-wedding-recent-work"] p,
+[data-gradient-section="photography-wedding-recent-work"] .text-muted-foreground {
+  color: var(--photography-wedding-recent-work-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-wedding-seo"] h1,
+[data-gradient-section="photography-wedding-seo"] h2 {
+  color: var(--photography-wedding-seo-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-wedding-seo"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-wedding-seo"] h4 {
+  color: var(--photography-wedding-seo-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-wedding-seo"] h5,
+[data-gradient-section="photography-wedding-seo"] h6,
+[data-gradient-section="photography-wedding-seo"] p,
+[data-gradient-section="photography-wedding-seo"] .text-muted-foreground {
+  color: var(--photography-wedding-seo-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-wedding-services"] h1,
+[data-gradient-section="photography-wedding-services"] h2 {
+  color: var(--photography-wedding-services-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="photography-wedding-services"] h3:not(.studio-card-title-accent),
+[data-gradient-section="photography-wedding-services"] h4 {
+  color: var(--photography-wedding-services-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="photography-wedding-services"] h5,
+[data-gradient-section="photography-wedding-services"] h6,
+[data-gradient-section="photography-wedding-services"] p,
+[data-gradient-section="photography-wedding-services"] .text-muted-foreground {
+  color: var(--photography-wedding-services-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="social-media-cta"] h1,
+[data-gradient-section="social-media-cta"] h2 {
+  color: var(--social-media-cta-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="social-media-cta"] h3:not(.studio-card-title-accent),
+[data-gradient-section="social-media-cta"] h4 {
+  color: var(--social-media-cta-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="social-media-cta"] h5,
+[data-gradient-section="social-media-cta"] h6,
+[data-gradient-section="social-media-cta"] p,
+[data-gradient-section="social-media-cta"] .text-muted-foreground {
+  color: var(--social-media-cta-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="social-media-process"] h1,
+[data-gradient-section="social-media-process"] h2 {
+  color: var(--social-media-process-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="social-media-process"] h3:not(.studio-card-title-accent),
+[data-gradient-section="social-media-process"] h4 {
+  color: var(--social-media-process-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="social-media-process"] h5,
+[data-gradient-section="social-media-process"] h6,
+[data-gradient-section="social-media-process"] p,
+[data-gradient-section="social-media-process"] .text-muted-foreground {
+  color: var(--social-media-process-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="social-media-services"] h1,
+[data-gradient-section="social-media-services"] h2 {
+  color: var(--social-media-services-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="social-media-services"] h3:not(.studio-card-title-accent),
+[data-gradient-section="social-media-services"] h4 {
+  color: var(--social-media-services-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="social-media-services"] h5,
+[data-gradient-section="social-media-services"] h6,
+[data-gradient-section="social-media-services"] p,
+[data-gradient-section="social-media-services"] .text-muted-foreground {
+  color: var(--social-media-services-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="social-media-why-choose-us"] h1,
+[data-gradient-section="social-media-why-choose-us"] h2 {
+  color: var(--social-media-why-choose-us-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="social-media-why-choose-us"] h3:not(.studio-card-title-accent),
+[data-gradient-section="social-media-why-choose-us"] h4 {
+  color: var(--social-media-why-choose-us-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="social-media-why-choose-us"] h5,
+[data-gradient-section="social-media-why-choose-us"] h6,
+[data-gradient-section="social-media-why-choose-us"] p,
+[data-gradient-section="social-media-why-choose-us"] .text-muted-foreground {
+  color: var(--social-media-why-choose-us-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="videography-category-packages"] h1,
+[data-gradient-section="videography-category-packages"] h2 {
+  color: var(--videography-category-packages-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="videography-category-packages"] h3:not(.studio-card-title-accent),
+[data-gradient-section="videography-category-packages"] h4 {
+  color: var(--videography-category-packages-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="videography-category-packages"] h5,
+[data-gradient-section="videography-category-packages"] h6,
+[data-gradient-section="videography-category-packages"] p,
+[data-gradient-section="videography-category-packages"] .text-muted-foreground {
+  color: var(--videography-category-packages-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="videography-category-recent-work"] h1,
+[data-gradient-section="videography-category-recent-work"] h2 {
+  color: var(--videography-category-recent-work-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="videography-category-recent-work"] h3:not(.studio-card-title-accent),
+[data-gradient-section="videography-category-recent-work"] h4 {
+  color: var(--videography-category-recent-work-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="videography-category-recent-work"] h5,
+[data-gradient-section="videography-category-recent-work"] h6,
+[data-gradient-section="videography-category-recent-work"] p,
+[data-gradient-section="videography-category-recent-work"] .text-muted-foreground {
+  color: var(--videography-category-recent-work-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="videography-category-services"] h1,
+[data-gradient-section="videography-category-services"] h2 {
+  color: var(--videography-category-services-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="videography-category-services"] h3:not(.studio-card-title-accent),
+[data-gradient-section="videography-category-services"] h4 {
+  color: var(--videography-category-services-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="videography-category-services"] h5,
+[data-gradient-section="videography-category-services"] h6,
+[data-gradient-section="videography-category-services"] p,
+[data-gradient-section="videography-category-services"] .text-muted-foreground {
+  color: var(--videography-category-services-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="videography-landing-cta"] h1,
+[data-gradient-section="videography-landing-cta"] h2 {
+  color: var(--videography-landing-cta-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="videography-landing-cta"] h3:not(.studio-card-title-accent),
+[data-gradient-section="videography-landing-cta"] h4 {
+  color: var(--videography-landing-cta-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="videography-landing-cta"] h5,
+[data-gradient-section="videography-landing-cta"] h6,
+[data-gradient-section="videography-landing-cta"] p,
+[data-gradient-section="videography-landing-cta"] .text-muted-foreground {
+  color: var(--videography-landing-cta-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="videography-landing-portfolio"] h1,
+[data-gradient-section="videography-landing-portfolio"] h2 {
+  color: var(--videography-landing-portfolio-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="videography-landing-portfolio"] h3:not(.studio-card-title-accent),
+[data-gradient-section="videography-landing-portfolio"] h4 {
+  color: var(--videography-landing-portfolio-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="videography-landing-portfolio"] h5,
+[data-gradient-section="videography-landing-portfolio"] h6,
+[data-gradient-section="videography-landing-portfolio"] p,
+[data-gradient-section="videography-landing-portfolio"] .text-muted-foreground {
+  color: var(--videography-landing-portfolio-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="videography-landing-services"] h1,
+[data-gradient-section="videography-landing-services"] h2 {
+  color: var(--videography-landing-services-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="videography-landing-services"] h3:not(.studio-card-title-accent),
+[data-gradient-section="videography-landing-services"] h4 {
+  color: var(--videography-landing-services-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="videography-landing-services"] h5,
+[data-gradient-section="videography-landing-services"] h6,
+[data-gradient-section="videography-landing-services"] p,
+[data-gradient-section="videography-landing-services"] .text-muted-foreground {
+  color: var(--videography-landing-services-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="web-apps-cta"] h1,
+[data-gradient-section="web-apps-cta"] h2 {
+  color: var(--web-apps-cta-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="web-apps-cta"] h3:not(.studio-card-title-accent),
+[data-gradient-section="web-apps-cta"] h4 {
+  color: var(--web-apps-cta-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="web-apps-cta"] h5,
+[data-gradient-section="web-apps-cta"] h6,
+[data-gradient-section="web-apps-cta"] p,
+[data-gradient-section="web-apps-cta"] .text-muted-foreground {
+  color: var(--web-apps-cta-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="web-apps-process"] h1,
+[data-gradient-section="web-apps-process"] h2 {
+  color: var(--web-apps-process-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="web-apps-process"] h3:not(.studio-card-title-accent),
+[data-gradient-section="web-apps-process"] h4 {
+  color: var(--web-apps-process-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="web-apps-process"] h5,
+[data-gradient-section="web-apps-process"] h6,
+[data-gradient-section="web-apps-process"] p,
+[data-gradient-section="web-apps-process"] .text-muted-foreground {
+  color: var(--web-apps-process-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="web-apps-services"] h1,
+[data-gradient-section="web-apps-services"] h2 {
+  color: var(--web-apps-services-text-primary, #ffffff) !important;
+}
+
+[data-gradient-section="web-apps-services"] h3:not(.studio-card-title-accent),
+[data-gradient-section="web-apps-services"] h4 {
+  color: var(--web-apps-services-text-secondary, #e2e8f0) !important;
+}
+
+[data-gradient-section="web-apps-services"] h5,
+[data-gradient-section="web-apps-services"] h6,
+[data-gradient-section="web-apps-services"] p,
+[data-gradient-section="web-apps-services"] .text-muted-foreground {
+  color: var(--web-apps-services-text-tertiary, #94a3b8) !important;
+}
+
+/* High-specificity overrides removed - using clean base classes only */
+
+
+/* High-specificity overrides removed - using clean base classes only */
