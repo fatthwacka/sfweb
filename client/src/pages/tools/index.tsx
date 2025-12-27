@@ -64,6 +64,9 @@ export default function ToolsHub() {
     } else if (tool.customAction === 'n8n-workflow') {
       // Handle web page content creator specifically
       setIsWebPageModalOpen(true);
+    } else if (tool.customAction === 'full-page') {
+      // Open in new tab for full-page tools
+      window.open(getToolPath(tool), '_blank');
     } else {
       setLocation(getToolPath(tool));
     }

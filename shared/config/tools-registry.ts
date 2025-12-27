@@ -21,6 +21,19 @@ export const TOOLS_REGISTRY: ToolDefinition[] = [
     badge: 'new',
     customAction: 'n8n-workflow', // Special flag for n8n workflow integration
   },
+  {
+    slug: 'article-editor',
+    name: 'Article Editor',
+    description: 'Edit and publish articles with AI-assisted writing and image management',
+    icon: '✏️',
+    category: 'content',
+    minTier: 'staff',
+    requiresAuth: true,
+    usesAI: false,
+    usesLocalFiles: false,
+    limits: {},
+    customAction: 'full-page', // Open in full page mode
+  },
 
   // === FILE MANAGEMENT (mostly anonymous) ===
   {
@@ -101,19 +114,6 @@ export const TOOLS_REGISTRY: ToolDefinition[] = [
     limits: { verified: 30, pro: 300, enterprise: null },
   },
 
-  // === CONTENT TOOLS (verified minimum) ===
-  {
-    slug: 'article-editor',
-    name: 'Article Editor',
-    description: 'Edit and publish articles with AI-assisted writing and image management',
-    icon: '✏️',
-    category: 'content',
-    minTier: 'verified',
-    requiresAuth: true,
-    usesAI: true,
-    usesLocalFiles: false,
-    limits: { verified: 20, pro: 200, enterprise: null },
-  },
 
   // === AUTOMATION (staff only) ===
   {

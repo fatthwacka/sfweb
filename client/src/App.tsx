@@ -88,6 +88,7 @@ import BulkMover from "@/pages/tools/bulk-mover";
 import DuplicateFinder from "@/pages/tools/duplicate-finder";
 import SmartOrganiser from "@/pages/tools/smart-organiser";
 import ProjectCleanup from "@/pages/tools/project-cleanup";
+import ArticleEditor from "@/pages/tools/article-editor";
 // Removed old demo MyGallery - clients use /client-portal
 import NotFound from "@/pages/not-found";
 
@@ -128,6 +129,7 @@ function Router() {
       <Route path="/tools/duplicate-finder" component={DuplicateFinder} />
       <Route path="/tools/smart-organiser" component={SmartOrganiser} />
       <Route path="/tools/project-cleanup" component={ProjectCleanup} />
+      <Route path="/tools/article-editor" component={ArticleEditor} />
       <Route path="/gallery-demo" component={GalleryDemo} />
       <Route path="/portfolio" component={Portfolio} />
       <Route path="/project/:groupName" component={PortfolioGroup} />

@@ -5678,6 +5678,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Secure credential proxy for Article Editor (staff only)
+  app.get('/api/airtable/config', async (req, res) => {
+    try {
+      // Simple authentication check (enhance this later with proper auth)
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      // Validate environment variables
+      const token = process.env.AIRTABLE_TOKEN;
+      const baseId = process.env.AIRTABLE_BASE_ID;
+      const tableId = process.env.AIRTABLE_TABLE_ID;
+      const imgbbKey = process.env.IMGBB_API_KEY;
+
+      if (!token || !baseId || !tableId || !imgbbKey) {
+        console.error('Airtable configuration incomplete:', {
+          token: !!token,
+          baseId: !!baseId,
+          tableId: !!tableId,
+          imgbbKey: !!imgbbKey
+        });
+        return res.status(500).json({ error: 'Airtable configuration incomplete' });
+      }
+
+      // Return configuration securely
+      res.json({
+        airtable: {
+          token,
+          baseId,
+          tableId
+        },
+        imgbb: {
+          apiKey: imgbbKey
+        }
+      });
+
+    } catch (error) {
+      console.error('Airtable config endpoint error:', error);
+      res.status(500).json({ error: 'Failed to provide configuration' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
