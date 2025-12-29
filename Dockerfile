@@ -22,11 +22,16 @@ RUN npm install && npm cache clean --force
 
 # Build the application
 FROM base AS builder
+# CRITICAL: ARG declarations must be here for VITE build-time embedding
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_PUBLISHABLE_KEY
+ARG VITE_RECAPTCHA_SITE_KEY
+ARG VITE_GA_MEASUREMENT_ID
 WORKDIR /app
 COPY --from=deps-dev /app/node_modules ./node_modules
 COPY . .
 
-# Build client and server
+# Build client and server (VITE variables embedded during this step)
 RUN npm run build
 
 # Development image
