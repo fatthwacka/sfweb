@@ -4,13 +4,13 @@
 
 ---
 
-# 🚨 CRITICAL LESSONS - SEPTEMBER 2025
+# 🚨 CRITICAL LESSONS - DECEMBER 2025
 
 ## Docker Multi-Platform Build Crisis (08 Sep 2025)
 
-**Root Cause**: `platforms: [linux/amd64, linux/arm64]` in docker-compose.yml breaks VPS builds  
-**Error**: `Multi-platform build is not supported for the docker driver`  
-**Impact**: Complete deployment failure, 4+ hour outage  
+**Root Cause**: `platforms: [linux/amd64, linux/arm64]` in docker-compose.yml breaks VPS builds
+**Error**: `Multi-platform build is not supported for the docker driver`
+**Impact**: Complete deployment failure, 4+ hour outage
 **Solution**: Remove platforms from base compose, specify single platform in production override
 
 **FIXED Configuration**:
@@ -24,7 +24,7 @@ services:
       target: development
 
 # docker-compose.prod.yml - Single platform only
-services:  
+services:
   app:
     build:
       context: .
@@ -36,10 +36,59 @@ services:
 
 ## Production Override Bug (03 Sep 2025)
 
-**Root Cause**: Deployment script ignored production overrides  
-**Command**: `docker compose up -d --build` (WRONG)  
-**Fixed**: `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build`  
+**Root Cause**: Deployment script ignored production overrides
+**Command**: `docker compose up -d --build` (WRONG)
+**Fixed**: `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build`
 **Impact**: Mobile site served development assets instead of production build
+
+## VITE Environment Variables Build Crisis (29 Dec 2025)
+
+**Root Cause**: `VITE_` environment variables not available during Docker build process
+**Error**: `Missing Supabase environment variables` in browser, frontend shows empty page
+**Impact**: Complete frontend failure, site loads but shows blank page with CSS background only
+**Solution**: Add build arguments to docker-compose.yml AND ARG declarations to Dockerfile
+
+**CRITICAL FIX Required**:
+```yaml
+# docker-compose.yml - Add build args section
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
+```
+
+```dockerfile
+# Dockerfile - Add ARG declarations in builder stage
+FROM base AS builder
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_PUBLISHABLE_KEY
+WORKDIR /app
+# ... rest of build process
+```
+
+**Why This Happens**:
+- VITE_ variables must be available at build time to be embedded in JavaScript bundle
+- Environment variables in docker-compose only available at runtime
+- Build args pass variables to Docker build process
+- Missing build args = empty strings in production bundle
+
+**Detection Method**:
+```bash
+# Check if VITE variables are embedded in bundle
+ssh slyfox-vps "docker exec sfweb-app grep -c 'your-supabase-project-id' dist/public/assets/index-*.js"
+# Should return > 0, if 0 = build args missing
+```
+
+**Prevention**:
+- Always test Supabase client initialization in browser console after deployment
+- Verify new JavaScript bundle filename changes after environment variable updates
+- Check for "Missing Supabase environment variables" errors in browser console
+- Verify production .env file has new Supabase variable names (VITE_SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY)
 
 ---
 
@@ -49,6 +98,7 @@ services:
 - SSH key configured for `slyfox-vps`
 - Docker running locally and on VPS
 - All changes committed to git
+- **⚠️ NEW SECURITY (Dec 2025)**: Git commits now require manual confirmation - you must type "yes" for every commit due to enhanced security measures
 
 ## Single Command Deploy
 ```bash
@@ -72,7 +122,7 @@ ssh slyfox-vps "cd /opt/sfweb && find public -type d -exec chmod 755 {} \;"
 curl -I https://slyfox.co.za/images/logos/slyfox-logo-black.png
 ```
 
-**Why This Happens**: 
+**Why This Happens**:
 - rsync file transfer corrupts file permissions during deployment
 - Images become inaccessible (HTTP 403/404) without proper permissions
 - Affects ALL images: logos, gallery photos, hero images, icons
@@ -90,7 +140,7 @@ curl -I https://slyfox.co.za/images/logos/slyfox-logo-black.png
 
 ## 🚀 Deployment Type Guide
 - **Code Changes Only** → Quick deploy + Quick success checks (2 minutes)
-- **First Time/New Environment** → Full verification process (10 minutes)  
+- **First Time/New Environment** → Full verification process (10 minutes)
 - **Service Issues/Credentials Changed** → Full verification process
 - **Monthly Maintenance** → Full verification recommended
 
@@ -139,12 +189,17 @@ ssh slyfox-vps "cd /opt/sfweb && docker compose ps | grep Up"
 ssh slyfox-vps "ls -la /opt/sfweb/.env"
 
 # Check critical environment variables are set (values should NOT be ${VAR})
-ssh slyfox-vps "cd /opt/sfweb && docker compose -f docker-compose.yml -f docker-compose.prod.yml config | grep -E 'SMTP_EMAIL|DATABASE_URL|NODE_ENV'"
+ssh slyfox-vps "cd /opt/sfweb && docker compose -f docker-compose.yml -f docker-compose.prod.yml config | grep -E 'SMTP_EMAIL|DATABASE_URL|NODE_ENV|SUPABASE_SECRET_KEY'"
 
 # Expected output (with real values, not ${VAR}):
-# SMTP_EMAIL: dax.tucker@gmail.com  
+# SMTP_EMAIL: dax.tucker@gmail.com
 # DATABASE_URL: postgresql://postgres...
 # NODE_ENV: production
+# SUPABASE_SECRET_KEY: sb_secret_...
+
+# ⚠️ NEW REQUIREMENT (Dec 2025): Check VITE environment variable embedding
+ssh slyfox-vps "docker exec sfweb-app grep -c 'dwkjfuhykdjtzvrzdnrr.supabase.co' dist/public/assets/index-*.js"
+# Should return > 0. If 0, VITE build args are missing (see CRITICAL LESSONS above)
 ```
 
 ## Platform Verification (CRITICAL)
@@ -257,7 +312,7 @@ curl https://slyfox.co.za/api/site-config | jq '.contact.business.name'
 
 ## Server Details
 - **Host**: vps.netfox.co.za (168.231.86.89)
-- **OS**: Ubuntu 24.04 LTS  
+- **OS**: Ubuntu 24.04 LTS
 - **Resources**: 3.8GB RAM, 1 CPU, 48GB storage
 - **Provider**: Hostinger
 
@@ -331,6 +386,7 @@ curl -X PATCH https://slyfox.co.za/api/site-config/bulk \
 - [ ] Image permissions: `curl -I https://slyfox.co.za/images/logos/slyfox-logo-black.png` returns HTTP/2 200
 - [ ] Admin panel loads: https://slyfox.co.za/admin
 - [ ] Client portal accessible: `curl -I https://slyfox.co.za/client-portal`
+- [ ] ⚠️ **NEW (Dec 2025)**: Frontend loads without errors: Check browser console for "Missing Supabase environment variables"
 
 ## Cache Verification (When Code Changes Expected)
 - [ ] Build asset freshness: `ssh slyfox-vps "cd /opt/sfweb && docker exec sfweb-app ls -la public/assets/"` shows recent timestamps
@@ -342,7 +398,7 @@ curl -X PATCH https://slyfox.co.za/api/site-config/bulk \
 **Use when:** Credentials rotated, mysterious service failures, monthly checks, new team member deployments
 
 - [ ] All quick success checks above ✅
-- [ ] Environment variables loaded: `ssh slyfox-vps "docker exec sfweb-app env | grep -E 'SMTP_EMAIL|NODE_ENV'"` shows real values  
+- [ ] Environment variables loaded: `ssh slyfox-vps "docker exec sfweb-app env | grep -E 'SMTP_EMAIL|NODE_ENV|SUPABASE_SECRET_KEY'"` shows real values
 - [ ] Contact form functional: Test email sending via https://slyfox.co.za/contact
 - [ ] API responds: `curl -s https://slyfox.co.za/api/site-config | head -5`
 - [ ] Mobile test: iPhone user-agent gets proper HTML (not Vite dev assets)
@@ -381,6 +437,13 @@ ssh slyfox-vps "docker stats --no-stream"  # Container resources
 - Fix: Complete rebuild with `--build` flag
 - Nuclear option if persistent
 
+**"Missing Supabase environment variables" (NEW - Dec 2025)**
+- Symptom: Frontend shows blank page with basic CSS, error in browser console
+- Root Cause: VITE environment variables not embedded in JavaScript bundle during build
+- Fix: Add build args to docker-compose.yml AND ARG declarations to Dockerfile (see CRITICAL LESSONS)
+- Detection: `ssh slyfox-vps "docker exec sfweb-app grep -c 'supabase-project-id' dist/public/assets/index-*.js"` returns 0
+- Prevention: Always check browser console after deployment for this specific error
+
 **HTTP 500 responses**
 - Check: `ssh slyfox-vps "cd /opt/sfweb && docker compose logs app"`
 - Common: File permissions on public assets
@@ -401,7 +464,7 @@ ssh slyfox-vps "docker stats --no-stream"  # Container resources
 # Check SSH connection
 ssh slyfox-vps "echo test"
 
-# Check VPS resources  
+# Check VPS resources
 ssh slyfox-vps "free -h && df -h"
 
 # Check Docker service
@@ -568,17 +631,17 @@ ssh slyfox-vps "cd /opt/sfweb && chmod -R 644 public/images && find public -type
 
 # 🎯 DEPLOYMENT HISTORY
 
-**Last Successful Deployment**: 2025-12-08 (reCAPTCHA timeout fix + footer redesign)  
+**Last Successful Deployment**: 2025-12-29 (Supabase migration + VITE environment variables fix)
 **Critical Fixes Applied**:
-- Docker build cache bypass methodology
-- Videography YouTube integration deployment
-- Production asset validation improvements
-- Image permissions automation
+- VITE environment variables Docker build args implementation
+- Supabase authentication system migration (anon/service → publishable/secret keys)  
+- Docker build cache bypass methodology for environment variable changes
+- Production environment variable verification system
 
-**Previous Deployment**: 2025-09-08 (Multi-platform fix)  
+**Previous Deployment**: 2025-09-08 (Multi-platform fix)
 **Legacy Fixes**:
 - Docker multi-platform build compatibility
-- Production override enforcement  
+- Production override enforcement
 - Mobile site development mode bug
 - Image-picker performance optimizations
 

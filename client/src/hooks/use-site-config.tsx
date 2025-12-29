@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { siteConfig } from '@/config/site-config';
 import type { SiteConfigInterface, DeepPartial } from '@/config/types';
+import { supabaseOperations } from '@/lib/supabase-operations';
 
 /**
  * Custom hook for managing site configuration
@@ -11,25 +12,22 @@ import type { SiteConfigInterface, DeepPartial } from '@/config/types';
 export function useSiteConfig() {
   const queryClient = useQueryClient();
 
-  // Fetch current site configuration
+  // Fetch current site configuration from API endpoint
   const { 
     data: config, 
     isLoading, 
     error 
   } = useQuery<SiteConfigInterface>({
-    queryKey: ['/api/site-config'],
+    queryKey: ['site-config'],
     queryFn: async () => {
       console.log('🔄 Fetching site config from API...');
       try {
         const response = await fetch('/api/site-config');
-        console.log('📡 Site config API response:', response.status);
         if (!response.ok) {
-          // If API fails, use local config as fallback
-          console.warn('Site config API unavailable, using local config');
-          return siteConfig;
+          throw new Error(`Failed to fetch site config: ${response.status}`);
         }
         const data = await response.json();
-        console.log('✅ Site config loaded:', data.contact?.business?.name);
+        console.log('✅ Site config loaded from API:', data.contact?.business?.name);
         return data;
       } catch (error) {
         console.warn('Site config fetch failed, using local config:', error);
@@ -44,23 +42,12 @@ export function useSiteConfig() {
   // Update site configuration
   const updateConfigMutation = useMutation({
     mutationFn: async ({ path, value }: { path: string; value: any }) => {
-      const response = await fetch('/api/site-config', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ path, value }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to update site configuration');
-      }
-      
-      return response.json();
+      const updates = { [path]: value };
+      return await supabaseOperations.siteConfig.updateBulk(updates);
     },
     onSuccess: (data, { path, value }) => {
       // Update the cache optimistically
-      queryClient.setQueryData(['/api/site-config'], (oldData: SiteConfigInterface | undefined) => {
+      queryClient.setQueryData(['site-config'], (oldData: SiteConfigInterface | undefined) => {
         if (!oldData) return siteConfig;
         
         const newData = { ...oldData };
@@ -69,40 +56,28 @@ export function useSiteConfig() {
       });
       
       // Invalidate to refetch and ensure consistency
-      queryClient.invalidateQueries({ queryKey: ['/api/site-config'] });
+      queryClient.invalidateQueries({ queryKey: ['site-config'] });
     },
     onError: (error) => {
       console.error('Failed to update site config:', error);
       // Revert optimistic update by refetching
-      queryClient.invalidateQueries({ queryKey: ['/api/site-config'] });
+      queryClient.invalidateQueries({ queryKey: ['site-config'] });
     }
   });
 
   // Bulk update configuration
   const updateConfigBulkMutation = useMutation({
     mutationFn: async (updates: DeepPartial<SiteConfigInterface>) => {
-      const response = await fetch('/api/site-config/bulk', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updates),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to bulk update site configuration');
-      }
-      
-      return response.json();
+      return await supabaseOperations.siteConfig.updateBulk(updates);
     },
     onSuccess: (data, updates) => {
       // Update cache with bulk changes
-      queryClient.setQueryData(['/api/site-config'], (oldData: SiteConfigInterface | undefined) => {
+      queryClient.setQueryData(['site-config'], (oldData: SiteConfigInterface | undefined) => {
         if (!oldData) return siteConfig;
         return deepMerge(oldData, updates);
       });
       
-      queryClient.invalidateQueries({ queryKey: ['/api/site-config'] });
+      queryClient.invalidateQueries({ queryKey: ['site-config'] });
     }
   });
 
@@ -116,8 +91,8 @@ export function useSiteConfig() {
   };
 
   const resetConfig = () => {
-    queryClient.setQueryData(['/api/site-config'], siteConfig);
-    queryClient.invalidateQueries({ queryKey: ['/api/site-config'] });
+    queryClient.setQueryData(['site-config'], siteConfig);
+    queryClient.invalidateQueries({ queryKey: ['site-config'] });
   };
 
   return {
