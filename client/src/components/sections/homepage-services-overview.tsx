@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { ArrowRight, Cpu, Bot, Cog, Camera } from "lucide-react";
 import { GradientBackground } from "@/components/common/gradient-background";
+import { ServiceBubbles } from "./service-bubbles";
 
 export function HomepageServicesOverview() {
   // Homepage-specific services data
@@ -56,11 +57,14 @@ export function HomepageServicesOverview() {
     <GradientBackground section="services" className="pt-12 pb-20" id="services">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <div className="flex justify-center mb-6">
+          {/* Service Bubbles */}
+          <ServiceBubbles />
+          
+          <div className="flex justify-center mb-6 mt-4">
             <img 
               src="/uploads/trees-20.png" 
               alt="Analog Intelligence" 
-              className="w-16 h-16 opacity-90"
+              className="w-20 h-20 opacity-90"
             />
           </div>
           <h1 className="mb-4 leading-tight">
