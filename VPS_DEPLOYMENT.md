@@ -77,11 +77,25 @@ WORKDIR /app
 - Build args pass variables to Docker build process
 - Missing build args = empty strings in production bundle
 
-**Detection Method**:
+**Detection Methods**:
 ```bash
-# Check if VITE variables are embedded in bundle
-ssh slyfox-vps "docker exec sfweb-app grep -c 'your-supabase-project-id' dist/public/assets/index-*.js"
-# Should return > 0, if 0 = build args missing
+# Method 1: Check if VITE variables are embedded in bundle
+ssh slyfox-vps "docker exec sfweb-app find dist -name 'index-*.js' | head -1"
+# Get actual bundle filename (e.g., index-BO17ZvA1.js)
+
+ssh slyfox-vps "docker exec sfweb-app grep -c 'dwkjfuhykdjtzvrzdnrr.supabase.co' dist/public/assets/index-*.js"
+# Should return > 0 (typically 2), if 0 = build args missing
+
+ssh slyfox-vps "docker exec sfweb-app grep -c 'sb_publishable_' dist/public/assets/index-*.js" 
+# Should return > 0 (typically 2), if 0 = build args missing
+
+# Method 2: Check for error in browser console
+curl -s https://slyfox.co.za | grep -c "Missing Supabase environment variables" 
+# Should return 0, if > 0 = frontend will show blank page
+
+# Method 3: Verify bundle filename changes after rebuild
+# New environment variables = new bundle hash = different filename
+# Compare: index-0hdvSWAo.js (old) vs index-BO17ZvA1.js (new)
 ```
 
 **Prevention**:
@@ -386,7 +400,8 @@ curl -X PATCH https://slyfox.co.za/api/site-config/bulk \
 - [ ] Image permissions: `curl -I https://slyfox.co.za/images/logos/slyfox-logo-black.png` returns HTTP/2 200
 - [ ] Admin panel loads: https://slyfox.co.za/admin
 - [ ] Client portal accessible: `curl -I https://slyfox.co.za/client-portal`
-- [ ] ⚠️ **NEW (Dec 2025)**: Frontend loads without errors: Check browser console for "Missing Supabase environment variables"
+- [ ] ⚠️ **CRITICAL (Dec 2025)**: VITE variables embedded in bundle: `ssh slyfox-vps "docker exec sfweb-app grep -c 'sb_publishable_' dist/public/assets/index-*.js"` returns > 0
+- [ ] ⚠️ **CRITICAL (Dec 2025)**: Frontend loads without errors: Check browser console for "Missing Supabase environment variables" error
 
 ## Cache Verification (When Code Changes Expected)
 - [ ] Build asset freshness: `ssh slyfox-vps "cd /opt/sfweb && docker exec sfweb-app ls -la public/assets/"` shows recent timestamps
@@ -438,11 +453,31 @@ ssh slyfox-vps "docker stats --no-stream"  # Container resources
 - Nuclear option if persistent
 
 **"Missing Supabase environment variables" (NEW - Dec 2025)**
-- Symptom: Frontend shows blank page with basic CSS, error in browser console
-- Root Cause: VITE environment variables not embedded in JavaScript bundle during build
-- Fix: Add build args to docker-compose.yml AND ARG declarations to Dockerfile (see CRITICAL LESSONS)
-- Detection: `ssh slyfox-vps "docker exec sfweb-app grep -c 'supabase-project-id' dist/public/assets/index-*.js"` returns 0
-- Prevention: Always check browser console after deployment for this specific error
+- **Symptom**: Frontend shows blank page with basic CSS, error in browser console, site loads but no content
+- **Root Cause**: VITE environment variables not embedded in JavaScript bundle during build
+- **Immediate Fix**: Add build args to docker-compose.yml AND ARG declarations to Dockerfile (see CRITICAL LESSONS above)
+- **Quick Test**: `ssh slyfox-vps "docker exec sfweb-app grep -c 'sb_publishable_' dist/public/assets/index-*.js"` should return > 0
+- **Complete Solution**:
+  ```bash
+  # 1. Add to docker-compose.yml under app.build:
+  args:
+    VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+    VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
+    VITE_RECAPTCHA_SITE_KEY: ${VITE_RECAPTCHA_SITE_KEY}
+    VITE_GA_MEASUREMENT_ID: ${VITE_GA_MEASUREMENT_ID}
+  
+  # 2. Add to Dockerfile in builder stage (before RUN npm run build):
+  ARG VITE_SUPABASE_URL
+  ARG VITE_SUPABASE_PUBLISHABLE_KEY  
+  ARG VITE_RECAPTCHA_SITE_KEY
+  ARG VITE_GA_MEASUREMENT_ID
+  
+  # 3. Rebuild containers:
+  ssh slyfox-vps "cd /opt/sfweb && docker compose down"
+  ssh slyfox-vps "cd /opt/sfweb && docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build"
+  ```
+- **Verification**: Bundle filename changes (e.g., index-ABC123.js → index-XYZ789.js) indicates new variables embedded
+- **Prevention**: Always verify VITE variables in production bundle after environment changes
 
 **HTTP 500 responses**
 - Check: `ssh slyfox-vps "cd /opt/sfweb && docker compose logs app"`
