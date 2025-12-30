@@ -63,10 +63,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email and password required" });
       }
 
-      // Supabase authentication
+      // Supabase authentication  
       const supabase = createClient(
         process.env.VITE_SUPABASE_URL!,
-        process.env.VITE_SUPABASE_ANON_KEY!
+        process.env.VITE_SUPABASE_PUBLISHABLE_KEY!
       );
 
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -622,7 +622,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Download image from Supabase Storage
           const supabase = createClient(
             process.env.VITE_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!
+            process.env.SUPABASE_SECRET_KEY!
           );
 
           const { data: fileData, error: downloadError } = await supabase.storage
@@ -1359,7 +1359,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Initialize Supabase client for storage cleanup
       const supabase = createClient(
         process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
+        process.env.SUPABASE_SECRET_KEY!
       );
 
       // Delete preview images from Supabase Storage
@@ -1585,7 +1585,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Initialize Supabase client for storage metadata
             const supabase = createClient(
               process.env.VITE_SUPABASE_URL!,
-              process.env.SUPABASE_SERVICE_ROLE_KEY!
+              process.env.SUPABASE_SECRET_KEY!
             );
 
             // Extract the storage path from the full URL
@@ -1672,7 +1672,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Initialize Supabase client for storage metadata
             const supabase = createClient(
               process.env.VITE_SUPABASE_URL!,
-              process.env.SUPABASE_SERVICE_ROLE_KEY!
+              process.env.SUPABASE_SECRET_KEY!
             );
 
             // Extract the storage path from the full URL
@@ -1766,7 +1766,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Initialize Supabase client
       const supabase = createClient(
         process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY! // Use service role for admin operations
+        process.env.SUPABASE_SECRET_KEY! // Use service role for admin operations
       );
 
       const uploadedImages = [];
@@ -2032,7 +2032,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Initialize Supabase client
       const supabase = createClient(
         process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY! // Use service role for admin operations
+        process.env.SUPABASE_SECRET_KEY! // Use service role for admin operations
       );
 
       // If overwriting existing files, delete old storage files and database records
@@ -2374,7 +2374,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const supabase = createClient(
         process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
+        process.env.SUPABASE_SECRET_KEY!
       );
 
       const uploadedVideos = [];
@@ -3097,19 +3097,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/client/shoots", async (req, res) => {
+  // Remove duplicate - using the working storage method version above
+
+  // User Profile API endpoint - for authentication use
+  app.get("/api/user/profile/:userId", async (req, res) => {
     try {
-      const { email } = req.query;
+      const { userId } = req.params;
       
-      if (!email || typeof email !== 'string') {
-        return res.status(400).json({ message: "Email query parameter required" });
+      if (!userId) {
+        return res.status(400).json({ message: "User ID parameter required" });
       }
 
-      const shoots = await storage.getShootsByClientEmail(email);
-      res.json(shoots);
+      // Use service role key to lookup profile (bypasses RLS for auth purposes)
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL!,
+        process.env.SUPABASE_SECRET_KEY!
+      );
+
+      const { data: userProfile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        // If no profile found, this is not necessarily an error for auth
+        console.warn(`Profile lookup for user ${userId}:`, error.message);
+        return res.status(404).json({ message: "Profile not found" });
+      }
+
+      res.json(userProfile);
     } catch (error) {
-      console.error("Get client shoots error:", error);
-      res.status(500).json({ message: "Failed to fetch client shoots" });
+      console.error("Get user profile error:", error);
+      res.status(500).json({ message: "Failed to fetch user profile" });
     }
   });
 
@@ -3270,7 +3290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Initialize Supabase client with service role for storage operations
       const supabase = createClient(
         process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
+        process.env.SUPABASE_SECRET_KEY!
       );
 
       // Generate unique filename
@@ -3327,7 +3347,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const supabase = createClient(
         process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
+        process.env.SUPABASE_SECRET_KEY!
       );
 
       // List all files in the blog/ folder within gallery-images bucket
@@ -3394,7 +3414,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Initialize Supabase client
       const supabase = createClient(
         process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
+        process.env.SUPABASE_SECRET_KEY!
       );
 
       // Generate SEO-optimized filename with timestamp for uniqueness
@@ -4604,7 +4624,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { createClient } = await import('@supabase/supabase-js');
       const supabase = createClient(
         process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
+        process.env.SUPABASE_SECRET_KEY!
       );
 
       // List ALL files in gallery-videos bucket recursively
@@ -4658,7 +4678,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { createClient } = await import('@supabase/supabase-js');
       const supabase = createClient(
         process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
+        process.env.SUPABASE_SECRET_KEY!
       );
 
       // Get the orphaned file we found
@@ -4703,7 +4723,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { createClient } = await import('@supabase/supabase-js');
       const supabase = createClient(
         process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
+        process.env.SUPABASE_SECRET_KEY!
       );
 
       // List ALL files in gallery-images bucket
@@ -4755,7 +4775,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const supabase = createClient(
         process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
+        process.env.SUPABASE_SECRET_KEY!
       );
 
       // Detect device type from user agent
@@ -4812,7 +4832,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const supabase = createClient(
         process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
+        process.env.SUPABASE_SECRET_KEY!
       );
 
       // Time windows
@@ -4958,7 +4978,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const supabase = createClient(
         process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
+        process.env.SUPABASE_SECRET_KEY!
       );
 
       // Get yesterday's date (we aggregate completed days)
@@ -5090,7 +5110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const supabase = createClient(
         process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
+        process.env.SUPABASE_SECRET_KEY!
       );
 
       // Get number of days from query param (default 30)
@@ -5511,10 +5531,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Enhanced Web Page Content Creator API
+  // Enhanced Web Page Content Creator API (Staff Only)
   app.post("/api/content/web-page-creator", async (req, res) => {
     try {
-      const { url, useSiteImages = true, scrapingOptions = {} } = req.body;
+      // Authentication check - restrict to staff and super_admin only
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ 
+          error: "Authentication required",
+          message: "This tool is available exclusively to team members. Please sign in with a staff account."
+        });
+      }
+
+      // For now, allow access with any Bearer token (the frontend access control is the primary gate)
+      // TODO: Implement proper JWT validation and role checking when auth middleware is complete
+      
+      const { url, useSiteImages = true, spellingPreference = 'british', scrapingOptions = {} } = req.body;
       
       if (!url) {
         return res.status(400).json({ error: "URL is required" });
@@ -5547,7 +5579,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const imageAssessment = await imageService.assessAndEnhanceImages(
         extractedContent.images,
         extractedContent.cleanText,
-        url
+        url,
+        !useSiteImages  // Force fallback images when user unchecks "use site images"
       );
       
       console.log(`Image assessment complete: ${imageAssessment.usableImages.length} usable, ${imageAssessment.fallbackImages.length} fallback`);
@@ -5558,10 +5591,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const contentResult = await geminiGenerator.generateContent(
         extractedContent,
         imageAssessment,
-        useSiteImages
+        useSiteImages,
+        spellingPreference
       );
       
       console.log(`Content generation complete: ${contentResult.articles.length} articles created`);
+      console.log(`🖼️ Final Article Image URLs:`);
+      contentResult.articles.forEach((article, i) => {
+        console.log(`  Article ${i + 1}: ${article.assignedImageUrl || 'NO URL'}`);
+      });
       
       // Step 4: Prepare response with articles for client-side Airtable handling
       // NOTE: Airtable integration now handled in browser (like Article Editor)

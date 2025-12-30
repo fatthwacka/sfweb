@@ -114,47 +114,49 @@ export function ToolCard({ tool, onClick, isLoading = false }: ToolCardProps) {
         {/* Description - more space now */}
         <p className="tool-card-description">{tool.description}</p>
 
-        {/* Icon-based feature indicators */}
-        <div className="tool-card-indicators">
-          {/* Category icon */}
-          <div className="tool-card-indicator text-white/60" title={CATEGORY_LABELS[tool.category]}>
-            <CategoryIcon className="h-4 w-4" />
+        {/* Coming soon text badge - positioned in content area */}
+        {isComingSoon && (
+          <div className="mt-2">
+            <span className="text-xs text-gray-500">Coming Soon</span>
           </div>
+        )}
+      </div>
 
-          {/* Local files */}
-          {tool.usesLocalFiles && (
-            <div className="tool-card-indicator" title="Works with local files">
-              <HardDrive className="h-4 w-4" />
-            </div>
-          )}
-
-          {/* Access tier icons */}
-          {tool.minTier === 'anonymous' && (
-            <div className="tool-card-indicator text-green-500" title="No login required">
-              <Globe className="h-4 w-4" />
-            </div>
-          )}
-          {tool.minTier === 'verified' && (
-            <div className="tool-card-indicator text-cyan" title="Free account required">
-              <UserCheck className="h-4 w-4" />
-            </div>
-          )}
-          {(tool.minTier === 'pro' || tool.minTier === 'enterprise') && (
-            <div className="tool-card-indicator text-amber-500" title="Pro plan required">
-              <Crown className="h-4 w-4" />
-            </div>
-          )}
-          {tool.minTier === 'staff' && (
-            <div className="tool-card-indicator text-purple-500" title="Team only">
-              <Users className="h-4 w-4" />
-            </div>
-          )}
-
-          {/* Coming soon text badge - this one stays as text */}
-          {isComingSoon && (
-            <span className="text-xs text-gray-500 ml-auto">Coming Soon</span>
-          )}
+      {/* Icon Strip at Bottom */}
+      <div className="tool-card-icon-strip">
+        {/* Category icon */}
+        <div className="tool-card-indicator text-white/60" title={CATEGORY_LABELS[tool.category]}>
+          <CategoryIcon className="h-4 w-4" />
         </div>
+
+        {/* Local files */}
+        {tool.usesLocalFiles && (
+          <div className="tool-card-indicator" title="Works with local files">
+            <HardDrive className="h-4 w-4" />
+          </div>
+        )}
+
+        {/* Access tier icons */}
+        {tool.minTier === 'anonymous' && (
+          <div className="tool-card-indicator text-green-500" title="No login required">
+            <Globe className="h-4 w-4" />
+          </div>
+        )}
+        {tool.minTier === 'verified' && (
+          <div className="tool-card-indicator text-cyan" title="Free account required">
+            <UserCheck className="h-4 w-4" />
+          </div>
+        )}
+        {(tool.minTier === 'pro' || tool.minTier === 'enterprise') && (
+          <div className="tool-card-indicator text-amber-500" title="Pro plan required">
+            <Crown className="h-4 w-4" />
+          </div>
+        )}
+        {tool.minTier === 'staff' && (
+          <div className="tool-card-indicator text-purple-500" title="Team only">
+            <Users className="h-4 w-4" />
+          </div>
+        )}
       </div>
     </div>
   );

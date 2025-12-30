@@ -79,7 +79,8 @@ export class GeminiContentGenerator {
   async generateContent(
     extractedContent: ExtractedContent,
     imageAssessment: ImageAssessment,
-    useSiteImages: boolean
+    useSiteImages: boolean,
+    spellingPreference: 'british' | 'american' = 'british'
   ): Promise<ContentGenerationResult> {
     console.log('Starting intelligent content strategy analysis with Gemini');
 
@@ -103,7 +104,8 @@ export class GeminiContentGenerator {
       selectedImages,
       contentAnalysis,
       postPlan,
-      clientName
+      clientName,
+      spellingPreference
     );
 
     // Step 6: Call Gemini API with enhanced prompt
@@ -114,7 +116,8 @@ export class GeminiContentGenerator {
       geminiResponse,
       selectedImages,
       extractedContent.url,
-      clientName
+      clientName,
+      contentAnalysis
     );
 
     return {
@@ -128,14 +131,24 @@ export class GeminiContentGenerator {
   }
 
   private selectBestImages(assessment: ImageAssessment, useSiteImages: boolean): Array<ExtractedImage | UnsplashImage> {
+    console.log(`🖼️ Image Selection Debug:`);
+    console.log(`- useSiteImages: ${useSiteImages}`);
+    console.log(`- assessment.recommendations.useOriginalImages: ${assessment.recommendations.useOriginalImages}`);
+    console.log(`- usableImages count: ${assessment.usableImages.length}`);
+    console.log(`- fallbackImages count: ${assessment.fallbackImages.length}`);
+    
     if (!useSiteImages || !assessment.recommendations.useOriginalImages) {
       // Use Unsplash images
-      return assessment.fallbackImages.slice(0, 8);
+      const unsplashImages = assessment.fallbackImages.slice(0, 8);
+      console.log(`- Using Unsplash images: ${unsplashImages.length} images`);
+      console.log(`- First Unsplash URL: ${unsplashImages[0]?.url || 'none'}`);
+      return unsplashImages;
     }
 
     // Use original images, supplement with Unsplash if needed
     const originalImages = assessment.usableImages.slice(0, 6);
     const supplementImages = assessment.fallbackImages.slice(0, 8 - originalImages.length);
+    console.log(`- Using mix: ${originalImages.length} original + ${supplementImages.length} Unsplash`);
     
     return [...originalImages, ...supplementImages];
   }
@@ -272,11 +285,11 @@ Respond in JSON format:
       }
     }
     
-    // Generate 5-10 viral articles for maximum content impact
-    const maxPosts = Math.min(plans.length, 10); // Max 10 posts for viral content variety
-    const minPosts = 5; // Always create at least 5 posts for rich viral content
+    // Generate 2-3 viral articles for comprehensive testing
+    const maxPosts = Math.min(plans.length, 3); // Max 3 posts for better testing
+    const minPosts = 2; // Always create at least 2 posts for variety
     
-    const finalPostCount = Math.max(Math.min(maxPosts, 10), Math.min(minPosts, plans.length));
+    const finalPostCount = Math.max(Math.min(maxPosts, 3), Math.min(minPosts, plans.length));
     console.log(`🔥 VIRAL MODE: Generating ${finalPostCount} punchy articles (${plans.length} opportunities available, ${availableImages} images available)`);
     
     return plans.slice(0, finalPostCount);
@@ -330,14 +343,25 @@ Respond in JSON format:
     images: Array<ExtractedImage | UnsplashImage>,
     analysis: ContentAnalysis,
     postPlan: PostPlan[],
-    clientName: string
+    clientName: string,
+    spellingPreference: 'british' | 'american' = 'british'
   ): Promise<string> {
     const imageUrls = images.map(img => img.url).join('", "');
     
     // Get industry trends for this industry (simplified for now, can be enhanced)
     const industryInsights = this.generateIndustryInsights(analysis.industry);
     
+    // Dynamic spelling instructions based on user preference
+    const spellingInstructions = spellingPreference === 'american' 
+      ? 'SPELLING: Use American English spelling throughout (color, honor, realize, center, analyze, optimize, personalize, utilize)'
+      : 'SPELLING: Use British English spelling throughout (colour, honour, realise, centre, analyse, optimise, personalise, utilise, revitalise)';
+    
+    console.log(`🔤 Spelling Preference: ${spellingPreference} - Instructions: ${spellingInstructions}`);
+    
     return `You are an expert content strategist for ${clientName}, a ${analysis.businessModel} in the ${analysis.industry} sector. Create strategic LinkedIn posts that position them as industry leaders.
+
+🔤 ${spellingInstructions}
+⚠️ CRITICAL: Follow the spelling preference above exactly - this is mandatory for all content generation.
 
 🎯 STRATEGIC CONTENT ANALYSIS:
 Industry: ${analysis.industry}
@@ -350,25 +374,33 @@ Competitive Advantages: ${analysis.competitiveAdvantages.join(', ')}
 Current ${analysis.industry} trends: ${industryInsights.join(', ')}
 Market opportunity: Position ${clientName} ahead of competitors using these insights
 
-🎨 STRATEGIC POST PLAN:
-Create ${postPlan.length} targeted posts following this intelligent strategy:
+🎯 COHERENT CONTENT STRATEGY:
+Create EXACTLY 3 posts that maintain PERFECT coherence between headline, image, and content:
 
-${postPlan.map((plan, index) => `
-POST ${plan.postNumber}: ${plan.topic}
-- Focus: ${plan.angle}
-- Type: ${plan.postType}
-- Key Points: ${plan.focusPoints.join(', ')}
-- Tone Strategy: ${plan.toneStrategy}
-- Industry Connection: ${plan.industryConnection}`).join('')}
+POST 1: EDUCATIONAL/INFORMATIONAL
+- Must relate directly to the main topic from the webpage
+- Include 2-3 specific, interesting facts about the topic
+- Educational tone with surprising insights
+- Example: If topic is "ginger" → facts about ginger's properties, history, benefits
 
-📝 CONTENT REQUIREMENTS:
-Each post must be STRATEGICALLY DIFFERENT, focusing on ONE specific topic while maintaining brand connection:
+POST 2: SALES/PRODUCT BENEFITS  
+- Connect the topic directly to ${clientName}'s products/services
+- Show clear product application and benefits
+- Include specific value proposition and differentiation
+- Example: How ${clientName} uses this ingredient/approach in their products
 
-1. TOPIC FOCUS: Each post covers ONE topic from the plan above
-2. FRESH PERSPECTIVE: Sound different from their existing webpage content 
-3. INDUSTRY INSIGHT: Include current ${analysis.industry} trends or challenges
-4. VIRAL STYLE: Attention-grabbing, benefit-driven, scroll-stopping headlines
-5. STRATEGIC VALUE: Position ${clientName} as the solution/expert
+POST 3: USE CASE/WILDCARD
+- Real-world application or customer story related to the topic
+- Can be testimonial-style, case study, or practical implementation
+- Shows the topic/product in action
+- Example: How customers use this ingredient or see results
+
+📝 COHERENCE REQUIREMENTS - CRITICAL:
+1. HEADLINE MATCH: Content must deliver exactly what the headline promises
+2. IMAGE ALIGNMENT: Content must reference and relate to the assigned image
+3. TOPIC CONSISTENCY: All content must center around the same core topic
+4. SPECIFIC FACTS: Include concrete, interesting details about the topic
+5. BRAND INTEGRATION: Show clear connection to ${clientName}'s offerings
 
 ✅ VIRAL WRITING EXAMPLES:
 "SHOCKING COST EXPOSED", "SECRET HACK REVEALED", "INDUSTRY STUNNED", "GAME-CHANGER DISCOVERED"
@@ -377,37 +409,69 @@ Each post must be STRATEGICALLY DIFFERENT, focusing on ONE specific topic while 
 📋 VIRAL ARTICLE SPECIFICATIONS:
 - Headline: 2-4 words maximum, shocking/intriguing and benefit-driven
 - Hook: 3-5 words maximum, creates urgency or curiosity gap
-- Content: 60-90 words, punchy sentences, focus on ONE shocking insight
+- Content: 60-90 words split into 3 short, punchy paragraphs (use \\n\\n between paragraphs), focus on ONE shocking insight
 - Include surprising industry fact that grabs attention
-- End with: "Details: ${content.url}"
-- Hashtags: Mix viral trends + industry tags
+- Structure: First paragraph (20-30 words) → \\n\\n → Second paragraph (20-30 words) → \\n\\n → Third paragraph (20-30 words) → \\n\\n → "Read more: ${content.url}" → \\n\\n → hashtags
+- Hashtags: EXACTLY 4 hashtags in this order: 1) Brand hashtag (#${clientName.replace(/\s+/g, '').toLowerCase()}), 2) Specific topic hashtag, 3) Industry/segment hashtag, 4) Wildcard/trending hashtag
 
-🖼️ AVAILABLE IMAGES (use exact URLs):
-["${imageUrls}"]
+🖼️ AVAILABLE IMAGES (use exact URLs - copy these EXACTLY for assignedImageUrl):
+${images.map((img, i) => `${i + 1}. ${img.url}`).join('\n')}
 
-🎯 VIRAL EXAMPLES:
-Security: "SHOCKING COST" + "Hidden expense exposed" + shocking stat
-Health: "SECRET REVEALED" + "Industry coverup exposed" + surprising fact
-Business: "GAME-CHANGER" + "Everything changed overnight" + shocking benefit
+⚠️ CRITICAL: For each article, use a different image URL from the list above. Copy the full URL exactly as shown.
+
+🎯 COHERENT CONTENT EXAMPLES:
+For "GINGER UNLOCKED" with ginger image:
+
+POST 1 (Educational): "GINGER UNLOCKED" + "Ancient secret revealed" + "Ginger contains gingerol compounds that are 40x more potent than vitamin E for inflammation reduction. Studies show just 1g daily reduces muscle pain by 25%. Traditional Chinese medicine has used ginger for 2,500 years."
+
+POST 2 (Sales): "GINGER POWER" + "Maximum potency guaranteed" + "Naturalelixir's ginger extract delivers 95% gingerol concentration - the highest available. Our cold-extraction process preserves all active compounds. Unlike cheap alternatives, each capsule provides therapeutic-grade potency."
+
+POST 3 (Use Case): "GINGER SUCCESS" + "Real customer transformation" + "Sarah, 42, replaced her daily painkillers with Naturalelixir's ginger blend. Three weeks later: morning stiffness gone, energy restored. Now she hikes weekends pain-free."
 
 OUTPUT FORMAT (valid JSON only):
 {
   "articles": [
     {
       "articleNumber": 1,
-      "headline": "SHOCKING COST",
-      "hook": "Hidden expense exposed",
-      "content": "Most facilities waste £40,000 yearly on outdated security. Smart managers discovered biometric systems slash costs 60%.\\n\\nShocking fact: ROI hits in 4 months. Zero key cards. Zero breaches.\\n\\nDetails: ${content.url}",
-      "hashtags": ["#SecurityHack", "#CostShock", "#BiometricReveal", "#MoneyLeaks"],
-      "focusAngle": "${postPlan[0]?.angle || 'Strategic benefits'}",
-      "assignedImageUrl": "[exact URL from available images]",
-      "imagePlacement": "Professional context illustration",
+      "headline": "GINGER UNLOCKED",
+      "hook": "Ancient secret revealed",
+      "content": "Ginger contains gingerol compounds 40x more potent than vitamin E for inflammation.\\n\\nStudies prove 1g daily reduces muscle pain by 25%. Traditional medicine used this for 2,500 years.\\n\\nNature's most powerful anti-inflammatory finally gets scientific validation.\\n\\nRead more: ${content.url}",
+      "hashtags": ["#${clientName.replace(/\s+/g, '').toLowerCase()}", "#GingerBenefits", "#NaturalHealth", "#AntiInflammatory"],
+      "focusAngle": "Educational facts about ginger",
+      "assignedImageUrl": "${images[0]?.url || ''}",
+      "imagePlacement": "Fresh ginger root",
       "clientName": "${clientName}",
-      "tone": "${postPlan[0]?.toneStrategy || 'Professional and engaging'}",
+      "tone": "Educational and engaging",
+      "wordCount": 75
+    },
+    {
+      "articleNumber": 2,
+      "headline": "GINGER POWER",
+      "hook": "Maximum potency guaranteed",
+      "content": "${clientName}'s ginger extract delivers 95% gingerol concentration - the highest available.\\n\\nOur cold-extraction preserves all active compounds. Unlike cheap alternatives, guaranteed therapeutic potency.\\n\\nEvery batch tested for maximum bioavailability and effectiveness.\\n\\nRead more: ${content.url}",
+      "hashtags": ["#${clientName.replace(/\s+/g, '').toLowerCase()}", "#GingerExtract", "#PremiumQuality", "#TherapeuticGrade"],
+      "focusAngle": "Product benefits and quality",
+      "assignedImageUrl": "${images[0]?.url || ''}",
+      "imagePlacement": "Premium ginger supplement",
+      "clientName": "${clientName}",
+      "tone": "Confident and sales-focused",
+      "wordCount": 75
+    },
+    {
+      "articleNumber": 3,
+      "headline": "GINGER SUCCESS", 
+      "hook": "Real transformation story",
+      "content": "Sarah, 42, replaced daily painkillers with ${clientName}'s ginger blend.\\n\\nThree weeks later: morning stiffness gone, energy restored. Now she hikes weekends pain-free.\\n\\nJoin 10,000+ customers who chose natural healing over side effects.\\n\\nRead more: ${content.url}",
+      "hashtags": ["#${clientName.replace(/\s+/g, '').toLowerCase()}", "#CustomerSuccess", "#NaturalHealing", "#PainFree"],
+      "focusAngle": "Customer success story",
+      "assignedImageUrl": "${images[0]?.url || ''}",
+      "imagePlacement": "Happy customer using ginger",
+      "clientName": "${clientName}",
+      "tone": "Inspirational and testimonial",
       "wordCount": 75
     }
   ],
-  "totalArticles": ${postPlan.length}
+  "totalArticles": 3
 }
 
 🚨 CRITICAL REQUIREMENTS:
@@ -485,7 +549,8 @@ Generate ${postPlan.length} strategic posts now:`;
     geminiResponse: string,
     selectedImages: Array<ExtractedImage | UnsplashImage>,
     sourceUrl: string,
-    clientName: string
+    clientName: string,
+    analysis: ContentAnalysis
   ): GeneratedArticle[] {
     try {
       // Clean response and extract JSON
@@ -536,7 +601,7 @@ Generate ${postPlan.length} strategic posts now:`;
           headline: this.validateText(article.headline, 'Professional Insights'),
           hook: this.validateText(article.hook, 'Strategic analysis and industry expertise'),
           content: this.validateContent(article.content),
-          hashtags: this.validateHashtags(article.hashtags),
+          hashtags: this.validateHashtags(article.hashtags, clientName, article.focusAngle || 'Strategic business analysis', analysis.industry),
           focusAngle: article.focusAngle || 'Strategic business analysis',
           assignedImageUrl: this.validateImageUrl(article.assignedImageUrl, selectedImages, index),
           imagePlacement: article.imagePlacement || 'Professional illustration',
@@ -588,22 +653,67 @@ Generate ${postPlan.length} strategic posts now:`;
     return content.replace(/\\n\\n/g, '\n\n').replace(/\\n/g, '\n');
   }
 
-  private validateHashtags(hashtags: any): string[] {
-    if (!Array.isArray(hashtags)) {
-      return ['#BusinessGrowth', '#Success', '#Innovation', '#GameChanger'];
+  private validateHashtags(hashtags: any, clientName: string, focusAngle: string, industry: string): string[] {
+    if (!Array.isArray(hashtags) || hashtags.length !== 4) {
+      return this.generateFallbackHashtags(clientName, focusAngle, industry);
     }
     
     const validTags = hashtags
       .filter(tag => typeof tag === 'string' && tag.startsWith('#'))
       .slice(0, 4);
     
-    // Ensure we have exactly 4 hashtags
-    while (validTags.length < 4) {
-      const fallbackTags = ['#BusinessGrowth', '#Success', '#Innovation', '#GameChanger'];
-      validTags.push(fallbackTags[validTags.length % fallbackTags.length]);
+    // If we don't have exactly 4 valid hashtags, generate fallback
+    if (validTags.length !== 4) {
+      return this.generateFallbackHashtags(clientName, focusAngle, industry);
     }
     
-    return validTags.slice(0, 4);
+    return validTags;
+  }
+  
+  private generateFallbackHashtags(clientName: string, focusAngle: string, industry: string): string[] {
+    // 1. Brand hashtag (client name without spaces)
+    const brandTag = `#${clientName.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '')}`;
+    
+    // 2. Specific topic hashtag (based on focus angle)
+    const topicTag = this.createTopicHashtag(focusAngle);
+    
+    // 3. Industry/segment hashtag
+    const industryTag = this.createIndustryHashtag(industry);
+    
+    // 4. Wildcard/trending hashtag
+    const wildcardTags = ['#GameChanger', '#Innovation', '#Success', '#Breakthrough', '#Strategy', '#Excellence'];
+    const wildcardTag = wildcardTags[Math.floor(Math.random() * wildcardTags.length)];
+    
+    return [brandTag, topicTag, industryTag, wildcardTag];
+  }
+  
+  private createTopicHashtag(focusAngle: string): string {
+    // Extract key words from focus angle and create a hashtag
+    const cleanAngle = focusAngle.replace(/[^a-zA-Z0-9\s]/g, '').trim();
+    const words = cleanAngle.split(/\s+/).filter(word => word.length > 2);
+    
+    if (words.length >= 2) {
+      // Combine first two meaningful words
+      return `#${words[0]}${words[1]}`.replace(/[^a-zA-Z0-9#]/g, '');
+    } else if (words.length === 1) {
+      return `#${words[0]}Solutions`;
+    } else {
+      return '#StrategicSolutions';
+    }
+  }
+  
+  private createIndustryHashtag(industry: string): string {
+    const industryMap = {
+      'Security Technology': '#SecurityIndustry',
+      'Health Food': '#HealthIndustry', 
+      'Business Services': '#BusinessServices',
+      'Manufacturing': '#Manufacturing',
+      'Finance': '#FinanceIndustry',
+      'Healthcare': '#Healthcare',
+      'Technology': '#TechIndustry'
+    };
+    
+    return industryMap[industry] || '#BusinessIndustry';
   }
 
   private validateImageUrl(url: string, availableImages: Array<ExtractedImage | UnsplashImage>, articleIndex: number = 0): string {

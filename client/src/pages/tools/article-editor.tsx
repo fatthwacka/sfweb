@@ -54,6 +54,7 @@ interface Filters {
   status: string;
   client: string;
   sourceTitle: string;
+  sortOrder: string;
 }
 
 export default function ArticleEditor() {
@@ -89,7 +90,8 @@ export default function ArticleEditor() {
   const [filters, setFilters] = useState<Filters>({
     status: 'All',
     client: 'All',
-    sourceTitle: 'All'
+    sourceTitle: 'All',
+    sortOrder: 'Newest First'
   });
 
   // Parse URL parameters for initial filter state
@@ -98,12 +100,14 @@ export default function ArticleEditor() {
     const clientParam = urlParams.get('client');
     const statusParam = urlParams.get('status');
     const sourceParam = urlParams.get('source');
+    const sortParam = urlParams.get('sort');
     
-    if (clientParam || statusParam || sourceParam) {
+    if (clientParam || statusParam || sourceParam || sortParam) {
       setFilters(prev => ({
         status: statusParam || prev.status,
         client: clientParam || prev.client,
-        sourceTitle: sourceParam || prev.sourceTitle
+        sourceTitle: sourceParam || prev.sourceTitle,
+        sortOrder: sortParam || prev.sortOrder
       }));
     }
   }, [location]);
@@ -215,9 +219,8 @@ export default function ArticleEditor() {
         let url = `https://api.airtable.com/v0/${config.airtable.baseId}/${config.airtable.tableId}`;
         const urlParams = new URLSearchParams();
 
-        // Add sorting by most recent first
-        urlParams.append('sort[0][field]', 'Generated Date');
-        urlParams.append('sort[0][direction]', 'desc');
+        // No sorting needed here - this is just for populating filter options
+        // Sorting is handled in fetchArticles() for display
         
         // Add offset if we have one (pagination)
         if (offset) {
@@ -254,12 +257,25 @@ export default function ArticleEditor() {
       // Store all articles for option extraction
       setAllArticles(formattedArticles);
 
-      // Extract unique clients from ALL articles
-      const uniqueClients = Array.from(new Set(
-        formattedArticles
-          .map(article => article.Client)
-          .filter(client => client && client.trim() !== '')
-      )).sort();
+      // Extract unique clients from ALL articles (case-insensitive deduplication)
+      const clientMap = new Map<string, string>();
+      formattedArticles
+        .map(article => article.Client)
+        .filter(client => client && client.trim() !== '')
+        .forEach(client => {
+          const lowerKey = client.toLowerCase();
+          if (!clientMap.has(lowerKey)) {
+            // Use the first occurrence, but prefer capitalized versions
+            clientMap.set(lowerKey, client);
+          } else {
+            // If we find a capitalized version, prefer it over lowercase
+            const existing = clientMap.get(lowerKey)!;
+            if (client[0] === client[0].toUpperCase() && existing[0] !== existing[0].toUpperCase()) {
+              clientMap.set(lowerKey, client);
+            }
+          }
+        });
+      const uniqueClients = Array.from(clientMap.values()).sort();
       setAvailableClients(uniqueClients);
 
       // Extract unique source titles from ALL articles
@@ -295,11 +311,12 @@ export default function ArticleEditor() {
         filterConditions.push(`{Status}='${filters.status}'`);
       }
       if (filters.client !== 'All') {
-        filterConditions.push(`{Client}='${filters.client}'`);
+        filterConditions.push(`UPPER({Client})='${filters.client.toUpperCase()}'`);
       }
       if (filters.sourceTitle !== 'All') {
         filterConditions.push(`{Source Title}='${filters.sourceTitle}'`);
       }
+      // No date filtering needed - sorting handles the order
       
       console.log('Applied filters:', { filters, filterConditions });
       
@@ -311,9 +328,10 @@ export default function ArticleEditor() {
         let url = `https://api.airtable.com/v0/${config.airtable.baseId}/${config.airtable.tableId}`;
         const urlParams = new URLSearchParams();
 
-        // Add sorting by most recent first (matching HTML)
-        urlParams.append('sort[0][field]', 'Generated Date');
-        urlParams.append('sort[0][direction]', 'desc');
+        // Add sorting based on user preference - use Article Number for reliable chronological sorting
+        const sortDirection = filters.sortOrder === 'Oldest First' ? 'asc' : 'desc';
+        urlParams.append('sort[0][field]', 'Article Number');
+        urlParams.append('sort[0][direction]', sortDirection);
 
         if (filterConditions.length > 0) {
           const filterFormula = filterConditions.length === 1 
@@ -357,7 +375,7 @@ export default function ArticleEditor() {
         // Handle empty results (same logic as HTML)
         if (initialLoad) {
           setError('No articles found with default filters. Showing all articles.');
-          setFilters({ status: 'All', client: 'All', sourceTitle: 'All' });            
+          setFilters({ status: 'All', client: 'All', sourceTitle: 'All', sortOrder: 'Newest First' });            
           setInitialLoad(false);
           return;
         } else {
@@ -886,6 +904,23 @@ export default function ArticleEditor() {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Sort Filter */}
+                <div className="flex items-center space-x-2">
+                  <Label className="text-sm text-slate-300 whitespace-nowrap">Sort:</Label>
+                  <Select
+                    value={filters.sortOrder}
+                    onValueChange={(value) => handleFilterChange('sortOrder', value)}
+                  >
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Newest First">Newest First</SelectItem>
+                      <SelectItem value="Oldest First">Oldest First</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           </CardHeader>
@@ -1027,6 +1062,18 @@ export default function ArticleEditor() {
                       rows={18}
                       placeholder="Enter content..."
                       className="text-sm"
+                      disabled={!!searchQuery}
+                    />
+                  </div>
+
+                  {/* Hashtags */}
+                  <div className="space-y-2">
+                    <Label htmlFor="hashtags" className="text-slate-300">Hashtags</Label>
+                    <Input
+                      id="hashtags"
+                      value={displayCurrentArticle.Hashtags || ''}
+                      onChange={(e) => handleFieldChange('Hashtags', e.target.value)}
+                      placeholder="Enter hashtags..."
                       disabled={!!searchQuery}
                     />
                   </div>

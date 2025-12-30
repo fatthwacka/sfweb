@@ -42,7 +42,8 @@ export class ImageEnhancementService {
   async assessAndEnhanceImages(
     extractedImages: ExtractedImage[],
     contentContext: string,
-    websiteUrl: string
+    websiteUrl: string,
+    forceFallbackImages: boolean = false
   ): Promise<ImageAssessment> {
     console.log(`Assessing ${extractedImages.length} extracted images`);
 
@@ -55,8 +56,9 @@ export class ImageEnhancementService {
     let useOriginalImages = true;
     
     // Determine if we need fallback images
-    if (usableImages.length === 0 || this.averageQuality(usableImages) < 70) {
-      console.log('Original images insufficient, seeking Unsplash alternatives');
+    if (forceFallbackImages || usableImages.length === 0 || this.averageQuality(usableImages) < 70) {
+      const reason = forceFallbackImages ? 'User chose Unsplash images' : 'Original images insufficient';
+      console.log(`${reason}, seeking Unsplash alternatives`);
       
       if (this.unsplashApiKey) {
         try {

@@ -9,15 +9,15 @@ export const TOOLS_REGISTRY: ToolDefinition[] = [
   // === AI CONTENT CREATION (verified minimum) ===
   {
     slug: 'web-page-content-creator',
-    name: 'Web Page Content Creator',
-    description: 'Transform any webpage into structured, professional content using AI analysis',
+    name: 'LinkedIn Post Creator',
+    description: 'Transform any webpage into engaging LinkedIn posts with proper formatting and hashtags',
     icon: '🌐',
     category: 'ai-powered',
-    minTier: 'verified',
+    minTier: 'staff',
     requiresAuth: true,
     usesAI: true,
     usesLocalFiles: false,
-    limits: { verified: 10, pro: 100, enterprise: null },
+    limits: {},
     badge: 'new',
     customAction: 'n8n-workflow', // Special flag for n8n workflow integration
   },

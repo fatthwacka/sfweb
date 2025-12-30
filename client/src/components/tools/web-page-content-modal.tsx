@@ -75,10 +75,10 @@ export function WebPageContentModal({
             </div>
             <div>
               <h3 className="text-xl font-semibold text-white">
-                Web Page Content Creator
+                LinkedIn Post Creator
               </h3>
               <p className="text-sm text-slate-400">
-                Transform any webpage into structured content
+                Transform any webpage into engaging LinkedIn posts
               </p>
             </div>
           </div>

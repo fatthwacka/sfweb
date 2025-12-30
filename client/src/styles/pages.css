@@ -474,7 +474,7 @@
    * ========================================== */
 
   .tool-card {
-    @apply relative overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 rounded-xl cursor-pointer bg-slate-900;
+    @apply relative overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 rounded-xl cursor-pointer bg-slate-900 flex flex-col;
   }
 
   .tool-card:hover {
@@ -506,7 +506,7 @@
 
   /* Content section */
   .tool-card-content {
-    @apply p-5 pt-4;
+    @apply p-5 pt-4 flex-grow;
   }
 
   .tool-card-title {
@@ -514,10 +514,15 @@
   }
 
   .tool-card-description {
-    @apply text-gray-400 text-sm leading-relaxed mb-4;
+    @apply text-gray-400 text-sm leading-relaxed;
   }
 
-  /* Icon-based feature indicators */
+  /* Icon strip at bottom */
+  .tool-card-icon-strip {
+    @apply flex items-center gap-3 px-5 py-3 border-t border-white/10 mt-auto;
+  }
+
+  /* Legacy support for old indicator class */
   .tool-card-indicators {
     @apply flex items-center gap-3 pt-3 border-t border-white/10;
   }

@@ -25,6 +25,7 @@ interface ScrapingOptions {
 interface WebPageContentRequest {
   url: string;
   useSiteImages: boolean;
+  spellingPreference: 'british' | 'american';
   scrapingOptions: ScrapingOptions;
 }
 
@@ -54,6 +55,7 @@ export function EnhancedWebPageContentModal({
 }: EnhancedWebPageContentModalProps) {
   const [url, setUrl] = useState('');
   const [useSiteImages, setUseSiteImages] = useState(true);
+  const [spellingPreference, setSpellingPreference] = useState<'british' | 'american'>('british');
   const [scrapingOptions, setScrapingOptions] = useState<ScrapingOptions>(DEFAULT_SCRAPING_OPTIONS);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isValidUrl, setIsValidUrl] = useState(false);
@@ -86,6 +88,7 @@ export function EnhancedWebPageContentModal({
     onSubmit({
       url: url.trim(),
       useSiteImages,
+      spellingPreference,
       scrapingOptions
     });
   };
@@ -95,6 +98,7 @@ export function EnhancedWebPageContentModal({
     if (!isLoading) {
       setUrl('');
       setUseSiteImages(true);
+      setSpellingPreference('british');
       setScrapingOptions(DEFAULT_SCRAPING_OPTIONS);
       setShowAdvanced(false);
       setIsValidUrl(false);
@@ -122,7 +126,7 @@ export function EnhancedWebPageContentModal({
             </div>
             <div>
               <h3 className="text-xl font-semibold text-white">
-                Web Page Content Creator
+                LinkedIn Post Creator
               </h3>
               <p className="text-sm text-slate-400">
                 Transform any webpage into professional LinkedIn articles
@@ -202,6 +206,53 @@ export function EnhancedWebPageContentModal({
                 Will analyse site images for quality and fallback to Unsplash if needed
               </p>
             )}
+          </div>
+
+          {/* Spelling Preference */}
+          <div className="space-y-3">
+            <Label className="text-white font-medium">Spelling Preference</Label>
+            
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="british-spelling"
+                  name="spelling"
+                  checked={spellingPreference === 'british'}
+                  onChange={() => setSpellingPreference('british')}
+                  disabled={isLoading}
+                  className="w-4 h-4 text-blue-600 bg-slate-800 border-slate-600 focus:ring-blue-500"
+                />
+                <Label 
+                  htmlFor="british-spelling" 
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-slate-300 cursor-pointer"
+                >
+                  British English (colour, honour, realise)
+                </Label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="american-spelling"
+                  name="spelling"
+                  checked={spellingPreference === 'american'}
+                  onChange={() => setSpellingPreference('american')}
+                  disabled={isLoading}
+                  className="w-4 h-4 text-blue-600 bg-slate-800 border-slate-600 focus:ring-blue-500"
+                />
+                <Label 
+                  htmlFor="american-spelling" 
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-slate-300 cursor-pointer"
+                >
+                  American English (color, honor, realize)
+                </Label>
+              </div>
+            </div>
+            
+            <p className="text-xs text-slate-400">
+              Content will be generated using {spellingPreference === 'british' ? 'British' : 'American'} spelling conventions
+            </p>
           </div>
 
           {/* Advanced Options */}
