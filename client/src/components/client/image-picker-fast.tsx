@@ -4,8 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { apiRequest } from '@/lib/queryClient';
-import { useSimpleSelections } from '@/hooks/use-simple-selections';
+import { supabaseOperations } from '@/lib/supabase-operations';
+import { useSimpleSelectionsWithEmail } from '@/hooks/use-simple-selections';
 import { 
   Heart,
   ThumbsUp,
@@ -50,12 +50,11 @@ export function ImagePickerFast({ shootId, previewSettings, userEmail }: ImagePi
   
   const IMAGES_PER_PAGE = 40;
   
-  // Fetch preview images
+  // Fetch preview images using direct Supabase operations
   const { data: previewResponse, isLoading: imagesLoading, error } = useQuery({
-    queryKey: ['/api/preview-images', shootId],
+    queryKey: ['preview-images', shootId],
     queryFn: async () => {
-      const response = await apiRequest('GET', `/api/preview-images/${shootId}`);
-      return await response.json();
+      return await supabaseOperations.previewImages.getByShoot(shootId);
     },
     enabled: !!shootId,
   });
@@ -91,7 +90,7 @@ export function ImagePickerFast({ shootId, previewSettings, userEmail }: ImagePi
     updateSelection,
     clearAllSelections,
     isSelected,
-  } = useSimpleSelections({ shootId, userEmail });
+  } = useSimpleSelectionsWithEmail({ shootId, userEmail });
 
   const handleSelection = (filename: string, action: 'favorite' | 'like' | 'dislike' | 'none') => {
     // Check favorite limit
@@ -132,21 +131,34 @@ export function ImagePickerFast({ shootId, previewSettings, userEmail }: ImagePi
         }
       });
 
-      // Send to API
-      const response = await apiRequest('POST', `/api/selections/${shootId}/submit`, {
-        userEmail,
-        favorites,
-        likes,
-        dislikes,
-        totalImages: previewImages.length
+      // TODO: Convert selection submission to direct Supabase operations
+      // For now, keep Express API call as it requires complex server-side logic
+      const response = await fetch('/api/selections/' + shootId + '/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userEmail,
+          favorites,
+          likes,
+          dislikes,
+          totalImages: previewImages.length
+        })
       });
 
       if (response.ok) {
-        // Mark the preview as submitted in the database
-        await apiRequest('PATCH', `/api/shoots/${shootId}/preview-settings`, {
-          submission_completed: true,
-          submission_completed_at: new Date().toISOString(),
-          submission_completed_by: userEmail
+        // TODO: Convert preview settings update to direct Supabase operations
+        await fetch(`/api/shoots/${shootId}/preview-settings`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            submission_completed: true,
+            submission_completed_at: new Date().toISOString(),
+            submission_completed_by: userEmail
+          })
         });
         
         setHasSubmitted(true);
@@ -186,33 +198,27 @@ export function ImagePickerFast({ shootId, previewSettings, userEmail }: ImagePi
     setDeletingImage(imageFilename);
     
     try {
-      const response = await apiRequest('DELETE', `/api/preview-images/${shootId}/image/${encodeURIComponent(imageFilename)}`, {
-        userEmail
-      });
+      // Use direct Supabase operations for image deletion
+      await supabaseOperations.previewImages.delete(shootId, imageFilename);
       
-      if (response.ok) {
-        // Add to deleted images set (optimistic UI update)
-        setDeletedImages(prev => new Set(prev).add(imageFilename));
-        
-        // Close modal if this was the deleted image
-        if (selectedImage?.filename === imageFilename) {
-          setSelectedImage(null);
-        }
-        
-        // Check if current page will be empty after deletion
-        const remainingImagesOnPage = currentPageImages.filter(img => img.filename !== imageFilename);
-        if (remainingImagesOnPage.length === 0 && currentPage > 1) {
-          // Go to previous page if current page becomes empty
-          setTimeout(() => goToPage(currentPage - 1), 100);
-        }
-        
-        // Optional: Show success message
-        console.log(`✅ Successfully removed ${imageFilename} from preview`);
-        
-      } else {
-        const error = await response.json();
-        alert(`Failed to delete image: ${error.message || 'Unknown error'}`);
+      // Deletion successful - proceed with UI updates
+      // Add to deleted images set (optimistic UI update)
+      setDeletedImages(prev => new Set(prev).add(imageFilename));
+      
+      // Close modal if this was the deleted image
+      if (selectedImage?.filename === imageFilename) {
+        setSelectedImage(null);
       }
+      
+      // Check if current page will be empty after deletion
+      const remainingImagesOnPage = currentPageImages.filter(img => img.filename !== imageFilename);
+      if (remainingImagesOnPage.length === 0 && currentPage > 1) {
+        // Go to previous page if current page becomes empty
+        setTimeout(() => goToPage(currentPage - 1), 100);
+      }
+      
+      // Optional: Show success message
+      console.log(`✅ Successfully removed ${imageFilename} from preview`);
     } catch (error) {
       console.error('Delete failed:', error);
       alert('Failed to delete image. Please try again.');

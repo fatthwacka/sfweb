@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
+import { supabaseOperations } from '@/lib/supabase-operations';
+// CONVERTED TO SUPABASE: Direct preview image duplicate checking using previewImages.checkConflicts
 import { DuplicateFilesDialog } from '../ui/duplicate-files-dialog';
 import { 
   Upload, 
@@ -161,16 +162,11 @@ export function ImageUploadZone({
     });
   };
 
-  // Check for duplicate filenames on the server
+  // Check for duplicate filenames using Supabase operations
   const checkForDuplicates = async (filenames: string[]): Promise<string[]> => {
     try {
-      const response = await apiRequest(
-        'POST',
-        `/api/preview-images/${shootId}/check-duplicates`,
-        { filenames }
-      );
-      const data = await response.json();
-      return data.duplicates || [];
+      const result = await supabaseOperations.previewImages.checkConflicts(shootId, filenames);
+      return result.duplicates || [];
     } catch (error) {
       console.error('Error checking for duplicates:', error);
       // If duplicate check fails, continue without checking
@@ -288,19 +284,10 @@ export function ImageUploadZone({
         }));
       }, 200);
 
-      // Use fetch API with proper proxy support
-      const response = await fetch('/api/images/batch-upload', {
-        method: 'POST',
-        body: formData,
-      });
+      // Use supabaseOperations for direct upload
+      const data = await supabaseOperations.images.uploadSingle(fileToUpload, shootId);
 
       clearInterval(progressInterval);
-
-      if (!response.ok) {
-        throw new Error(`Upload failed: ${response.statusText}`);
-      }
-
-      const data = await response.json();
 
       // Update file status to completed
       setFiles(prev => prev.map(f => 
