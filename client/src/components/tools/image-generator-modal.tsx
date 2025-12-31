@@ -96,13 +96,25 @@ interface ImageGeneratorModalProps {
 
 // Constants
 const ART_STYLES = [
-  'photorealistic', 'digital-art', 'illustration', 'painting', 'sketch',
-  'watercolor', 'oil-painting', 'pencil-drawing', 'cartoon', 'anime'
+  { value: 'photorealistic', label: 'Photorealistic', description: 'Realistic photography' },
+  { value: 'illustrated', label: 'Illustrated', description: 'Digital illustration' },
+  { value: 'cinematic', label: 'Cinematic', description: 'Movie-like quality' },
+  { value: 'minimalist', label: 'Minimalist', description: 'Clean, simple style' },
+  { value: 'abstract', label: 'Abstract', description: 'Conceptual art style' },
+  { value: 'vintage', label: 'Vintage', description: 'Retro, classic look' },
+  { value: 'modern', label: 'Modern', description: 'Contemporary design' },
+  { value: 'artistic', label: 'Artistic', description: 'Creative interpretation' }
 ];
 
 const IMAGE_STYLES = [
-  'hero', 'featured', 'thumbnail', 'social-media', 'background',
-  'portrait', 'landscape', 'action-shot', 'close-up', 'wide-angle'
+  { value: 'professional', label: 'Professional', description: 'Business-appropriate, polished' },
+  { value: 'lifestyle', label: 'Lifestyle', description: 'Natural, authentic feel' },
+  { value: 'dramatic', label: 'Dramatic', description: 'High contrast, striking' },
+  { value: 'minimalist', label: 'Minimalist', description: 'Clean, simple design' },
+  { value: 'corporate', label: 'Corporate', description: 'Business environment' },
+  { value: 'creative', label: 'Creative', description: 'Artistic, unique perspective' },
+  { value: 'warm', label: 'Warm', description: 'Cozy, inviting atmosphere' },
+  { value: 'modern', label: 'Modern', description: 'Contemporary aesthetic' }
 ];
 
 const RESOLUTIONS = ['1024', '1500', '2048'];
@@ -135,7 +147,7 @@ export function ImageGeneratorModal({
   const [includeTitle, setIncludeTitle] = useState(true);
   const [includeSubtitle, setIncludeSubtitle] = useState(false);
   const [artStyle, setArtStyle] = useState('photorealistic');
-  const [imageStyle, setImageStyle] = useState('hero');
+  const [imageStyle, setImageStyle] = useState('professional');
   const [resolution, setResolution] = useState('1500');
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [aiAnalyzedPrompt, setAiAnalyzedPrompt] = useState('');
@@ -153,6 +165,7 @@ export function ImageGeneratorModal({
   const [isGeneratingSearchTerm, setIsGeneratingSearchTerm] = useState(false);
   const [unsplashPage, setUnsplashPage] = useState(1);
   const [unsplashQuality, setUnsplashQuality] = useState('regular');
+  const [unsplashOrientation, setUnsplashOrientation] = useState('squarish');
   const [hasMoreUnsplashImages, setHasMoreUnsplashImages] = useState(true);
   const [unsplashAttribution, setUnsplashAttribution] = useState<{user: string; username: string} | null>(null);
 
@@ -174,15 +187,10 @@ export function ImageGeneratorModal({
     }
   }, [isOpen, initialPrompt]);
 
-  // Auto-analyze when modal opens (only once)
-  useEffect(() => {
-    if (isOpen && !hasAnalyzed && articleContext && (articleContext.headline || articleContext.hook || articleContext.content)) {
-      analyzeArticleContent();
-    }
-  }, [isOpen, hasAnalyzed]); // Removed articleContext to prevent circular loop
+  // Removed auto-analysis to save tokens - user must manually click analyze
 
   const analyzeArticleContent = async () => {
-    if (!articleContext || hasAnalyzed) return;
+    if (!articleContext) return;
     
     setIsAnalyzing(true);
     try {
@@ -196,6 +204,7 @@ export function ImageGeneratorModal({
 
       const result = await response.json();
       setAiAnalyzedPrompt(result.suggestedPrompt);
+      setUseAiPrompt(true); // Auto-tick checkbox when analysis succeeds
       setHasAnalyzed(true);
     } catch (error) {
       console.error('Error analyzing article content:', error);
@@ -323,8 +332,7 @@ export function ImageGeneratorModal({
       query: term,
       page: pageToFetch,
       per_page: 6,
-      orientation: aspectRatio === '16:9' || aspectRatio === '3:2' ? 'landscape' : 
-                  aspectRatio === '9:16' || aspectRatio === '2:3' ? 'portrait' : 'all'
+      orientation: unsplashOrientation
     };
     
     try {
@@ -520,86 +528,91 @@ export function ImageGeneratorModal({
                     />
                   </div>
 
-                  {/* AI Analysis Section */}
+                  {/* AI Analysis Section - Always visible */}
                   {articleContext && (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <Label className="text-gray-700 font-medium">AI Article Analysis</Label>
                         <Button
-                          onClick={() => {
-                            setHasAnalyzed(false);
-                            analyzeArticleContent();
-                          }}
+                          onClick={analyzeArticleContent}
                           disabled={isAnalyzing}
                           variant="outline"
                           size="sm"
                         >
                           {isAnalyzing ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Sparkles className="h-3 w-3 mr-1" />}
-                          {isAnalyzing ? 'Analyzing...' : 'Re-analyze'}
+                          {isAnalyzing ? 'Generating...' : hasAnalyzed ? 'Regenerate prompt' : 'Generate prompt'}
                         </Button>
                       </div>
-                      {aiAnalyzedPrompt && (
-                        <div className="p-3 bg-orange-50 border border-orange-200 rounded-md">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              id="use-ai-prompt"
-                              checked={useAiPrompt}
-                              onChange={(e) => setUseAiPrompt(e.target.checked)}
-                            />
-                            <Label htmlFor="use-ai-prompt" className="text-sm font-medium text-gray-700">
-                              Use AI-suggested prompt
-                            </Label>
-                          </div>
-                          <p className="text-sm mt-2 text-gray-700">{aiAnalyzedPrompt}</p>
+                      <div className="p-3 bg-orange-50 border border-orange-200 rounded-md">
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id="use-ai-prompt"
+                            checked={useAiPrompt}
+                            onChange={(e) => setUseAiPrompt(e.target.checked)}
+                          />
+                          <Label htmlFor="use-ai-prompt" className="text-sm font-medium text-gray-700">
+                            Use AI prompt
+                          </Label>
                         </div>
-                      )}
+                        {aiAnalyzedPrompt ? (
+                          <p className="text-sm mt-2 text-gray-700">{aiAnalyzedPrompt}</p>
+                        ) : (
+                          <p className="text-sm mt-2 text-gray-500 italic">Click "Generate prompt" to analyze your article content</p>
+                        )}
+                      </div>
                     </div>
                   )}
 
                   {/* Configuration Grid */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
+                  <div className="grid grid-cols-2 gap-4 relative overflow-hidden">
+                    <div className="space-y-2 min-w-0">
                       <Label htmlFor="art-style">Art Style</Label>
                       <Select value={artStyle} onValueChange={setArtStyle}>
-                        <SelectTrigger>
+                        <SelectTrigger className="max-w-full focus:ring-1 focus:ring-orange-500 focus:ring-inset">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent align="start" className="max-h-80 overflow-y-auto z-50 max-w-xs">
                           {ART_STYLES.map((style) => (
-                            <SelectItem key={style} value={style}>
-                              {style.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            <SelectItem key={style.value} value={style.value} className="py-2">
+                              <div className="space-y-0.5 text-left">
+                                <div className="font-medium text-sm">{style.label}</div>
+                                <div className="text-xs text-gray-500">{style.description}</div>
+                              </div>
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 min-w-0">
                       <Label htmlFor="image-style">Image Style</Label>
                       <Select value={imageStyle} onValueChange={setImageStyle}>
-                        <SelectTrigger>
+                        <SelectTrigger className="max-w-full focus:ring-1 focus:ring-orange-500 focus:ring-inset">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent align="start" className="max-h-80 overflow-y-auto z-50 max-w-xs">
                           {IMAGE_STYLES.map((style) => (
-                            <SelectItem key={style} value={style}>
-                              {style.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            <SelectItem key={style.value} value={style.value} className="py-2">
+                              <div className="space-y-0.5 text-left">
+                                <div className="font-medium text-sm">{style.label}</div>
+                                <div className="text-xs text-gray-500">{style.description}</div>
+                              </div>
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 min-w-0">
                       <Label htmlFor="resolution">Resolution</Label>
                       <Select value={resolution} onValueChange={setResolution}>
-                        <SelectTrigger>
+                        <SelectTrigger className="max-w-full focus:ring-1 focus:ring-orange-500 focus:ring-inset">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent align="start">
                           {RESOLUTIONS.map((res) => (
-                            <SelectItem key={res} value={res}>
+                            <SelectItem key={res} value={res} className="text-left">
                               {res}px
                             </SelectItem>
                           ))}
@@ -607,15 +620,15 @@ export function ImageGeneratorModal({
                       </Select>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 min-w-0">
                       <Label htmlFor="aspect-ratio">Aspect Ratio</Label>
                       <Select value={aspectRatio} onValueChange={setAspectRatio}>
-                        <SelectTrigger>
+                        <SelectTrigger className="max-w-full focus:ring-1 focus:ring-orange-500 focus:ring-inset">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent align="start">
                           {ASPECT_RATIOS.map((ratio) => (
-                            <SelectItem key={ratio} value={ratio}>
+                            <SelectItem key={ratio} value={ratio} className="text-left">
                               {ratio}
                             </SelectItem>
                           ))}
@@ -746,6 +759,21 @@ export function ImageGeneratorModal({
                     </div>
                   </div>
 
+                  {/* Orientation Selection */}
+                  <div className="space-y-2">
+                    <Label htmlFor="orientation">Image Orientation</Label>
+                    <Select value={unsplashOrientation} onValueChange={setUnsplashOrientation}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent align="start">
+                        <SelectItem value="squarish" className="text-left">Any (Square-ish)</SelectItem>
+                        <SelectItem value="landscape" className="text-left">Landscape (Wide)</SelectItem>
+                        <SelectItem value="portrait" className="text-left">Portrait (Tall)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
                   {/* Quality Selection */}
                   <div className="space-y-2">
                     <Label htmlFor="quality">Image Quality</Label>
@@ -753,10 +781,10 @@ export function ImageGeneratorModal({
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent align="start">
                         {UNSPLASH_QUALITY_OPTIONS.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
-                            <div>
+                            <div className="text-left">
                               <div className="font-medium">{option.label}</div>
                               <div className="text-xs text-gray-500">{option.description}</div>
                             </div>
@@ -769,18 +797,45 @@ export function ImageGeneratorModal({
                   <Button
                     onClick={() => searchUnsplash()}
                     disabled={isSearchingUnsplash || !unsplashSearchTerm.trim()}
-                    className="w-full bg-cyan-500 hover:bg-cyan-600 text-white"
+                    className="w-full font-bold border-2 shadow-lg"
+                    style={{ 
+                      backgroundColor: 'var(--cyan)', 
+                      color: '#000000', 
+                      borderColor: 'var(--cyan)'
+                    }}
                   >
                     {isSearchingUnsplash ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Search className="h-4 w-4 mr-2" />}
                     {isSearchingUnsplash ? 'Searching...' : 'Search Unsplash'}
                   </Button>
+
+                  {/* Selected Image Preview */}
+                  {selectedUnsplashImage && (
+                    <div className="space-y-2">
+                      <Label>Selected Image Preview</Label>
+                      <div className="relative">
+                        <div className="w-full h-96 rounded-lg overflow-hidden border-2" style={{ borderColor: 'var(--cyan)' }}>
+                          <img 
+                            src={selectedUnsplashImage.urls.small} 
+                            alt={selectedUnsplashImage.alt_description || 'Selected image'}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="mt-2 p-2 rounded bg-gray-800/50 text-xs text-gray-300">
+                          <p className="font-medium">📷 {selectedUnsplashImage.user.name}</p>
+                          {selectedUnsplashImage.alt_description && (
+                            <p className="mt-1 opacity-75">{selectedUnsplashImage.alt_description}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Unsplash Preview Panel */}
                 <div className="space-y-4 flex flex-col">
                   <h3 className="text-lg font-semibold" style={{ color: 'var(--cyan)' }}>Unsplash Results</h3>
                   
-                  <div className="flex-1 overflow-y-auto">
+                  <div className="flex-1 overflow-y-auto max-h-[600px]">
                     {unsplashImages.length > 0 ? (
                       <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-2">

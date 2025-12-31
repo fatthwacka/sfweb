@@ -104,6 +104,8 @@ export class VertexAIImageGenerator {
     // Enhanced prompt with style and context
     const enhancedPrompt = this.buildEnhancedPrompt(request);
     console.log('📝 Enhanced prompt:', enhancedPrompt);
+    console.log('🏷️ Include title:', request.includeTitle, 'Title:', request.articleContext?.headline);
+    console.log('🏷️ Include subtitle:', request.includeSubtitle, 'Subtitle:', request.articleContext?.hook);
 
     // Convert aspect ratio to Vertex AI format
     const imageSpec = this.buildImageSpecification(request);
@@ -111,7 +113,7 @@ export class VertexAIImageGenerator {
     try {
       console.log('🤖 Generating image with Vertex AI Imagen...');
       console.log('📐 Image specification:', imageSpec);
-      console.log('🔑 API Key configured:', !!this.apiKey);
+      console.log('🔑 Service Account configured:', !!this.serviceAccountKey);
       console.log('🏗️ Project ID:', this.projectId);
       console.log('📍 Location:', this.location);
       
@@ -142,21 +144,18 @@ export class VertexAIImageGenerator {
   private buildEnhancedPrompt(request: ImageGenerationRequest): string {
     let prompt = request.prompt;
 
-    // Add article context if requested
-    if (request.articleContext) {
-      const contextElements = [];
-      
-      if (request.includeTitle && request.articleContext.headline) {
-        contextElements.push(`relating to "${request.articleContext.headline}"`);
-      }
-      
-      if (request.includeSubtitle && request.articleContext.hook) {
-        contextElements.push(`with theme: ${request.articleContext.hook}`);
-      }
+    // Add text overlay requests if requested
+    const textOverlays = [];
+    if (request.includeTitle && request.articleContext?.headline) {
+      textOverlays.push(`with text overlay "${request.articleContext.headline}" prominently displayed`);
+    }
+    
+    if (request.includeSubtitle && request.articleContext?.hook) {
+      textOverlays.push(`with subtitle text "${request.articleContext.hook}" in smaller text below the main title`);
+    }
 
-      if (contextElements.length > 0) {
-        prompt = `${prompt}, ${contextElements.join(', ')}`;
-      }
+    if (textOverlays.length > 0) {
+      prompt = `${prompt}, ${textOverlays.join(', ')}`;
     }
 
     // Add style specifications
@@ -166,8 +165,12 @@ export class VertexAIImageGenerator {
     // Add quality and technical specifications
     prompt += ', high quality, professional, sharp details, well composed';
 
-    // Add negative prompts to avoid unwanted elements
-    prompt += '. Avoid: text overlays, watermarks, blurry, low quality, distorted';
+    // Add negative prompts (only avoid watermarks if no text overlays are requested)
+    const negativePrompts = ['blurry', 'low quality', 'distorted', 'poorly composed'];
+    if (textOverlays.length === 0) {
+      negativePrompts.push('text overlays', 'watermarks');
+    }
+    prompt += `. Avoid: ${negativePrompts.join(', ')}`;
 
     return prompt;
   }
@@ -176,19 +179,23 @@ export class VertexAIImageGenerator {
     const artModifiers: Record<string, string> = {
       'photorealistic': 'photorealistic, realistic photography, natural lighting',
       'illustrated': 'illustration style, digital art, artistic rendering',
-      'arty': 'artistic style, creative composition, artistic interpretation',
-      'minimalist': 'minimalist design, clean composition, simple elements',
       'cinematic': 'cinematic lighting, dramatic composition, movie-like quality',
+      'minimalist': 'minimalist design, clean composition, simple elements',
       'abstract': 'abstract art style, conceptual design, artistic abstraction',
+      'vintage': 'vintage style, retro aesthetic, classic timeless look',
+      'modern': 'modern style, contemporary design, sleek and current',
+      'artistic': 'artistic interpretation, creative composition, expressive style',
     };
 
     const styleModifiers: Record<string, string> = {
-      'hero': 'banner style, hero image composition, wide format suitable',
-      'lifestyle': 'lifestyle photography, natural setting, authentic feel',
       'professional': 'professional setting, business appropriate, polished look',
-      'casual': 'casual setting, relaxed atmosphere, informal style',
+      'lifestyle': 'lifestyle photography, natural setting, authentic feel',
       'dramatic': 'dramatic lighting, high contrast, striking composition',
+      'minimalist': 'clean minimalist composition, uncluttered design',
       'corporate': 'corporate style, business environment, professional atmosphere',
+      'creative': 'creative composition, unique perspective, innovative artistic approach',
+      'warm': 'warm inviting atmosphere, cozy friendly feel, welcoming ambiance',
+      'modern': 'contemporary modern aesthetic, sleek current design, up-to-date style',
     };
 
     return `${artModifiers[artStyle] || artStyle} style, ${styleModifiers[imageStyle] || imageStyle} composition`;
