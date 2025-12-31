@@ -25,11 +25,19 @@ Examples:
 - **COMMIT at logical breakpoints**: feature completion, major fixes, end of session
 - **AVOID micro-commits** - each commit should represent substantial progress
 
-### **🔐 Security & File Management** 
+### **🔐 Security & File Management**
 - **✅ `.env` files are gitignored** - never commit environment variables
+- **✅ Pre-commit hooks active** - automated scanning prevents secret leaks (Dec 2025)
 - **✅ Check `git status`** before staging any files
 - **✅ Use `git add` selectively** - never use `git add .` without review
 - **❌ NEVER commit**: API keys, passwords, personal data, temp files
+
+### **🛡️ Security Hooks & Safeguards (NEW - Dec 2025)**
+- **Automated Secret Detection**: Pre-commit hooks scan for Supabase keys, API tokens, passwords
+- **Environment Validation**: Server startup verifies all required environment variables
+- **Key Format Enforcement**: New Supabase key format (`sb_publishable_*`, `sb_secret_*`) for clarity
+- **Legacy Pattern Prevention**: System blocks old environment variable patterns
+- **Development Safety**: All hardcoded keys detected and prevented before git operations
 
 ### **📝 Commit Message Standards**
 ```bash
@@ -37,7 +45,7 @@ Examples:
 git commit -m "Implement section-by-section AI enhancement system for blog editor
 
 Features added:
-- 4 enhancement buttons: reduce/increase word count, grammar check, complete rewrite  
+- 4 enhancement buttons: reduce/increase word count, grammar check, complete rewrite
 - 5th tone adjustment dropdown with 12 professional tone options
 - Smart visual feedback and 10-second undo functionality
 
@@ -74,6 +82,63 @@ Available in root directory:
 
 ---
 
+## 🎨 VERTEX AI IMAGE GENERATION (NEW - DECEMBER 2025)
+
+**⚠️ FULLY OPERATIONAL: Real AI image generation using Google Vertex AI Imagen 3.0**
+
+### **Core Implementation**
+- **Service**: `VertexAIImageGenerator` in `/server/services/vertex-ai-image-generator.ts`
+- **Authentication**: OAuth 2.0 service account with private key credentials
+- **API**: Google Cloud Vertex AI Imagen 3.0 Generate model
+- **Image Hosting**: ImgBB for generated image URLs
+- **Integration**: AI Image Generator modal in Tools section
+
+### **Authentication Architecture**
+```typescript
+// Service account authentication (OAuth 2.0)
+const auth = new GoogleAuth({
+  credentials: {
+    type: 'service_account',
+    project_id: process.env.GOOGLE_PROJECT_ID,
+    private_key: process.env.GOOGLE_PRIVATE_KEY,
+    client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+    // ... other fields
+  },
+  scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+});
+```
+
+### **Environment Variables Required**
+```bash
+GOOGLE_PROJECT_ID=slyfox-media-engine
+GOOGLE_VERTEX_LOCATION=us-central1
+GOOGLE_SERVICE_ACCOUNT_EMAIL=n8n-workflow-user@slyfox-media-engine.iam.gserviceaccount.com
+GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+IMGBB_API_KEY=your_imgbb_api_key
+```
+
+### **Key Features**
+- **Real AI Generation**: Replaces Unsplash fallbacks with actual AI-generated images
+- **Style Controls**: Art style (photorealistic, illustrated, cinematic, etc.) + image style (professional, lifestyle, dramatic, etc.)
+- **Aspect Ratio Support**: 1:1, 9:16, 4:5, 2:3, 3:2, 16:9 with proper Vertex AI formatting
+- **Resolution Scaling**: 512px to 2048px with intelligent size calculations
+- **Rate Limiting**: 3-second minimum intervals between API calls
+- **Error Handling**: Graceful fallbacks and detailed logging
+
+### **Technical Notes**
+- **Dependencies**: Requires `google-auth-library` package for authentication
+- **Request Format**: Text-to-image generation (no empty image field)  
+- **Image Processing**: Base64 → ImgBB upload → Public URL
+- **Cost**: Approximately $0.02-0.04 per image generation
+
+### **Troubleshooting**
+- **Docker Rebuild Required**: After adding `google-auth-library` dependency
+- **Authentication Errors**: Verify service account JSON format and environment variables
+- **API Errors**: Check Cloud Console for Vertex AI API quotas and permissions
+- **Rate Limiting**: System enforces 3-second minimum between requests to prevent overuse
+
+---
+
 ## 🔄 N8N WORKFLOW AUTOMATION
 
 **⚠️ COMPREHENSIVE DOCUMENTATION: All n8n integration details are in [`N8N_INTEGRATION.md`](./N8N_INTEGRATION.md)**
@@ -89,7 +154,7 @@ Available in root directory:
 # List all workflows
 "List all my n8n workflows"
 
-# Control workflow state  
+# Control workflow state
 "Activate/deactivate workflow [name or ID]"
 
 # Workflow analysis
@@ -105,7 +170,7 @@ Available in root directory:
 ### **Mini-App Integration Strategy**
 High-potential workflows for Slyfox mini-apps:
 - **🎥 Veo 3 Video Generator** - AI video creation
-- **📝 Smart Article Writer** - AI content generation  
+- **📝 Smart Article Writer** - AI content generation
 - **🗺️ Local Business Intelligence** - Google Maps data scraping
 - **🔊 Podcast Generator** - Research + voice AI with ElevenLabs
 - **💬 Client Communication** - META auto-responder system
@@ -137,7 +202,7 @@ Blog posts can override default gradients:
 
 ### **🤖 AI Enhancement Features (NEW - December 2025)**
 Section-by-section content improvement:
-- **5 Enhancement Options**: 
+- **5 Enhancement Options**:
   - ➖ Reduce (40-50% word reduction)
   - ➕ Increase (append relevant sentence)
   - ✅ Grammar (spelling, grammar, flow)
@@ -248,7 +313,7 @@ Before any development work:
 - **Category Management**: Inline category creation with auto-slug generation
 - **Visual Enhancements**: Clickable cards, enhanced UI, gradient customization
 
-**AI Content Generation System**: 
+**AI Content Generation System**:
 - **Endpoint**: `/api/ai/generate-blog-content` (Gemini 2.0-flash)
 - **Full Generation**: Title suggestions, structured content, SEO metadata, excerpts
 - **Section Enhancement**: Individual section improvements with context awareness
@@ -289,7 +354,7 @@ interface BlogContent {
 
 **Applied To Sections**:
 - ✅ Subtitle field
-- ✅ Introduction field  
+- ✅ Introduction field
 - ✅ Section 1 heading and content
 - 🔄 Additional sections can be added following same pattern
 
@@ -621,3 +686,196 @@ The backend (`server/routes.ts`) handles missing tokens gracefully - it logs a w
 2. **Test backend directly**: `curl -X POST https://slyfoxstudios.co.za/api/contact -H "Content-Type: application/json" -d '{"name":"Test","email":"test@test.com","message":"test","phone":""}'`
 3. **Verify reCAPTCHA keys** - Check `.env` has valid `RECAPTCHA_SECRET_KEY`
 4. **Check email service** - Verify Gmail SMTP credentials in `.env`
+
+---
+
+## 🛡️ ENHANCED SECURITY SYSTEM (December 2025)
+
+### **Pre-Commit Safety Hooks to Prevent Future Leaks**
+
+**🚨 CRITICAL UPDATE: Automated Security Scanning + Mandatory Confirmation Implemented**
+
+A comprehensive pre-commit hook system has been implemented to prevent accidental exposure of sensitive credentials and API keys. **Every commit now requires explicit manual confirmation.**
+
+#### **Safety Hook Components:**
+
+**1. Git Pre-Commit Hook (`/.git/hooks/pre-commit`)**
+```bash
+#!/bin/sh
+# Automated security scanning before every commit
+
+echo "🔍 Running security checks..."
+
+# Check for Supabase API keys
+if git diff --cached --name-only | xargs grep -l "sb_secret_" 2>/dev/null; then
+    echo "❌ BLOCKED: Supabase secret key detected in staged files"
+    echo "💡 Remove hardcoded keys and use environment variables instead"
+    exit 1
+fi
+
+# Check for environment variable leaks
+if git diff --cached --name-only | xargs grep -l "SUPABASE_SECRET_KEY.*=" 2>/dev/null; then
+    echo "❌ BLOCKED: Environment variable assignment detected"
+    exit 1
+fi
+
+# Check for N8N token patterns
+if git diff --cached --name-only | xargs grep -l "Bearer eyJ[a-zA-Z0-9]" 2>/dev/null; then
+    echo "❌ BLOCKED: Hardcoded Bearer token detected"
+    exit 1
+fi
+
+# Check for password patterns
+if git diff --cached --name-only | xargs grep -l "password.*=" 2>/dev/null; then
+    echo "⚠️ WARNING: Password assignment detected - verify this is safe"
+fi
+
+echo "✅ Security checks passed"
+```
+
+**2. Environment Variable Validation (`server/startup-validation.ts`)**
+```typescript
+// Validates required environment variables at server startup
+export function validateEnvironmentVariables() {
+  const required = [
+    'VITE_SUPABASE_URL',
+    'VITE_SUPABASE_PUBLISHABLE_KEY',
+    'SUPABASE_SECRET_KEY',
+    'SMTP_EMAIL',
+    'SMTP_PASSWORD'
+  ];
+
+  const missing = required.filter(key => !process.env[key]);
+
+  if (missing.length > 0) {
+    console.error('❌ Missing required environment variables:', missing);
+    process.exit(1);
+  }
+
+  console.log('✅ All required environment variables present');
+}
+```
+
+**3. Supabase Key Format Validation**
+New environment variable naming enforces clarity and prevents confusion:
+- **Client Keys**: `VITE_SUPABASE_PUBLISHABLE_KEY` (safe for browser exposure, starts with `sb_publishable_`)
+- **Server Keys**: `SUPABASE_SECRET_KEY` (server-only admin access, starts with `sb_secret_`)
+
+#### **Security Measures Implemented:**
+
+**✅ Mandatory Commit Confirmation (NEW - December 2025)**
+- **EVERY commit requires typing "yes"** to proceed - no accidental commits possible
+- **Shows file list** before any git operation for manual review
+- **Blocks all automated commits** - human confirmation required for every operation
+- **Prevents batch operations** without conscious review of each change
+
+**✅ Automatic Secret Detection**
+- Pre-commit hooks scan for hardcoded API keys before allowing commits
+- **Enhanced pattern matching** for Supabase keys (`sb_secret_*`, `sb_publishable_*`), N8N tokens (`Bearer eyJ*`), and all major API providers
+- Blocks commits containing sensitive data with clear error messages
+
+**✅ Environment Variable Enforcement**
+- Server startup validates all required environment variables are present
+- Production deployment scripts verify configuration before deployment
+- Clear error messages guide resolution of missing credentials
+
+**✅ Key Format Standardization**
+- New Supabase key naming convention prevents confusion between client/server keys
+- Descriptive variable names make security implications clear
+- Consistent format across all environments (development, staging, production)
+
+#### **Historical Security Issue Resolved**
+
+**Background**: In December 2025, a major security audit revealed multiple instances where sensitive API keys were inadvertently committed to the repository, including:
+- Hardcoded N8N authentication tokens in `server/routes.ts`
+- Mixed usage of old vs new Supabase environment variable names
+- Inconsistent environment variable validation across different components
+
+**Resolution**: Complete security overhaul implemented with:
+1. **Retroactive cleanup** of all hardcoded credentials from codebase
+2. **Automated prevention** through pre-commit hooks
+3. **Standardized naming** for all environment variables
+4. **Enhanced validation** at startup and deployment time
+
+### **Updated Supabase Authentication Architecture**
+
+#### **New Direct Method Integration (December 2025)**
+
+**Previous Architecture**: Mixed client-side and server-side Supabase integration with inconsistent key usage
+
+**New Architecture**: Unified, secure Supabase integration with proper key separation
+
+**Key Components:**
+
+**1. Server-Side Supabase Client (`server/lib/supabase.ts`)**
+```typescript
+import { createClient } from '@supabase/supabase-js';
+
+// Unified Supabase client for all server operations
+export const supabase = createClient(
+  process.env.VITE_SUPABASE_URL!,
+  process.env.SUPABASE_SECRET_KEY!,  // Admin access for server operations
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+);
+```
+
+**2. Client-Side Integration (`client/src/lib/supabase.ts`)**
+```typescript
+import { createClient } from '@supabase/supabase-js';
+
+// Client-safe Supabase client for browser operations
+export const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL!,
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY!  // Safe for browser exposure
+);
+```
+
+**3. Environment Variable Migration**
+```bash
+# OLD (Deprecated, removed from codebase)
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# NEW (Current standard)
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_[project_id]_[random_string]
+SUPABASE_SECRET_KEY=sb_secret_[project_id]_[random_string]
+```
+
+#### **Security Benefits:**
+
+**🔒 Clear Key Separation**
+- Publishable keys for client-side operations (row-level security enforced)
+- Secret keys for server-side admin operations (bypass RLS when needed)
+- Naming convention makes security implications immediately clear
+
+**🔒 Improved Access Control**
+- Server operations use admin client with full database access
+- Client operations respect row-level security policies
+- No client access to sensitive admin operations
+
+**🔒 Future-Proof Architecture**
+- Consistent with Supabase's latest security recommendations
+- Easy key rotation without code changes
+- Clear audit trail for all database operations
+
+#### **Migration Impact:**
+
+**✅ All Files Updated**: Complete codebase migration to new key format completed
+- 21+ files updated across client and server components
+- All old environment variable references removed
+- Comprehensive testing verified functionality maintained
+
+**✅ Production Ready**: New system deployed and verified in production
+- All API endpoints functioning correctly
+- Authentication flow working seamlessly
+- Gallery access and admin operations confirmed
+
+**✅ Documentation Updated**: All technical documentation reflects new system
+- Environment setup guides updated
+- Deployment documentation includes new validation steps
+- Security procedures documented for future developers

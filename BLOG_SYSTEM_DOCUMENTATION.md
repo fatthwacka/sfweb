@@ -8,6 +8,7 @@ A complete blog management system with AI-powered content generation, built for 
 
 ### 🤖 AI-Powered Content Creation
 - **Gemini AI Integration** for real-time content generation
+- **Vertex AI Image Generation** using Google Imagen 3.0 for custom blog visuals
 - **Smart Content Types**: Titles, excerpts, full articles, SEO optimization
 - **Multiple Suggestions**: Generate 3-5 title options per request
 - **Context-Aware**: AI understands photography business context
@@ -72,7 +73,7 @@ GEMINI_API_KEY=AIzaSyBpLvhom8XYj5y5QgEt4C9tnevg6P4XAeU
 # Existing Supabase Configuration (already set)
 DATABASE_URL=postgresql://...
 VITE_SUPABASE_URL=https://...
-VITE_SUPABASE_ANON_KEY=...
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 ```
 
 ### Docker Integration

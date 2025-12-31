@@ -1,21 +1,38 @@
 /**
- * Reusable AI Image Generator Modal
- * Compatible with Article Editor and future blog editor
- * Uses Vertex AI Imagen for image generation
+ * Image Generator Modal - Simplified Structure
+ * Clean tabbed interface for AI and Unsplash image generation
+ * Stable layout with top-anchored content and proper pagination
  */
 
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import React, { useState, useEffect } from 'react';
+import { X, Download, RefreshCw, Sparkles, Search, Loader2, ChevronDown, Info } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, Sparkles, Image as ImageIcon, Download, RefreshCw, Search } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
+// Types
 export interface ImageGenerationRequest {
   prompt: string;
   includeTitle: boolean;
@@ -40,11 +57,18 @@ export interface ImageGenerationResult {
     resolution: string;
     aspectRatio: string;
   };
+  attribution?: {
+    user: string;
+    username: string;
+    source: 'unsplash' | 'ai' | 'upload';
+  };
 }
 
-export interface UnsplashImage {
+interface UnsplashImage {
   id: string;
   urls: {
+    raw: string;
+    full: string;
     regular: string;
     small: string;
     thumb: string;
@@ -54,6 +78,8 @@ export interface UnsplashImage {
     name: string;
     username: string;
   };
+  width: number;
+  height: number;
 }
 
 interface ImageGeneratorModalProps {
@@ -65,41 +91,31 @@ interface ImageGeneratorModalProps {
     hook?: string;
     content?: string;
   };
-  isLoading?: boolean;
   initialPrompt?: string;
 }
 
+// Constants
 const ART_STYLES = [
-  { value: 'photorealistic', label: 'Photorealistic' },
-  { value: 'illustrated', label: 'Illustrated' },
-  { value: 'arty', label: 'Arty/Artistic' },
-  { value: 'minimalist', label: 'Minimalist' },
-  { value: 'cinematic', label: 'Cinematic' },
-  { value: 'abstract', label: 'Abstract' },
+  'photorealistic', 'digital-art', 'illustration', 'painting', 'sketch',
+  'watercolor', 'oil-painting', 'pencil-drawing', 'cartoon', 'anime'
 ];
 
 const IMAGE_STYLES = [
-  { value: 'hero', label: 'Hero/Banner' },
-  { value: 'lifestyle', label: 'Lifestyle' },
-  { value: 'professional', label: 'Professional' },
-  { value: 'casual', label: 'Casual' },
-  { value: 'dramatic', label: 'Dramatic' },
-  { value: 'corporate', label: 'Corporate' },
+  'hero', 'featured', 'thumbnail', 'social-media', 'background',
+  'portrait', 'landscape', 'action-shot', 'close-up', 'wide-angle'
 ];
 
-const RESOLUTIONS = [
-  { value: '1000', label: '1000px (Standard)' },
-  { value: '2000', label: '2000px (High Quality)' },
-  { value: '1500', label: '1500px (Medium)' },
-];
+const RESOLUTIONS = ['1024', '1500', '2048'];
 
 const ASPECT_RATIOS = [
-  { value: '9:16', label: '9:16 (Portrait)' },
-  { value: '1:1', label: '1:1 (Square)' },
-  { value: '4:5', label: '4:5 (Instagram)' },
-  { value: '2:3', label: '2:3 (Classic Portrait)' },
-  { value: '3:2', label: '3:2 (Landscape)' },
-  { value: '16:9', label: '16:9 (Widescreen)' },
+  '16:9', '9:16', '1:1', '4:3', '3:4', '3:2', '2:3'
+];
+
+const UNSPLASH_QUALITY_OPTIONS = [
+  { value: 'thumb', label: 'Thumbnail (200px)', description: 'Small preview' },
+  { value: 'small', label: 'Small (400px)', description: 'Web optimized' },
+  { value: 'regular', label: 'Regular (1080px)', description: 'Standard quality' },
+  { value: 'full', label: 'Full (2000px+)', description: 'High resolution' },
 ];
 
 export function ImageGeneratorModal({
@@ -107,39 +123,40 @@ export function ImageGeneratorModal({
   onClose,
   onImageGenerated,
   articleContext,
-  isLoading = false,
-  initialPrompt = ''
+  initialPrompt = '',
 }: ImageGeneratorModalProps) {
-  // Form state
+  const { toast } = useToast();
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'ai' | 'unsplash'>('ai');
+
+  // AI Generation states
   const [prompt, setPrompt] = useState(initialPrompt);
   const [includeTitle, setIncludeTitle] = useState(true);
-  const [includeSubtitle, setIncludeSubtitle] = useState(true);
+  const [includeSubtitle, setIncludeSubtitle] = useState(false);
   const [artStyle, setArtStyle] = useState('photorealistic');
   const [imageStyle, setImageStyle] = useState('hero');
   const [resolution, setResolution] = useState('1500');
-  const [aspectRatio, setAspectRatio] = useState('16:9');
+  const [aspectRatio, setAspectRatio] = useState('1:1');
   const [aiAnalyzedPrompt, setAiAnalyzedPrompt] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [useAiPrompt, setUseAiPrompt] = useState(false);
+  const [hasAnalyzed, setHasAnalyzed] = useState(false);
 
-  // Unsplash-specific states
-  const [isSearchingUnsplash, setIsSearchingUnsplash] = useState(false);
+  // Unsplash states
+  const [unsplashSearchTerm, setUnsplashSearchTerm] = useState('');
   const [unsplashImages, setUnsplashImages] = useState<UnsplashImage[]>([]);
   const [selectedUnsplashImage, setSelectedUnsplashImage] = useState<UnsplashImage | null>(null);
-  const [unsplashSearchTerm, setUnsplashSearchTerm] = useState('');
+  const [isSearchingUnsplash, setIsSearchingUnsplash] = useState(false);
   const [isGeneratingSearchTerm, setIsGeneratingSearchTerm] = useState(false);
-  const [currentImageSource, setCurrentImageSource] = useState<'ai' | 'unsplash' | null>(null);
+  const [unsplashPage, setUnsplashPage] = useState(1);
+  const [unsplashQuality, setUnsplashQuality] = useState('regular');
+  const [hasMoreUnsplashImages, setHasMoreUnsplashImages] = useState(true);
+  const [unsplashAttribution, setUnsplashAttribution] = useState<{user: string; username: string} | null>(null);
 
-  // Auto-analyze article content when modal opens
-  useEffect(() => {
-    if (isOpen && articleContext && (articleContext.headline || articleContext.hook || articleContext.content)) {
-      analyzeArticleContent();
-    }
-  }, [isOpen, articleContext]);
-
-  // Reset form when modal opens/closes
+  // Reset when modal opens/closes
   useEffect(() => {
     if (!isOpen) {
       setGeneratedImage(null);
@@ -149,33 +166,37 @@ export function ImageGeneratorModal({
       setUnsplashImages([]);
       setSelectedUnsplashImage(null);
       setUnsplashSearchTerm('');
-      setCurrentImageSource(null);
+      setUnsplashPage(1);
+      setHasMoreUnsplashImages(true);
+      setUnsplashAttribution(null);
+      setActiveTab('ai');
+      setHasAnalyzed(false);
     }
   }, [isOpen, initialPrompt]);
 
+  // Auto-analyze when modal opens (only once)
+  useEffect(() => {
+    if (isOpen && !hasAnalyzed && articleContext && (articleContext.headline || articleContext.hook || articleContext.content)) {
+      analyzeArticleContent();
+    }
+  }, [isOpen, hasAnalyzed]); // Removed articleContext to prevent circular loop
+
   const analyzeArticleContent = async () => {
-    if (!articleContext) return;
+    if (!articleContext || hasAnalyzed) return;
     
     setIsAnalyzing(true);
     try {
       const response = await fetch('/api/ai/analyze-image-prompt', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          articleContext,
-          artStyle,
-          imageStyle,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ articleContext, artStyle, imageStyle }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to analyze content');
-      }
+      if (!response.ok) throw new Error('Failed to analyze content');
 
       const result = await response.json();
       setAiAnalyzedPrompt(result.suggestedPrompt);
+      setHasAnalyzed(true);
     } catch (error) {
       console.error('Error analyzing article content:', error);
       toast({
@@ -183,6 +204,7 @@ export function ImageGeneratorModal({
         description: 'Could not analyze article content. You can still enter a custom prompt.',
         variant: 'destructive',
       });
+      setHasAnalyzed(true); // Mark as analyzed even on error to prevent retries
     } finally {
       setIsAnalyzing(false);
     }
@@ -201,7 +223,6 @@ export function ImageGeneratorModal({
     }
 
     setIsGenerating(true);
-    setCurrentImageSource('ai');
     
     try {
       const request: ImageGenerationRequest = {
@@ -217,9 +238,7 @@ export function ImageGeneratorModal({
 
       const response = await fetch('/api/ai/generate-image', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(request),
       });
 
@@ -230,11 +249,11 @@ export function ImageGeneratorModal({
 
       const result = await response.json();
       setGeneratedImage(result.imageUrl);
-      setSelectedUnsplashImage(null); // Clear Unsplash selection
+      setSelectedUnsplashImage(null);
       
       toast({
         title: 'Image Generated!',
-        description: 'Your AI-generated image is ready. You can regenerate or use this image.',
+        description: 'Your AI-generated image is ready.',
       });
     } catch (error: any) {
       console.error('Error generating image:', error);
@@ -255,25 +274,17 @@ export function ImageGeneratorModal({
     try {
       const response = await fetch('/api/ai/generate-unsplash-search', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          articleContext,
-          artStyle,
-          imageStyle,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ articleContext, artStyle, imageStyle }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to generate search term');
-      }
+      if (!response.ok) throw new Error('Failed to generate search term');
 
       const result = await response.json();
       setUnsplashSearchTerm(result.searchTerm);
       
-      // Automatically search Unsplash with the generated term
-      await searchUnsplash(result.searchTerm);
+      // Automatically search with the generated term
+      await searchUnsplash(result.searchTerm, false);
     } catch (error: any) {
       console.error('Error generating search term:', error);
       toast({
@@ -286,7 +297,7 @@ export function ImageGeneratorModal({
     }
   };
 
-  const searchUnsplash = async (searchTerm?: string) => {
+  const searchUnsplash = async (searchTerm?: string, loadMore = false) => {
     const term = searchTerm || unsplashSearchTerm;
     
     if (!term.trim()) {
@@ -299,40 +310,69 @@ export function ImageGeneratorModal({
     }
 
     setIsSearchingUnsplash(true);
-    setCurrentImageSource('unsplash');
+    
+    let pageToFetch = 1;
+    if (loadMore) {
+      pageToFetch = unsplashPage + 1;
+    } else {
+      setUnsplashImages([]);
+      setHasMoreUnsplashImages(true);
+    }
+    
+    const requestBody = {
+      query: term,
+      page: pageToFetch,
+      per_page: 6,
+      orientation: aspectRatio === '16:9' || aspectRatio === '3:2' ? 'landscape' : 
+                  aspectRatio === '9:16' || aspectRatio === '2:3' ? 'portrait' : 'all'
+    };
     
     try {
       const response = await fetch('/api/unsplash/search', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: term,
-          per_page: 6, // Get 6 images for selection
-          orientation: aspectRatio === '16:9' || aspectRatio === '3:2' ? 'landscape' : 
-                      aspectRatio === '9:16' || aspectRatio === '2:3' ? 'portrait' : 'all'
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to search Unsplash');
-      }
+      if (!response.ok) throw new Error('Failed to search Unsplash');
 
       const result = await response.json();
-      setUnsplashImages(result.results || []);
-      setGeneratedImage(null); // Clear AI generated image
+      const newImages = result.results || [];
       
-      if (result.results && result.results.length > 0) {
-        toast({
-          title: 'Images Found!',
-          description: `Found ${result.results.length} images from Unsplash. Click to select one.`,
+      if (loadMore) {
+        setUnsplashImages(prev => {
+          const newUniqueImages = newImages.filter(newImg => 
+            !prev.some(existingImg => existingImg.id === newImg.id)
+          );
+          return [...prev, ...newUniqueImages];
         });
+        setUnsplashPage(pageToFetch);
       } else {
+        setUnsplashImages(newImages);
+        setGeneratedImage(null);
+        setUnsplashPage(1);
+      }
+      
+      setHasMoreUnsplashImages(newImages.length === 6);
+      
+      if (newImages.length > 0) {
+        toast({
+          title: loadMore ? 'More Images Loaded!' : 'Images Found!',
+          description: loadMore 
+            ? `Loaded ${newImages.length} more images from Unsplash.`
+            : `Found ${newImages.length} images from Unsplash.`,
+        });
+      } else if (!loadMore) {
         toast({
           title: 'No Images Found',
           description: 'Try a different search term or be more specific.',
           variant: 'destructive',
+        });
+      } else {
+        setHasMoreUnsplashImages(false);
+        toast({
+          title: 'No More Images',
+          description: 'All available images for this search have been loaded.',
         });
       }
     } catch (error: any) {
@@ -349,25 +389,34 @@ export function ImageGeneratorModal({
 
   const selectUnsplashImage = (image: UnsplashImage) => {
     setSelectedUnsplashImage(image);
-    setGeneratedImage(null); // Clear AI generated image
-  };
-
-  const refreshUnsplashSearch = () => {
-    if (unsplashSearchTerm) {
-      searchUnsplash();
-    }
+    setGeneratedImage(null);
+    setUnsplashAttribution({
+      user: image.user.name,
+      username: image.user.username
+    });
   };
 
   const useGeneratedImage = () => {
     let imageUrl: string;
     let description: string;
+    let attribution: {user: string; username: string; source: 'unsplash' | 'ai'} | undefined;
     
-    if (currentImageSource === 'unsplash' && selectedUnsplashImage) {
-      imageUrl = selectedUnsplashImage.urls.regular;
+    if (activeTab === 'unsplash' && selectedUnsplashImage) {
+      imageUrl = selectedUnsplashImage.urls[unsplashQuality as keyof typeof selectedUnsplashImage.urls] || selectedUnsplashImage.urls.regular;
       description = 'Unsplash image has been added to your article.';
-    } else if (currentImageSource === 'ai' && generatedImage) {
+      attribution = {
+        user: selectedUnsplashImage.user.name,
+        username: selectedUnsplashImage.user.username,
+        source: 'unsplash'
+      };
+    } else if (activeTab === 'ai' && generatedImage) {
       imageUrl = generatedImage;
       description = 'AI-generated image has been added to your article.';
+      attribution = {
+        user: 'AI Generated',
+        username: 'vertex-ai',
+        source: 'ai'
+      };
     } else {
       toast({
         title: 'No Image Selected',
@@ -379,15 +428,11 @@ export function ImageGeneratorModal({
 
     const result: ImageGenerationResult = {
       imageUrl,
-      prompt: currentImageSource === 'unsplash' 
+      prompt: activeTab === 'unsplash' 
         ? unsplashSearchTerm 
         : (useAiPrompt && aiAnalyzedPrompt ? aiAnalyzedPrompt : prompt),
-      metadata: {
-        artStyle,
-        imageStyle,
-        resolution,
-        aspectRatio,
-      },
+      metadata: { artStyle, imageStyle, resolution, aspectRatio },
+      attribution,
     };
 
     onImageGenerated(result);
@@ -400,16 +445,17 @@ export function ImageGeneratorModal({
   };
 
   const downloadImage = async () => {
-    if (!generatedImage) return;
+    const imageToDownload = generatedImage || selectedUnsplashImage?.urls[unsplashQuality as keyof typeof selectedUnsplashImage.urls];
+    if (!imageToDownload) return;
 
     try {
-      const response = await fetch(generatedImage);
+      const response = await fetch(imageToDownload);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = url;
-      a.download = `ai-generated-image-${Date.now()}.png`;
+      a.download = `image-${Date.now()}.png`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -417,13 +463,12 @@ export function ImageGeneratorModal({
       
       toast({
         title: 'Download Started',
-        description: 'Your AI-generated image is being downloaded.',
+        description: 'Your image download has begun.',
       });
     } catch (error) {
-      console.error('Error downloading image:', error);
       toast({
         title: 'Download Failed',
-        description: 'Could not download the image. Please try again.',
+        description: 'Could not download image.',
         variant: 'destructive',
       });
     }
@@ -431,425 +476,385 @@ export function ImageGeneratorModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-purple-500" />
-            AI Image Generator
-          </DialogTitle>
-          <DialogDescription>
-            Generate custom images using AI for your articles. Powered by Vertex AI Imagen.
-          </DialogDescription>
+      <DialogContent className="max-w-7xl w-[95vw] h-[90vh] flex flex-col p-0">
+        <DialogHeader className="px-6 py-4 border-b shrink-0">
+          <DialogTitle className="text-xl">AI Image Generator</DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left Panel - Configuration */}
-          <div className="space-y-6">
-            {/* AI Analysis Section */}
-            {articleContext && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-semibold">AI Content Analysis</Label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={analyzeArticleContent}
-                    disabled={isAnalyzing}
-                  >
-                    {isAnalyzing ? (
-                      <>
-                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                        Analyzing...
-                      </>
-                    ) : (
-                      <>
-                        <RefreshCw className="h-3 w-3 mr-1" />
-                        Re-analyze
-                      </>
-                    )}
-                  </Button>
-                </div>
-                
-                {aiAnalyzedPrompt && (
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'ai' | 'unsplash')} className="flex-1 flex flex-col">
+          <TabsList className="mx-6 mt-4 grid w-full max-w-md grid-cols-2 shrink-0 border border-gray-300 h-12">
+            <TabsTrigger 
+              value="ai" 
+              className="data-[state=active]:bg-orange-500 data-[state=active]:text-white text-orange-600 text-sm py-2"
+            >
+              AI Generator
+            </TabsTrigger>
+            <TabsTrigger 
+              value="unsplash" 
+              className="text-cyan-600 text-sm py-2"
+              style={{
+                backgroundColor: activeTab === 'unsplash' ? 'var(--cyan)' : undefined,
+                color: activeTab === 'unsplash' ? '#1f2937' : undefined
+              }}
+            >
+              Unsplash Search
+            </TabsTrigger>
+          </TabsList>
+
+          <div className="flex-1 overflow-hidden">
+            <TabsContent value="ai" className="h-full mt-0">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 h-full">
+                {/* AI Configuration Panel */}
+                <div className="space-y-4 overflow-y-auto">
+                  <h3 className="text-lg font-semibold text-orange-600">AI Configuration</h3>
+                  
+                  {/* Prompt Section */}
                   <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="use-ai-prompt"
-                        checked={useAiPrompt}
-                        onCheckedChange={(checked) => setUseAiPrompt(checked === true)}
-                      />
-                      <Label htmlFor="use-ai-prompt" className="text-sm">
-                        Use AI-suggested prompt
-                      </Label>
-                      <Badge variant="secondary" className="ml-2">
-                        Smart
-                      </Badge>
-                    </div>
-                    {useAiPrompt && (
-                      <Textarea
-                        value={aiAnalyzedPrompt}
-                        onChange={(e) => setAiAnalyzedPrompt(e.target.value)}
-                        className="min-h-[80px] text-sm"
-                        placeholder="AI-analyzed prompt will appear here..."
-                      />
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Manual Prompt Section */}
-            <div className="space-y-2">
-              <Label htmlFor="prompt" className="flex items-center gap-2">
-                Custom Prompt
-                {!useAiPrompt && <Badge variant="outline">Active</Badge>}
-              </Label>
-              <Textarea
-                id="prompt"
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Describe the image you want to generate..."
-                className="min-h-[100px]"
-                disabled={useAiPrompt}
-              />
-            </div>
-
-            {/* Generation Options */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="art-style">Art Style</Label>
-                <Select value={artStyle} onValueChange={setArtStyle}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ART_STYLES.map((style) => (
-                      <SelectItem key={style.value} value={style.value}>
-                        {style.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="image-style">Image Style</Label>
-                <Select value={imageStyle} onValueChange={setImageStyle}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {IMAGE_STYLES.map((style) => (
-                      <SelectItem key={style.value} value={style.value}>
-                        {style.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="resolution">Resolution</Label>
-                <Select value={resolution} onValueChange={setResolution}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {RESOLUTIONS.map((res) => (
-                      <SelectItem key={res.value} value={res.value}>
-                        {res.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="aspect-ratio">Aspect Ratio</Label>
-                <Select value={aspectRatio} onValueChange={setAspectRatio}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ASPECT_RATIOS.map((ratio) => (
-                      <SelectItem key={ratio.value} value={ratio.value}>
-                        {ratio.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Content Inclusion Options */}
-            <div className="space-y-3">
-              <Label className="text-sm font-semibold">Include in Image</Label>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="include-title"
-                    checked={includeTitle}
-                    onCheckedChange={(checked) => setIncludeTitle(checked === true)}
-                  />
-                  <Label htmlFor="include-title" className="text-sm">
-                    Article title/headline
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="include-subtitle"
-                    checked={includeSubtitle}
-                    onCheckedChange={(checked) => setIncludeSubtitle(checked === true)}
-                  />
-                  <Label htmlFor="include-subtitle" className="text-sm">
-                    Subtitle/hook text
-                  </Label>
-                </div>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="space-y-4">
-              {/* AI Generation Button */}
-              <Button
-                onClick={generateImage}
-                disabled={isGenerating || isLoading || (!prompt.trim() && !useAiPrompt)}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Generating AI Image...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Generate AI Image
-                  </>
-                )}
-              </Button>
-
-              {/* Divider */}
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-gray-500">or</span>
-                </div>
-              </div>
-
-              {/* Unsplash Search Section */}
-              <div className="space-y-3">
-                <Label className="text-sm font-semibold">Search Unsplash Images</Label>
-                
-                {/* Search Term Input */}
-                <div className="flex gap-2">
-                  <Input
-                    value={unsplashSearchTerm}
-                    onChange={(e) => setUnsplashSearchTerm(e.target.value)}
-                    placeholder="Enter search term..."
-                    className="flex-1"
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && unsplashSearchTerm.trim()) {
-                        searchUnsplash();
-                      }
-                    }}
-                  />
-                  <Button
-                    onClick={() => searchUnsplash()}
-                    disabled={!unsplashSearchTerm.trim() || isSearchingUnsplash}
-                    variant="outline"
-                    size="icon"
-                  >
-                    {isSearchingUnsplash ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Search className="h-4 w-4" />
-                    )}
-                  </Button>
-                  <Button
-                    onClick={refreshUnsplashSearch}
-                    disabled={!unsplashSearchTerm.trim() || isSearchingUnsplash}
-                    variant="outline"
-                    size="icon"
-                    title="Refresh search"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {/* AI Generate Search Term Button */}
-                {articleContext && (
-                  <Button
-                    onClick={generateUnsplashSearchTerm}
-                    disabled={isGeneratingSearchTerm}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    {isGeneratingSearchTerm ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Generating search term...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-4 w-4 mr-2" />
-                        AI Generate Search Term
-                      </>
-                    )}
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Right Panel - Preview */}
-          <div className="space-y-4">
-            {/* AI Generated Image Preview */}
-            {currentImageSource === 'ai' && (
-              <div className="space-y-4">
-                <Label className="text-sm font-semibold">AI Generated Image</Label>
-                <div className="aspect-video bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
-                  {generatedImage ? (
-                    <img
-                      src={generatedImage}
-                      alt="AI generated image"
-                      className="w-full h-full object-cover rounded-lg"
+                    <Label htmlFor="prompt">Image Description</Label>
+                    <Textarea
+                      id="prompt"
+                      placeholder="Describe the image you want to generate..."
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      className="min-h-[100px]"
                     />
-                  ) : (
-                    <div className="text-center text-gray-500">
-                      <Sparkles className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">AI generated image will appear here</p>
+                  </div>
+
+                  {/* AI Analysis Section */}
+                  {articleContext && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-gray-700 font-medium">AI Article Analysis</Label>
+                        <Button
+                          onClick={() => {
+                            setHasAnalyzed(false);
+                            analyzeArticleContent();
+                          }}
+                          disabled={isAnalyzing}
+                          variant="outline"
+                          size="sm"
+                        >
+                          {isAnalyzing ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Sparkles className="h-3 w-3 mr-1" />}
+                          {isAnalyzing ? 'Analyzing...' : 'Re-analyze'}
+                        </Button>
+                      </div>
+                      {aiAnalyzedPrompt && (
+                        <div className="p-3 bg-orange-50 border border-orange-200 rounded-md">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id="use-ai-prompt"
+                              checked={useAiPrompt}
+                              onChange={(e) => setUseAiPrompt(e.target.checked)}
+                            />
+                            <Label htmlFor="use-ai-prompt" className="text-sm font-medium text-gray-700">
+                              Use AI-suggested prompt
+                            </Label>
+                          </div>
+                          <p className="text-sm mt-2 text-gray-700">{aiAnalyzedPrompt}</p>
+                        </div>
+                      )}
                     </div>
                   )}
-                </div>
-              </div>
-            )}
 
-            {/* Unsplash Images Grid */}
-            {currentImageSource === 'unsplash' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-semibold">
-                    Unsplash Images {unsplashSearchTerm && `for "${unsplashSearchTerm}"`}
-                  </Label>
-                  {unsplashImages.length > 0 && (
-                    <Badge variant="secondary">{unsplashImages.length} found</Badge>
-                  )}
-                </div>
-                
-                {unsplashImages.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto">
-                    {unsplashImages.map((image) => (
-                      <div
-                        key={image.id}
-                        className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all duration-200 ${
-                          selectedUnsplashImage?.id === image.id
-                            ? 'border-blue-500 ring-2 ring-blue-200'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                        onClick={() => selectUnsplashImage(image)}
-                      >
-                        <img
-                          src={image.urls.small}
-                          alt={image.alt_description || 'Unsplash image'}
-                          className="w-full h-24 object-cover"
+                  {/* Configuration Grid */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="art-style">Art Style</Label>
+                      <Select value={artStyle} onValueChange={setArtStyle}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ART_STYLES.map((style) => (
+                            <SelectItem key={style} value={style}>
+                              {style.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="image-style">Image Style</Label>
+                      <Select value={imageStyle} onValueChange={setImageStyle}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {IMAGE_STYLES.map((style) => (
+                            <SelectItem key={style} value={style}>
+                              {style.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="resolution">Resolution</Label>
+                      <Select value={resolution} onValueChange={setResolution}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {RESOLUTIONS.map((res) => (
+                            <SelectItem key={res} value={res}>
+                              {res}px
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="aspect-ratio">Aspect Ratio</Label>
+                      <Select value={aspectRatio} onValueChange={setAspectRatio}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ASPECT_RATIOS.map((ratio) => (
+                            <SelectItem key={ratio} value={ratio}>
+                              {ratio}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Options */}
+                  <TooltipProvider>
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="include-title"
+                          checked={includeTitle}
+                          onChange={(e) => setIncludeTitle(e.target.checked)}
                         />
-                        {selectedUnsplashImage?.id === image.id && (
-                          <div className="absolute inset-0 bg-blue-500 bg-opacity-20 flex items-center justify-center">
-                            <div className="bg-blue-500 rounded-full p-1">
-                              <ImageIcon className="h-4 w-4 text-white" />
-                            </div>
-                          </div>
-                        )}
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-2">
-                          <p className="text-white text-xs truncate">
-                            by {image.user.name}
-                          </p>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Label htmlFor="include-title" className="text-sm cursor-pointer">
+                              Include article title overlay{articleContext?.headline ? ` (${articleContext.headline.slice(0, 50)}${articleContext.headline.length > 50 ? '...' : ''})` : ''}
+                            </Label>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Tell the AI generator to add the title as text overlay on the image</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="include-subtitle"
+                          checked={includeSubtitle}
+                          onChange={(e) => setIncludeSubtitle(e.target.checked)}
+                        />
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Label htmlFor="include-subtitle" className="text-sm cursor-pointer">
+                              Include article subtitle overlay{articleContext?.hook ? ` (${articleContext.hook.slice(0, 50)}${articleContext.hook.length > 50 ? '...' : ''})` : ''}
+                            </Label>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Tell the AI generator to add the subtitle as text overlay on the image</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </div>
+                  </TooltipProvider>
+
+                  <Button
+                    onClick={generateImage}
+                    disabled={isGenerating}
+                    className="w-full bg-orange-500 hover:bg-orange-600"
+                  >
+                    {isGenerating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                    {isGenerating ? 'Generating...' : 'Generate AI Image'}
+                  </Button>
+                </div>
+
+                {/* AI Preview Panel */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-orange-600">AI Preview</h3>
+                  
+                  <div className="bg-gray-50 rounded-lg min-h-[400px] flex items-center justify-center">
+                    {generatedImage ? (
+                      <div className="relative w-full">
+                        <img 
+                          src={generatedImage} 
+                          alt="Generated" 
+                          className="w-full h-auto rounded-lg"
+                        />
+                        <div className="absolute top-2 right-2 space-x-2">
+                          <Button onClick={downloadImage} size="sm" variant="secondary">
+                            <Download className="h-3 w-3" />
+                          </Button>
                         </div>
                       </div>
-                    ))}
+                    ) : (
+                      <div className="text-center text-gray-500">
+                        <Sparkles className="h-12 w-12 mx-auto mb-2 text-orange-300" />
+                        <p>Generated image will appear here</p>
+                      </div>
+                    )}
                   </div>
-                ) : currentImageSource === 'unsplash' ? (
-                  <div className="aspect-video bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
-                    <div className="text-center text-gray-500">
-                      <Search className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">Search Unsplash for images</p>
-                    </div>
-                  </div>
-                ) : null}
 
-                {/* Selected Unsplash Image Preview */}
-                {selectedUnsplashImage && (
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold">Selected Image</Label>
-                    <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                      <img
-                        src={selectedUnsplashImage.urls.regular}
-                        alt={selectedUnsplashImage.alt_description || 'Selected Unsplash image'}
-                        className="w-full h-full object-cover"
-                      />
+                  {generatedImage && (
+                    <div className="flex gap-2">
+                      <Button onClick={useGeneratedImage} className="flex-1 bg-orange-500 hover:bg-orange-600">
+                        Use This Image
+                      </Button>
+                      <Button onClick={generateImage} variant="outline">
+                        <RefreshCw className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <p className="text-xs text-gray-500 text-center">
-                      Photo by {selectedUnsplashImage.user.name} on Unsplash
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Default State */}
-            {!currentImageSource && (
-              <div className="aspect-video bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
-                <div className="text-center text-gray-500">
-                  <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">Generate AI image or search Unsplash</p>
+                  )}
                 </div>
               </div>
-            )}
+            </TabsContent>
 
-            {/* Action Buttons */}
-            {(generatedImage || selectedUnsplashImage) && (
-              <div className="flex gap-2">
-                <Button onClick={useGeneratedImage} className="flex-1">
-                  Use This Image
-                </Button>
-                {generatedImage && (
-                  <Button onClick={downloadImage} variant="outline" size="icon">
-                    <Download className="h-4 w-4" />
+            <TabsContent value="unsplash" className="h-full mt-0">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 h-full">
+                {/* Unsplash Configuration Panel */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold" style={{ color: 'var(--cyan)' }}>Unsplash Search</h3>
+                  
+                  {/* Search Section */}
+                  <div className="space-y-2">
+                    <Label htmlFor="search-term">Search Term</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="search-term"
+                        placeholder="Enter search keywords..."
+                        value={unsplashSearchTerm}
+                        onChange={(e) => setUnsplashSearchTerm(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && searchUnsplash()}
+                      />
+                      {articleContext && (
+                        <Button
+                          onClick={generateUnsplashSearchTerm}
+                          disabled={isGeneratingSearchTerm}
+                          variant="outline"
+                          size="sm"
+                        >
+                          {isGeneratingSearchTerm ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Quality Selection */}
+                  <div className="space-y-2">
+                    <Label htmlFor="quality">Image Quality</Label>
+                    <Select value={unsplashQuality} onValueChange={setUnsplashQuality}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {UNSPLASH_QUALITY_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            <div>
+                              <div className="font-medium">{option.label}</div>
+                              <div className="text-xs text-gray-500">{option.description}</div>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button
+                    onClick={() => searchUnsplash()}
+                    disabled={isSearchingUnsplash || !unsplashSearchTerm.trim()}
+                    className="w-full bg-cyan-500 hover:bg-cyan-600 text-white"
+                  >
+                    {isSearchingUnsplash ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Search className="h-4 w-4 mr-2" />}
+                    {isSearchingUnsplash ? 'Searching...' : 'Search Unsplash'}
                   </Button>
-                )}
-                <Button
-                  onClick={() => {
-                    setGeneratedImage(null);
-                    setSelectedUnsplashImage(null);
-                    setCurrentImageSource(null);
-                  }}
-                  variant="outline"
-                  size="icon"
-                  title="Clear selection"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
+                </div>
 
-            {/* Current Settings Summary */}
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold">Current Settings</Label>
-              <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                <div>Art: {ART_STYLES.find(s => s.value === artStyle)?.label}</div>
-                <div>Style: {IMAGE_STYLES.find(s => s.value === imageStyle)?.label}</div>
-                <div>Resolution: {resolution}px</div>
-                <div>Ratio: {aspectRatio}</div>
+                {/* Unsplash Preview Panel */}
+                <div className="space-y-4 flex flex-col">
+                  <h3 className="text-lg font-semibold" style={{ color: 'var(--cyan)' }}>Unsplash Results</h3>
+                  
+                  <div className="flex-1 overflow-y-auto">
+                    {unsplashImages.length > 0 ? (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-2">
+                          {unsplashImages.map((image) => (
+                            <div
+                              key={image.id}
+                              onClick={() => selectUnsplashImage(image)}
+                              className={`cursor-pointer rounded-lg overflow-hidden border-2 transition-all ${
+                                selectedUnsplashImage?.id === image.id 
+                                  ? 'border-cyan-500 ring-2 ring-cyan-200' 
+                                  : 'border-transparent hover:border-gray-300'
+                              }`}
+                            >
+                              <img 
+                                src={image.urls.small} 
+                                alt={image.alt_description || 'Unsplash image'}
+                                className="w-full h-32 object-cover"
+                              />
+                              <div className="p-2 bg-white">
+                                <p className="text-xs text-gray-600 truncate">
+                                  by {image.user.name}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {hasMoreUnsplashImages && (
+                          <Button
+                            onClick={() => searchUnsplash(undefined, true)}
+                            disabled={isSearchingUnsplash}
+                            variant="outline"
+                            className="w-full"
+                          >
+                            {isSearchingUnsplash ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ChevronDown className="h-4 w-4 mr-2" />}
+                            Load More Images
+                          </Button>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="h-64 flex items-center justify-center text-center text-gray-500">
+                        <div>
+                          <Search className="h-12 w-12 mx-auto mb-2 text-cyan-300" />
+                          <p>Search results will appear here</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {selectedUnsplashImage && (
+                    <div className="space-y-2 border-t pt-4">
+                      <div className="bg-cyan-50 border border-cyan-200 rounded-md p-3">
+                        <p className="text-sm text-gray-700">
+                          Selected: <strong>{selectedUnsplashImage.alt_description || 'Untitled'}</strong>
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Photo by {selectedUnsplashImage.user.name} on Unsplash
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button onClick={useGeneratedImage} className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white">
+                          Use This Image
+                        </Button>
+                        <Button onClick={downloadImage} variant="outline" className="border-cyan-300 text-cyan-600 hover:bg-cyan-50">
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            </TabsContent>
           </div>
-        </div>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
