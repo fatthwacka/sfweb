@@ -105,7 +105,7 @@ export function PricingPackagesDisplay({
             const cardStyle = {
               '--pricing-accent-hue': hsl.h.toString(),
               '--pricing-accent-sat': `${hsl.s}%`,
-              '--pricing-accent-light': `${hsl.l}%`,
+              '--pricing-accent-lightness': `${hsl.l}%`,
               '--pricing-accent': `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`,
               '--pricing-accent-dark': `hsl(${hsl.h - 5}, ${Math.round(hsl.s / 2)}%, 20%)`,
               '--pricing-accent-light': `hsl(${hsl.h + 8}, ${hsl.s + 15}%, 75%)`,
