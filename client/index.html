@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
     <title>SlyFox Studios - Professional Photography & Videography in Durban</title>
     
-    <!-- Preload critical fonts for instant loading -->
+    <!-- Optimized font loading with bundled fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Saira+Condensed:wght@600;700;800;900&family=Great+Vibes:wght@400&family=Forum:wght@400&family=Barlow+Semi+Condensed:wght@400;500;600&family=Corinthia:wght@400;700&family=Righteous:wght@400&display=swap" rel="stylesheet">
+    <!-- Consolidated font request with optimized loading -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Saira+Condensed:wght@600;700;800;900&family=Great+Vibes:wght@400&family=Forum:wght@400&family=Barlow+Semi+Condensed:wght@400;500;600&family=Corinthia:wght@400;700&family=Righteous:wght@400&family=Roboto:wght@100;300;400;500;700&display=swap" rel="stylesheet">
     <meta name="description" content="Professional photography and videography services in Durban. Specializing in weddings, portraits, corporate events, and commercial photography." />
     <link rel="canonical" href="https://slyfox.co.za/" />
     <link rel="icon" type="image/png" href="/favicon.png" />
@@ -26,22 +27,75 @@
     <meta name="twitter:description" content="Professional photography and videography services in Durban." />
     <meta name="twitter:image" content="/og-image.jpg" />
     
-    <!-- Google reCAPTCHA v3 -->
-    <script src="https://www.google.com/recaptcha/api.js?render=6Le3Y7YrAAAAAJn-74S3y_kLoDIax3vY6MyisDPs" async defer></script>
-
-    <!-- Google Analytics 4 (Standard Implementation) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3W8SJ9EPEF"></script>
+    <!-- Third-party scripts optimized for maximum performance -->
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-3W8SJ9EPEF');
+      // Use requestIdleCallback for optimal performance timing
+      function loadWhenIdle(callback, fallbackDelay) {
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(callback, { timeout: fallbackDelay });
+        } else {
+          setTimeout(callback, fallbackDelay);
+        }
+      }
+
+      // Load critical third-party scripts after page is fully loaded
+      window.addEventListener('load', function() {
+        // Google Analytics - highest priority, load when CPU is idle
+        loadWhenIdle(function() {
+          try {
+            var ga = document.createElement('script');
+            ga.async = true;
+            ga.src = 'https://www.googletagmanager.com/gtag/js?id=G-3W8SJ9EPEF';
+            ga.onerror = function() { console.warn('Google Analytics failed to load'); };
+            document.head.appendChild(ga);
+            
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-3W8SJ9EPEF');
+          } catch(e) { console.warn('GA setup error:', e); }
+        }, 500);
+        
+        // reCAPTCHA - load when idle, lower priority than GA
+        loadWhenIdle(function() {
+          try {
+            var recaptcha = document.createElement('script');
+            recaptcha.src = 'https://www.google.com/recaptcha/api.js?render=6Le3Y7YrAAAAAJn-74S3y_kLoDIax3vY6MyisDPs';
+            recaptcha.async = true;
+            recaptcha.defer = true;
+            recaptcha.onerror = function() { console.warn('reCAPTCHA failed to load'); };
+            document.head.appendChild(recaptcha);
+          } catch(e) { console.warn('reCAPTCHA setup error:', e); }
+        }, 1500);
+      });
     </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- Metricool Analytics -->
-    <script>function loadScript(a){var b=document.getElementsByTagName("head")[0],c=document.createElement("script");c.type="text/javascript",c.src="https://tracker.metricool.com/resources/be.js",c.onreadystatechange=a,c.onload=a,b.appendChild(c)}loadScript(function(){beTracker.t({hash:"a3e8654831a8c3870479528bc528b9fc"})});</script>
+    <!-- Metricool Analytics optimized for background loading -->
+    <script>
+      // Load Metricool when completely idle - lowest priority analytics
+      window.addEventListener('load', function() {
+        loadWhenIdle(function() {
+          try {
+            var metricool = document.createElement('script');
+            metricool.type = 'text/javascript';
+            metricool.src = 'https://tracker.metricool.com/resources/be.js';
+            metricool.async = true;
+            metricool.defer = true;
+            metricool.onerror = function() { console.warn('Metricool failed to load'); };
+            metricool.onload = function() {
+              try {
+                if (window.beTracker) {
+                  beTracker.t({hash:"a3e8654831a8c3870479528bc528b9fc"});
+                }
+              } catch(e) { console.warn('Metricool tracking error:', e); }
+            };
+            document.head.appendChild(metricool);
+          } catch(e) { console.warn('Metricool setup error:', e); }
+        }, 2500);
+      });
+    </script>
   </body>
 </html>
