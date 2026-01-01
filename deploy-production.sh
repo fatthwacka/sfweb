@@ -135,7 +135,7 @@ echo "📁 Copying project files to VPS..."
 TEMP_DIR="/tmp/sfweb-deploy-$(date +%Y%m%d%H%M%S)"
 run_on_vps "mkdir -p $TEMP_DIR"
 
-# Copy entire project (excluding node_modules, .git, etc.)
+# Copy entire project (excluding sensitive files and build artifacts)
 rsync -avz --progress \
     --exclude='.git' \
     --exclude='node_modules' \
@@ -144,6 +144,11 @@ rsync -avz --progress \
     --exclude='*.log' \
     --exclude='.DS_Store' \
     --exclude='__pycache__' \
+    --exclude='.env*' \
+    --exclude='.mcp.json' \
+    --exclude='*.key' \
+    --exclude='*.pem' \
+    --exclude='config/secrets.json' \
     ./ $VPS_HOST:$TEMP_DIR/
 
 # Move to production directory
@@ -158,7 +163,21 @@ echo "======================================"
 # Verify critical files exist
 run_on_vps "ls -la $VPS_APP_DIR/Dockerfile"
 run_on_vps "ls -la $VPS_APP_DIR/docker-compose.yml"
-run_on_vps "ls -la $VPS_APP_DIR/.env || echo 'WARNING: .env file not found - you may need to create it'"
+
+# Environment files are NOT synced for security - must exist on VPS
+if ! run_on_vps "ls -la $VPS_APP_DIR/.env"; then
+    echo "⚠️  CRITICAL: .env file not found on VPS"
+    echo "   .env files are excluded from sync for security"
+    echo "   You must create .env on the VPS with required variables:"
+    echo "   - VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY"
+    echo "   - SUPABASE_SECRET_KEY, N8N_API_KEY"
+    echo "   - SMTP_EMAIL, SMTP_PASSWORD, etc."
+    read -p "   Continue anyway? (y/N): " continue_no_env
+    if [[ ! $continue_no_env =~ ^[Yy]$ ]]; then
+        echo "❌ Deployment aborted - create .env file first"
+        exit 1
+    fi
+fi
 
 # Verify the fixed Dockerfile includes server directory
 if run_on_vps "grep -q 'COPY --from=builder /app/server ./server' $VPS_APP_DIR/Dockerfile"; then

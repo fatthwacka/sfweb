@@ -19,6 +19,13 @@ Examples:
 
 **⚠️ CRITICAL: Follow these rules for ALL git commits**
 
+### **🔒 Pre-Commit Security Requirements (MANDATORY)**
+- **AUTOMATED SECURITY SCANNING**: All commits are automatically scanned for hardcoded credentials, API keys, and sensitive data
+- **COMMIT BLOCKED IF UNSAFE**: Git operations will be prevented if security hooks detect dangerous content
+- **NO MANUAL CONFIRMATIONS**: Security protection is automatic - no "yes" prompting required
+- **COMPLETE VPS_DEPLOYMENT.md READING MANDATORY**: You MUST read and understand the complete VPS_DEPLOYMENT.md before ANY production deployment
+- **CATASTROPHIC DAMAGE PREVENTION**: Bypassing security hooks or deployment procedures can cause "days and days of work to recover from catastrophic damage"
+
 ### **🔒 Commit Frequency & Timing**
 - **NEVER commit during active development** - wait for end of development session
 - **BUNDLE related changes** into meaningful commits with clear purpose
@@ -837,11 +844,7 @@ export const supabase = createClient(
 
 **3. Environment Variable Migration**
 ```bash
-# OLD (Deprecated, removed from codebase)
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-
-# NEW (Current standard)
+# Current standard (Dec 2025)
 VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_[project_id]_[random_string]
 SUPABASE_SECRET_KEY=sb_secret_[project_id]_[random_string]
 ```

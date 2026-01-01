@@ -8,8 +8,18 @@ vite.config.ts.*
 # Docker port overrides (device-specific)
 docker-compose.override.yml
 
-# Environment files
-.env
+# Environment files (comprehensive protection)
+.env*
+!.env.example
+!.env.template
 .env.local
-.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Additional security patterns
+*.key
+*.pem
+config/secrets.json
+.mcp.json
 
