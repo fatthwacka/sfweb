@@ -27,6 +27,30 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        // Split vendor code into separate chunks for better caching
+        manualChunks: {
+          // React ecosystem
+          'react-vendor': ['react', 'react-dom', 'react-hook-form'],
+          // UI components
+          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs', '@radix-ui/react-toast'],
+          // Data management
+          'data-vendor': ['@tanstack/react-query', '@supabase/supabase-js'],
+          // Large utilities
+          'utils-vendor': ['date-fns', 'zod', 'clsx', 'tailwind-merge']
+        }
+      }
+    },
+    // Enable tree shaking and minification
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // Remove console.logs in production
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn']
+      }
+    }
   },
   server: {
     fs: {
