@@ -1,10 +1,25 @@
 import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
+import compression from "compression";
 import { registerRoutes } from "./routes";
 import fs from "fs";
 import path from "path";
 
 const app = express();
+
+// Enable gzip compression for all responses
+app.use(compression({
+  threshold: 1024,  // Only compress files larger than 1KB
+  level: 6,         // Balanced compression level (1-9, higher = better compression)
+  filter: (req, res) => {
+    // Don't compress responses if this request asks for no compression
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    // Use default compression filter for all other responses
+    return compression.filter(req, res);
+  }
+}));
 
 // Simple logging function
 const log = (message: string) => {
@@ -68,8 +83,8 @@ app.use((req, res, next) => {
   console.log("DATABASE_URL configured:", !!process.env.DATABASE_URL);
   console.log("DATABASE_URL hostname:", process.env.DATABASE_URL?.match(/@([^:]+)/)?.[1] || 'not found');
   console.log("SUPABASE_URL configured:", !!process.env.VITE_SUPABASE_URL);
-  console.log("SUPABASE_ANON_KEY configured:", !!process.env.VITE_SUPABASE_ANON_KEY);
-  console.log("SUPABASE_SERVICE_ROLE_KEY configured:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+  console.log("SUPABASE_PUBLISHABLE_KEY configured:", !!process.env.VITE_SUPABASE_PUBLISHABLE_KEY);
+  console.log("SUPABASE_SECRET_KEY configured:", !!process.env.SUPABASE_SECRET_KEY);
   
   const server = await registerRoutes(app);
 
