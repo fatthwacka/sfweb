@@ -13,6 +13,7 @@ export interface ImageGenerationRequest {
   imageStyle: string;
   resolution: string;
   aspectRatio: string;
+  model: string;
   articleContext?: {
     headline?: string;
     hook?: string;
@@ -28,6 +29,7 @@ export interface ImageGenerationResult {
     imageStyle: string;
     resolution: string;
     aspectRatio: string;
+    model: string;
     generatedAt: string;
   };
 }
@@ -67,13 +69,13 @@ export class VertexAIImageGenerator {
         scopes: ['https://www.googleapis.com/auth/cloud-platform'],
       });
     } else {
-      // Use proper service account credentials
+      // Use proper service account credentials with fixed newlines
       this.auth = new GoogleAuth({
         credentials: {
           type: 'service_account',
           project_id: this.projectId,
           private_key_id: 'vertex-ai-image-gen',
-          private_key: this.serviceAccountKey,
+          private_key: this.serviceAccountKey.replace(/\\n/g, '\n'), // Fix escaped newlines
           client_email: this.serviceAccountEmail,
           client_id: '',
           auth_uri: 'https://accounts.google.com/o/oauth2/auth',
@@ -117,8 +119,8 @@ export class VertexAIImageGenerator {
       console.log('🏗️ Project ID:', this.projectId);
       console.log('📍 Location:', this.location);
       
-      // Call Vertex AI Imagen API
-      const imageUrl = await this.callVertexAIImagen(enhancedPrompt, imageSpec);
+      // Call appropriate Vertex AI API based on model type
+      const imageUrl = await this.callVertexAI(enhancedPrompt, imageSpec, request.model, request);
 
       console.log('✅ Image generated successfully with Vertex AI');
       console.log('🔗 Generated image URL:', imageUrl);
@@ -131,6 +133,7 @@ export class VertexAIImageGenerator {
           imageStyle: request.imageStyle,
           resolution: request.resolution,
           aspectRatio: request.aspectRatio,
+          model: request.model,
           generatedAt: new Date().toISOString(),
         },
       };
@@ -274,46 +277,113 @@ export class VertexAIImageGenerator {
     }
   }
 
-  private async uploadToImgBB(base64Data: string): Promise<string> {
-    const imgbbApiKey = process.env.IMGBB_API_KEY;
+  private async uploadToCloudStorage(base64Data: string): Promise<string> {
+    const bucketName = 'netfox-veo-generations';
+    const fileName = `ai-images/generated-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.png`;
     
-    if (!imgbbApiKey) {
-      throw new Error('ImgBB API key not configured');
-    }
-
     try {
-      const formData = new FormData();
-      formData.append('image', base64Data);
-      formData.append('key', imgbbApiKey);
-      formData.append('name', `ai-generated-${Date.now()}`);
-
-      const response = await fetch('https://api.imgbb.com/1/upload', {
+      console.log(`📤 Uploading to Cloud Storage: gs://${bucketName}/${fileName}`);
+      
+      // Convert base64 to buffer
+      const imageBuffer = Buffer.from(base64Data, 'base64');
+      console.log(`📊 Image size: ${(imageBuffer.length / 1024 / 1024).toFixed(2)} MB`);
+      
+      // Get access token using our auth client
+      const authClient = await this.auth.getClient();
+      const accessToken = await authClient.getAccessToken();
+      
+      // Upload to Cloud Storage using REST API
+      const uploadUrl = `https://storage.googleapis.com/upload/storage/v1/b/${bucketName}/o?uploadType=media&name=${encodeURIComponent(fileName)}`;
+      
+      const response = await fetch(uploadUrl, {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Authorization': `Bearer ${accessToken.token}`,
+          'Content-Type': 'image/png',
+          'Content-Length': imageBuffer.length.toString(),
+        },
+        body: imageBuffer,
       });
 
       if (!response.ok) {
-        throw new Error(`ImgBB upload failed: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`Cloud Storage upload failed: ${response.status} - ${errorText}`);
       }
 
       const result = await response.json();
       
-      if (!result.success) {
-        throw new Error('ImgBB upload failed: ' + (result.error?.message || 'Unknown error'));
-      }
+      // Make the object publicly readable
+      const aclUrl = `https://storage.googleapis.com/storage/v1/b/${bucketName}/o/${encodeURIComponent(fileName)}/acl`;
+      const aclResponse = await fetch(aclUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          entity: 'allUsers',
+          role: 'READER'
+        }),
+      });
 
-      return result.data.url;
+      if (!aclResponse.ok) {
+        console.warn('⚠️ Failed to make object public, but upload succeeded');
+      } else {
+        console.log('🔓 Object made publicly readable');
+      }
+      
+      // Generate public URL
+      const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
+      
+      console.log('✅ Cloud Storage upload successful');
+      console.log('🔗 Public URL:', publicUrl);
+      
+      return publicUrl;
+      
     } catch (error: any) {
-      console.error('❌ ImgBB upload error:', error);
-      throw new Error(`Image upload failed: ${error.message}`);
+      console.error('❌ Cloud Storage upload error:', error);
+      throw new Error(`Cloud Storage upload failed: ${error.message}`);
     }
   }
 
+  private async delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 
-  private async callVertexAIImagen(prompt: string, imageSpec: any): Promise<string> {
-    const endpoint = `https://${this.location}-aiplatform.googleapis.com/v1/projects/${this.projectId}/locations/${this.location}/publishers/google/models/imagen-3.0-generate-001:predict`;
+
+  private async callVertexAI(prompt: string, imageSpec: any, model: string, originalRequest?: ImageGenerationRequest): Promise<string> {
+    // Extract actual model name (handle frontend unique IDs)
+    let actualModel = model;
+    
+    // Map frontend unique IDs to actual model names
+    if (model.startsWith('gemini-3-pro-image-preview-')) {
+      actualModel = 'gemini-3-pro-image-preview';
+    } else if (model.startsWith('imagen-4.0-')) {
+      // Keep imagen models as-is since they're already correct
+      actualModel = model;
+    }
+    
+    console.log('🔍 Model routing check:', { 
+      frontendModel: model, 
+      actualModel, 
+      isGemini: actualModel.includes('gemini') 
+    });
+    
+    if (actualModel.includes('gemini')) {
+      console.log('📡 Routing to Gemini API for model:', actualModel);
+      return await this.callGeminiAPI(prompt, imageSpec, actualModel, originalRequest);
+    } else {
+      console.log('📡 Routing to Imagen API for model:', actualModel);
+      return await this.callImagenAPI(prompt, imageSpec, actualModel);
+    }
+  }
+
+  private async callImagenAPI(prompt: string, imageSpec: any, model: string): Promise<string> {
+    console.log('🔴 ENTERING IMAGEN API METHOD for model:', model);
+    const endpoint = `https://${this.location}-aiplatform.googleapis.com/v1/projects/${this.projectId}/locations/${this.location}/publishers/google/models/${model}:predict`;
     
     console.log('🌐 Vertex AI endpoint:', endpoint);
+    console.log('🤖 Using model:', model);
     console.log('🔄 Getting access token...');
     
     const accessToken = await this.getAccessToken();
@@ -365,8 +435,8 @@ export class VertexAIImageGenerator {
 
       const base64Image = result.predictions[0].bytesBase64Encoded;
       
-      // Upload the base64 image to ImgBB
-      const imageUrl = await this.uploadToImgBB(base64Image);
+      // Upload the base64 image to Cloud Storage
+      const imageUrl = await this.uploadToCloudStorage(base64Image);
       
       return imageUrl;
 
@@ -374,6 +444,131 @@ export class VertexAIImageGenerator {
       console.error('💥 Vertex AI generation error:', error);
       throw error;
     }
+  }
+
+  private async callGeminiAPI(prompt: string, imageSpec: any, model: string, originalRequest?: ImageGenerationRequest): Promise<string> {
+    console.log('🟢 ENTERING GEMINI API METHOD for model:', model);
+    // Gemini image generation requires 'global' location, not regional
+    const geminiLocation = 'global';
+    const endpoint = `https://aiplatform.googleapis.com/v1/projects/${this.projectId}/locations/${geminiLocation}/publishers/google/models/${model}:generateContent`;
+    
+    console.log('🌐 Gemini endpoint:', endpoint);
+    console.log('🤖 Using Gemini model:', model);
+    console.log('📍 Using global location for Gemini');
+    console.log('🔄 Getting access token...');
+    
+    const accessToken = await this.getAccessToken();
+    console.log('🔑 Access token length:', accessToken.length);
+    
+    // Build the request payload for Gemini image generation
+    // CRITICAL: Must include both TEXT and IMAGE in response_modalities
+    const requestBody = {
+      contents: [{
+        role: 'user',
+        parts: [{
+          text: prompt
+        }]
+      }],
+      generationConfig: {
+        responseModalities: ['TEXT', 'IMAGE'], // Must include both!
+        imageConfig: {
+          aspectRatio: imageSpec.aspectRatio,
+          imageSize: originalRequest?.resolution || imageSpec.resolution // Use original K-scale string (1K, 2K, 4K)
+        }
+      }
+    };
+
+    console.log('📋 Gemini request body:', JSON.stringify(requestBody, null, 2));
+    console.log('📡 Making API call to Gemini...');
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      console.log('📈 Gemini response status:', response.status);
+      console.log('📋 Gemini response headers:', Object.fromEntries(response.headers.entries()));
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Gemini API error:', response.status, errorText);
+        throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('📝 Gemini response keys:', Object.keys(result));
+      console.log('📝 Full Gemini response:', JSON.stringify(result, null, 2));
+
+      // Extract the generated image from Gemini response
+      if (!result.candidates || !result.candidates[0] || !result.candidates[0].content || !result.candidates[0].content.parts) {
+        throw new Error('No image data in Gemini response');
+      }
+
+      console.log('🔍 Gemini response structure analysis:');
+      console.log('  - candidates length:', result.candidates.length);
+      console.log('  - first candidate content parts:', result.candidates[0].content.parts.length);
+      
+      // Log the structure of each part to debug the response format
+      result.candidates[0].content.parts.forEach((part, index) => {
+        console.log(`  - Part ${index}:`, Object.keys(part));
+        if (part.inline_data) {
+          console.log(`    - inline_data keys:`, Object.keys(part.inline_data));
+        }
+        if (part.inlineData) {
+          console.log(`    - inlineData keys:`, Object.keys(part.inlineData));
+        }
+      });
+
+      // Try both inline_data and inlineData formats (Google APIs sometimes vary)
+      // Note: Gemini typically uses camelCase (inlineData), not snake_case (inline_data)
+      let imagePart = result.candidates[0].content.parts.find(part => part.inlineData);
+      if (!imagePart) {
+        imagePart = result.candidates[0].content.parts.find(part => part.inline_data);
+      }
+
+      if (!imagePart) {
+        console.error('❌ No image part found. Available part keys:', result.candidates[0].content.parts.map(part => Object.keys(part)));
+        throw new Error('No image data found in Gemini response parts');
+      }
+
+      // Extract base64 data from either format (prioritize Gemini's camelCase format)
+      let base64Image;
+      if (imagePart.inlineData && imagePart.inlineData.data) {
+        base64Image = imagePart.inlineData.data;
+        console.log('✅ Found image data in inlineData.data format');
+      } else if (imagePart.inline_data && imagePart.inline_data.data) {
+        base64Image = imagePart.inline_data.data;
+        console.log('✅ Found image data in inline_data.data format');
+      } else {
+        console.error('❌ Image part found but no data. Part structure:', JSON.stringify(imagePart, null, 2));
+        throw new Error('No base64 data in image part');
+      }
+      
+      // Upload the base64 image to Cloud Storage
+      const imageUrl = await this.uploadToCloudStorage(base64Image);
+      
+      return imageUrl;
+
+    } catch (error: any) {
+      console.error('💥 Gemini generation error:', error);
+      throw error;
+    }
+  }
+
+  private parseGeminiResolution(resolution: string): string {
+    // Convert K format to actual pixel dimensions
+    const resolutionMap: Record<string, string> = {
+      '1K': '1024',
+      '2K': '2048', 
+      '4K': '4096'
+    };
+    
+    return resolutionMap[resolution] || '1024';
   }
 
 

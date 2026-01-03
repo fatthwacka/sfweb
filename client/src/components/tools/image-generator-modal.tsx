@@ -41,6 +41,7 @@ export interface ImageGenerationRequest {
   imageStyle: string;
   resolution: string;
   aspectRatio: string;
+  model: string;
   articleContext?: {
     headline?: string;
     hook?: string;
@@ -117,10 +118,90 @@ const IMAGE_STYLES = [
   { value: 'modern', label: 'Modern', description: 'Contemporary aesthetic' }
 ];
 
-const RESOLUTIONS = ['1024', '1500', '2048'];
+// 2x3 Model Grid: Nano Banana | Imagen (Best → Budget)
+const VERTEX_MODELS = [
+  // Column 1: Nano Banana (Premium) - Gemini models with K-scale resolution
+  {
+    value: 'gemini-3-pro-image-preview-4k',
+    actualModel: 'gemini-3-pro-image-preview',
+    label: 'Nano Pro',
+    description: 'Best multimodal AI ($0.24)',
+    category: 'nano-banana',
+    aspectRatios: ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'],
+    resolutions: ['4K'],
+    nativeResolutionFormat: 'k-scale',
+    position: { row: 0, col: 0 },
+    default: false // Premium option
+  },
+  {
+    value: 'gemini-3-pro-image-preview-2k',
+    actualModel: 'gemini-3-pro-image-preview',
+    label: 'Nano Mid',
+    description: 'Standard AI ($0.134)',
+    category: 'nano-banana',
+    aspectRatios: ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'],
+    resolutions: ['2K'],
+    nativeResolutionFormat: 'k-scale',
+    position: { row: 1, col: 0 }
+  },
+  {
+    value: 'gemini-3-pro-image-preview-1k',
+    actualModel: 'gemini-3-pro-image-preview',
+    label: 'Nano Fast',
+    description: 'Budget AI ($0.134)',
+    category: 'nano-banana',
+    aspectRatios: ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'],
+    resolutions: ['1K'],
+    nativeResolutionFormat: 'k-scale',
+    position: { row: 2, col: 0 }
+  },
+
+  // Column 2: Imagen (Standard) - Pixel resolution
+  {
+    value: 'imagen-4.0-ultra-generate-001',
+    label: 'Imagen Ultra',
+    description: 'Highest quality',
+    category: 'imagen',
+    aspectRatios: ['1:1', '3:4', '4:3', '9:16', '16:9'],
+    resolutions: ['2048px', '1536px', '1024px'],
+    nativeResolutionFormat: 'pixel',
+    position: { row: 0, col: 1 }
+  },
+  {
+    value: 'imagen-4.0-generate-001',
+    label: 'Imagen Standard',
+    description: 'Mid-range quality',
+    category: 'imagen',
+    aspectRatios: ['1:1', '3:4', '4:3', '9:16', '16:9'],
+    resolutions: ['1536px', '1024px'],
+    nativeResolutionFormat: 'pixel',
+    position: { row: 1, col: 1 }
+  },
+  {
+    value: 'imagen-4.0-fast-generate-001',
+    label: 'Imagen Fast',
+    description: 'Budget option (~$0.039)',
+    category: 'imagen',
+    aspectRatios: ['1:1', '3:4', '4:3', '9:16', '16:9'],
+    resolutions: ['1024px'],
+    nativeResolutionFormat: 'pixel',
+    position: { row: 2, col: 1 },
+    default: true // Use cheapest model for debugging
+  }
+];
+
+const getModelConfig = (modelValue: string) => {
+  return VERTEX_MODELS.find(m => m.value === modelValue) || VERTEX_MODELS[0];
+};
+
+const getDefaultModel = () => {
+  return VERTEX_MODELS.find(m => m.default) || VERTEX_MODELS[0]; // Fallback to first Nano Banana model
+};
+
+const RESOLUTIONS = ['1024', '1152', '1280', '1408', '1536', '1792', '2048', '2304', '2560', '2816'];
 
 const ASPECT_RATIOS = [
-  '16:9', '9:16', '1:1', '4:3', '3:4', '3:2', '2:3'
+  '1:1', '3:4', '4:3', '9:16', '16:9'
 ];
 
 const UNSPLASH_QUALITY_OPTIONS = [
@@ -148,7 +229,8 @@ export function ImageGeneratorModal({
   const [includeSubtitle, setIncludeSubtitle] = useState(false);
   const [artStyle, setArtStyle] = useState('photorealistic');
   const [imageStyle, setImageStyle] = useState('professional');
-  const [resolution, setResolution] = useState('1500');
+  const [model, setModel] = useState(() => getDefaultModel().value);
+  const [resolution, setResolution] = useState(() => getDefaultModel().resolutions[0]);
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [aiAnalyzedPrompt, setAiAnalyzedPrompt] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -169,6 +251,21 @@ export function ImageGeneratorModal({
   const [hasMoreUnsplashImages, setHasMoreUnsplashImages] = useState(true);
   const [unsplashAttribution, setUnsplashAttribution] = useState<{user: string; username: string} | null>(null);
 
+  // Model configuration effect - update available options when model changes
+  useEffect(() => {
+    const modelConfig = getModelConfig(model);
+    
+    // Update resolution if current one is not available for selected model
+    if (!modelConfig.resolutions.includes(resolution)) {
+      setResolution(modelConfig.resolutions[0]);
+    }
+    
+    // Update aspect ratio if current one is not available for selected model
+    if (!modelConfig.aspectRatios.includes(aspectRatio)) {
+      setAspectRatio(modelConfig.aspectRatios[0]);
+    }
+  }, [model, resolution, aspectRatio]);
+
   // Reset when modal opens/closes
   useEffect(() => {
     if (!isOpen) {
@@ -176,6 +273,10 @@ export function ImageGeneratorModal({
       setAiAnalyzedPrompt('');
       setUseAiPrompt(false);
       setPrompt(initialPrompt);
+      const defaultModel = getDefaultModel();
+      setModel(defaultModel.value);
+      setResolution(defaultModel.resolutions[0]);
+      setAspectRatio('1:1');
       setUnsplashImages([]);
       setSelectedUnsplashImage(null);
       setUnsplashSearchTerm('');
@@ -219,6 +320,45 @@ export function ImageGeneratorModal({
     }
   };
 
+  const enhanceStandalonePrompt = async () => {
+    if (!prompt.trim()) return;
+    
+    setIsAnalyzing(true);
+    try {
+      const response = await fetch('/api/ai/enhance-prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userPrompt: prompt, 
+          artStyle, 
+          imageStyle 
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to enhance prompt');
+
+      const result = await response.json();
+      setAiAnalyzedPrompt(result.suggestedPrompt);
+      setUseAiPrompt(true); // Auto-tick checkbox when enhancement succeeds
+      setHasAnalyzed(true);
+      
+      toast({
+        title: 'Prompt Enhanced!',
+        description: 'Your prompt has been optimized for better image generation.',
+      });
+    } catch (error) {
+      console.error('Error enhancing prompt:', error);
+      toast({
+        title: 'Enhancement Failed',
+        description: 'Could not enhance prompt. You can still use your original prompt.',
+        variant: 'destructive',
+      });
+      setHasAnalyzed(true); // Mark as analyzed even on error to prevent retries
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const generateImage = async () => {
     const finalPrompt = useAiPrompt && aiAnalyzedPrompt ? aiAnalyzedPrompt : prompt;
     
@@ -242,6 +382,7 @@ export function ImageGeneratorModal({
         imageStyle,
         resolution,
         aspectRatio,
+        model,
         articleContext,
       };
 
@@ -253,7 +394,10 @@ export function ImageGeneratorModal({
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Failed to generate image');
+        const userMessage = error.details?.includes('ImgBB upload failed') 
+          ? 'Image hosting service temporarily unavailable. Please try again in a moment.'
+          : error.message || 'Failed to generate image';
+        throw new Error(userMessage);
       }
 
       const result = await response.json();
@@ -439,7 +583,7 @@ export function ImageGeneratorModal({
       prompt: activeTab === 'unsplash' 
         ? unsplashSearchTerm 
         : (useAiPrompt && aiAnalyzedPrompt ? aiAnalyzedPrompt : prompt),
-      metadata: { artStyle, imageStyle, resolution, aspectRatio },
+      metadata: { artStyle, imageStyle, resolution, aspectRatio, model },
       attribution,
     };
 
@@ -457,7 +601,15 @@ export function ImageGeneratorModal({
     if (!imageToDownload) return;
 
     try {
-      const response = await fetch(imageToDownload);
+      // Use proxy endpoint to bypass CORS issues
+      const proxyUrl = `/api/download/image?url=${encodeURIComponent(imageToDownload)}`;
+      
+      const response = await fetch(proxyUrl);
+      
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+      }
+      
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -474,9 +626,10 @@ export function ImageGeneratorModal({
         description: 'Your image download has begun.',
       });
     } catch (error) {
+      console.error('Download error:', error);
       toast({
         title: 'Download Failed',
-        description: 'Could not download image.',
+        description: error instanceof Error ? error.message : 'Could not download image.',
         variant: 'destructive',
       });
     }
@@ -518,7 +671,20 @@ export function ImageGeneratorModal({
                   
                   {/* Prompt Section */}
                   <div className="space-y-2">
-                    <Label htmlFor="prompt">Image Description</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="prompt">Image Description</Label>
+                      {!articleContext && prompt.trim() && (
+                        <Button
+                          onClick={enhanceStandalonePrompt}
+                          disabled={isAnalyzing}
+                          variant="outline"
+                          size="sm"
+                        >
+                          {isAnalyzing ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Sparkles className="h-3 w-3 mr-1" />}
+                          {isAnalyzing ? 'Enhancing...' : hasAnalyzed ? 'Re-enhance' : 'Enhance prompt'}
+                        </Button>
+                      )}
+                    </div>
                     <Textarea
                       id="prompt"
                       placeholder="Describe the image you want to generate..."
@@ -526,6 +692,24 @@ export function ImageGeneratorModal({
                       onChange={(e) => setPrompt(e.target.value)}
                       className="min-h-[100px]"
                     />
+                    
+                    {/* AI Enhanced Prompt Display - Only for standalone mode */}
+                    {!articleContext && aiAnalyzedPrompt && (
+                      <div className="p-3 bg-orange-50 border border-orange-200 rounded-md">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <input
+                            type="checkbox"
+                            id="use-ai-prompt-standalone"
+                            checked={useAiPrompt}
+                            onChange={(e) => setUseAiPrompt(e.target.checked)}
+                          />
+                          <Label htmlFor="use-ai-prompt-standalone" className="text-sm font-medium text-gray-700">
+                            Use enhanced prompt
+                          </Label>
+                        </div>
+                        <p className="text-sm text-gray-700">{aiAnalyzedPrompt}</p>
+                      </div>
+                    )}
                   </div>
 
                   {/* AI Analysis Section - Always visible */}
@@ -563,6 +747,81 @@ export function ImageGeneratorModal({
                       </div>
                     </div>
                   )}
+
+                  {/* Model Selection - 2x3 Radio Grid */}
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <Label>AI Model</Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Info className="h-3 w-3 text-gray-400" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs">
+                            <div className="space-y-1 text-xs">
+                              <p><strong>Nano Banana:</strong> Advanced AI with K-scale resolutions (1K, 2K, 4K)</p>
+                              <p><strong>Imagen:</strong> Professional models with px resolutions</p>
+                              <p>Top row: Best quality, Bottom row: Budget options</p>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    
+                    {/* 2x3 Model Grid */}
+                    <div className="grid grid-cols-2 gap-3">
+                      {/* Column Headers */}
+                      <div className="text-center text-sm font-semibold text-purple-700 pb-1">🍌 Nano Banana</div>
+                      <div className="text-center text-sm font-semibold text-blue-700 pb-1">🎨 Imagen</div>
+                      
+                      {/* Model Grid */}
+                      {Array.from({ length: 3 }, (_, row) => (
+                        Array.from({ length: 2 }, (_, col) => {
+                          const modelOption = VERTEX_MODELS.find(m => 
+                            m.position?.row === row && m.position?.col === col
+                          );
+                          if (!modelOption) return null;
+                          
+                          return (
+                            <label
+                              key={modelOption.value}
+                              className={`
+                                relative cursor-pointer rounded-lg border-2 p-4 text-center transition-all duration-200 hover:shadow-md
+                                ${model === modelOption.value
+                                  ? col === 0 
+                                    ? 'border-purple-500 bg-purple-50 text-purple-900 ring-2 ring-purple-200'
+                                    : 'border-blue-500 bg-blue-50 text-blue-900 ring-2 ring-blue-200'
+                                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                                }
+                              `}
+                            >
+                              <input
+                                type="radio"
+                                name="model"
+                                value={modelOption.value}
+                                checked={model === modelOption.value}
+                                onChange={(e) => setModel(e.target.value)}
+                                className="sr-only"
+                              />
+                              <div className="space-y-1">
+                                <div className="text-sm font-semibold">{modelOption.label}</div>
+                                <div className="text-xs opacity-75">{modelOption.description}</div>
+                                <div className="text-xs font-medium">
+                                  {modelOption.nativeResolutionFormat === 'k-scale' 
+                                    ? modelOption.resolutions.join(', ')
+                                    : modelOption.resolutions.slice(0, 2).join(', ')
+                                  }
+                                </div>
+                              </div>
+                              {model === modelOption.value && (
+                                <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-orange-500 border-2 border-white"></div>
+                              )}
+                            </label>
+                          );
+                        })
+                      )).flat().filter(Boolean)}
+                    </div>
+                  </div>
 
                   {/* Configuration Grid */}
                   <div className="grid grid-cols-2 gap-4 relative overflow-hidden">
@@ -611,9 +870,9 @@ export function ImageGeneratorModal({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent align="start">
-                          {RESOLUTIONS.map((res) => (
+                          {getModelConfig(model).resolutions.map((res) => (
                             <SelectItem key={res} value={res} className="text-left">
-                              {res}px
+                              {res}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -627,7 +886,7 @@ export function ImageGeneratorModal({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent align="start">
-                          {ASPECT_RATIOS.map((ratio) => (
+                          {getModelConfig(model).aspectRatios.map((ratio) => (
                             <SelectItem key={ratio} value={ratio} className="text-left">
                               {ratio}
                             </SelectItem>
