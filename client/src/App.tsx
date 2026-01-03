@@ -89,6 +89,9 @@ import DuplicateFinder from "@/pages/tools/duplicate-finder";
 import SmartOrganiser from "@/pages/tools/smart-organiser";
 import ProjectCleanup from "@/pages/tools/project-cleanup";
 import ArticleEditor from "@/pages/tools/article-editor";
+import AIImageGenerator from "@/pages/tools/ai-image-generator";
+import BrandIntelligenceDashboardPage from "@/pages/brand-intelligence-dashboard";
+import ClientControlCentrePage from "@/pages/client-control-centre";
 // Removed old demo MyGallery - clients use /client-portal
 import NotFound from "@/pages/not-found";
 
@@ -130,6 +133,11 @@ function Router() {
       <Route path="/tools/smart-organiser" component={SmartOrganiser} />
       <Route path="/tools/project-cleanup" component={ProjectCleanup} />
       <Route path="/tools/article-editor" component={ArticleEditor} />
+      <Route path="/tools/ai-image-generator" component={AIImageGenerator} />
+      <Route path="/tools/brand-intelligence-dashboard" component={BrandIntelligenceDashboardPage} />
+      <Route path="/tools/brand-intelligence/client/:clientId">
+        {(params) => <ClientControlCentrePage params={params} />}
+      </Route>
       <Route path="/gallery-demo" component={GalleryDemo} />
       <Route path="/portfolio" component={Portfolio} />
       <Route path="/project/:groupName" component={PortfolioGroup} />
