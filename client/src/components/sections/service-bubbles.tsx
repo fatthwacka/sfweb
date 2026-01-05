@@ -27,14 +27,14 @@ const serviceBubbles: ServiceBubble[] = [
   },
   {
     id: 'web-apps',
-    label: 'Web & Apps',
+    label: 'Web',
     icon: <Globe className="w-4 h-4" />,
     link: '/web-apps',
     side: 'right'
   },
   {
     id: 'ai-bots',
-    label: 'AI Bots', 
+    label: 'AI Apps', 
     icon: <Bot className="w-4 h-4" />,
     link: '/tools',
     side: 'right'
@@ -131,10 +131,10 @@ function ServiceBubble({ service, index }: ServiceBubbleProps) {
 
         {/* Main bubble button - with subtle colour hints per service */}
         <div className={`service-bubble px-3 py-2 md:px-5 md:py-2.5 font-barlow font-normal rounded-full transition-all duration-300 text-sm whitespace-nowrap flex-shrink-0 relative overflow-hidden border text-gray-200 hover:border-purple-400/60 hover:bg-gradient-to-r hover:from-purple-900/40 hover:via-indigo-800/30 hover:to-purple-700/40 hover:text-white flex items-center gap-1.5 ${
-          service.id === 'photo' ? 'bg-gradient-to-r from-blue-950/30 to-gray-800/65 border-blue-900/20 hover:from-blue-900/50' :
-          service.id === 'video' ? 'bg-gradient-to-r from-purple-950/30 to-gray-800/65 border-purple-900/20 hover:from-purple-900/50' :
-          service.id === 'web-apps' ? 'bg-gradient-to-r from-green-950/30 to-gray-800/65 border-green-900/20 hover:from-green-900/50' :
-          'bg-gradient-to-r from-orange-950/30 to-gray-800/65 border-orange-900/20 hover:from-orange-900/50'
+          service.id === 'photo' ? 'bg-gradient-to-r from-blue-950/30 to-gray-800/65 border-blue-600/60 hover:from-blue-900/50' :
+          service.id === 'video' ? 'bg-gradient-to-r from-purple-950/30 to-gray-800/65 border-purple-600/60 hover:from-purple-900/50' :
+          service.id === 'web-apps' ? 'bg-gradient-to-r from-green-950/30 to-gray-800/65 border-green-600/60 hover:from-green-900/50' :
+          'bg-gradient-to-r from-orange-950/30 to-gray-800/65 border-orange-600/60 hover:from-orange-900/50'
         }`}>
           
           {/* Enhanced shimmer effect - purple streak */}

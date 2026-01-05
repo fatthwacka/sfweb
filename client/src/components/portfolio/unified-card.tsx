@@ -64,24 +64,43 @@ export function UnifiedCard({ shoot }: UnifiedCardProps) {
 
   // Get the thumbnail URL - ALWAYS prioritize photo covers over video thumbnails
   const getThumbnailUrl = () => {
-    // For individual albums: always use photo cover if available
-    if (!shoot.isGroup && shoot.coverImageUrl) {
+    // ALWAYS prioritize coverImageUrl over video thumbnails regardless of type
+    if (shoot.coverImageUrl) {
       return shoot.coverImageUrl;
     }
     
-    // For groups: prioritize photo gallery covers (this should already be handled by backend)
-    if (shoot.isGroup && shoot.coverImageUrl) {
-      return shoot.coverImageUrl;
+    // Only use video thumbnail as fallback when no cover image exists
+    if (shoot.coverVideoInfo?.thumbnailPath) {
+      return shoot.coverVideoInfo.thumbnailPath;
     }
     
-    // Only use video thumbnail if no photo cover is available
-    return shoot.coverVideoInfo ? shoot.coverVideoInfo.thumbnailPath : null;
+    return null;
   };
 
   const thumbnailUrl = getThumbnailUrl();
   const displayTitle = getDisplayTitle();
   const displayDate = getDisplayDate();
-  const hasVideo = shoot.mediaType === 'video' && shoot.coverVideoInfo;
+  
+  // Determine if video autoplay should be enabled
+  const shouldShowVideoOnHover = () => {
+    // For individual galleries: only if it's a video-only gallery
+    if (!shoot.isGroup) {
+      return shoot.mediaType === 'video' && shoot.coverVideoInfo;
+    }
+    
+    // For groups: only if ALL galleries are video galleries (no mixed media)
+    if (shoot.isGroup && shoot.shoots) {
+      const hasPhotoGalleries = shoot.shoots.some(s => s.mediaType === 'photo');
+      const hasVideoGalleries = shoot.shoots.some(s => s.mediaType === 'video');
+      
+      // Only show video on hover if there are videos and NO photos (video-only project)
+      return hasVideoGalleries && !hasPhotoGalleries && shoot.coverVideoInfo;
+    }
+    
+    return false;
+  };
+  
+  const hasVideo = shouldShowVideoOnHover();
 
   return (
     <Link href={getCardUrl()}>

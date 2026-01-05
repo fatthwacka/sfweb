@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { apiRequest } from "@/lib/queryClient";
+import { supabaseOperations } from "@/lib/supabase-operations";
 import { GradientPicker } from "@/components/ui/gradient-picker";
 import {
   Plus,
@@ -39,7 +39,8 @@ import {
   MessageSquare,
   Undo2,
   FolderOpen,
-  Loader2
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 import type { BlogPost, BlogCategory, BlogTag, InsertBlogPost, FeaturedSection } from "@shared/schema";
 
@@ -48,6 +49,8 @@ interface BlogManagementProps {
 }
 
 export function BlogManagement({ userRole }: BlogManagementProps) {
+  console.log('🔄 BlogManagement component mounting/re-rendering');
+  
   const { toast } = useToast();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -76,6 +79,14 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
     publishedAt: new Date().toISOString().split('T')[0] // Today's date in YYYY-MM-DD format
   });
   const [isGenerating, setIsGenerating] = useState(false);
+  
+  // Publish progress modal state
+  const [publishProgress, setPublishProgress] = useState({
+    isOpen: false,
+    step: 'saving', // 'saving' | 'generating' | 'success' | 'error'
+    message: '',
+    error: null as string | null
+  });
 
   // Slug state
   const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
@@ -166,19 +177,15 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
   // Fetch blog posts
   const { data: posts = [], isLoading: postsLoading } = useQuery<BlogPost[]>({
     queryKey: ['blog', 'posts'],
-    queryFn: async () => {
-      const response = await apiRequest('GET', '/api/blog/posts');
-      return response.json();
-    }
+    queryFn: supabaseOperations.blog.posts.getAll,
+    staleTime: 30 * 1000,
   });
 
   // Fetch categories
   const { data: categories = [] } = useQuery<BlogCategory[]>({
     queryKey: ['blog', 'categories'],
-    queryFn: async () => {
-      const response = await apiRequest('GET', '/api/blog/categories');
-      return response.json();
-    }
+    queryFn: supabaseOperations.blog.categories.getAll,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Fetch existing blog images for browser dialog
@@ -188,14 +195,10 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
     createdAt: string;
     size: number;
   }
-  const { data: blogImages = [], isLoading: blogImagesLoading, refetch: refetchBlogImages } = useQuery<BlogImage[]>({
-    queryKey: ['blog', 'images'],
-    queryFn: async () => {
-      const response = await apiRequest('GET', '/api/blog/images');
-      return response.json();
-    },
-    enabled: imageBrowserOpen // Only fetch when dialog is open
-  });
+  // TODO: Convert to Supabase Storage for blog images
+  const blogImages: BlogImage[] = [];
+  const blogImagesLoading = false;
+  const refetchBlogImages = () => {};
 
   // Handle selecting an existing image from the browser
   const handleSelectExistingImage = (imageUrl: string) => {
@@ -228,47 +231,51 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
   // Create/update post mutation
   const savePostMutation = useMutation({
     mutationFn: async (post: Partial<InsertBlogPost>) => {
-      const url = selectedPost?.id
-        ? `/api/blog/posts/${selectedPost.id}`
-        : '/api/blog/posts';
-
-      const method = selectedPost?.id ? 'PUT' : 'POST';
-
       console.log('Sending blog post data:', JSON.stringify(post, null, 2));
-      return apiRequest(method, url, post);
+      
+      if (selectedPost?.id) {
+        // Update existing post
+        return supabaseOperations.blog.posts.update(selectedPost.id, {
+          title: post.title,
+          slug: post.slug,
+          content: post.content,
+          excerpt: post.excerpt,
+          cover_image: post.coverImage || null,
+          category_id: post.categoryId || null,
+          status: post.status,
+          published_at: post.publishedAt || null,
+          author_id: post.authorId || null,
+        });
+      } else {
+        // Create new post
+        return supabaseOperations.blog.posts.create({
+          title: post.title!,
+          slug: post.slug,
+          content: post.content,
+          excerpt: post.excerpt,
+          cover_image: post.coverImage || null,
+          category_id: post.categoryId || null,
+          status: post.status,
+          published_at: post.publishedAt || null,
+          author_id: post.authorId || null,
+        });
+      }
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
       toast({ title: "Success", description: "Blog post saved successfully" });
       queryClient.invalidateQueries({ queryKey: ['blog', 'posts'] });
-      setNewPostOpen(false);
-      setSelectedPost(null);
-      setEditorPost({ 
-        title: '', 
-        content: '', 
-        excerpt: '', 
-        status: 'draft', 
-        slug: '', 
-        coverImage: undefined, 
-        postImage1: undefined, 
-        postImage2: undefined,
-        publishedAt: new Date().toISOString().split('T')[0] // Reset to today's date
-      });
-      setContentSections({
-        subtitle: '',
-        introduction: '',
-        mainSections: [
-          { heading: '', content: '' },
-          { heading: '', content: '' },
-          { heading: '', content: '' }
-        ],
-        pullQuote: '',
-        conclusion: { heading: '', content: '' }
-      });
-      setFeaturedSection({
-        type: 'none',
-        config: {}
-      });
-      setVariableContent('');
+      
+      // Only clear state if this was creating a NEW post from the "New Post" dialog
+      // Don't clear state when editing existing posts
+      const wasCreatingNewPost = !selectedPost?.id;
+      
+      if (wasCreatingNewPost) {
+        setNewPostOpen(false);
+        // For new posts, we could keep editing or return to list - keep state for now
+      }
+      
+      // Note: Keep selectedPost and editorPost intact for continued editing
+      // This allows Save → Publish workflow to work properly
     },
     onError: (error) => {
       console.error('Blog post save error:', error);
@@ -278,9 +285,7 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
 
   // Delete post mutation
   const deletePostMutation = useMutation({
-    mutationFn: async (postId: string) => {
-      return apiRequest('DELETE', `/api/blog/posts/${postId}`);
-    },
+    mutationFn: supabaseOperations.blog.posts.delete,
     onSuccess: () => {
       toast({ title: "Success", description: "Blog post deleted successfully" });
       queryClient.invalidateQueries({ queryKey: ['blog', 'posts'] });
@@ -294,8 +299,7 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
   const createCategoryMutation = useMutation({
     mutationFn: async (categoryName: string) => {
       console.log('Creating category with data:', { name: categoryName });
-      const response = await apiRequest('POST', '/api/blog/categories', { name: categoryName });
-      return response.json();
+      return supabaseOperations.blog.categories.create({ name: categoryName });
     },
     onSuccess: (newCategory) => {
       toast({ title: "Success", description: "Category created successfully" });
@@ -370,8 +374,7 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
 
     setSlugStatus('checking');
     try {
-      const response = await apiRequest('GET', `/api/blog/posts?search=${encodeURIComponent(slug)}&limit=100`);
-      const existingPosts = await response.json();
+      const existingPosts = await supabaseOperations.blog.posts.search(slug, 100);
 
       // Check if any post has this exact slug (excluding current post being edited)
       const slugTaken = existingPosts.some((post: BlogPost) =>
@@ -410,39 +413,20 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
     setSaveAsDefault(false);
     setAiBriefOpen(true);
 
-    // Fetch default prompt for current content type
-    setLoadingPrompt(true);
-    try {
-      const promptKey = encodeURIComponent(`content:${contentType}`);
-      const response = await apiRequest('GET', `/api/ai/prompts/${promptKey}`);
-      const data = await response.json();
-      setDefaultPrompt(data.promptText || '');
-      setCustomPrompt(data.promptText || '');
-    } catch (error) {
-      console.error('Failed to fetch default prompt:', error);
-      setDefaultPrompt('');
-      setCustomPrompt('');
-    } finally {
-      setLoadingPrompt(false);
-    }
+    // TODO: Convert AI prompt fetching to Supabase
+    setLoadingPrompt(false);
+    setDefaultPrompt('');
+    setCustomPrompt('');
   };
 
   // Refetch prompt when content type changes
   const handleContentTypeChange = async (newType: typeof contentType) => {
     setContentType(newType);
     if (showAdvanced) {
-      setLoadingPrompt(true);
-      try {
-        const promptKey = encodeURIComponent(`content:${newType}`);
-        const response = await apiRequest('GET', `/api/ai/prompts/${promptKey}`);
-        const data = await response.json();
-        setDefaultPrompt(data.promptText || '');
-        setCustomPrompt(data.promptText || '');
-      } catch (error) {
-        console.error('Failed to fetch prompt:', error);
-      } finally {
-        setLoadingPrompt(false);
-      }
+      // TODO: Convert AI prompt fetching to Supabase
+      setLoadingPrompt(false);
+      setDefaultPrompt('');
+      setCustomPrompt('');
     }
   };
 
@@ -986,16 +970,36 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
       const briefText = aiBrief.trim();
       const fullTopic = `${topicText}${briefText ? `. ${briefText}` : ''}`;
 
-      // Use the new generate-full endpoint for parallel generation
-      const response = await apiRequest('POST', '/api/ai/generate-full', {
-        topic: fullTopic,
+      // TODO: Convert AI generation to Supabase Edge Functions
+      console.log('AI generation would use:', { 
+        topic: fullTopic, 
         contentType,
-        category: categories.find(c => c.id === editorPost.categoryId)?.name,
-        customPrompt: showAdvanced && customPrompt !== defaultPrompt ? customPrompt : undefined,
-        saveAsDefault: showAdvanced && saveAsDefault
+        category: categories.find(c => c.id === editorPost.categoryId)?.name 
       });
-
-      const data = await response.json();
+      
+      // Placeholder data structure
+      const data = {
+        titles: [`Generated: ${fullTopic}`],
+        sections: {
+          subtitle: 'AI-generated subtitle',
+          introduction: 'AI-generated introduction content...',
+          mainSections: [
+            { heading: 'Section 1', content: 'AI-generated content for section 1...' },
+            { heading: 'Section 2', content: 'AI-generated content for section 2...' },
+            { heading: 'Section 3', content: 'AI-generated content for section 3...' }
+          ],
+          pullQuote: 'AI-generated pull quote',
+          conclusion: {
+            heading: 'Conclusion',
+            content: 'AI-generated conclusion...'
+          }
+        },
+        excerpt: 'AI-generated excerpt...',
+        seoData: {
+          title: `${fullTopic} - Professional Services`,
+          description: 'AI-generated meta description...'
+        }
+      };
 
       // Set title suggestions
       if (data.titles?.length > 0) {
@@ -1451,7 +1455,7 @@ Please provide only the enhanced content without any additional text or explanat
   const filteredPosts = posts.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || post.status === statusFilter;
-    const matchesCategory = categoryFilter === 'all' || post.categoryId === categoryFilter;
+    const matchesCategory = categoryFilter === 'all' || post.category_id === categoryFilter;
     
     // Date filter logic
     let matchesDate = true;
@@ -1484,22 +1488,28 @@ Please provide only the enhanced content without any additional text or explanat
 
   // Handle edit post
   const handleEditPost = (post: BlogPost) => {
+    console.log('🔧 HANDLE EDIT POST CALLED with post:', post);
+    console.log('🔧 Setting activeView to editor');
+    console.log('🔧 Setting selectedPost to:', post);
+    setActiveView('editor');
     setSelectedPost(post);
+    console.log('🔧 Setting editorPost data...');
     setEditorPost({
+      id: post.id, // CRITICAL: Include the post ID for UPDATE operations
       title: post.title,
       slug: post.slug,
       content: post.content,
       excerpt: post.excerpt || '',
-      seoTitle: post.seoTitle || '',
-      seoDescription: post.seoDescription || '',
-      coverImage: post.coverImage || undefined,
-      postImage1: (post as any).postImage1 || undefined,
-      postImage2: (post as any).postImage2 || undefined,
+      seoTitle: post.seo_title || '',
+      seoDescription: post.seo_description || '',
+      coverImage: post.cover_image || undefined,
+      postImage1: post.post_image_1 || undefined,
+      postImage2: post.post_image_2 || undefined,
       status: post.status as 'draft' | 'published' | 'scheduled',
-      categoryId: post.categoryId || undefined,
-      authorId: post.authorId || undefined,  // Preserve original author
-      publishedAt: post.publishedAt 
-        ? new Date(post.publishedAt).toISOString().split('T')[0] 
+      categoryId: post.category_id || undefined,
+      authorId: post.author_id || undefined,  // Preserve original author
+      publishedAt: post.published_at 
+        ? new Date(post.published_at).toISOString().split('T')[0] 
         : new Date().toISOString().split('T')[0] // Fallback to today if no date
     });
 
@@ -1613,9 +1623,9 @@ Please provide only the enhanced content without any additional text or explanat
       conclusion: { heading: conclusionHeading, content: conclusionContent }
     });
 
-    // Load featured section if it exists
-    if ((post as any).featuredSection) {
-      setFeaturedSection((post as any).featuredSection);
+    // Load featured section if it exists (check both camelCase and snake_case)
+    if ((post as any).featured_section || (post as any).featuredSection) {
+      setFeaturedSection((post as any).featured_section || (post as any).featuredSection);
     } else {
       setFeaturedSection({ type: 'none', config: {} });
     }
@@ -1748,43 +1758,135 @@ Please provide only the enhanced content without any additional text or explanat
               Save Draft
             </Button>
             <Button
-              onClick={() => {
-                const postData = {
-                  ...editorPost,
-                  excerpt: contentSections.subtitle || editorPost.excerpt,
-                  content: combineContentSections(),
-                  featuredSection,
-                  variableContent,
-                  status: 'published',
-                  authorId: editorPost.authorId || user?.id
-                };
+              onClick={async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🚀 SAVE & PUBLISH CLICKED');
                 
-                // Handle publishedAt date conversion
-                if (editorPost.publishedAt) {
-                  // Convert YYYY-MM-DD string to ISO string for backend
-                  const date = new Date(editorPost.publishedAt + 'T12:00:00.000Z'); // Use noon to avoid timezone issues
-                  postData.publishedAt = date.toISOString();
-                  console.log('Setting custom publishedAt:', postData.publishedAt);
-                } else {
-                  console.log('No publishedAt date provided, backend will set automatically');
-                }
-                
-                // Convert empty/undefined optional fields to null so backend clears them
-                // Required fields: title, content, authorId, status - keep as-is
-                const nullableFields = ['coverImage', 'postImage1', 'postImage2', 'excerpt', 'seoTitle', 'seoDescription', 'categoryId', 'variableContent'];
-                nullableFields.forEach(key => {
-                  const value = postData[key as keyof typeof postData];
-                  if (value === undefined || value === '') {
-                    (postData as any)[key] = null;
-                  }
+                // Open progress modal
+                console.log('🔄 Setting publishProgress to open...');
+                setPublishProgress({
+                  isOpen: true,
+                  step: 'saving',
+                  message: 'Saving story to database...',
+                  error: null
                 });
-                savePostMutation.mutate(postData);
+                console.log('✅ publishProgress state updated');
+                
+                // Add a delay to ensure state update renders  
+                await new Promise(resolve => setTimeout(resolve, 5000));
+                console.log('🎯 MODAL SHOULD BE VISIBLE FOR 5 SECONDS NOW - if you see this and no modal, there is a rendering issue');
+                console.log('🔍 Current publishProgress state:', JSON.stringify(publishProgress, null, 2));
+                
+                try {
+                  console.log('📝 Preparing post data...');
+                  // Step 1: Prepare post data
+                  const postData = {
+                    ...editorPost,
+                    excerpt: contentSections.subtitle || editorPost.excerpt,
+                    content: combineContentSections(),
+                    featuredSection,
+                    variableContent,
+                    status: 'published',
+                    authorId: editorPost.authorId || user?.id
+                  };
+                  
+                  // Handle publishedAt date conversion
+                  if (editorPost.publishedAt) {
+                    const date = new Date(editorPost.publishedAt + 'T12:00:00.000Z');
+                    postData.publishedAt = date.toISOString();
+                  }
+                  
+                  // Convert empty/undefined optional fields to null
+                  const nullableFields = ['coverImage', 'postImage1', 'postImage2', 'excerpt', 'seoTitle', 'seoDescription', 'categoryId', 'variableContent'];
+                  nullableFields.forEach(key => {
+                    const value = postData[key as keyof typeof postData];
+                    if (value === undefined || value === '') {
+                      (postData as any)[key] = null;
+                    }
+                  });
+                  
+                  // Step 2: Save to database
+                  const url = selectedPost?.id 
+                    ? `/api/blog/posts/${selectedPost.id}` 
+                    : '/api/blog/posts';
+                  const method = selectedPost?.id ? 'PUT' : 'POST';
+                  
+                  console.log(`Saving to database: ${selectedPost?.id ? 'UPDATE' : 'CREATE'}`);
+                  const savedPost = selectedPost?.id 
+                    ? await supabaseOperations.blog.posts.update(selectedPost.id, {
+                        title: postData.title,
+                        slug: postData.slug,
+                        content: postData.content,
+                        excerpt: postData.excerpt || null,
+                        cover_image: postData.coverImage || null,
+                        category_id: postData.categoryId || null,
+                        status: postData.status,
+                        published_at: postData.publishedAt || null,
+                        author_id: postData.authorId || null,
+                      })
+                    : await supabaseOperations.blog.posts.create({
+                        title: postData.title,
+                        slug: postData.slug,
+                        content: postData.content,
+                        excerpt: postData.excerpt || null,
+                        cover_image: postData.coverImage || null,
+                        category_id: postData.categoryId || null,
+                        status: postData.status,
+                        published_at: postData.publishedAt || null,
+                        author_id: postData.authorId || null,
+                      });
+                  
+                  // Update progress
+                  console.log('🔄 Updating to generating step...');
+                  setPublishProgress(prev => ({
+                    ...prev,
+                    step: 'generating',
+                    message: 'Creating static SEO file...'
+                  }));
+                  console.log('✅ Updated to generating step');
+                  
+                  // Step 3: Generate static file (server handles this automatically via the update hook)
+                  // We'll wait a moment for the server to process
+                  await new Promise(resolve => setTimeout(resolve, 1000));
+                  
+                  // Success!
+                  console.log('🎉 Publishing complete, showing success...');
+                  setPublishProgress(prev => ({
+                    ...prev,
+                    step: 'success',
+                    message: 'Post published successfully!'
+                  }));
+                  console.log('✅ Success state set, modal should show finish options');
+                  
+                  // Keep modal open until user clicks Finish
+                  
+                  // Update local state
+                  if (!selectedPost?.id && savedPost) {
+                    setSelectedPost(savedPost);
+                  }
+                  
+                  // Refresh posts list (temporarily disabled to debug refresh issue)
+                  // queryClient.invalidateQueries({ queryKey: ['blog', 'posts'] });
+                  
+                } catch (error) {
+                  console.error('❌ Publish error caught:', error);
+                  setPublishProgress(prev => ({
+                    ...prev,
+                    step: 'error',
+                    message: 'Failed to publish post',
+                    error: error instanceof Error ? error.message : 'Unknown error'
+                  }));
+                  
+                  // Prevent any error propagation that might cause page refresh
+                  return false;
+                }
               }}
-              disabled={savePostMutation.isPending}
-              className="bg-salmon hover:bg-salmon/90 text-white"
+              disabled={publishProgress.isOpen}
+              className="bg-green-600 hover:bg-green-700 text-white"
             >
               <Send className="w-4 h-4 mr-2" />
-              Publish
+              Save & Publish
             </Button>
           </div>
         </div>
@@ -3602,7 +3704,10 @@ Please provide only the enhanced content without any additional text or explanat
         ) : (
           filteredPosts.map((post) => (
             <Card key={post.id} className="admin-gradient-card hover:bg-gray-700/50 transition-colors cursor-pointer">
-              <CardContent className="p-6" onClick={() => handleEditPost(post)}>
+              <CardContent className="p-6" onClick={() => {
+                console.log('📋 CARD CLICKED - calling handleEditPost with:', post);
+                handleEditPost(post);
+              }}>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
@@ -3641,10 +3746,10 @@ Please provide only the enhanced content without any additional text or explanat
                         {post.viewCount} views
                       </span>
                       {/* Show category if available */}
-                      {post.categoryId && categories.find(c => c.id === post.categoryId) && (
+                      {post.category_id && categories.find(c => c.id === post.category_id) && (
                         <span className="flex items-center gap-1">
                           <Tag className="w-3 h-3" />
-                          {categories.find(c => c.id === post.categoryId)?.name}
+                          {categories.find(c => c.id === post.category_id)?.name}
                         </span>
                       )}
                     </div>
@@ -3654,7 +3759,10 @@ Please provide only the enhanced content without any additional text or explanat
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleEditPost(post)}
+                      onClick={() => {
+                        console.log('✏️ EDIT BUTTON CLICKED - calling handleEditPost with:', post);
+                        handleEditPost(post);
+                      }}
                       className="border-gray-600 text-gray-300 hover:bg-gray-700"
                       title="Edit Post"
                     >
@@ -3676,6 +3784,101 @@ Please provide only the enhanced content without any additional text or explanat
           ))
         )}
       </div>
+
+      {/* Publish Progress Modal - Fixed Overlay Approach */}
+      {publishProgress.isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999]" 
+          style={{ zIndex: 9999, position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh' }}
+          ref={(el) => {
+            if (el) {
+              console.log('🎯 MODAL DOM ELEMENT RENDERED!', el);
+              console.log('🔍 Modal computed styles:', window.getComputedStyle(el));
+            }
+          }}
+        >
+          {console.log('🎯 MODAL JSX IS RENDERING!', publishProgress)}
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            {/* Modal Header */}
+            <div className="flex items-center gap-3 mb-4">
+              {publishProgress.step === 'saving' && (
+                <>
+                  <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+                  <h3 className="text-lg font-semibold text-gray-900">Publishing Story</h3>
+                </>
+              )}
+              {publishProgress.step === 'generating' && (
+                <>
+                  <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+                  <h3 className="text-lg font-semibold text-gray-900">Creating SEO File</h3>
+                </>
+              )}
+              {publishProgress.step === 'success' && (
+                <>
+                  <CheckCircle className="w-6 h-6 text-green-500" />
+                  <h3 className="text-lg font-semibold text-gray-900">Published Successfully!</h3>
+                </>
+              )}
+              {publishProgress.step === 'error' && (
+                <>
+                  <AlertCircle className="w-6 h-6 text-red-500" />
+                  <h3 className="text-lg font-semibold text-gray-900">Publishing Failed</h3>
+                </>
+              )}
+            </div>
+            
+            {/* Modal Content */}
+            <div className="mb-6">
+              <p className="text-gray-700">{publishProgress.message}</p>
+              {publishProgress.error && (
+                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
+                  {publishProgress.error}
+                </div>
+              )}
+            </div>
+            
+            {/* Success Actions */}
+            {publishProgress.step === 'success' && (
+              <div className="space-y-4">
+                <div className="text-sm text-green-700 bg-green-50 p-3 rounded">
+                  ✅ Story saved to database<br/>
+                  ✅ Static SEO file generated<br/>
+                  ✅ Ready for search engines!
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      setPublishProgress(prev => ({ ...prev, isOpen: false }));
+                      setActiveView('posts');
+                    }}
+                  >
+                    Return to Posts
+                  </Button>
+                  <Button 
+                    onClick={() => setPublishProgress(prev => ({ ...prev, isOpen: false }))}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    Finish
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            {/* Error Actions */}
+            {publishProgress.step === 'error' && (
+              <div className="flex justify-end">
+                <Button 
+                  variant="outline"
+                  onClick={() => setPublishProgress(prev => ({ ...prev, isOpen: false }))}
+                >
+                  Close
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

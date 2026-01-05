@@ -27,3 +27,16 @@ Authorization.*Bearer.*\$\{accessToken
 # Tools authentication patterns (safe - hardcoded placeholder tokens for staff endpoints)
 Bearer staff-token
 Authorization.*Bearer.*staff-token
+
+# Airtable API patterns (safe - dynamically loaded config tokens)
+Authorization.*Bearer.*\$\{config\.airtable\.token\}
+
+# N8N documentation and test patterns (safe - examples and test scripts)
+your_n8n_api_key_here
+your_n8n_jwt_token_here
+Authorization.*Bearer.*temp-token
+Bearer.*\$\{publishableKey\}
+Bearer.*\$\{secretKey\}
+Bearer.*\$\{serviceKey\}
+Bearer.*\$\{process\.env\.N8N_API_KEY\}
+Bearer token if needed

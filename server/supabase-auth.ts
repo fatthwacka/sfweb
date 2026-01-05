@@ -1,13 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 
-if (!process.env.VITE_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+if (!process.env.VITE_SUPABASE_URL || !process.env.SUPABASE_SECRET_KEY) {
   throw new Error("Missing Supabase environment variables");
 }
 
 // Create Supabase admin client for server-side operations
 export const supabaseAdmin = createClient(
   process.env.VITE_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  process.env.SUPABASE_SECRET_KEY,
   {
     auth: {
       autoRefreshToken: false,

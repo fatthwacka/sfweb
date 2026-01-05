@@ -51,9 +51,9 @@ export function PortfolioGrid({ portfolioItems: propItems }: PortfolioGridProps 
 
   if (!propItems && isLoading) {
     return (
-      <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-3" style={{ gap: '24px' }}>
-          {Array.from({ length: 6 }).map((_, index) => (
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+          {Array.from({ length: 8 }).map((_, index) => (
             <div key={index} className="aspect-square bg-gray-800 rounded-lg animate-pulse" />
           ))}
         </div>
@@ -78,12 +78,10 @@ export function PortfolioGrid({ portfolioItems: propItems }: PortfolioGridProps 
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="flex flex-wrap justify-center gap-6">
+    <div className="max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
         {portfolioItems.map((item) => (
-          <div key={item.id} className="w-full sm:w-80 md:w-96">
-            <PortfolioCard shoot={item} />
-          </div>
+          <PortfolioCard key={item.id} shoot={item} />
         ))}
       </div>
     </div>

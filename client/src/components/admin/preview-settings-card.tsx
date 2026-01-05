@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+import { supabaseOperations } from '@/lib/supabase-operations';
 import { ImageUploadZone } from './image-upload-zone';
 import { ImageIcon } from 'lucide-react';
 import {
@@ -142,20 +142,14 @@ export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
   // Fetch client selections for the modal and deletion count
   const { data: clientSelections = [] } = useQuery<ClientSelection[]>({
     queryKey: ['client-selections', shootId],
-    queryFn: async () => {
-      const response = await apiRequest('GET', `/api/client-selections/${shootId}`);
-      return await response.json();
-    },
+    queryFn: () => supabaseOperations.clientSelections.getByShoot(shootId),
     enabled: !!shootId, // Always fetch to check for orphaned records
   });
 
   // Fetch preview images for this shoot
   const { data: previewImagesData = {} } = useQuery({
     queryKey: ['preview-images', shootId],
-    queryFn: async () => {
-      const response = await apiRequest('GET', `/api/preview-images/${shootId}`);
-      return await response.json();
-    },
+    queryFn: () => supabaseOperations.previewImages.getByShoot(shootId),
     enabled: !!shootId,
   });
   
@@ -178,10 +172,7 @@ export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
   // Fetch shoot details for the name
   const { data: shootDetails } = useQuery({
     queryKey: ['shoot-details', shootId],
-    queryFn: async () => {
-      const response = await apiRequest('GET', `/api/shoots/${shootId}`);
-      return await response.json();
-    },
+    queryFn: () => supabaseOperations.shoots.getById(shootId),
     enabled: !!shootId,
   });
 
@@ -192,12 +183,8 @@ export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
 
   // Mutation to update editing status
   const updateEditingStatusMutation = useMutation({
-    mutationFn: async ({ selectionId, editingComplete }: { selectionId: string; editingComplete: boolean }) => {
-      const response = await apiRequest('PATCH', `/api/client-selections/${selectionId}/editing-status`, {
-        editingComplete
-      });
-      return await response.json();
-    },
+    mutationFn: ({ selectionId, editingComplete }: { selectionId: string; editingComplete: boolean }) => 
+      supabaseOperations.clientSelections.updateEditingStatus(selectionId, editingComplete),
     onSuccess: () => {
       // Refetch the client selections to update the UI
       queryClient.invalidateQueries({ queryKey: ['client-selections', shootId] });
@@ -261,14 +248,12 @@ export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
 
   // Mutation to toggle client submission status (reopen selections)
   const toggleSubmissionMutation = useMutation({
-    mutationFn: async (reopenSubmission: boolean) => {
-      const response = await apiRequest('PATCH', `/api/shoots/${shootId}/preview-settings`, {
+    mutationFn: (reopenSubmission: boolean) => 
+      supabaseOperations.previewSettings.updateByShoot(shootId, {
         submission_completed: !reopenSubmission,
         submission_completed_at: reopenSubmission ? null : new Date().toISOString(),
         submission_completed_by: reopenSubmission ? null : 'admin'
-      });
-      return await response.json();
-    },
+      }),
     onSuccess: (data, reopenSubmission) => {
       // Refetch the preview settings
       queryClient.invalidateQueries({ queryKey: ['preview-settings', shootId] });
@@ -289,13 +274,11 @@ export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
 
   // Mutation to toggle entire preview editing completion status
   const toggleEditingCompleteMutation = useMutation({
-    mutationFn: async (markAsComplete: boolean) => {
-      const response = await apiRequest('PATCH', `/api/shoots/${shootId}/preview-settings`, {
+    mutationFn: (markAsComplete: boolean) => 
+      supabaseOperations.previewSettings.updateByShoot(shootId, {
         editing_completed: markAsComplete,
         editing_completed_at: markAsComplete ? new Date().toISOString() : null
-      });
-      return await response.json();
-    },
+      }),
     onSuccess: (data, markAsComplete) => {
       // Refetch the preview settings
       queryClient.invalidateQueries({ queryKey: ['preview-settings', shootId] });
@@ -314,12 +297,15 @@ export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
     },
   });
 
-  // Email client mutation
+  // Email client mutation (keep as API call - server-side email logic)
   const sendEmailMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/client/email-notification', {
-        shootId
+      const response = await fetch('/api/client/email-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shootId })
       });
+      if (!response.ok) throw new Error('Failed to send email');
       return await response.json();
     },
     onSuccess: () => {
@@ -338,10 +324,13 @@ export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
     },
   });
 
-  // Delete preview data mutation
+  // Delete preview data mutation (keep as API call - complex server-side logic)
   const deletePreviewDataMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('DELETE', `/api/shoots/${shootId}/preview-data`);
+      const response = await fetch(`/api/shoots/${shootId}/preview-data`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error('Failed to delete preview data');
       return await response.json();
     },
     onSuccess: (data) => {
@@ -369,10 +358,7 @@ export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
   // Fetch existing preview settings
   const { data: existingSettings, isLoading } = useQuery({
     queryKey: ['preview-settings', shootId],
-    queryFn: async () => {
-      const response = await apiRequest('GET', `/api/shoots/${shootId}/preview-settings`);
-      return await response.json();
-    },
+    queryFn: () => supabaseOperations.previewSettings.getByShoot(shootId),
     enabled: !!shootId,
   });
 
@@ -389,19 +375,16 @@ export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
 
   // Save preview settings mutation
   const saveMutation = useMutation({
-    mutationFn: async (data: PreviewSettings) => {
+    mutationFn: (data: PreviewSettings) => {
       console.log('Save mutation data:', data);
-      const method = existingSettings?.id ? 'PATCH' : 'POST';
-      const url = existingSettings?.id 
-        ? `/api/preview-settings/${existingSettings.id}`
-        : '/api/preview-settings';
       
-      console.log('Save mutation URL:', url, 'Method:', method);
-      
-      const response = await apiRequest(method, url, data);
-      const result = await response.json();
-      
-      return result;
+      if (existingSettings?.id) {
+        console.log('Updating existing preview settings:', existingSettings.id);
+        return supabaseOperations.previewSettings.update(existingSettings.id, data);
+      } else {
+        console.log('Creating new preview settings');
+        return supabaseOperations.previewSettings.create(data);
+      }
     },
     onSuccess: (response) => {
       console.log('Save mutation success:', response);
@@ -437,10 +420,8 @@ export function PreviewSettingsCard({ shootId }: PreviewSettingsCardProps) {
 
   // Delete preview image mutation
   const deletePreviewImageMutation = useMutation({
-    mutationFn: async (filename: string) => {
-      const response = await apiRequest('DELETE', `/api/preview-images/${shootId}/image/${encodeURIComponent(filename)}`);
-      return await response.json();
-    },
+    mutationFn: (filename: string) => 
+      supabaseOperations.previewImages.delete(shootId, filename),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['preview-images', shootId] });
       toast({

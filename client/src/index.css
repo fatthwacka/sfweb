@@ -13,5 +13,11 @@
 /* 4. Utilities: Small utility classes and animations */
 @import './styles/utilities.css';
 
+/* 5. Content Management: Brand intelligence and AI content generation styles */
+@import './styles/content-management.css';
+
+/* 6. Content System: Corporate design system for content management tools */
+@import './styles/content-system.css';
+
 /* 5. Responsive: Media queries, keyframes, and responsive overrides */
 @import './styles/responsive.css';

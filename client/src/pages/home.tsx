@@ -48,36 +48,6 @@ export default function Home() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-corinthia text-white leading-tight hero-title-white" style={{ marginBottom: '-0.5rem' }}>
-            Analog Intelligence
-          </h1>
-          <h3 className="text-lg md:text-xl text-white font-quicksand font-light mb-4">
-            We provide professional studio Photography & Videography, and AI business automation tools suited to small and medium sized businesses.
-          </h3>
-
-          {/* Scroll Down Button */}
-          <div className="flex justify-center">
-            <button
-              onClick={() => {
-                const servicesElement = document.querySelector('#services');
-                if (servicesElement) {
-                  const headerOffset = 80; // Account for fixed navigation bar
-                  const elementPosition = servicesElement.getBoundingClientRect().top;
-                  const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-                  window.scrollTo({
-                    top: offsetPosition,
-                    behavior: 'smooth'
-                  });
-                }
-              }}
-              className="bg-white p-2 rounded-full hover:scale-105 transform transition-all duration-300 shadow-lg cursor-pointer border-none flex items-center justify-center"
-              type="button"
-              style={{ width: '40px', height: '40px' }}
-            >
-              <ChevronDown className="w-4 h-4 text-gray-600" />
-            </button>
-          </div>
         </div>
       </section>
 

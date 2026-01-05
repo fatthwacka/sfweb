@@ -18,6 +18,9 @@ import { categoryHeroesRouter } from './routes/category-heroes';
 import pricingPackagesRouter from './pricing-packages-api';
 import blogRouter from './routes/blog';
 import aiBlogRouter from './routes/ai-blog';
+import contentManagementRouter from './routes/content-management/index.js';
+import promptEngineRouter from './routes/prompt-engine';
+import contentTypesRouter from './routes/content-types';
 import { sendContactEmail, validateEmailConfig, sendAlbumReadyEmail } from './email-service';
 import { verifyRecaptcha } from './recaptcha-service';
 import { eq, and, sql } from 'drizzle-orm';
@@ -970,6 +973,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const videoShoots = shoots.filter(s => s.mediaType === 'video');
         const primaryShoot = photoShoots.length > 0 ? photoShoots[0] : videoShoots[0];
         
+        // For groups: prioritize photo cover images over video thumbnails
+        let groupCoverImageUrl = '';
+        let groupCoverVideoInfo = null;
+        
+        if (photoShoots.length > 0) {
+          // Use photo cover if available
+          groupCoverImageUrl = photoShoots[0].coverImageUrl || '';
+        } else if (videoShoots.length > 0) {
+          // Only use video if no photos available
+          groupCoverImageUrl = videoShoots[0].coverImageUrl || '';
+          groupCoverVideoInfo = videoShoots[0].coverVideoInfo;
+        }
+        
         const bundledCard = {
           ...primaryShoot,
           id: `group-${groupName.toLowerCase().replace(/\s+/g, '-')}`,
@@ -978,6 +994,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isGroup: true,
           groupName: groupName,
           shootCount: shoots.length,
+          coverImageUrl: groupCoverImageUrl,
+          coverVideoInfo: groupCoverVideoInfo,
           shoots: shoots.map(s => ({ 
             id: s.id, 
             title: s.title, 
@@ -3571,6 +3589,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/blog', blogRouter);
   app.use('/api/ai', aiBlogRouter);
 
+  // Content management system for client brand intelligence and AI generation
+  app.use('/api/content-management', contentManagementRouter);
+
+  // Prompt engine for brand-aware AI prompt enhancement
+  app.use('/api/prompt-engine', promptEngineRouter);
+
+  // Content types management for prompt enhancement guidelines
+  app.use('/api/content-types', contentTypesRouter);
+
   // Use the pricing packages router for pricing management
   app.use(pricingPackagesRouter);
 
@@ -4614,6 +4641,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/ping", (req, res) => {
     res.json({ status: 'ok', timestamp: Date.now() });
+  });
+
+  // Image download proxy to bypass CORS issues
+  app.get("/api/download/image", async (req, res) => {
+    try {
+      const { url } = req.query;
+      
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({ error: 'Missing or invalid image URL parameter' });
+      }
+
+      // Validate URL to ensure it's from allowed domains (security)
+      const allowedDomains = [
+        'storage.googleapis.com',
+        'images.unsplash.com',
+        'unsplash.com'
+      ];
+      
+      const urlObj = new URL(url);
+      const isAllowedDomain = allowedDomains.some(domain => urlObj.hostname.includes(domain));
+      
+      if (!isAllowedDomain) {
+        return res.status(400).json({ error: 'URL not from allowed domain' });
+      }
+
+      console.log('🔽 Proxying image download:', url);
+
+      // Fetch the image
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+      }
+
+      // Get content type
+      const contentType = response.headers.get('content-type') || 'application/octet-stream';
+      
+      // Set appropriate headers
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Disposition', 'attachment; filename="image.png"');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Cache-Control', 'no-cache');
+
+      // Stream the image data
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      
+      res.send(buffer);
+
+    } catch (error: any) {
+      console.error('❌ Image download proxy error:', error);
+      res.status(500).json({ error: 'Failed to download image', details: error.message });
+    }
   });
 
   // TEST ENDPOINT: Direct storage bucket verification (for deletion testing)
@@ -5899,6 +5979,183 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Prompt Enhancement - Enhance standalone user prompts  
+  app.post('/api/ai/enhance-prompt', async (req, res) => {
+    try {
+      const { 
+        userPrompt, 
+        artStyle, 
+        imageStyle, 
+        includeTitle, 
+        includeSubtitle, 
+        titleText, 
+        subtitleText 
+      } = req.body;
+      if (!userPrompt) {
+        return res.status(400).json({
+          success: false,
+          error: 'User prompt is required',
+        });
+      }
+
+      console.log('✨ Starting prompt enhancement...');
+      const { AIPromptAnalyzer } = await import('./services/ai-prompt-analyzer');
+      const analyzer = new AIPromptAnalyzer();
+      
+      const result = await analyzer.enhanceStandalonePrompt({
+        userPrompt,
+        artStyle: artStyle || 'photorealistic',
+        imageStyle: imageStyle || 'professional',
+        includeTitle,
+        includeSubtitle,
+        titleText,
+        subtitleText,
+      });
+
+      console.log('✅ Prompt enhancement completed');
+      res.json({
+        success: true,
+        suggestedPrompt: result.suggestedPrompt,
+        analysisReasoning: result.analysisReasoning,
+        alternativePrompts: result.alternativePrompts,
+        keyVisualElements: result.keyVisualElements,
+        timestamp: new Date().toISOString(),
+      });
+
+    } catch (error: any) {
+      console.error('💥 Prompt enhancement error:', error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Prompt enhancement failed',
+        details: error.message,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  });
+
+  // AI Title Enhancement - Optimize titles for visual impact
+  app.post('/api/ai/enhance-title', async (req, res) => {
+    try {
+      const { titleText, artStyle, imageStyle, articleContext } = req.body;
+
+      if (!titleText || !titleText.trim()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Title text is required',
+        });
+      }
+
+      console.log('✨ Starting AI title enhancement...');
+      console.log('📝 Original title:', titleText);
+
+      const enhancementPrompt = `You are an expert copywriter specializing in visual media titles. Your task is to enhance a title for maximum visual impact on an AI-generated image.
+
+ORIGINAL TITLE: "${titleText}"
+ART STYLE: ${artStyle}
+IMAGE STYLE: ${imageStyle}
+${articleContext ? `ARTICLE CONTEXT: ${JSON.stringify(articleContext, null, 2)}` : ''}
+
+GUIDELINES:
+- Keep it CONCISE: 1-5 words maximum
+- Make it IMPACTFUL: Strong, memorable words
+- Visual hierarchy: Should work as overlay text
+- Avoid generic words: "amazing", "incredible", "stunning"
+- Consider the art/image style for tone matching
+- Preserve the core meaning while amplifying impact
+
+Return ONLY the enhanced title text. No explanations, quotes, or formatting.`;
+
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+
+      console.log('🤖 Calling Gemini for title enhancement...');
+      const result = await model.generateContent(enhancementPrompt);
+      const response = await result.response;
+      const enhancedTitle = response.text().trim();
+
+      console.log('✅ Title enhancement completed');
+      res.json({
+        success: true,
+        enhancedTitle: enhancedTitle,
+        originalTitle: titleText,
+        timestamp: new Date().toISOString(),
+      });
+
+    } catch (error: any) {
+      console.error('💥 Title enhancement error:', error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Title enhancement failed',
+        details: error.message,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  });
+
+  // AI Subtitle Enhancement - Optimize subtitles for visual impact
+  app.post('/api/ai/enhance-subtitle', async (req, res) => {
+    try {
+      const { subtitleText, artStyle, imageStyle, articleContext } = req.body;
+
+      if (!subtitleText || !subtitleText.trim()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Subtitle text is required',
+        });
+      }
+
+      console.log('✨ Starting AI subtitle enhancement...');
+      console.log('📝 Original subtitle:', subtitleText);
+
+      const enhancementPrompt = `You are an expert copywriter specializing in visual media subtitles. Your task is to enhance a subtitle for maximum visual impact on an AI-generated image.
+
+ORIGINAL SUBTITLE: "${subtitleText}"
+ART STYLE: ${artStyle}
+IMAGE STYLE: ${imageStyle}
+${articleContext ? `ARTICLE CONTEXT: ${JSON.stringify(articleContext, null, 2)}` : ''}
+
+GUIDELINES:
+- Keep it BRIEF: 2-8 words maximum
+- Complement the title: Should support, not compete
+- Clear and readable: Works as secondary overlay text
+- Emotionally engaging: Create curiosity or connection
+- Consider the art/image style for tone matching
+- Preserve the core message while making it more compelling
+
+Return ONLY the enhanced subtitle text. No explanations, quotes, or formatting.`;
+
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+
+      console.log('🤖 Calling Gemini for subtitle enhancement...');
+      const result = await model.generateContent(enhancementPrompt);
+      const response = await result.response;
+      const enhancedSubtitle = response.text().trim();
+
+      console.log('✅ Subtitle enhancement completed');
+      res.json({
+        success: true,
+        enhancedSubtitle: enhancedSubtitle,
+        originalSubtitle: subtitleText,
+        timestamp: new Date().toISOString(),
+      });
+
+    } catch (error: any) {
+      console.error('💥 Subtitle enhancement error:', error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Subtitle enhancement failed',
+        details: error.message,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  });
+
   // AI Image Generation - Generate images using Vertex AI
   app.post('/api/ai/generate-image', async (req, res) => {
     try {
@@ -5910,6 +6167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         imageStyle,
         resolution,
         aspectRatio,
+        model,
         articleContext
       } = req.body;
 
@@ -5925,14 +6183,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { VertexAIImageGenerator } = await import('./services/vertex-ai-image-generator');
       const generator = new VertexAIImageGenerator();
 
+      // Clean resolution format for processing
+      const cleanResolution = resolution ? resolution.replace('px', '') : '1024';
+      
       const result = await generator.generateImage({
         prompt: prompt.trim(),
         includeTitle: includeTitle || false,
         includeSubtitle: includeSubtitle || false,
         artStyle: artStyle || 'photorealistic',
         imageStyle: imageStyle || 'hero',
-        resolution: resolution || '1500',
-        aspectRatio: aspectRatio || '16:9',
+        resolution: cleanResolution,
+        aspectRatio: aspectRatio || '1:1',
+        model: model || 'imagen-4.0-generate-001',
         articleContext,
       });
 

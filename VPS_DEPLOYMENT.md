@@ -112,7 +112,7 @@ curl -s https://slyfox.co.za | grep -c "Missing Supabase environment variables"
 - SSH key configured for `slyfox-vps`
 - Docker running locally and on VPS
 - All changes committed to git
-- **⚠️ NEW SECURITY (Dec 2025)**: Git commits now require manual confirmation - you must type "yes" for every commit due to enhanced security measures
+- **⚠️ ENHANCED SECURITY (Dec 2025)**: Git commits are automatically protected by pre-commit security hooks that scan for hardcoded credentials and prevent dangerous commits
 
 ## Single Command Deploy
 ```bash
@@ -123,31 +123,35 @@ curl -s https://slyfox.co.za | grep -c "Missing Supabase environment variables"
 
 ---
 
-## 🚨 CRITICAL POST-DEPLOYMENT: IMAGE PERMISSIONS FIX
+## 🚨 CRITICAL POST-DEPLOYMENT: STATIC ASSET PERMISSIONS FIX
 
-**⚠️ MANDATORY STEP: Image permissions get corrupted during every deployment**
+**⚠️ MANDATORY STEP: Static asset permissions get corrupted during every deployment**
 
 ```bash
 # ALWAYS run after any deployment (automated or manual)
 ssh slyfox-vps "cd /opt/sfweb && chmod -R 644 public/images"
+ssh slyfox-vps "cd /opt/sfweb && chmod 644 public/favicon.png"
+ssh slyfox-vps "cd /opt/sfweb && chmod -R 644 public/uploads"
 ssh slyfox-vps "cd /opt/sfweb && find public -type d -exec chmod 755 {} \;"
 
 # Verify fix worked (should return HTTP 200)
 curl -I https://slyfox.co.za/images/logos/slyfox-logo-black.png
+curl -I https://slyfox.co.za/favicon.png
 ```
 
 **Why This Happens**:
 - rsync file transfer corrupts file permissions during deployment
-- Images become inaccessible (HTTP 403/404) without proper permissions
-- Affects ALL images: logos, gallery photos, hero images, icons
+- Static assets become inaccessible (HTTP 500/403/404) without proper permissions
+- Affects ALL static assets: logos, gallery photos, hero images, icons, favicon, uploads
 
 **Required Permissions**:
-- **Image Files**: 644 (readable by web server)
+- **Static Files**: 644 (readable by web server)
 - **Directories**: 755 (traversable by web server)
 
 **Symptoms of Permission Issues**:
 - Broken images on website (missing logos, gallery photos)
-- HTTP 403 Forbidden errors when accessing image URLs
+- Favicon 500 errors in browser console
+- HTTP 403/500 Forbidden errors when accessing static asset URLs
 - Site appears to load but images don't display
 
 **This step is REQUIRED after every deployment - no exceptions!**
@@ -398,6 +402,7 @@ curl -X PATCH https://slyfox.co.za/api/site-config/bulk \
 - [ ] `curl -I https://slyfox.co.za` returns HTTP/2 200
 - [ ] `ssh slyfox-vps "cd /opt/sfweb && docker compose ps"` shows both containers Up
 - [ ] Image permissions: `curl -I https://slyfox.co.za/images/logos/slyfox-logo-black.png` returns HTTP/2 200
+- [ ] **Favicon check**: `curl -I https://slyfox.co.za/favicon.png` returns HTTP/2 200 (not 500 - indicates permission fix worked)
 - [ ] Admin panel loads: https://slyfox.co.za/admin
 - [ ] Client portal accessible: `curl -I https://slyfox.co.za/client-portal`
 - [ ] ⚠️ **CRITICAL (Dec 2025)**: VITE variables embedded in bundle: `ssh slyfox-vps "docker exec sfweb-app grep -c 'sb_publishable_' dist/public/assets/index-*.js"` returns > 0
@@ -666,14 +671,23 @@ ssh slyfox-vps "cd /opt/sfweb && chmod -R 644 public/images && find public -type
 
 # 🎯 DEPLOYMENT HISTORY
 
-**Last Successful Deployment**: 2025-12-29 (Supabase migration + VITE environment variables fix)
-**Critical Fixes Applied**:
+**Last Successful Deployment**: 2025-12-30 (Preview Tab Modernization)
+**Critical Modernization Applied**:
+- Complete Preview tab Express API → Direct Supabase operations conversion
+- New `supabase-operations.ts` infrastructure (1,300+ lines) deployed
+- Fixed field name mismatches (created_at→createdAt, storage_path→storagePath)
+- Enhanced client selection hooks with backward compatibility
+- Improved conflict resolution system with proper TypeScript interfaces
+- Real-time React Query cache invalidation for Gallery Management
+
+**Previous Deployment**: 2025-12-29 (Supabase migration + VITE environment variables fix)
+**Previous Critical Fixes**:
 - VITE environment variables Docker build args implementation
 - Supabase authentication system migration (anon/service → publishable/secret keys)  
 - Docker build cache bypass methodology for environment variable changes
 - Production environment variable verification system
 
-**Previous Deployment**: 2025-09-08 (Multi-platform fix)
+**Legacy Deployment**: 2025-09-08 (Multi-platform fix)
 **Legacy Fixes**:
 - Docker multi-platform build compatibility
 - Production override enforcement

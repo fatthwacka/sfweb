@@ -13,6 +13,8 @@ import { GradientPicker } from '@/components/ui/gradient-picker';
 import { useAllGradients } from '@/hooks/use-all-gradients';
 import { CategoryPagesConfig } from '@shared/types/category-config';
 import { FrontPageSettingsCard } from '../front-page-settings';
+import { useSiteConfig } from '@/hooks/use-site-config';
+import { supabaseOperations } from '@/lib/supabase-operations';
 
 interface HeroSlide {
   id: string;
@@ -86,6 +88,7 @@ const defaultSiteConfig: SiteConfig = {
 
 export function HomepageSettings() {
   const queryClient = useQueryClient();
+  const { config: siteConfig, isLoading, updateConfigBulk, isUpdating } = useSiteConfig();
   const [config, setConfig] = useState<SiteConfig>(defaultSiteConfig);
   const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
   const [isImageBrowserOpen, setIsImageBrowserOpen] = useState(false);
@@ -93,7 +96,7 @@ export function HomepageSettings() {
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch ALL images from ALL folders for image browser
+  // Fetch ALL images from ALL folders for image browser - keeping old approach for now
   const { data: allImages, isLoading: imagesLoading } = useQuery({
     queryKey: ['all-site-images'],
     queryFn: async () => {
@@ -105,41 +108,14 @@ export function HomepageSettings() {
     }
   });
 
-  // Fetch current site config
-  const { data: siteConfig, isLoading } = useQuery({
-    queryKey: ['/api/site-config'],
-    queryFn: async () => {
-      const response = await fetch('/api/site-config');
-      if (!response.ok) throw new Error('Failed to fetch site config');
-      return response.json() as SiteConfig;
-    }
-  });
-
-  // Auto-save mutation with 2000ms debounce - MUST be before any conditional returns
-  const saveMutation = useMutation({
-    mutationFn: async (newConfig: SiteConfig) => {
-      const response = await fetch('/api/site-config/bulk', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newConfig)
-      });
-      if (!response.ok) throw new Error('Failed to save site config');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/site-config'] });
+  // Auto-save function using useSiteConfig hook
+  const saveMutation = {
+    mutate: (newConfig: SiteConfig) => {
+      updateConfigBulk(newConfig);
       setIsAutoSaving(false);
-      // No toast for auto-save to avoid spam
     },
-    onError: (error) => {
-      setIsAutoSaving(false);
-      toast({
-        title: "Auto-save failed",
-        description: error instanceof Error ? error.message : "Failed to save settings",
-        variant: "destructive"
-      });
-    }
-  });
+    isPending: isUpdating,
+  };
 
   // Debounced auto-save function
   const debouncedAutoSave = useCallback((newConfig: SiteConfig) => {
@@ -170,7 +146,7 @@ export function HomepageSettings() {
   useEffect(() => {
     if (siteConfig) {
       // Migrate old data format to new format if needed
-      let migratedConfig = migrateServicesData(siteConfig);
+      let migratedConfig = migrateServicesData(siteConfig as SiteConfig);
       setConfig(migratedConfig);
     }
   }, [siteConfig]);

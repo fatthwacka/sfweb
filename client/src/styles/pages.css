@@ -484,11 +484,26 @@
   /* Header with gradient background and large icon */
   .tool-card-header {
     @apply relative flex items-center justify-center py-8 px-4;
+    min-height: 120px; /* Consistent container height for all icon types */
   }
 
   .tool-card-icon-large {
     @apply text-6xl select-none drop-shadow-lg transition-transform duration-300;
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    /* Ensure consistent sizing for all icon types */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60px;
+  }
+
+  /* Specific sizing for image-based icons */
+  .tool-card-icon-large img {
+    width: 60px !important;
+    height: 60px !important;
+    max-width: 60px !important;
+    max-height: 60px !important;
+    object-fit: contain;
   }
 
   .tool-card:hover .tool-card-icon-large {

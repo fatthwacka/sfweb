@@ -9,8 +9,11 @@
 - **[SEO Improvements](#seo-improvements)** (Line 796) - Transform dynamic content to crawler-visible with server-side rendering
 - **[Revised SEO Strategy: Hybrid Static + Dynamic](#revised-seo-strategy-hybrid-static--dynamic-approach)** (Line 1133) - Lower-risk approach with static manifests and progressive enhancement
 
+### ⚡ Performance Optimizations
+- **[Performance Improvement Implementation Roadmap](#-performance-improvement-implementation-roadmap)** (Line 30) - **IMMEDIATE PRIORITY** - Critical speed improvements based on PageSpeed Insights analysis
+
 ### 🚀 Feature Enhancements
-- **[Analytics & Performance Monitoring](#-analytics--performance-monitoring)** (Line 967) - Real-time SEO monitoring dashboard and competitor analysis tools
+- **[Analytics & Performance Monitoring](#-analytics--performance-monitoring)** (Line 1267) - Real-time SEO monitoring dashboard and competitor analysis tools
 - **[Visual Content Enhancement](#-visual-content-enhancement)** (Line 982) - 360° galleries, before/after sliders, and AI-powered image features
 - **[Automation & AI Features](#-automation--ai-features)** (Line 998) - Smart content generation and automated workflow systems
 - **[Business Development Features](#-business-development-features)** (Line 1014) - Advanced booking, payment processing, and client portal expansion
@@ -213,7 +216,7 @@ async deleteVideo(id: string): Promise<boolean> {
     const { createClient } = await import('@supabase/supabase-js');
     const supabase = createClient(
       process.env.VITE_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
+      process.env.SUPABASE_SECRET_KEY!
     );
 
     // Extract storage paths
@@ -282,7 +285,7 @@ app.post("/api/videos/upload", authenticateUser, videoUpload.array('videos', 50)
     const thumbnailsData = JSON.parse(thumbnails); // Array of base64 thumbnails
     const supabase = createClient(
       process.env.VITE_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
+      process.env.SUPABASE_SECRET_KEY!
     );
 
     const uploadedVideos = [];
@@ -982,8 +985,8 @@ npm run db:push
 #### 3. Environment Variables
 No new variables needed - uses existing Supabase configuration:
 - `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+- `SUPABASE_SECRET_KEY`
 
 #### 4. Nginx Configuration (VPS)
 Add to nginx config:
@@ -1163,6 +1166,165 @@ These can be added later without affecting core implementation:
 **Architecture Approved**: Minimal disruption approach with separate `videos` table
 
 **Ready to Implement**: All specifications documented, risks identified, mitigations planned
+
+---
+
+## ⚡ Performance Improvement Implementation Roadmap
+
+### Executive Summary
+
+**IMMEDIATE PRIORITY**: Critical speed improvements based on PageSpeed Insights analysis targeting desktop and mobile Core Web Vitals optimization.
+
+**Status**: ✅ **COMPRESSION DEPLOYED** | ⚠️ **BUNDLING OPTIMIZATIONS REGRESSION IDENTIFIED**
+**Current Performance**: Desktop 88, Mobile 59 (Mixed results from bundled optimizations)
+**Target Performance**: Desktop 90+, Mobile 70+
+
+---
+
+### Performance Optimization Results Analysis (January 2026)
+
+#### **Phase 1: Server Compression (✅ MASSIVE SUCCESS)**
+- **Implementation**: Express.js compression middleware with gzip level 6
+- **Desktop Impact**: 48 → 93 (+45 points) 🏆 **TRANSFORMATIONAL**
+- **Mobile Impact**: 55 → 52 (-3 points) - Minimal regression
+- **Key Benefit**: 75% API response size reduction, 63% HTML compression
+- **Status**: **PRODUCTION DEPLOYED** - Keep permanently
+
+#### **Phase 2: Bundle Optimizations (❌ MIXED RESULTS)**
+- **Implementation**: Manual chunks + terser minification + font optimization + requestIdleCallback
+- **Desktop Impact**: 93 → 88 (-5 points regression) ⚠️
+- **Mobile Impact**: 52 → 59 (+7 points improvement) ✅
+- **Status**: **NEEDS INVESTIGATION** - Consider selective rollback
+
+---
+
+### Root Cause Analysis: Desktop Performance Regression
+
+#### **Bundle Splitting Unintended Consequences**
+
+**Before optimization**: 1 large JavaScript bundle (~1.8MB)  
+**After optimization**: 6 separate chunks (react-vendor + ui-vendor + data-vendor + utils-vendor + main + CSS)
+
+**Bundle Size Analysis** (from production build):
+```
+utils-vendor-DlCI8Ijv.js      81.10 kB │ gzip:  20.63 kB
+ui-vendor-axJF-Uin.js         98.95 kB │ gzip:  30.75 kB  
+react-vendor-Ber6wfih.js     139.86 kB │ gzip:  44.92 kB
+data-vendor-BCgVWptV.js      208.90 kB │ gzip:  53.02 kB
+index-XR82-IQn.js          1,297.43 kB │ gzip: 302.39 kB
+index-BClbmRE4.css          250.55 kB │ gzip:  35.99 kB
+```
+
+#### **HTTP Request Multiplication Theory**
+
+**Root Cause**: HTTP request overhead amplified by bundle splitting
+- **Before**: 1 request for JavaScript bundle
+- **After**: 6 separate requests (5 vendor chunks + 1 main bundle)
+- **Impact**: 6× connection establishment overhead
+
+**Why Desktop Suffered More:**
+1. **Network Latency Multiplication**: Each chunk requires separate:
+   - DNS lookup
+   - TCP handshake  
+   - TLS negotiation
+   - HTTP header parsing
+
+2. **Loading Waterfall Effect**:
+   ```
+   Before: [========== Single 1.8MB bundle ==========] 
+   After:  [react] → [ui] → [data] → [utils] → [main] → [CSS]
+           ↑ Serial loading creates longer critical path
+   ```
+
+3. **PageSpeed Desktop Testing**: Simulates fast CPU but standard network - chunking hurt more than helped
+
+**Why Mobile Improved:**
+1. **CPU-Constrained Benefits**: requestIdleCallback more effective on mobile
+2. **Font Preloading**: Better impact on mobile rendering pipeline  
+3. **Smaller Chunks**: Better memory management on constrained devices
+
+#### **Critical Issue Identified**
+- **Main bundle still huge**: 1,297KB (bundle splitting didn't reduce main bundle significantly)
+- **Total size similar**: ~1.8MB JavaScript (just redistributed, not reduced)
+- **Added overhead**: 5 extra HTTP requests with minimal bundle size reduction
+
+---
+
+### Recommended Actions
+
+#### **Option A: Selective Rollback (RECOMMENDED)**
+1. **Keep compression** (massive 45-point desktop win)
+2. **Remove manual chunks** from vite.config.ts
+3. **Keep terser minification** (minimal impact, good practice)
+4. **Revert requestIdleCallback changes** (neutral to negative for desktop)
+5. **Keep font optimizations** (universally beneficial)
+
+**Expected Result**:
+- Desktop: Return to ~93 score (compression-only performance)
+- Mobile: Maintain ~55-60 range
+- Net benefit: +40 desktop points with minimal mobile loss
+
+#### **Option B: Dynamic Import Strategy (ADVANCED)**
+Replace manual chunks with dynamic imports:
+- Load non-critical vendor code on-demand
+- Maintain single critical path for initial render
+- Benefit from code splitting without first-load penalty
+
+#### **Option C: Progressive Optimization**
+Keep current state and address specific bottlenecks:
+- Investigate main bundle size reduction
+- Implement proper tree shaking
+- Add resource hints for chunk preloading
+
+---
+
+### Implementation Priority Matrix
+
+| Optimization | Desktop Impact | Mobile Impact | Implementation Effort | Risk Level | Priority |
+|-------------|----------------|---------------|----------------------|------------|----------|
+| **Server Compression** | +45 points ✅ | -3 points | Low | Low | **COMPLETE** |
+| **Bundle Rollback** | +5 points | -7 points | Low | Low | **HIGH** |
+| **API Optimization** | +5-10 points | +5-10 points | Medium | Medium | Medium |
+| **Dynamic Imports** | +10-15 points | +5 points | High | Medium | Low |
+| **Image Optimization** | +5-10 points | +10-15 points | Medium | Low | Medium |
+
+### Next Performance Targets
+
+#### **Immediate (1-2 weeks)**
+- **Target**: Desktop 90+, Mobile 65+
+- **Method**: Selective rollback of bundle optimizations
+- **Risk**: Low (reverting to known good state)
+
+#### **Short-term (1-2 months)**  
+- **Target**: Desktop 95+, Mobile 75+
+- **Method**: API response time optimization (200-500ms target)
+- **Focus**: Database query optimization, caching layer
+
+#### **Long-term (3-6 months)**
+- **Target**: Desktop 98+, Mobile 85+ 
+- **Method**: Next.js migration with SSR
+- **Benefit**: Optimal Core Web Vitals across all metrics
+
+---
+
+### Lessons Learned
+
+#### **Bundle Splitting Anti-Pattern Identified**
+- **First-load penalty**: Bundle splitting optimizes for repeat visits, not initial performance
+- **PageSpeed testing focus**: Measures first-load performance, not cached performance
+- **Desktop sensitivity**: Higher baseline performance makes regression more noticeable
+- **HTTP/2 limitations**: Even with multiplexing, request overhead still matters
+
+#### **Compression Effectiveness Confirmed**
+- **Server-side compression**: Single most effective optimization
+- **Immediate impact**: No architectural changes required
+- **Universal benefit**: Helps all content types and user scenarios
+
+#### **Performance Measurement Strategy**
+- **Measure incrementally**: Test each optimization individually
+- **Focus on Core Web Vitals**: Real user experience metrics matter most
+- **Desktop vs mobile trade-offs**: Optimizations can have opposite effects
+- **Network vs CPU optimization**: Different bottlenecks require different approaches
 
 ---
 

@@ -7,13 +7,13 @@ export class ImageMigrationService {
   private dropboxService: typeof dropboxService;
 
   constructor(dropboxAccessToken: string) {
-    if (!process.env.VITE_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    if (!process.env.VITE_SUPABASE_URL || !process.env.SUPABASE_SECRET_KEY) {
       throw new Error('Missing Supabase configuration');
     }
 
     this.supabase = createClient(
       process.env.VITE_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
+      process.env.SUPABASE_SECRET_KEY
     );
 
     // Use the existing dropbox service instance

@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
+import { supabaseOperations } from '@/lib/supabase-operations';
 import { ImageUrl } from '@/lib/image-utils';
 import { VideoUrl } from '@/lib/video-utils';
 import { generateVideoThumbnails } from '@/lib/video-thumbnail-utils';
@@ -159,20 +159,20 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
   // All mutations must be declared before any conditional returns (Rules of Hooks)
   const saveBasicInfoMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('PATCH', `/api/shoots/${shootId}`, data),
+    mutationFn: (data: any) => supabaseOperations.shoots.update(shootId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
+      queryClient.invalidateQueries({ queryKey: ['shoots', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['shoots'] });
       toast({ title: "Basic information saved successfully!" });
     },
     onError: () => toast({ title: "Error", description: "Failed to save basic info", variant: "destructive" })
   });
 
   const saveAdvancedSettingsMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('PATCH', `/api/shoots/${shootId}`, data),
+    mutationFn: (data: any) => supabaseOperations.shoots.update(shootId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
+      queryClient.invalidateQueries({ queryKey: ['shoots', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['shoots'] });
       toast({ title: "Advanced settings saved successfully!" });
     },
     onError: () => toast({ title: "Error", description: "Failed to save advanced settings", variant: "destructive" })
@@ -180,7 +180,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
   const uploadImagesMutation = useMutation({
     mutationFn: async ({ files, resolutions }: { files: File[]; resolutions?: any[] }) => {
-      const currentMediaType = shoot?.mediaType || 'photo';
+      const currentMediaType = shoot?.media_type || 'photo';
       const isVideo = currentMediaType === 'video';
 
       console.log(`🚀 Frontend upload${isVideo ? 'Videos' : 'Images'}Mutation called with:`, {
@@ -250,10 +250,12 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     },
     onSuccess: (result) => {
       // Invalidate multiple query patterns to ensure UI updates
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/images', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/videos', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
+      queryClient.invalidateQueries({ queryKey: ['shoots'] });
+      queryClient.invalidateQueries({ queryKey: ['shoots', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['images', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['videos', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['images'] });
+      queryClient.invalidateQueries({ queryKey: ['videos'] });
       
       // Handle new detailed response format
       const totalProcessed = result.totalProcessed || result.uploadedCount || 0;
@@ -285,11 +287,11 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   });
 
   const saveAppearanceMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('PATCH', `/api/shoots/${shootId}`, data),
+    mutationFn: (data: any) => supabaseOperations.shoots.update(shootId, data),
     onSuccess: () => {
       // Don't invalidate queries immediately to prevent reordering during save
       setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
+        queryClient.invalidateQueries({ queryKey: ['shoots', shootId] });
       }, 100);
       toast({ title: "Gallery appearance saved successfully!" });
     },
@@ -298,39 +300,42 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
   const deleteImageMutation = useMutation({
     mutationFn: (mediaId: string) => {
-      const currentMediaType = shoot?.mediaType || 'photo';
+      const currentMediaType = shoot?.media_type || 'photo';
       const isVideo = currentMediaType === 'video';
-      const endpoint = isVideo ? `/api/videos/${mediaId}` : `/api/images/${mediaId}`;
 
       console.log(`Attempting to delete ${isVideo ? 'video' : 'image'} with ID:`, mediaId);
-      console.log('Full API URL:', endpoint);
-      return apiRequest('DELETE', endpoint);
+      
+      if (isVideo) {
+        return supabaseOperations.videos.delete([mediaId]);
+      } else {
+        return supabaseOperations.images.delete([mediaId]);
+      }
     },
     onSuccess: (data) => {
-      const currentMediaType = shoot?.mediaType || 'photo';
+      const currentMediaType = shoot?.media_type || 'photo';
       const isVideo = currentMediaType === 'video';
 
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/images', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/videos', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
+      queryClient.invalidateQueries({ queryKey: ['shoots', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['images', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['videos', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['shoots'] });
       toast({
         title: `${isVideo ? 'Video' : 'Image'} deleted permanently`,
         description: "Removed from database and storage"
       });
     },
     onError: (error: any) => {
-      const currentMediaType = shoot?.mediaType || 'photo';
+      const currentMediaType = shoot?.media_type || 'photo';
       const isVideo = currentMediaType === 'video';
 
       console.error("Frontend received delete error:", error);
 
       // The delete operation actually succeeds server-side but triggers frontend error
       // This is likely due to API response parsing issues - refresh data regardless
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/images', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/videos', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
+      queryClient.invalidateQueries({ queryKey: ['shoots', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['images', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['videos', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['shoots'] });
 
       toast({
         title: `${isVideo ? 'Video' : 'Image'} deleted`,
@@ -342,23 +347,23 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
   const updateImageSequencesMutation = useMutation({
     mutationFn: (sequences: Record<string, number>) => {
-      const currentMediaType = shoot?.mediaType || 'photo';
+      const currentMediaType = shoot?.media_type || 'photo';
       const isVideo = currentMediaType === 'video';
       const payload = isVideo ? { videoSequences: sequences } : { imageSequences: sequences };
 
-      return apiRequest('PATCH', `/api/shoots/${shootId}`, payload);
+      return supabaseOperations.shoots.update(shootId, payload);
     },
     onSuccess: () => {
-      const currentMediaType = shoot?.mediaType || 'photo';
+      const currentMediaType = shoot?.media_type || 'photo';
       const isVideo = currentMediaType === 'video';
 
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/images', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/videos', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['shoots', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['images', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['videos', shootId] });
       toast({ title: `${isVideo ? 'Video' : 'Image'} order updated!` });
     },
     onError: () => {
-      const currentMediaType = shoot?.mediaType || 'photo';
+      const currentMediaType = shoot?.media_type || 'photo';
       const isVideo = currentMediaType === 'video';
       toast({ title: "Error", description: `Failed to update ${isVideo ? 'video' : 'image'} order`, variant: "destructive" });
     }
@@ -366,17 +371,28 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   
   // Fetch shoot data
   const { data: shootData, isLoading } = useQuery({
-    queryKey: ['/api/shoots', shootId],
+    queryKey: ['shoots', shootId],
+    queryFn: () => supabaseOperations.shoots.getById(shootId).then(shoot => 
+      ({ shoot })
+    ),
     enabled: !!shootId
   });
 
   // Fetch clients for reassignment dialog
   const { data: clients = [] } = useQuery({
-    queryKey: ['/api/clients']
+    queryKey: ['clients'],
+    queryFn: supabaseOperations.clients.getAll
   });
 
   const shoot = (shootData as any)?.shoot || null;
-  const mediaType = shoot?.mediaType || 'photo'; // Default to 'photo' for backwards compatibility
+  
+  console.log(`🎬 MEDIATYPE DEBUG: Full shootData:`, shootData);
+  console.log(`🎬 MEDIATYPE DEBUG: Extracted shoot:`, shoot);
+  console.log(`🎬 MEDIATYPE DEBUG: shoot?.media_type:`, shoot?.media_type);
+  console.log(`🎬 MEDIATYPE DEBUG: Available shoot properties:`, shoot ? Object.keys(shoot) : 'no shoot');
+  
+  const mediaType = shoot?.media_type || 'photo'; // Default to 'photo' for backwards compatibility
+  console.log(`🎬 MEDIATYPE DEBUG: Final mediaType:`, mediaType);
   
   // Optimized auto-save hook for media sequences and cover selection
   const { debouncedSave: debouncedSaveImageOrder, saveStatus: imageOrderSaveStatus } = useAutoSaveImageOrder({
@@ -391,12 +407,20 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
   // Conditionally query images or videos based on shoot's mediaType
   const { data: mediaData } = useQuery({
-    queryKey: mediaType === 'video' ? ['/api/videos', shootId] : ['/api/images', shootId],
+    queryKey: mediaType === 'video' ? ['videos', shootId] : ['images', shootId],
     queryFn: async () => {
-      const endpoint = mediaType === 'video' ? `/api/videos?shootId=${shootId}` : `/api/images?shootId=${shootId}`;
-      const response = await fetch(endpoint);
-      if (!response.ok) throw new Error('Failed to fetch media');
-      return response.json();
+      console.log(`🎬 Enhanced Gallery Editor: Starting ${mediaType} query for shoot ${shootId}`);
+      if (mediaType === 'video') {
+        console.log(`🎬 Enhanced Gallery Editor: Calling videos.getByShoot(${shootId})`);
+        const result = await supabaseOperations.videos.getByShoot(shootId);
+        console.log(`🎬 Enhanced Gallery Editor: Videos query result:`, result);
+        return result;
+      } else {
+        console.log(`📸 Enhanced Gallery Editor: Calling images.getByShoot(${shootId})`);
+        const result = await supabaseOperations.images.getByShoot(shootId);
+        console.log(`📸 Enhanced Gallery Editor: Images query result length:`, result?.length);
+        return result;
+      }
     },
     enabled: !!shootId && !!shoot
   });
@@ -410,12 +434,12 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   // Initialize all settings from shoot data when shoot changes
   useEffect(() => {
     if (shoot && shoot.id) {
-      setCustomSlug(shoot.customSlug || '');
+      setCustomSlug(shoot.custom_slug || '');
       
       // Set cover: conditional logic based on media type
       if (mediaType === 'video') {
         // For video albums, check for featured video or use first video
-        const featuredVideo = videos.find(video => video.featuredVideo === true);
+        const featuredVideo = videos.find(video => video.featured_video === true);
         if (featuredVideo) {
           setSelectedCover(featuredVideo.id);
         } else if (videos.length > 0) {
@@ -424,9 +448,9 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
           setSelectedCover(null);
         }
       } else {
-        // For photo albums, use bannerImageId if valid, otherwise use first image as fallback
-        if (shoot.bannerImageId && images.some(img => img.id === shoot.bannerImageId)) {
-          setSelectedCover(shoot.bannerImageId);
+        // For photo albums, use banner_image_id if valid, otherwise use first image as fallback
+        if (shoot.banner_image_id && images.some(img => img.id === shoot.banner_image_id)) {
+          setSelectedCover(shoot.banner_image_id);
         } else if (images.length > 0) {
           setSelectedCover(images[0].id);
         } else {
@@ -434,8 +458,8 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
         }
       }
       
-      // Initialize gallery settings from shoot data (provide defaults for null gallerySettings)
-      const settings = shoot.gallerySettings || {};
+      // Initialize gallery settings from shoot data (provide defaults for null gallery_settings)
+      const settings = shoot.gallery_settings || {};
       setGallerySettings({
         backgroundColor: settings.backgroundColor || '#ffffff',
         layoutStyle: settings.layoutStyle || 'automatic',
@@ -449,22 +473,22 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       setEditableShoot({
         title: shoot.title || '',
         location: shoot.location || '',
-        shootDate: shoot.shootDate ? new Date(shoot.shootDate).toISOString().split('T')[0] : '',
+        shootDate: shoot.shoot_date ? new Date(shoot.shoot_date).toISOString().split('T')[0] : '',
         description: shoot.description || '',
-        customTitle: shoot.customTitle || '',
-        customSlug: shoot.customSlug || '',
-        clientId: shoot.clientId || '',
-        shootType: shoot.shootType || '',
-        isPrivate: shoot.isPrivate || false,
+        customTitle: shoot.custom_title || '',
+        customSlug: shoot.custom_slug || '',
+        clientId: shoot.client_id || '',
+        shootType: shoot.shoot_type || '',
+        isPrivate: shoot.is_private || false,
         notes: shoot.notes || '',
-        seoTags: Array.isArray(shoot.seoTags) ? shoot.seoTags.join(', ') : (shoot.seoTags || ''),
-        groupName: shoot.groupName || ''
+        seoTags: Array.isArray(shoot.seo_tags) ? shoot.seo_tags.join(', ') : (shoot.seo_tags || ''),
+        groupName: shoot.group_name || ''
       });
       
       // Track the original shoot type for change detection
-      setOriginalShootType(shoot.shootType || '');
+      setOriginalShootType(shoot.shoot_type || '');
     }
-  }, [shoot?.id, images.length, videos.length, videos.map(v => v.featuredVideo).join(',')]);
+  }, [shoot?.id, images.length, videos.length, videos.map(v => v.featured_video).join(',')]);
 
   // Initialize media order from sequence - works for both images and videos
   useEffect(() => {
@@ -561,11 +585,11 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
   // Save comprehensive shoot updates
   const saveCustomizationMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('PATCH', `/api/shoots/${shootId}`, data),
+    mutationFn: (data: any) => supabaseOperations.shoots.update(shootId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/images', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['shoots', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['shoots'] });
+      queryClient.invalidateQueries({ queryKey: ['images', shootId] });
       setEditMode(false);
       toast({ title: "All changes saved successfully!" });
     },
@@ -652,24 +676,24 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
         : {};
       const sequenceKey = mediaType === 'video' ? 'videoSequences' : 'imageSequences';
 
-      // Prepare comprehensive shoot update data
+      // Prepare comprehensive shoot update data (use snake_case for database)
       const updateData = {
         // Basic shoot information
         title: editableShoot.title.trim(),
         location: editableShoot.location.trim(),
-        shootDate: editableShoot.shootDate,
+        shoot_date: editableShoot.shootDate,
         description: editableShoot.description.trim(),
-        shootType: editableShoot.shootType,
-        clientId: editableShoot.clientId, // This is the email for our system
-        isPrivate: editableShoot.isPrivate,
+        shoot_type: editableShoot.shootType,
+        client_id: editableShoot.clientId, // This is the email for our system
+        is_private: editableShoot.isPrivate,
         notes: editableShoot.notes.trim(),
-        seoTags: editableShoot.seoTags.split(',').map(tag => tag.trim()).filter(Boolean),
+        seo_tags: editableShoot.seoTags.split(',').map(tag => tag.trim()).filter(Boolean),
         
         // Gallery customization
-        customTitle: editableShoot.customTitle.trim() || null,
-        customSlug: editableShoot.customSlug.trim() || null,
-        bannerImageId: selectedCover,
-        gallerySettings: gallerySettings,
+        custom_title: editableShoot.customTitle.trim() || null,
+        custom_slug: editableShoot.customSlug.trim() || null,
+        banner_image_id: selectedCover,
+        gallery_settings: gallerySettings,
         [sequenceKey]: sequences
       };
 
@@ -721,19 +745,19 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     }
   };
 
-  // Remove image from current album by reassigning to SlyFox bin
+  // Remove image from current album by reassigning to null (orphan status)
   const removeImageMutation = useMutation({
     mutationFn: async (imageId: string) => {
-      return apiRequest('PATCH', `/api/images/${imageId}`, { shootId: '676d656f-4c38-4530-97f8-415742188acf' });
+      return supabaseOperations.images.updateShootId([imageId], null);
     },
     onSuccess: () => {
       // Invalidate all relevant queries to refresh the UI immediately
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/images', shootId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots'] });
+      queryClient.invalidateQueries({ queryKey: ['shoots', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['images', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['shoots'] });
 
       // Also refetch the current shoot data immediately
-      queryClient.refetchQueries({ queryKey: ['/api/shoots', shootId] });
+      queryClient.refetchQueries({ queryKey: ['shoots', shootId] });
 
       toast({ title: "Success", description: "Image moved to SlyFox archive" });
     },
@@ -820,9 +844,15 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
         console.log(`Updating ${images.length} images to new classification`);
 
         
-        const response = await apiRequest('PATCH', `/api/shoots/${shootId}/images/classification`, {
-          classification: editableShoot.shootType
-        });
+        // Update all images in this shoot to the new classification
+        const shootImages = await supabaseOperations.images.getByShoot(shootId);
+        const imageIds = shootImages.map(img => img.id);
+        
+        if (imageIds.length > 0) {
+          await supabaseOperations.images.updateClassification(imageIds, editableShoot.shootType);
+        }
+        
+        const response = { success: true, updatedCount: imageIds.length };
         
         if (response.success) {
           toast({ 
@@ -831,8 +861,8 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
           });
           
           // Refresh image data to show updated classifications
-          queryClient.invalidateQueries({ queryKey: ['/api/images', shootId] });
-          queryClient.invalidateQueries({ queryKey: ['/api/images/featured'] });
+          queryClient.invalidateQueries({ queryKey: ['images', shootId] });
+          queryClient.invalidateQueries({ queryKey: ['images'] });
         }
       } else {
         // Show success message even when no classification update was needed
@@ -864,7 +894,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
   const handleReplaceImage = (mediaId: string) => {
     console.log(`🔄 Replace ${mediaType === 'video' ? 'video' : 'image'} triggered for:`, mediaId);
-    console.log(`🎬 Current shoot mediaType:`, shoot?.mediaType);
+    console.log(`🎬 Current shoot media_type:`, shoot?.media_type);
     console.log(`🎯 Media ID to replace:`, mediaId);
     setImageToReplace(mediaId);
     
@@ -992,8 +1022,8 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     const sequenceKey = mediaType === 'video' ? 'videoSequences' : 'imageSequences';
 
     const data = {
-      bannerImageId: selectedCover,
-      gallerySettings: gallerySettings,
+      banner_image_id: selectedCover,
+      gallery_settings: gallerySettings,
       [sequenceKey]: sequences
     };
     saveAppearanceMutation.mutate(data);
@@ -1074,10 +1104,10 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
             {selectedCover && (() => {
               const orderedMedia = mediaType === 'video' ? videos : images;
               const coverMedia = orderedMedia.find(item => item.id === selectedCover);
-              const coverImageUrl = coverMedia?.storagePath ? 
+              const coverImageUrl = coverMedia?.storage_path ? 
                 (mediaType === 'video' ? 
                   VideoUrl.forThumbnail(coverMedia as any) : 
-                  ImageUrl.forViewing(coverMedia.storagePath)
+                  ImageUrl.forViewing(coverMedia.storage_path)
                 ) : null;
               
               return coverImageUrl ? (
@@ -1202,7 +1232,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                   </video>
                 ) : (
                   <img
-                    src={ImageUrl.forViewing(selectedMedia?.storagePath || '')}
+                    src={ImageUrl.forViewing(selectedMedia?.storage_path || '')}
                     alt="Gallery preview"
                     className="w-full h-auto max-h-[85vh] object-contain"
                   />

@@ -16,7 +16,7 @@ export interface GradientConfig {
   textColors?: TextColorsConfig;
 }
 
-type GradientSection = 'hero' | 'testimonials' | 'portfolio' | 'services' | 'contact' | 'privateGallery';
+type GradientSection = 'hero' | 'testimonials' | 'portfolio' | 'services' | 'contact' | 'privateGallery' | 'aboutHero' | 'aboutStory' | 'aboutValues' | 'aboutTeam' | 'aboutCta';
 
 export function useGradient(section: GradientSection) {
   const { config, updateConfigBulk, isUpdating } = useSiteConfig();

@@ -43,7 +43,7 @@ const PHOTOGRAPHY_CATEGORIES = [
 
 interface PhotographyNavigationProps {
   title?: string;
-  subtitle?: string;
+  subtitle?: string | React.ReactNode;
   className?: string;
 }
 
@@ -53,7 +53,14 @@ interface PhotographyNavigationProps {
  */
 export function PhotographyNavigation({ 
   title = "Explore Our Photography Services",
-  subtitle = "Professional photography for every special occasion",
+  subtitle = (
+    <>
+      Professional photography for every occasion, and every product. See the{' '}
+      <Link href="/portfolio" className="text-cyan hover:text-cyan/80 transition-colors">
+        portfolio here
+      </Link>
+    </>
+  ),
   className = "py-16 bg-gradient-to-br from-slate-900 via-slate-700 to-gray-800"
 }: PhotographyNavigationProps) {
   return (

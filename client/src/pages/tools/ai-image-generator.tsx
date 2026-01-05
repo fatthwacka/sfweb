@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Sparkles, Loader2, Download, Info, Eye } from 'lucide-react';
+import { ArrowLeft, Sparkles, Loader2, Download, Info, Eye, Brain, CheckSquare, Square } from 'lucide-react';
 import { useLocation } from 'wouter';
 
 import { Navigation } from '@/components/layout/navigation';
@@ -34,7 +34,7 @@ const VERTEX_MODELS = [
     default: true,
   },
   {
-    value: 'imagen-4.0-ultra',
+    value: 'imagen-4.0-ultra-generate-001',
     position: { row: 0, col: 1 },
     label: 'Imagen Ultra',
     description: 'Highest quality (~$0.04)',
@@ -56,7 +56,7 @@ const VERTEX_MODELS = [
     nativeResolutionFormat: 'k-scale',
   },
   {
-    value: 'imagen-4.0-standard',
+    value: 'imagen-4.0-generate-001',
     position: { row: 1, col: 1 },
     label: 'Imagen Standard',
     description: 'Mid-range quality (~$0.04)',
@@ -78,7 +78,7 @@ const VERTEX_MODELS = [
     nativeResolutionFormat: 'k-scale',
   },
   {
-    value: 'imagen-4.0-fast',
+    value: 'imagen-4.0-fast-generate-001',
     position: { row: 2, col: 1 },
     label: 'Imagen Fast',
     description: 'Budget option (~$0.039)',
@@ -142,11 +142,68 @@ export default function AIImageGenerator() {
   const [isEnhancingSubtitle, setIsEnhancingSubtitle] = useState(false);
   const [isEnhancingPrompt, setIsEnhancingPrompt] = useState(false);
 
+  // Brand Intelligence state
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
+  const [brandToggles, setBrandToggles] = useState<Set<string>>(new Set(['industry', 'visual']));
+  const [checkedPriority, setCheckedPriority] = useState<string[]>([]);
+  const [checkedSecondary, setCheckedSecondary] = useState<string[]>([]);
+  const [brandClients, setBrandClients] = useState([]);
+  const [brandProfile, setBrandProfile] = useState(null);
+
   // Update resolution to native resolution when model changes
   useEffect(() => {
     const modelConfig = getModelConfig(model);
     setResolution(modelConfig.nativeResolution);
   }, [model]);
+
+  // Load brand clients on mount
+  useEffect(() => {
+    const loadBrandClients = async () => {
+      try {
+        const response = await fetch('/api/content-management/brand-intelligence/clients');
+        if (response.ok) {
+          const data = await response.json();
+          setBrandClients(data.data?.clients || []);
+        }
+      } catch (error) {
+        console.error('Failed to load brand clients:', error);
+      }
+    };
+    loadBrandClients();
+  }, []);
+
+  // Load brand profile when brand is selected
+  useEffect(() => {
+    if (selectedBrand) {
+      const loadBrandProfile = async () => {
+        try {
+          const response = await fetch(`/api/content-management/brand-intelligence/clients/${selectedBrand}`);
+          if (response.ok) {
+            const data = await response.json();
+            console.log('🧠 Brand profile loaded:', data);
+            setBrandProfile(data.client || null);
+          }
+        } catch (error) {
+          console.error('Failed to load brand profile:', error);
+        }
+      };
+      loadBrandProfile();
+    } else {
+      setBrandProfile(null);
+    }
+  }, [selectedBrand]);
+
+  // Benefits selection algorithm from handoff document
+  const generateBenefitsSelection = (checkedPriority: string[], checkedSecondary: string[]) => {
+    const allSelected = [...checkedPriority, ...checkedSecondary];
+
+    if (allSelected.length <= 3) return allSelected;
+
+    // Use 2-3 benefits randomly from user selections
+    const shuffled = allSelected.sort(() => Math.random() - 0.5);
+    const useCount = Math.min(3, Math.max(2, Math.floor(allSelected.length * 0.6)));
+    return shuffled.slice(0, useCount);
+  };
 
   // Text transformation helper
   const transformTextCase = (text: string, caseType: 'as-typed' | 'sentence' | 'uppercase') => {
@@ -186,19 +243,16 @@ export default function AIImageGenerator() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          userPrompt: titleText, 
+          titleText, 
           artStyle, 
           imageStyle,
-          includeTitle,
-          includeSubtitle,
-          titleText: includeTitle ? transformTextCase(titleText, titleCase) : '',
-          subtitleText: includeSubtitle ? transformTextCase(subtitleText, subtitleCase) : ''
+          articleContext: undefined // No article context in standalone mode
         })
       });
 
       if (response.ok) {
         const data = await response.json();
-        setTitleText(data.suggestedPrompt || data.enhancedTitle);
+        setTitleText(data.enhancedTitle);
         toast({
           title: 'Title Enhanced',
           description: 'Your title has been optimized for visual impact.',
@@ -226,19 +280,16 @@ export default function AIImageGenerator() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          userPrompt: subtitleText, 
+          subtitleText, 
           artStyle, 
           imageStyle,
-          includeTitle,
-          includeSubtitle,
-          titleText: includeTitle ? transformTextCase(titleText, titleCase) : '',
-          subtitleText: includeSubtitle ? transformTextCase(subtitleText, subtitleCase) : ''
+          articleContext: undefined // No article context in standalone mode
         })
       });
 
       if (response.ok) {
         const data = await response.json();
-        setSubtitleText(data.suggestedPrompt || data.enhancedSubtitle);
+        setSubtitleText(data.enhancedSubtitle);
         toast({
           title: 'Subtitle Enhanced',
           description: 'Your subtitle has been optimized for clarity.',
@@ -326,6 +377,13 @@ export default function AIImageGenerator() {
             headline: includeTitle ? transformTextCase(titleText, titleCase) : undefined,
             hook: includeSubtitle ? transformTextCase(subtitleText, subtitleCase) : undefined,
           } : undefined,
+          // Brand intelligence integration from handoff document
+          brandIntelligence: selectedBrand ? {
+            brandId: selectedBrand,
+            activeToggles: Array.from(brandToggles),
+            finalBenefits: generateBenefitsSelection(checkedPriority, checkedSecondary),
+            brandData: brandProfile?.client
+          } : undefined,
         }),
       });
 
@@ -355,7 +413,7 @@ export default function AIImageGenerator() {
       <div className="min-h-screen">
         <Navigation />
         
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 pt-32 pb-8">
           {/* Page Header */}
           <div className="mb-8">
             <div className="flex items-center gap-4 mb-4">
@@ -363,7 +421,7 @@ export default function AIImageGenerator() {
                 variant="ghost" 
                 size="sm" 
                 onClick={() => setLocation('/tools')}
-                className="text-salmon hover:text-salmon-muted"
+                className="bg-gray-200 text-gray-700 font-light hover:bg-white hover:text-gray-900"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Tools
@@ -498,6 +556,156 @@ export default function AIImageGenerator() {
                       </div>
                     </div>
 
+                    {/* Brand Intelligence Section */}
+                    <div className="space-y-3 p-4 bg-gray-700 border border-gray-600 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <h3 className="text-sm font-semibold text-cyan font-medium">Brand Intelligence</h3>
+                      </div>
+                      
+                      {/* Brand Selection Dropdown */}
+                      <div className="space-y-2">
+                        <Label htmlFor="brand-select" className="text-white">Select Client Brand</Label>
+                        <Select value={selectedBrand || 'none'} onValueChange={(value) => setSelectedBrand(value === 'none' ? null : value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select client..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">No brand intelligence</SelectItem>
+                            {brandClients.map((client: any) => (
+                              <SelectItem key={client.id} value={client.id}>
+                                {client.name}{client.industry ? ` - ${client.industry}` : ''}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Brand Toggle Grid - Only show when brand is selected */}
+                      {selectedBrand && brandProfile && (
+                        <div className="space-y-3">
+                          {/* Toggle Switches Grid */}
+                          <div className="grid grid-cols-2 gap-3">
+                            {[
+                              { id: 'visual', label: 'Visual Style', desc: 'Color personality + mood' },
+                              { id: 'industry', label: 'Industry Context', desc: 'Business segment + niche' },
+                              { id: 'audience', label: 'Target Audience', desc: 'Customer demographics' },
+                              { id: 'benefits', label: 'Smart Benefits', desc: 'Priority + secondary benefits' },
+                              { id: 'guidelines', label: 'Content Guidelines', desc: 'Positive examples' },
+                              { id: 'compliance', label: 'Compliance Rules', desc: 'Prohibited terms' }
+                            ].map((toggle) => (
+                              <label
+                                key={toggle.id}
+                                className={`radio-btn-base ${
+                                  brandToggles.has(toggle.id)
+                                    ? 'radio-btn-brand-selected'
+                                    : 'radio-btn-unselected'
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={brandToggles.has(toggle.id)}
+                                  onChange={(e) => {
+                                    const newToggles = new Set(brandToggles);
+                                    if (e.target.checked) {
+                                      newToggles.add(toggle.id);
+                                    } else {
+                                      newToggles.delete(toggle.id);
+                                    }
+                                    setBrandToggles(newToggles);
+                                  }}
+                                  className="sr-only"
+                                />
+                                <div className="space-y-1">
+                                  <div className="radio-btn-text">{toggle.label}</div>
+                                  <div className="radio-btn-desc">{toggle.desc}</div>
+                                </div>
+                              </label>
+                            ))}
+                          </div>
+
+                          {/* Benefits Selection - Only show when benefits toggle is active */}
+                          {brandToggles.has('benefits') && brandProfile?.client_brand_profiles?.[0] && (
+                            <div className="space-y-2 p-3 bg-gray-800 rounded border">
+                              <p className="text-xs font-medium text-cyan">Smart Benefits Selection</p>
+                              
+                              {/* Priority Benefits */}
+                              {brandProfile.client_brand_profiles[0].priority_benefits?.length > 0 && (
+                                <div className="space-y-1">
+                                  <p className="text-xs text-purple-400 font-medium">Priority Benefits</p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {brandProfile.client.client_brand_profiles[0].priority_benefits.map((benefit: string) => (
+                                      <button
+                                        key={benefit}
+                                        onClick={() => {
+                                          if (checkedPriority.includes(benefit)) {
+                                            setCheckedPriority(prev => prev.filter(b => b !== benefit));
+                                          } else {
+                                            setCheckedPriority(prev => [...prev, benefit]);
+                                          }
+                                        }}
+                                        className={`text-xs px-2 py-1 rounded border ${
+                                          checkedPriority.includes(benefit)
+                                            ? 'bg-purple-500 text-white border-purple-400'
+                                            : 'bg-gray-700 text-gray-300 border-gray-600 hover:border-gray-500'
+                                        }`}
+                                      >
+                                        {checkedPriority.includes(benefit) ? (
+                                          <CheckSquare className="h-3 w-3 inline mr-1" />
+                                        ) : (
+                                          <Square className="h-3 w-3 inline mr-1" />
+                                        )}
+                                        {benefit}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Secondary Benefits */}
+                              {brandProfile.client.client_brand_profiles[0].secondary_benefits?.length > 0 && (
+                                <div className="space-y-1">
+                                  <p className="text-xs text-blue-400 font-medium">Secondary Benefits</p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {brandProfile.client.client_brand_profiles[0].secondary_benefits.map((benefit: string) => (
+                                      <button
+                                        key={benefit}
+                                        onClick={() => {
+                                          if (checkedSecondary.includes(benefit)) {
+                                            setCheckedSecondary(prev => prev.filter(b => b !== benefit));
+                                          } else {
+                                            setCheckedSecondary(prev => [...prev, benefit]);
+                                          }
+                                        }}
+                                        className={`text-xs px-2 py-1 rounded border ${
+                                          checkedSecondary.includes(benefit)
+                                            ? 'bg-blue-500 text-white border-blue-400'
+                                            : 'bg-gray-700 text-gray-300 border-gray-600 hover:border-gray-500'
+                                        }`}
+                                      >
+                                        {checkedSecondary.includes(benefit) ? (
+                                          <CheckSquare className="h-3 w-3 inline mr-1" />
+                                        ) : (
+                                          <Square className="h-3 w-3 inline mr-1" />
+                                        )}
+                                        {benefit}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Selection Summary */}
+                              {(checkedPriority.length > 0 || checkedSecondary.length > 0) && (
+                                <div className="text-xs text-gray-400 border-t border-gray-600 pt-2">
+                                  Selected: {checkedPriority.length + checkedSecondary.length} → AI uses {generateBenefitsSelection(checkedPriority, checkedSecondary).length} randomly
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
                     {/* Image Description Section */}
                     <div className="space-y-3 p-4 bg-gray-700 border border-gray-600 rounded-lg">
                       <div className="flex items-center justify-between">
@@ -549,8 +757,8 @@ export default function AIImageGenerator() {
                       <div className="space-y-3">
                         {/* Column Headers */}
                         <div className="grid grid-cols-2 gap-3">
-                          <div className="text-center text-sm font-semibold text-purple-400 pb-1">🍌 Nano Banana</div>
-                          <div className="text-center text-sm font-semibold text-blue-400 pb-1">🎨 Imagen</div>
+                          <div className="text-center text-sm font-semibold text-purple-400 pb-1">Nano Banana</div>
+                          <div className="text-center text-sm font-semibold text-blue-400 pb-1">Imagen</div>
                         </div>
                         
                         {/* Model Options */}
@@ -563,13 +771,12 @@ export default function AIImageGenerator() {
                             return (
                               <label
                                 key={modelOption.value}
-                                className={`
-                                  relative cursor-pointer rounded-lg border-2 p-3 text-center transition-all duration-200 hover:shadow-md
-                                  ${model === modelOption.value
+                                className={`radio-btn-base ${
+                                  model === modelOption.value
                                     ? col === 0 
-                                      ? 'border-purple-500 bg-purple-50 text-purple-900 ring-2 ring-purple-200'
-                                      : 'border-blue-500 bg-blue-50 text-blue-900 ring-2 ring-blue-200'
-                                    : 'border-gray-600 bg-gray-800 text-white hover:border-gray-500'
+                                      ? 'radio-btn-purple-selected'
+                                      : 'radio-btn-blue-selected'
+                                    : 'radio-btn-unselected'
                                   }
                                 `}
                               >
@@ -582,17 +789,14 @@ export default function AIImageGenerator() {
                                   className="sr-only"
                                 />
                                 <div className="space-y-1">
-                                  <div className="text-sm font-semibold">{modelOption.label}</div>
-                                  <div className="text-xs opacity-75">
+                                  <div className="radio-btn-text">{modelOption.label}</div>
+                                  <div className="radio-btn-desc">
                                     {modelOption.nativeResolutionFormat === 'k-scale' 
                                       ? modelOption.resolutions.join(', ')
                                       : modelOption.resolutions.slice(0, 2).join(', ')
-                                    } ({modelOption.description.match(/\(\$[\d\.]+\)/)?.[0] || '~$0.04'})
+                                    } {modelOption.description.match(/\(\$[\d\.]+\)/)?.[0] || '(~$0.04)'}
                                   </div>
                                 </div>
-                                {model === modelOption.value && (
-                                  <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-orange-500 border-2 border-white"></div>
-                                )}
                               </label>
                             );
                           })}

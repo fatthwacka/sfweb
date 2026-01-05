@@ -70,7 +70,7 @@ export function GalleryImageCard({
       }}
     >
       <img
-        src={ImageUrl.forViewing(image.storagePath)}
+        src={ImageUrl.forViewing(image.storage_path)}
         alt={image.filename}
         className={`w-full h-full object-cover ${
           gallerySettings.borderStyle === 'circular' ? 'aspect-square' : 'h-auto'

@@ -1,7 +1,27 @@
 import { useCallback, useRef, useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
+import { supabaseOperations } from '@/lib/supabase-operations';
+
+// Convert camelCase keys to snake_case for Supabase
+function convertToSnakeCase(obj: any): any {
+  if (obj === null || typeof obj !== 'object' || obj instanceof Date) {
+    return obj;
+  }
+  
+  if (Array.isArray(obj)) {
+    return obj.map(convertToSnakeCase);
+  }
+  
+  const converted: any = {};
+  for (const [key, value] of Object.entries(obj)) {
+    // Convert camelCase to snake_case
+    const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+    converted[snakeKey] = convertToSnakeCase(value);
+  }
+  
+  return converted;
+}
 
 interface UseAutoSaveOptions {
   shootId: string;
@@ -24,14 +44,14 @@ export function useAutoSave({ shootId, debounceMs = 1200, successMessage, errorM
   const pendingDataRef = useRef<any>(null);
 
   const saveMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('PATCH', `/api/shoots/${shootId}`, data),
+    mutationFn: (data: any) => supabaseOperations.shoots.update(shootId, data),
     onMutate: () => {
       setSaveStatus({ status: 'saving' });
     },
     onSuccess: () => {
       // OPTIMIZED: Only invalidate the specific shoot query, and delay it slightly
       setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
+        queryClient.invalidateQueries({ queryKey: ['shoots', shootId] });
       }, 100);
       // Only invalidate all shoots when really necessary (removed for better performance)
       setSaveStatus({ 
@@ -80,8 +100,11 @@ export function useAutoSave({ shootId, debounceMs = 1200, successMessage, errorM
       clearTimeout(timeoutRef.current);
     }
 
+    // Convert camelCase to snake_case for Supabase
+    const snakeCaseData = convertToSnakeCase(data);
+
     // Store the latest data
-    pendingDataRef.current = data;
+    pendingDataRef.current = snakeCaseData;
 
     // Set new timeout
     timeoutRef.current = setTimeout(() => {
@@ -98,8 +121,11 @@ export function useAutoSave({ shootId, debounceMs = 1200, successMessage, errorM
       clearTimeout(timeoutRef.current);
     }
     
-    pendingDataRef.current = data;
-    saveMutation.mutate(data);
+    // Convert camelCase to snake_case for Supabase
+    const snakeCaseData = convertToSnakeCase(data);
+    
+    pendingDataRef.current = snakeCaseData;
+    saveMutation.mutate(snakeCaseData);
   }, [saveMutation]);
 
   // Cleanup timeout on unmount

@@ -8,6 +8,7 @@ import * as SliderPrimitive from "@radix-ui/react-slider";
 import { Settings, ChevronUp, ChevronDown, Save, CheckCircle, AlertCircle } from "lucide-react";
 import { useDebouncedApiSave } from '@/hooks/use-debounced-api-save';
 import { useAllGradients } from '@/hooks/use-all-gradients';
+import { supabaseOperations } from '@/lib/supabase-operations';
 
 interface FrontPageSettings {
   imagePadding?: number;
@@ -253,20 +254,14 @@ export const FrontPageSettingsCard: React.FC<FrontPageSettingsProps> = ({
 
   // Sync portfolio gradient changes to new gradient system
   const syncToGradientSystem = (colorKey: string, color: string) => {
-    // Update the new gradient system structure
-    fetch('/api/site-config/bulk', {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        gradients: {
-          portfolio: {
-            [colorKey]: color,
-            direction: '135deg' // Default direction for portfolio
-          }
+    // Update the new gradient system structure using Supabase
+    supabaseOperations.siteConfig.updateBulk({
+      gradients: {
+        portfolio: {
+          [colorKey]: color,
+          direction: '135deg' // Default direction for portfolio
         }
-      }),
+      }
     }).catch(error => {
       console.error('Failed to sync portfolio gradient to new system:', error);
     });
@@ -274,21 +269,15 @@ export const FrontPageSettingsCard: React.FC<FrontPageSettingsProps> = ({
 
   // Sync complete gradient set to new system (for initial load)
   const syncCompleteGradientToNewSystem = (gradient: {startColor: string, middleColor: string, endColor: string}) => {
-    fetch('/api/site-config/bulk', {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        gradients: {
-          portfolio: {
-            startColor: gradient.startColor,
-            middleColor: gradient.middleColor,
-            endColor: gradient.endColor,
-            direction: '135deg' // Default direction for portfolio
-          }
+    supabaseOperations.siteConfig.updateBulk({
+      gradients: {
+        portfolio: {
+          startColor: gradient.startColor,
+          middleColor: gradient.middleColor,
+          endColor: gradient.endColor,
+          direction: '135deg' // Default direction for portfolio
         }
-      }),
+      }
     }).catch(error => {
       console.error('Failed to sync complete portfolio gradient to new system:', error);
     });

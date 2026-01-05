@@ -6,7 +6,10 @@ import { Footer } from '@/components/layout/footer';
 import { trackPageView } from '@/lib/analytics';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { apiRequest } from '@/lib/queryClient';
+import { supabase } from '@/lib/supabase';
+import type { Database } from '@/lib/database.types';
+
+type BlogPost = Database['public']['Tables']['blog_posts']['Row'];
 import { GradientBackground } from '@/components/common/gradient-background';
 import { useAllGradients } from '@/hooks/use-all-gradients';
 import {
@@ -34,7 +37,8 @@ import { Link } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
 import { BeforeAfterSlider } from '@/components/common/before-after-slider';
 import { createRoot } from 'react-dom/client';
-import type { BlogPost, BlogCategory, FeaturedSection } from '@shared/schema';
+// BlogPost type now defined above, FeaturedSection still needed
+import type { FeaturedSection } from '@shared/schema';
 
 interface StoryPageParams {
   slug: string;
@@ -63,42 +67,55 @@ export function Story() {
       if (!slug) {
         throw new Error('No slug provided');
       }
-      // First get all posts and find by slug (since we don't have a direct slug endpoint)
-      const response = await apiRequest('GET', '/api/blog/posts?status=published&limit=1000');
-      const posts = await response.json();
-      const post = posts.find((p: BlogPost) => p.slug === slug);
+      // Query Supabase directly for the post by slug
+      const { data: posts, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('status', 'published')
+        .eq('slug', slug)
+        .limit(1);
 
-      if (!post) {
+      if (error) {
+        throw new Error(`Failed to fetch story: ${error.message}`);
+      }
+
+      if (!posts || posts.length === 0) {
         throw new Error('Story not found');
       }
 
-      return post;
+      return posts[0];
     },
     retry: false,
     enabled: !!slug // Only run query if slug exists
   });
 
   // Fetch categories
-  const { data: categories = [] } = useQuery<BlogCategory[]>({
-    queryKey: ['story', 'categories'],
-    queryFn: async () => {
-      const response = await apiRequest('GET', '/api/blog/categories');
-      return response.json();
-    }
-  });
+  // TODO: Implement categories table if needed
+  // For now using empty array
+  const categories: any[] = [];
 
-  // Fetch related posts
+  // Fetch related posts directly from Supabase
   const { data: relatedPosts = [] } = useQuery<BlogPost[]>({
-    queryKey: ['story', 'related', post?.categoryId],
+    queryKey: ['story', 'related', post?.category_id],
     queryFn: async () => {
-      if (!post?.categoryId) return [];
+      if (!post?.category_id) return [];
 
-      const response = await apiRequest('GET', `/api/blog/posts?status=published&category=${post.categoryId}&limit=3`);
-      const posts = await response.json();
-      // Filter out current post
-      return posts.filter((p: BlogPost) => p.id !== post.id).slice(0, 2);
+      const { data: posts, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('status', 'published')
+        .eq('category_id', post.category_id)
+        .neq('id', post.id)
+        .limit(2);
+
+      if (error) {
+        console.warn('Failed to fetch related posts:', error.message);
+        return [];
+      }
+
+      return posts || [];
     },
-    enabled: !!post?.categoryId
+    enabled: !!post?.category_id
   });
 
   // Get blog-specific gradient or fall back to stories-content (moved here after all hooks)
@@ -128,9 +145,9 @@ export function Story() {
   // Mount BeforeAfterSlider component into placeholder after content renders
   useEffect(() => {
     console.log('useEffect triggered, post:', post);
-    console.log('featuredSection:', post?.featuredSection);
+    console.log('featuredSection:', post?.featured_section);
     
-    if (post && post.featuredSection?.type === 'before-after') {
+    if (post && post.featured_section?.type === 'before-after') {
       console.log('Looking for before-after-slider element...');
       const sliderElement = document.getElementById('before-after-slider');
       console.log('Found element:', sliderElement);
@@ -221,7 +238,7 @@ export function Story() {
     );
   }
 
-  const category = categories.find(cat => cat.id === post.categoryId);
+  const category = categories.find(cat => cat.id === post.category_id);
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
 
   const formatDate = (dateString: string | Date | null) => {
@@ -621,12 +638,12 @@ export function Story() {
         </div>
 
       {/* Cover Image */}
-      {post.coverImage && (
+      {post.cover_image && (
         <div className="px-4 sm:px-6 lg:px-8 pb-8">
           <div className="max-w-6xl mx-auto">
             <div className="aspect-video overflow-hidden rounded-lg">
               <img 
-                src={post.coverImage} 
+                src={post.cover_image} 
                 alt={post.title}
                 className="w-full h-full object-cover"
               />
@@ -639,9 +656,9 @@ export function Story() {
       {(() => {
         const { beforeFeatured, pullQuoteHtml, featuredHtml, afterFeatured } = processContentForLayout(
           post.content, 
-          (post as any).postImage1, 
-          (post as any).postImage2, 
-          post.featuredSection
+          post.post_image_1, 
+          post.post_image_2, 
+          post.featured_section
         );
 
         return (
@@ -696,10 +713,10 @@ export function Story() {
                     )}
 
                     {/* [2] Post Image 2 (3rd image) in Sidebar */}
-                    {(post as any).postImage2 && (
+                    {post.post_image_2 && (
                       <div className="story-sidebar-card p-0 overflow-hidden rounded-xl">
                         <img
-                          src={(post as any).postImage2}
+                          src={post.post_image_2}
                           alt="Related visual"
                           className="w-full h-48 object-cover"
                         />
@@ -712,7 +729,7 @@ export function Story() {
                       <div className="space-y-3 text-sm text-gray-400">
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4 text-salmon" />
-                          <span>{formatDate(post.publishedAt || post.createdAt)}</span>
+                          <span>{formatDate(post.published_at || post.created_at)}</span>
                         </div>
                         {(post as any).authorName && (
                           <div className="flex items-center gap-2">
@@ -741,10 +758,10 @@ export function Story() {
                           {relatedPosts.slice(0, 2).map((relatedPost) => (
                             <Link key={relatedPost.id} href={`/stories/${relatedPost.slug}`}>
                               <div className="group cursor-pointer">
-                                {relatedPost.coverImage && (
+                                {relatedPost.cover_image && (
                                   <div className="h-24 rounded-lg overflow-hidden mb-2">
                                     <img
-                                      src={relatedPost.coverImage}
+                                      src={relatedPost.cover_image}
                                       alt={relatedPost.title}
                                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                     />
@@ -803,10 +820,10 @@ export function Story() {
                       />
 
                       {/* 3rd Image at bottom of article - full width like image 2 */}
-                      {(post as any).postImage2 && (
+                      {post.post_image_2 && (
                         <figure className="story-post-image mt-12">
                           <img
-                            src={(post as any).postImage2}
+                            src={post.post_image_2}
                             alt="Article conclusion visual"
                             loading="lazy"
                           />
@@ -856,10 +873,10 @@ export function Story() {
                       })()}
 
                       {/* [1] Post Image 1 in Second Sidebar */}
-                      {(post as any).postImage1 && (
+                      {post.post_image_1 && (
                         <div className="story-sidebar-card p-0 overflow-hidden rounded-xl">
                           <img
-                            src={(post as any).postImage1}
+                            src={post.post_image_1}
                             alt="Featured visual"
                             className="w-full h-48 object-cover"
                           />
@@ -928,10 +945,10 @@ export function Story() {
                 return (
                   <div key={relatedPost.id} className="story-card group">
                     {/* Cover Image */}
-                    {relatedPost.coverImage ? (
+                    {relatedPost.cover_image ? (
                       <div className="story-card-image">
                         <img
-                          src={relatedPost.coverImage}
+                          src={relatedPost.cover_image}
                           alt={relatedPost.title}
                         />
                       </div>

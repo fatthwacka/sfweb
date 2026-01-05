@@ -10,7 +10,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUrl } from "@/lib/image-utils";
 import { useAuth } from "@/hooks/use-auth";
-import { apiRequest } from "@/lib/queryClient";
+import { supabaseOperations } from "@/lib/supabase-operations";
 import { 
   Camera, 
   Calendar, 
@@ -189,7 +189,7 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
   // Modal handlers
   const handleViewFullRes = (storagePath: string) => {
     const orderedImages = getOrderedImages();
-    const imageIndex = orderedImages.findIndex(img => img.storagePath === storagePath);
+    const imageIndex = orderedImages.findIndex(img => img.storage_path === storagePath);
     if (imageIndex !== -1) {
       setCurrentImageIndex(imageIndex);
       setModalImageId(orderedImages[imageIndex].id);
@@ -267,10 +267,10 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
   // Debug logging to help identify loading issues
   console.log('ClientPortal loading for:', userEmail);
 
-  // Fetch client's shoots based on email
+  // Fetch client's shoots based on email - using working path parameter endpoint
   const { data: shoots = [], isLoading: shootsLoading, error } = useQuery<Shoot[]>({
     queryKey: ["/api/client/shoots", userEmail],
-    queryFn: () => fetch(`/api/client/shoots?email=${encodeURIComponent(userEmail)}`).then(res => {
+    queryFn: () => fetch(`/api/client/shoots/${encodeURIComponent(userEmail)}`).then(res => {
       console.log('API Response status:', res.status);
       return res.json();
     }),
@@ -283,38 +283,21 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
       if (!shoots.length) return {};
       
       const shootIds = shoots.map(s => s.id);
-      const response = await apiRequest('POST', `/api/workflow/states`, { shootIds });
-      
+      // Workflow states - keep as API call (complex server-side logic)
+      const response = await fetch('/api/workflow/states', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shootIds })
+      });
+      if (!response.ok) throw new Error('Failed to fetch workflow states');
       return await response.json();
     },
     enabled: shoots.length > 0
   });
 
-  // Keep legacy preview settings for ImagePickerFast component compatibility
-  const { data: previewSettings = {} } = useQuery({
-    queryKey: ["/api/preview-settings/by-shoots", shoots.map(s => s.id)],
-    queryFn: async () => {
-      const settingsMap: Record<string, any> = {};
-      
-      // Fetch preview settings for each shoot
-      await Promise.all(
-        shoots.map(async (shoot) => {
-          try {
-            const response = await apiRequest('GET', `/api/shoots/${shoot.id}/preview-settings`);
-            const settings = await response.json();
-            if (settings && (settings.dropboxFolderPath || settings.dropboxShareLink || settings.isActive)) {
-              settingsMap[shoot.id] = settings;
-            }
-          } catch (error) {
-            // Shoot has no preview settings - that's fine
-          }
-        })
-      );
-      
-      return settingsMap;
-    },
-    enabled: shoots.length > 0,
-  });
+  // Note: Preview settings functionality removed as table doesn't exist in Supabase
+  // Using workflow states from shoots table instead
+  const previewSettings = {};
 
   // Debug logging 
   console.log('Shoots loading:', shootsLoading, 'Error:', error, 'Shoots count:', shoots.length);
@@ -322,28 +305,45 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
   console.log('🎯 Workflow states:', workflowStates);
   console.log('Legacy preview settings:', previewSettings);
 
-  // Fetch shoot data with images (same as admin approach)
+  // Fetch shoot data using Supabase operations
   const { data: shootData, isLoading: imagesLoading } = useQuery({
-    queryKey: ["/api/shoots", selectedShoot],
-    queryFn: () => fetch(`/api/shoots/${selectedShoot}`).then(res => res.json()),
+    queryKey: ['shoots', selectedShoot],
+    queryFn: () => supabaseOperations.shoots.getById(selectedShoot).then(shoot => ({ shoot })),
     enabled: !!selectedShoot,
   });
 
   const shoot = (shootData as any)?.shoot || null;
-  const images: Image[] = (shootData as any)?.images ? ((shootData as any).images as Image[]) : [];
+  const mediaType = shoot?.media_type || 'photo';
+
+  // Fetch images or videos based on shoot's mediaType
+  const { data: mediaData } = useQuery({
+    queryKey: mediaType === 'video' ? ['videos', selectedShoot] : ['images', selectedShoot],
+    queryFn: async () => {
+      if (mediaType === 'video') {
+        return supabaseOperations.videos.getByShoot(selectedShoot);
+      } else {
+        return supabaseOperations.images.getByShoot(selectedShoot);
+      }
+    },
+    enabled: !!selectedShoot && !!shoot
+  });
+
+  const mediaItems = mediaData || [];
+  const images: Image[] = mediaType === 'photo' ? mediaItems as Image[] : [];
+  const videos: any[] = mediaType === 'video' ? mediaItems : [];
 
   // Initialize all settings from shoot data when shoot changes (same as admin)
   useEffect(() => {
     if (shoot && shoot.id && images.length > 0) {
-      // Set cover: use bannerImageId if valid, otherwise use first image as fallback
-      if (shoot.bannerImageId && images.some(img => img.id === shoot.bannerImageId)) {
-        setSelectedCover(shoot.bannerImageId);
+      // Set cover: use banner_image_id if valid, otherwise use first image as fallback
+      if (shoot.banner_image_id && images.some(img => img.id === shoot.banner_image_id)) {
+        setSelectedCover(shoot.banner_image_id);
       } else {
         setSelectedCover(images[0].id);
       }
       
-      // Initialize gallery settings from shoot data (provide defaults for null gallerySettings)
-      const settings = shoot.gallerySettings || {};
+      // Initialize gallery settings from shoot data (provide defaults for null gallery_settings)
+      const settings = shoot.gallery_settings || {};
       console.log('🔍 DEBUG: Reading settings from shoot:', settings);
       console.log('🔍 DEBUG: Border radius from DB:', settings.borderRadius, typeof settings.borderRadius);
       setGallerySettings({
@@ -443,13 +443,15 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
         ? Object.fromEntries(imageOrder.map((id, index) => [id, index + 1]))
         : {};
       
-      await apiRequest('PATCH', `/api/shoots/${selectedShoot}`, {
-        bannerImageId: selectedCover,
+      await supabaseOperations.shoots.update(selectedShoot, {
+        banner_image_id: selectedCover,
         imageSequences: imageSequences
       });
       
-      queryClient.invalidateQueries({ queryKey: ['/api/client/shoots'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots', selectedShoot] });
+      queryClient.invalidateQueries({ queryKey: ['client-shoots'] });
+      queryClient.invalidateQueries({ queryKey: ['shoots', selectedShoot] });
+      queryClient.invalidateQueries({ queryKey: ['images', selectedShoot] });
+      queryClient.invalidateQueries({ queryKey: ['videos', selectedShoot] });
       toast({ title: "Image order and cover saved successfully!" });
     } catch (error) {
       toast({ title: "Error", description: "Failed to save image order", variant: "destructive" });
@@ -786,12 +788,12 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                               const titleValue = (document.getElementById('customTitle') as HTMLInputElement)?.value || currentShoot?.customTitle;
                               
                               try {
-                                await apiRequest('PATCH', `/api/shoots/${selectedShoot}`, {
+                                await supabaseOperations.shoots.update(selectedShoot, {
                                   location: locationValue,
-                                  customTitle: titleValue
+                                  custom_title: titleValue
                                 });
-                                queryClient.invalidateQueries({ queryKey: ['/api/client/shoots'] });
-                                queryClient.invalidateQueries({ queryKey: ['/api/shoots', selectedShoot] });
+                                queryClient.invalidateQueries({ queryKey: ['client-shoots'] });
+                                queryClient.invalidateQueries({ queryKey: ['shoots', selectedShoot] });
                                 toast({ title: "Shoot info updated successfully!" });
                               } catch (error) {
                                 toast({ title: "Error", description: "Failed to save shoot info", variant: "destructive" });
@@ -1042,7 +1044,7 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                     {selectedCover && (() => {
                       const orderedImages = getOrderedImages();
                       const coverImage = orderedImages.find(img => img.id === selectedCover);
-                      const coverImageUrl = coverImage?.storagePath ? ImageUrl.forViewing(coverImage.storagePath) : null;
+                      const coverImageUrl = coverImage?.storage_path ? ImageUrl.forViewing(coverImage.storage_path) : null;
                       
                       return coverImageUrl ? (
                         <div 
@@ -1202,7 +1204,7 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
             const currentImage = orderedImages[currentImageIndex];
             if (!currentImage) return null;
             
-            const imageUrl = currentImage?.storagePath ? ImageUrl.forViewing(currentImage.storagePath) : null;
+            const imageUrl = currentImage?.storage_path ? ImageUrl.forViewing(currentImage.storage_path) : null;
             
             return (
               <div className="relative w-full h-full flex items-center justify-center">
@@ -1266,7 +1268,7 @@ export function ClientPortal({ userEmail, userName }: ClientPortalProps) {
                         variant="secondary"
                         size="sm"
                         className="bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm"
-                        onClick={() => handleDownloadImage(currentImage.storagePath, currentImage.filename)}
+                        onClick={() => handleDownloadImage(currentImage.storage_path, currentImage.filename)}
                       >
                         <Download className="w-4 h-4 mr-2" />
                         Download

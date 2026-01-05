@@ -1,0 +1,55 @@
+{
+  "industry_segment": "Sugar-Free Desserts & Healthy Confectionery",
+  "business_niche": "Premium sugar-free desserts using natural alternatives for health-conscious consumers",
+  "products_services": "Sugar-free cakes, cookies, chocolates, ice cream, custom birthday cakes, corporate dessert catering, diabetic-friendly treats, keto desserts, gluten-free options, dessert subscription boxes, baking workshops, healthy dessert meal plans",
+  "target_audience_description": "Health-conscious individuals, diabetics, fitness enthusiasts, parents seeking healthier options for children, people with dietary restrictions, corporate wellness programs, and anyone wanting to enjoy desserts without compromising their health goals.",
+  "voice_rules": {
+    "tone": "Warm and encouraging, health-focused but indulgent",
+    "humor": "playful",
+    "sentence_length": "medium"
+  },
+  "language": "english",
+  "region": "us",
+  "spelling": "american",
+  "visual_style_notes": "Clean, vibrant, appetizing with natural colors and fresh ingredients showcase",
+  "color_personality": "Fresh greens and warm berry tones with clean whites",
+  "visual_mood": "Healthy indulgence meets joyful celebration without guilt",
+  "priority_benefits": [
+    "Zero added sugar without compromising on taste or texture",
+    "All-natural ingredients sourced from certified organic suppliers",
+    "Custom desserts for special dietary needs and health conditions",
+    "Proven recipes tested by nutritionists and food scientists"
+  ],
+  "secondary_benefits": [
+    "Same-day delivery for local customers",
+    "Educational workshops on healthy baking techniques",
+    "Subscription plans for regular healthy treats delivery",
+    "Corporate wellness program partnerships available"
+  ],
+  "positive_examples": [
+    "Success stories of customers maintaining their health goals while enjoying desserts",
+    "Before-and-after photos showing beautiful cake decorations using natural ingredients",
+    "Educational content about sugar alternatives and their benefits",
+    "Behind-the-scenes baking process videos showing quality ingredients"
+  ],
+  "negative_examples": [
+    "Artificial sweetener promotions that compromise on taste",
+    "Generic health food messaging that makes desserts sound medicinal",
+    "Overly technical nutritional information without emotional appeal",
+    "Price comparisons that diminish the premium quality positioning"
+  ],
+  "key_messages": [
+    "Indulge without compromise - delicious desserts that love you back",
+    "Where health meets happiness in every perfectly crafted bite",
+    "Naturally sweet, completely guilt-free, absolutely delicious",
+    "Your health journey deserves celebration, not deprivation"
+  ],
+  "forbidden_phrases": [
+    "Diet desserts",
+    "Low-calorie alternatives", 
+    "Artificial sweeteners",
+    "Diabetic food substitutes",
+    "Healthy but not as good",
+    "Sugar-free compromise"
+  ]
+}

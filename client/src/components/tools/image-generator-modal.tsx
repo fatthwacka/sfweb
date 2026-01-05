@@ -225,8 +225,14 @@ export function ImageGeneratorModal({
 
   // AI Generation states
   const [prompt, setPrompt] = useState(initialPrompt);
-  const [includeTitle, setIncludeTitle] = useState(true);
-  const [includeSubtitle, setIncludeSubtitle] = useState(false);
+  const [includeTitle, setIncludeTitle] = useState(false); // Default off
+  const [includeSubtitle, setIncludeSubtitle] = useState(false); // Default off
+  const [titleText, setTitleText] = useState(articleContext?.headline || '');
+  const [subtitleText, setSubtitleText] = useState(articleContext?.hook || '');
+  const [titleCase, setTitleCase] = useState<'as-typed' | 'sentence' | 'uppercase'>('as-typed');
+  const [subtitleCase, setSubtitleCase] = useState<'as-typed' | 'sentence' | 'uppercase'>('as-typed');
+  const [isEnhancingTitle, setIsEnhancingTitle] = useState(false);
+  const [isEnhancingSubtitle, setIsEnhancingSubtitle] = useState(false);
   const [artStyle, setArtStyle] = useState('photorealistic');
   const [imageStyle, setImageStyle] = useState('professional');
   const [model, setModel] = useState(() => getDefaultModel().value);
@@ -273,10 +279,21 @@ export function ImageGeneratorModal({
       setAiAnalyzedPrompt('');
       setUseAiPrompt(false);
       setPrompt(initialPrompt);
+      // Reset title/subtitle state
+      setIncludeTitle(false);
+      setIncludeSubtitle(false);
+      setTitleText(articleContext?.headline || '');
+      setSubtitleText(articleContext?.hook || '');
+      setTitleCase('as-typed');
+      setSubtitleCase('as-typed');
+      setIsEnhancingTitle(false);
+      setIsEnhancingSubtitle(false);
+      // Reset model state
       const defaultModel = getDefaultModel();
       setModel(defaultModel.value);
       setResolution(defaultModel.resolutions[0]);
       setAspectRatio('1:1');
+      // Reset Unsplash state
       setUnsplashImages([]);
       setSelectedUnsplashImage(null);
       setUnsplashSearchTerm('');
@@ -286,7 +303,7 @@ export function ImageGeneratorModal({
       setActiveTab('ai');
       setHasAnalyzed(false);
     }
-  }, [isOpen, initialPrompt]);
+  }, [isOpen, initialPrompt, articleContext]);
 
   // Removed auto-analysis to save tokens - user must manually click analyze
 
@@ -298,7 +315,16 @@ export function ImageGeneratorModal({
       const response = await fetch('/api/ai/analyze-image-prompt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ articleContext, artStyle, imageStyle }),
+        body: JSON.stringify({ 
+          articleContext, 
+          artStyle, 
+          imageStyle,
+          // Include title/subtitle if checked
+          includeTitle,
+          includeSubtitle,
+          titleText: includeTitle ? transformTextCase(titleText, titleCase) : '',
+          subtitleText: includeSubtitle ? transformTextCase(subtitleText, subtitleCase) : ''
+        }),
       });
 
       if (!response.ok) throw new Error('Failed to analyze content');
@@ -331,7 +357,12 @@ export function ImageGeneratorModal({
         body: JSON.stringify({ 
           userPrompt: prompt, 
           artStyle, 
-          imageStyle 
+          imageStyle,
+          // Include title/subtitle if checked
+          includeTitle,
+          includeSubtitle,
+          titleText: includeTitle ? transformTextCase(titleText, titleCase) : '',
+          subtitleText: includeSubtitle ? transformTextCase(subtitleText, subtitleCase) : ''
         }),
       });
 
@@ -359,6 +390,111 @@ export function ImageGeneratorModal({
     }
   };
 
+  // Helper function to transform text case
+  const transformTextCase = (text: string, caseType: 'as-typed' | 'sentence' | 'uppercase'): string => {
+    switch (caseType) {
+      case 'sentence':
+        return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+      case 'uppercase':
+        return text.toUpperCase();
+      case 'as-typed':
+      default:
+        return text;
+    }
+  };
+
+  // Toggle case for title
+  const toggleTitleCase = () => {
+    const cases: ('as-typed' | 'sentence' | 'uppercase')[] = ['as-typed', 'sentence', 'uppercase'];
+    const currentIndex = cases.indexOf(titleCase);
+    const nextCase = cases[(currentIndex + 1) % cases.length];
+    setTitleCase(nextCase);
+  };
+
+  // Toggle case for subtitle  
+  const toggleSubtitleCase = () => {
+    const cases: ('as-typed' | 'sentence' | 'uppercase')[] = ['as-typed', 'sentence', 'uppercase'];
+    const currentIndex = cases.indexOf(subtitleCase);
+    const nextCase = cases[(currentIndex + 1) % cases.length];
+    setSubtitleCase(nextCase);
+  };
+
+  // Enhance title specifically
+  const enhanceTitle = async () => {
+    if (!titleText.trim()) return;
+    
+    setIsEnhancingTitle(true);
+    try {
+      const response = await fetch('/api/ai/enhance-title', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          titleText, 
+          artStyle, 
+          imageStyle,
+          articleContext 
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to enhance title');
+
+      const result = await response.json();
+      setTitleText(result.enhancedTitle);
+      
+      toast({
+        title: 'Title Enhanced!',
+        description: 'Your title has been optimized for better visual impact.',
+      });
+    } catch (error) {
+      console.error('Error enhancing title:', error);
+      toast({
+        title: 'Enhancement Failed',
+        description: 'Could not enhance title. You can still edit it manually.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsEnhancingTitle(false);
+    }
+  };
+
+  // Enhance subtitle specifically
+  const enhanceSubtitle = async () => {
+    if (!subtitleText.trim()) return;
+    
+    setIsEnhancingSubtitle(true);
+    try {
+      const response = await fetch('/api/ai/enhance-subtitle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          subtitleText, 
+          artStyle, 
+          imageStyle,
+          articleContext 
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to enhance subtitle');
+
+      const result = await response.json();
+      setSubtitleText(result.enhancedSubtitle);
+      
+      toast({
+        title: 'Subtitle Enhanced!',
+        description: 'Your subtitle has been optimized for better visual impact.',
+      });
+    } catch (error) {
+      console.error('Error enhancing subtitle:', error);
+      toast({
+        title: 'Enhancement Failed',
+        description: 'Could not enhance subtitle. You can still edit it manually.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsEnhancingSubtitle(false);
+    }
+  };
+
   const generateImage = async () => {
     const finalPrompt = useAiPrompt && aiAnalyzedPrompt ? aiAnalyzedPrompt : prompt;
     
@@ -383,7 +519,12 @@ export function ImageGeneratorModal({
         resolution,
         aspectRatio,
         model,
-        articleContext,
+        articleContext: {
+          ...articleContext,
+          // Override with user-entered text and case transformations
+          headline: includeTitle ? transformTextCase(titleText, titleCase) : articleContext?.headline,
+          hook: includeSubtitle ? transformTextCase(subtitleText, subtitleCase) : articleContext?.hook,
+        },
       };
 
       const response = await fetch('/api/ai/generate-image', {
@@ -637,7 +778,7 @@ export function ImageGeneratorModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl w-[95vw] h-[90vh] flex flex-col p-0">
+      <DialogContent className="max-w-7xl w-[95vw] h-[95vh] flex flex-col p-0 overflow-hidden">
         <DialogHeader className="px-6 py-4 border-b shrink-0">
           <DialogTitle className="text-xl">AI Image Generator</DialogTitle>
         </DialogHeader>
@@ -664,15 +805,128 @@ export function ImageGeneratorModal({
 
           <div className="flex-1 overflow-hidden">
             <TabsContent value="ai" className="h-full mt-0">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 h-full">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 h-full overflow-hidden">
                 {/* AI Configuration Panel */}
-                <div className="space-y-4 overflow-y-auto">
+                <div className="space-y-4 overflow-y-auto max-h-full pr-2" style={{ maxHeight: 'calc(95vh - 200px)' }}>
                   <h3 className="text-lg font-semibold text-orange-600">AI Configuration</h3>
                   
-                  {/* Prompt Section */}
-                  <div className="space-y-2">
+                  {/* Title/Subtitle Section */}
+                  <div className="space-y-3 p-4 bg-gray-700 border border-gray-600 rounded-lg">
+                    <h4 className="text-sm font-semibold text-cyan font-medium">Text Overlays</h4>
+                    
+                    {/* Title Field */}
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="include-title-overlay"
+                          checked={includeTitle}
+                          onChange={(e) => setIncludeTitle(e.target.checked)}
+                          className="rounded"
+                        />
+                        <Label htmlFor="include-title-overlay" className="text-sm font-medium">
+                          Title Overlay
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Input
+                          placeholder="Enter title text..."
+                          value={titleText}
+                          onChange={(e) => setTitleText(e.target.value)}
+                          disabled={!includeTitle}
+                          className={`flex-1 ${!includeTitle ? 'opacity-50' : ''}`}
+                        />
+                        <Button
+                          onClick={toggleTitleCase}
+                          disabled={!includeTitle || !titleText.trim()}
+                          variant="outline"
+                          size="sm"
+                          className="px-2 text-xs font-mono"
+                          title={`Case: ${titleCase}`}
+                        >
+                          TT
+                        </Button>
+                        <Button
+                          onClick={enhanceTitle}
+                          disabled={!includeTitle || !titleText.trim() || isEnhancingTitle}
+                          variant="outline"
+                          size="sm"
+                          className="px-2"
+                          title="Enhance title"
+                        >
+                          {isEnhancingTitle ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Sparkles className="h-3 w-3" />
+                          )}
+                        </Button>
+                      </div>
+                      {titleText && includeTitle && (
+                        <div className="text-xs text-gray-600 px-2 py-1 bg-white rounded border">
+                          Preview: "{transformTextCase(titleText, titleCase)}"
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Subtitle Field */}
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="include-subtitle-overlay"
+                          checked={includeSubtitle}
+                          onChange={(e) => setIncludeSubtitle(e.target.checked)}
+                          className="rounded"
+                        />
+                        <Label htmlFor="include-subtitle-overlay" className="text-sm font-medium">
+                          Subtitle Overlay
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Input
+                          placeholder="Enter subtitle text..."
+                          value={subtitleText}
+                          onChange={(e) => setSubtitleText(e.target.value)}
+                          disabled={!includeSubtitle}
+                          className={`flex-1 ${!includeSubtitle ? 'opacity-50' : ''}`}
+                        />
+                        <Button
+                          onClick={toggleSubtitleCase}
+                          disabled={!includeSubtitle || !subtitleText.trim()}
+                          variant="outline"
+                          size="sm"
+                          className="px-2 text-xs font-mono"
+                          title={`Case: ${subtitleCase}`}
+                        >
+                          TT
+                        </Button>
+                        <Button
+                          onClick={enhanceSubtitle}
+                          disabled={!includeSubtitle || !subtitleText.trim() || isEnhancingSubtitle}
+                          variant="outline"
+                          size="sm"
+                          className="px-2"
+                          title="Enhance subtitle"
+                        >
+                          {isEnhancingSubtitle ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Sparkles className="h-3 w-3" />
+                          )}
+                        </Button>
+                      </div>
+                      {subtitleText && includeSubtitle && (
+                        <div className="text-xs text-gray-600 px-2 py-1 bg-white rounded border">
+                          Preview: "{transformTextCase(subtitleText, subtitleCase)}"
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Image Description Section */}
+                  <div className="space-y-3 p-4 bg-gray-700 border border-gray-600 rounded-lg">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="prompt">Image Description</Label>
+                      <h4 className="text-sm font-semibold text-cyan font-medium">Image Description</h4>
                       {!articleContext && prompt.trim() && (
                         <Button
                           onClick={enhanceStandalonePrompt}
@@ -747,11 +1001,12 @@ export function ImageGeneratorModal({
                       </div>
                     </div>
                   )}
+                  </div>
 
-                  {/* Model Selection - 2x3 Radio Grid */}
-                  <div className="space-y-3">
+                  {/* AI Model Selection Section */}
+                  <div className="space-y-3 p-4 bg-gray-700 border border-gray-600 rounded-lg">
                     <div className="flex items-center space-x-2">
-                      <Label>AI Model</Label>
+                      <h4 className="text-sm font-semibold text-cyan font-medium">AI Model</h4>
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger>
@@ -805,12 +1060,11 @@ export function ImageGeneratorModal({
                               />
                               <div className="space-y-1">
                                 <div className="text-sm font-semibold">{modelOption.label}</div>
-                                <div className="text-xs opacity-75">{modelOption.description}</div>
-                                <div className="text-xs font-medium">
+                                <div className="text-xs opacity-75">
                                   {modelOption.nativeResolutionFormat === 'k-scale' 
                                     ? modelOption.resolutions.join(', ')
                                     : modelOption.resolutions.slice(0, 2).join(', ')
-                                  }
+                                  } ({modelOption.description.match(/\(\$[\d\.]+\)/)?.[0] || '~$0.04'})
                                 </div>
                               </div>
                               {model === modelOption.value && (
@@ -823,10 +1077,12 @@ export function ImageGeneratorModal({
                     </div>
                   </div>
 
-                  {/* Configuration Grid */}
-                  <div className="grid grid-cols-2 gap-4 relative overflow-hidden">
-                    <div className="space-y-2 min-w-0">
-                      <Label htmlFor="art-style">Art Style</Label>
+                  {/* Style & Settings Section */}
+                  <div className="space-y-3 p-4 bg-gray-700 border border-gray-600 rounded-lg">
+                    <h4 className="text-sm font-semibold text-cyan font-medium">Style & Settings</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2 min-w-0">
+                        <Label htmlFor="art-style">Art Style</Label>
                       <Select value={artStyle} onValueChange={setArtStyle}>
                         <SelectTrigger className="max-w-full focus:ring-1 focus:ring-orange-500 focus:ring-inset">
                           <SelectValue />
@@ -896,47 +1152,6 @@ export function ImageGeneratorModal({
                     </div>
                   </div>
 
-                  {/* Options */}
-                  <TooltipProvider>
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          id="include-title"
-                          checked={includeTitle}
-                          onChange={(e) => setIncludeTitle(e.target.checked)}
-                        />
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Label htmlFor="include-title" className="text-sm cursor-pointer">
-                              Include article title overlay{articleContext?.headline ? ` (${articleContext.headline.slice(0, 50)}${articleContext.headline.length > 50 ? '...' : ''})` : ''}
-                            </Label>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Tell the AI generator to add the title as text overlay on the image</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          id="include-subtitle"
-                          checked={includeSubtitle}
-                          onChange={(e) => setIncludeSubtitle(e.target.checked)}
-                        />
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Label htmlFor="include-subtitle" className="text-sm cursor-pointer">
-                              Include article subtitle overlay{articleContext?.hook ? ` (${articleContext.hook.slice(0, 50)}${articleContext.hook.length > 50 ? '...' : ''})` : ''}
-                            </Label>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Tell the AI generator to add the subtitle as text overlay on the image</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                    </div>
-                  </TooltipProvider>
 
                   <Button
                     onClick={generateImage}

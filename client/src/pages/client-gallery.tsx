@@ -6,6 +6,7 @@ import { ImageUrl } from "@/lib/image-utils";
 import { VideoUrl } from "@/lib/video-utils";
 import { Link } from "wouter";
 import { trackPageView } from "@/lib/analytics";
+import { supabaseOperations } from "@/lib/supabase-operations";
 import {
   Download,
   Share2,
@@ -27,69 +28,67 @@ import { useState, useEffect, useRef } from "react";
 
 interface Shoot {
   id: string;
-  clientId: string;
+  client_id: string;
   title: string;
-  description: string;
-  shootType: string;
-  shootDate: string;
-  location: string;
-  notes: string;
-  isPrivate: boolean;
-  bannerImageId: string | null;
-  seoTags: string;
-  viewCount: number;
-  createdBy: string;
-  customSlug: string;
-  customTitle: string;
-  gallerySettings: {
+  description: string | null;
+  custom_slug: string | null;
+  banner_image_id: string | null;
+  is_private: boolean;
+  group_name: string | null;
+  media_type: string | null;
+  view_count: number;
+  gallery_settings?: {
     layoutStyle: string;
     backgroundColor: string;
     borderRadius?: number;
     imageSpacingValue?: number;
     navbarPosition?: string;
     coverPicSize?: number;
+    coverPicAlignment?: string;
   };
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface Image {
   id: string;
-  shootId: string;
+  shoot_id: string;
   filename: string;
-  storagePath: string;
-  originalName: string;
-  fileSize: number | null;
+  storage_path: string;
+  file_size: number | null;
   sequence: number;
-  downloadCount: number;
-  createdAt: string;
+  featured_image: boolean;
+  classification: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface Video {
   id: string;
-  shootId: string;
+  shoot_id: string;
   filename: string;
-  storagePath: string;
-  optimizedPath: string | null;
-  thumbnailPath: string;
-  fileSize: number;
+  storage_path: string;
+  optimized_path?: string | null;
+  thumbnail_path: string;
+  file_size: number;
   sequence: number;
-  duration: number;
-  width: number;
-  height: number;
-  downloadCount: number;
-  createdAt: string;
-  updatedAt: string;
+  duration?: number;
+  width?: number;
+  height?: number;
+  featured_video: boolean;
+  classification: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface MediaItem extends Partial<Image>, Partial<Video> {
   mediaType: 'image' | 'video';
   id: string;
-  shootId: string;
+  shoot_id: string;
   filename: string;
-  storagePath: string;
+  storage_path: string;
   sequence: number;
-  createdAt: string;
+  created_at: string;
 }
 
 interface Client {
@@ -182,13 +181,39 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     setUserInteractions(interactionMap);
   }, []);
 
-  // Fetch shoot data directly by slug - this is a public gallery for a single shoot
+  // Fetch shoot data directly by slug using Supabase
   const {
     data: shoot,
     isLoading: shootLoading,
     error: shootError,
   } = useQuery<Shoot>({
-    queryKey: ["/api/gallery", slug],
+    queryKey: ['shoots', 'by-slug', slug],
+    queryFn: async () => {
+      console.log('🔍 ClientGallery: Fetching shoot by slug:', slug);
+      const shoots = await supabaseOperations.shoots.getAll();
+      
+      // Find shoot by custom_slug or ID
+      const foundShoot = shoots.find(s => 
+        s.custom_slug === slug || s.id === slug
+      );
+      
+      if (!foundShoot) {
+        throw new Error('Gallery not found');
+      }
+      
+      // Check if gallery is private
+      if ((foundShoot as any).is_private) {
+        throw new Error('This is a private gallery');
+      }
+      
+      console.log('✅ ClientGallery: Found shoot:', foundShoot.title);
+      console.log('🎨 Gallery settings data:', foundShoot.gallery_settings);
+      
+      // Debug: Log the complete shoot object to see all available fields
+      console.log('🔍 Complete shoot object structure:', foundShoot);
+      
+      return foundShoot as Shoot;
+    },
     enabled: !!slug,
   });
 
@@ -200,14 +225,14 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
   // Fetch all shoots for the same client to enable next/previous album navigation
   const { data: clientShoots = [] } = useQuery({
-    queryKey: ["/api/shoots", "client", shoot?.clientId],
-    enabled: !!shoot?.clientId,
+    queryKey: ["/api/shoots", "client", shoot?.client_id],
+    enabled: !!shoot?.client_id,
   });
 
   // Fetch client information for portfolio link
   const { data: client } = useQuery<Client>({
-    queryKey: ["/api/clients/by-email", shoot?.clientId],
-    enabled: !!shoot?.clientId,
+    queryKey: ["/api/clients/by-email", shoot?.client_id],
+    enabled: !!shoot?.client_id,
   });
 
   // Modal navigation functions - defined before useEffect
@@ -889,13 +914,13 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     );
   }
 
-  // Apply gallery settings from the shoot
-  const { gallerySettings } = shoot;
-  const coverImage = mediaItems.find((img) => img.id === shoot.bannerImageId);
+  // Apply gallery settings from the shoot (provide defaults for null gallery_settings)
+  const gallerySettings = shoot.gallery_settings || {};
+  const coverImage = mediaItems.find((img) => img.id === shoot.banner_image_id);
   
   // Get cover video for video albums
   const getCoverVideo = () => {
-    if (shoot.mediaType !== 'video') return null;
+    if (shoot.media_type !== 'video') return null;
     
     // Find featured video first
     const featuredVideo = mediaItems.find((item) => 
@@ -918,7 +943,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     let layoutStyle = gallerySettings?.layoutStyle || 'automatic';
     
     // For video albums, force 'automatic' to 'square' for better video thumbnail display
-    if (layoutStyle === 'automatic' && shoot.mediaType === 'video') {
+    if (layoutStyle === 'automatic' && shoot.media_type === 'video') {
       layoutStyle = 'square';
     }
     
@@ -960,7 +985,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     let layoutStyle = gallerySettings?.layoutStyle || 'automatic';
     
     // For video albums, force 'automatic' to 'square' for better video thumbnail display
-    if (layoutStyle === 'automatic' && shoot.mediaType === 'video') {
+    if (layoutStyle === 'automatic' && shoot.media_type === 'video') {
       layoutStyle = 'square';
     }
     
@@ -975,7 +1000,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     let layoutStyle = gallerySettings?.layoutStyle || 'automatic';
     
     // For video albums, force 'automatic' to 'square' for better video thumbnail display
-    if (layoutStyle === 'automatic' && shoot.mediaType === 'video') {
+    if (layoutStyle === 'automatic' && shoot.media_type === 'video') {
       layoutStyle = 'square';
     }
     
@@ -995,8 +1020,8 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
   // Get navbar positioning classes and styles based on gallery settings
   const getNavbarPositioning = () => {
-    const position = shoot?.gallerySettings?.navbarPosition || 'top-left';
-    const coverSize = shoot?.gallerySettings?.coverPicSize || 80;
+    const position = gallerySettings?.navbarPosition || 'top-left';
+    const coverSize = gallerySettings?.coverPicSize || 80;
     
     switch (position) {
       case 'top-left':
@@ -1043,12 +1068,12 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
   // Get cover pic size (default to 80vh)
   const getCoverPicSize = () => {
-    const size = shoot?.gallerySettings?.coverPicSize !== undefined ? shoot?.gallerySettings?.coverPicSize : 80;
+    const size = gallerySettings?.coverPicSize !== undefined ? gallerySettings?.coverPicSize : 80;
     return `${size}vh`;
   };
 
   const getCoverImageAlignment = () => {
-    const alignment = shoot?.gallerySettings?.coverPicAlignment || 'top';
+    const alignment = gallerySettings?.coverPicAlignment || 'top';
     
     switch (alignment) {
       case 'top': return 'center top';
@@ -1227,7 +1252,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
               <div className="flex items-center gap-3 mt-2">
                 {/* Previous Album Button */}
                 {previousShoot && (
-                  <Link href={`/gallery/${previousShoot.customSlug}`}>
+                  <Link href={`/gallery/${(previousShoot as any).custom_slug}`}>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -1235,21 +1260,21 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                       title="Previous Album"
                     >
                       <ChevronLeft className="w-3 h-3 mr-1" />
-                      {previousShoot.customSlug}
+                      {(previousShoot as any).custom_slug}
                     </Button>
                   </Link>
                 )}
 
                 {/* Next Album Button */}
                 {nextShoot && (
-                  <Link href={`/gallery/${nextShoot.customSlug}`}>
+                  <Link href={`/gallery/${(nextShoot as any).custom_slug}`}>
                     <Button
                       variant="ghost"
                       size="sm"
                       className="text-white hover:bg-white/10 text-xs font-barlow"
                       title="Next Album"
                     >
-                      {nextShoot.customSlug}
+                      {(nextShoot as any).custom_slug}
                       <ChevronRight className="w-3 h-3 ml-1" />
                     </Button>
                   </Link>
@@ -1269,7 +1294,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
         }}
       >
         {/* Video Background for Video Albums */}
-        {coverVideo && shoot.mediaType === 'video' ? (
+        {coverVideo && shoot.media_type === 'video' ? (
           <video
             src={VideoUrl.forStreaming(coverVideo)}
             className="absolute inset-0 w-full h-full object-cover"

@@ -66,6 +66,7 @@ export default function ArticleEditor() {
   const [currentArticle, setCurrentArticle] = useState<AirtableArticle | null>(null);
   const [isModified, setIsModified] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -89,7 +90,7 @@ export default function ArticleEditor() {
   // Filters (matching HTML version)
   const [filters, setFilters] = useState<Filters>({
     status: 'All',
-    client: 'All',
+    client: 'slyfox',
     sourceTitle: 'All',
     sortOrder: 'Newest First'
   });
@@ -119,6 +120,7 @@ export default function ArticleEditor() {
   // AI Image Generation States
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [imageAttribution, setImageAttribution] = useState<{user: string; username: string; source: 'unsplash' | 'ai' | 'upload'} | null>(null);
 
   // Load configuration on mount
   useEffect(() => {
@@ -303,7 +305,19 @@ export default function ArticleEditor() {
 
     try {
       setLoading(true);
+      setLoadingProgress(0);
       setError(null);
+
+      // Start progress bar animation (10 seconds)
+      const progressInterval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(progressInterval);
+            return 100;
+          }
+          return prev + 1; // Increment by 1% every 100ms = 10 seconds total
+        });
+      }, 100);
       
       // Build filter formula (exact same logic as HTML)
       const filterConditions = [];
@@ -397,6 +411,7 @@ export default function ArticleEditor() {
       console.error('Error fetching articles:', err);
     } finally {
       setLoading(false);
+      setLoadingProgress(0);
     }
   };
 
@@ -447,6 +462,11 @@ export default function ArticleEditor() {
       [field]: value
     } : null);
     setIsModified(true);
+    
+    // Clear attribution when image URL is manually changed
+    if (field === 'Image URL' && imageAttribution) {
+      setImageAttribution(null);
+    }
   };
 
   // Filter change handler
@@ -689,9 +709,17 @@ export default function ArticleEditor() {
       // Update the current article with the generated image URL
       handleFieldChange('Image URL', result.imageUrl);
       
+      // Store attribution information
+      if (result.attribution) {
+        setImageAttribution(result.attribution);
+      } else {
+        setImageAttribution(null);
+      }
+      
+      const sourceLabel = result.attribution?.source === 'unsplash' ? 'Unsplash' : 'AI-generated';
       toast({
-        title: 'Image Generated',
-        description: 'AI-generated image has been added to the article. Remember to save your changes.',
+        title: 'Image Added',
+        description: `${sourceLabel} image has been added to the article. Remember to save your changes.`,
       });
     } catch (error: any) {
       console.error('Error handling generated image:', error);
@@ -720,9 +748,18 @@ export default function ArticleEditor() {
         <Navigation />
         <div className="pt-32 pb-16 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center min-h-[60vh]">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-              <span className="text-white text-lg">Loading articles...</span>
+            <div className="flex flex-col items-center space-y-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-white text-lg">Loading articles...</span>
+              </div>
+              <div className="w-80 bg-gray-700 rounded-full h-2">
+                <div 
+                  className="bg-orange-500 h-2 rounded-full transition-all duration-100 ease-out" 
+                  style={{ width: `${loadingProgress}%` }}
+                ></div>
+              </div>
+              <span className="text-gray-400 text-sm">{loadingProgress}%</span>
             </div>
           </div>
         </div>
@@ -1150,12 +1187,88 @@ export default function ArticleEditor() {
               </Card>
             </div>
 
-            {/* Right Column - Image & Filters */}
-            <div className="space-y-6">
-              {/* Image Section */}
-              <Card className="bg-slate-800/50 border-slate-600 backdrop-blur-sm">
+            {/* Right Column - Post Preview & Image */}
+            <div className="space-y-0">
+              {/* Post Preview Panel - White container with black text */}
+              <div className="bg-white rounded-t-lg p-6 border border-slate-300">
+                <div className="space-y-4">
+                  {/* Headline Preview */}
+                  {displayCurrentArticle.Headline && (
+                    <h2 className="text-xl font-bold text-black leading-tight">
+                      {displayCurrentArticle.Headline}
+                    </h2>
+                  )}
+                  
+                  {/* Hook Preview */}
+                  {displayCurrentArticle.Hook && (
+                    <p className="text-gray-700 text-base leading-relaxed">
+                      {displayCurrentArticle.Hook}
+                    </p>
+                  )}
+                  
+                  {/* Content Preview - Show more content with preserved formatting */}
+                  {displayCurrentArticle.Content && (
+                    <div className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap">
+                      {(() => {
+                        const content = displayCurrentArticle.Content;
+                        // Show first 500 characters while preserving line breaks
+                        const truncatedByLength = content.length > 500;
+                        
+                        if (truncatedByLength) {
+                          // Find the last complete word within 500 characters
+                          const truncated = content.substring(0, 500);
+                          const lastSpaceIndex = truncated.lastIndexOf(' ');
+                          const cleanTruncated = lastSpaceIndex > 0 ? truncated.substring(0, lastSpaceIndex) : truncated;
+                          return cleanTruncated + '...';
+                        } else {
+                          return content;
+                        }
+                      })()}
+                    </div>
+                  )}
+                  
+                  {/* Hashtags Preview */}
+                  {displayCurrentArticle.Hashtags && (
+                    <div className="flex flex-wrap gap-1 text-blue-600 text-sm">
+                      {displayCurrentArticle.Hashtags.split(' ').map((tag, index) => (
+                        <span key={index} className="inline-block">
+                          {tag.trim()}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Empty state */}
+                  {!displayCurrentArticle.Headline && !displayCurrentArticle.Hook && !displayCurrentArticle.Content && (
+                    <p className="text-gray-500 italic text-center">
+                      Post preview will appear as you type in the fields on the left
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Image Preview - Connected to white area with zero padding */}
+              <div className="border-l border-r border-slate-300 bg-slate-700/30">
+                {displayCurrentArticle['Image URL'] ? (
+                  <img 
+                    src={displayCurrentArticle['Image URL']} 
+                    alt="Article image"
+                    className="w-full h-auto object-contain"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBmb3VuZDwvdGV4dD48L3N2Zz4=';
+                    }}
+                  />
+                ) : (
+                  <div className="h-40 bg-slate-700/50 flex items-center justify-center">
+                    <span className="text-slate-400">No image</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Image Controls - Below the image */}
+              <Card className="bg-slate-800/50 border-slate-600 backdrop-blur-sm rounded-t-none">
                 <CardHeader>
-                  <CardTitle className="text-lg text-orange-400">Image</CardTitle>
+                  <CardTitle className="text-lg text-orange-400">Image Controls</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* AI Generate Image Button */}
@@ -1204,39 +1317,53 @@ export default function ArticleEditor() {
                     )}
                   </div>
 
-                  {/* Image Preview */}
-                  <div className="border border-slate-600 rounded-lg overflow-hidden bg-slate-700/30">
-                    {displayCurrentArticle['Image URL'] ? (
-                      <img 
-                        src={displayCurrentArticle['Image URL']} 
-                        alt="Article image"
-                        className="w-full h-auto object-contain"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBmb3VuZDwvdGV4dD48L3N2Zz4=';
-                        }}
+                  {/* Image URL Input and Navigation - Moved to bottom */}
+                  <div className="space-y-2">
+                    <div className="flex space-x-2">
+                      <Input
+                        value={displayCurrentArticle['Image URL'] || ''}
+                        onChange={(e) => handleFieldChange('Image URL', e.target.value)}
+                        placeholder="Or paste image URL..."
+                        className="flex-1"
+                        disabled={!!searchQuery}
                       />
-                    ) : (
-                      <div className="h-40 bg-slate-700/50 flex items-center justify-center">
-                        <span className="text-slate-400">No image</span>
+                      <Button variant="outline" size="sm" title="Previous image">
+                        <ArrowLeft className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" title="Next image">
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    {/* Image Attribution Display */}
+                    {imageAttribution && imageAttribution.source === 'unsplash' && (
+                      <div className="text-xs text-gray-400 bg-slate-800/30 px-3 py-2 rounded border border-slate-600">
+                        📷 Photo by{' '}
+                        <a
+                          href={`https://unsplash.com/@${imageAttribution.username}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 hover:text-blue-300 underline"
+                        >
+                          {imageAttribution.user}
+                        </a>
+                        {' '}on{' '}
+                        <a
+                          href="https://unsplash.com"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 hover:text-blue-300 underline"
+                        >
+                          Unsplash
+                        </a>
                       </div>
                     )}
-                  </div>
-
-                  {/* Image URL Input and Navigation - Moved below preview */}
-                  <div className="flex space-x-2">
-                    <Input
-                      value={displayCurrentArticle['Image URL'] || ''}
-                      onChange={(e) => handleFieldChange('Image URL', e.target.value)}
-                      placeholder="Or paste image URL..."
-                      className="flex-1"
-                      disabled={!!searchQuery}
-                    />
-                    <Button variant="outline" size="sm" title="Previous image">
-                      <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm" title="Next image">
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
+                    
+                    {imageAttribution && imageAttribution.source === 'ai' && (
+                      <div className="text-xs text-gray-400 bg-slate-800/30 px-3 py-2 rounded border border-slate-600">
+                        🤖 Generated by AI using Vertex AI Imagen
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -1254,7 +1381,6 @@ export default function ArticleEditor() {
         onClose={handleCloseImageGenerator}
         onImageGenerated={handleImageGenerated}
         articleContext={getArticleContext()}
-        isLoading={isGeneratingImage}
       />
 
       <Toaster />

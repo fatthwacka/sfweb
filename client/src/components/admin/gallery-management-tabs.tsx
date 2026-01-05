@@ -184,7 +184,7 @@ export function GalleryManagementTabs({
               isUploading={isUploading}
               toast={toast}
               shootId={shootId}
-              mediaType={shoot?.mediaType || 'photo'}
+              mediaType={shoot?.media_type || 'photo'}
             />
           </TabsContent>
 

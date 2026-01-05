@@ -19,6 +19,12 @@ export interface ImageGenerationRequest {
     hook?: string;
     content?: string;
   };
+  brandIntelligence?: {
+    brandId: string;
+    activeToggles: string[];
+    finalBenefits: string[];
+    brandData: any;
+  };
 }
 
 export interface ImageGenerationResult {
@@ -147,10 +153,15 @@ export class VertexAIImageGenerator {
   private buildEnhancedPrompt(request: ImageGenerationRequest): string {
     let prompt = request.prompt;
 
+    // Brand Intelligence Enhancement - apply brand-aware modifications first
+    if (request.brandIntelligence) {
+      prompt = this.applyBrandIntelligence(prompt, request.brandIntelligence);
+    }
+
     // Add text overlay requests if requested
     const textOverlays = [];
     if (request.includeTitle && request.articleContext?.headline) {
-      textOverlays.push(`with text overlay "${request.articleContext.headline}" prominently displayed`);
+      textOverlays.push(`with text overlay "${request.articleContext.headline}" prominently displayed at the top`);
     }
     
     if (request.includeSubtitle && request.articleContext?.hook) {
@@ -585,5 +596,104 @@ export class VertexAIImageGenerator {
     // Extract the first meaningful part of the prompt
     const words = cleanPrompt.split(/[,.]/).filter(part => part.trim().length > 3);
     return words.slice(0, 3).join(' ').trim() || 'abstract art';
+  }
+
+  /**
+   * Apply brand intelligence enhancements to the prompt based on active toggles
+   * Following patterns from handoff document
+   */
+  private applyBrandIntelligence(prompt: string, brandIntelligence: NonNullable<ImageGenerationRequest['brandIntelligence']>): string {
+    let enhanced = prompt;
+    const { activeToggles, finalBenefits, brandData } = brandIntelligence;
+
+    console.log('🧠 Applying brand intelligence with toggles:', activeToggles);
+    console.log('⭐ Final benefits:', finalBenefits);
+
+    // Apply Visual Style enhancements
+    if (activeToggles.includes('visual') && brandData?.client_brand_profiles?.[0]) {
+      const profile = brandData.client_brand_profiles[0];
+      const visualEnhancements = [];
+      
+      if (profile.color_personality) {
+        visualEnhancements.push(profile.color_personality);
+      }
+      if (profile.visual_mood) {
+        visualEnhancements.push(profile.visual_mood);
+      }
+      if (profile.primary_color) {
+        visualEnhancements.push(`incorporating ${profile.primary_color} color palette`);
+      }
+      
+      if (visualEnhancements.length > 0) {
+        enhanced += `, ${visualEnhancements.join(', ')}`;
+        console.log('🎨 Added visual style:', visualEnhancements.join(', '));
+      }
+    }
+
+    // Apply Industry Context enhancements
+    if (activeToggles.includes('industry') && brandData) {
+      const industryContext = [];
+      
+      if (brandData.industry) {
+        industryContext.push(`${brandData.industry.toLowerCase()} industry context`);
+      }
+      if (brandData.client_brand_profiles?.[0]?.business_niche) {
+        industryContext.push(brandData.client_brand_profiles[0].business_niche);
+      }
+      
+      if (industryContext.length > 0) {
+        enhanced += `, ${industryContext.join(', ')}`;
+        console.log('🏢 Added industry context:', industryContext.join(', '));
+      }
+    }
+
+    // Apply Target Audience enhancements
+    if (activeToggles.includes('audience') && brandData?.client_brand_profiles?.[0]) {
+      const profile = brandData.client_brand_profiles[0];
+      
+      if (profile.target_audience) {
+        enhanced += `, appealing to ${profile.target_audience}`;
+        console.log('👥 Added target audience:', profile.target_audience);
+      } else if (profile.target_audience_description) {
+        enhanced += `, designed for ${profile.target_audience_description}`;
+        console.log('👥 Added audience description:', profile.target_audience_description);
+      }
+    }
+
+    // Apply Smart Benefits highlighting
+    if (activeToggles.includes('benefits') && finalBenefits.length > 0) {
+      enhanced += `, highlighting: ${finalBenefits.join(', ')}`;
+      console.log('⭐ Added benefits:', finalBenefits.join(', '));
+    }
+
+    // Apply Content Guidelines
+    if (activeToggles.includes('guidelines') && brandData?.client_brand_profiles?.[0]?.positive_examples) {
+      const examples = brandData.client_brand_profiles[0].positive_examples;
+      if (examples && examples.length > 0) {
+        enhanced += `, following successful content patterns`;
+        console.log('✅ Applied content guidelines');
+      }
+    }
+
+    // Apply Compliance Rules (add to negative prompts)
+    if (activeToggles.includes('compliance') && brandData?.client_brand_profiles?.[0]) {
+      const profile = brandData.client_brand_profiles[0];
+      const avoidTerms = [];
+      
+      if (profile.forbidden_phrases && profile.forbidden_phrases.length > 0) {
+        avoidTerms.push(...profile.forbidden_phrases);
+      }
+      if (profile.prohibited_terms && profile.prohibited_terms.length > 0) {
+        avoidTerms.push(...profile.prohibited_terms);
+      }
+      
+      if (avoidTerms.length > 0) {
+        enhanced += `. Additionally avoid: ${avoidTerms.join(', ')}`;
+        console.log('🚫 Added compliance restrictions:', avoidTerms.join(', '));
+      }
+    }
+
+    console.log('🧠 Brand-enhanced prompt:', enhanced);
+    return enhanced;
   }
 }

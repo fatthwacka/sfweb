@@ -230,19 +230,22 @@ export function PortfolioGroup() {
       // FINAL PORTFOLIO ITEMS - add cover images and metadata to portfolio items  
       const finalPortfolioItems = portfolioItems.map(item => {
         if (item.isGroup) {
-          // Bundle - use first shoot for cover info and calculate counts
-          const firstShoot = item.shoots[0];
-          const imageCount = item.shoots.filter((s: any) => s.media_type !== 'video').length;
-          const videoCount = item.shoots.filter((s: any) => s.media_type === 'video').length;
+          // Bundle - prioritize photo shoots for cover images
+          const photoShoots = item.shoots.filter((s: any) => s.media_type !== 'video');
+          const videoShoots = item.shoots.filter((s: any) => s.media_type === 'video');
+          const firstShoot = photoShoots.length > 0 ? photoShoots[0] : item.shoots[0];
+          const imageCount = photoShoots.length;
+          const videoCount = videoShoots.length;
           
           const bannerImageId = (firstShoot as any).banner_image_id;
           const bannerImage = bannerImages.find(img => img.id === bannerImageId);
           const coverImageUrl = bannerImage?.storage_path ? ImageUrl.forViewing(bannerImage.storage_path) : undefined;
           
-          // For video galleries, add cover video info
+          // For video galleries, add cover video info (only for video-only groups)
           let coverVideoInfo = undefined;
           const mediaType = (firstShoot as any).media_type;
-          if (mediaType === 'video') {
+          if (mediaType === 'video' && imageCount === 0) {
+            // Only add video info for video-only groups (no mixed media)
             const coverVideo = coverVideosMap[firstShoot.id];
             if (coverVideo) {
               coverVideoInfo = {

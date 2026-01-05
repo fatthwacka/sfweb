@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { supabaseOperations } from "@/lib/supabase-operations";
 import {
   Users,
   Plus,
@@ -61,12 +61,19 @@ export function StaffManagement() {
 
   // Fetch all staff members (super_admin and staff roles only)
   const { data: staffMembers, isLoading: staffLoading } = useQuery<Profile[]>({
-    queryKey: ["/api/staff"],
+    queryKey: ['staff'],
+    queryFn: () => supabaseOperations.profiles.getAll().then(profiles => 
+      profiles.filter(p => p.role === 'super_admin' || p.role === 'staff')
+    )
   });
 
   // Create staff mutation
   const createStaffMutation = useMutation({
-    mutationFn: (data: CreateStaffData) => apiRequest("POST", "/api/staff", data),
+    mutationFn: (data: CreateStaffData) => supabaseOperations.profiles.create({
+      email: data.email,
+      fullName: data.fullName,
+      role: data.role
+    }),
     onSuccess: () => {
       toast({
         title: "Staff Member Added",
@@ -74,7 +81,7 @@ export function StaffManagement() {
       });
       setNewStaffOpen(false);
       setFormData({ email: "", fullName: "", role: "staff", password: "" });
-      queryClient.invalidateQueries({ queryKey: ["/api/staff"] });
+      queryClient.invalidateQueries({ queryKey: ['staff'] });
     },
     onError: (error: any) => {
       toast({
@@ -88,14 +95,18 @@ export function StaffManagement() {
   // Update staff mutation
   const updateStaffMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateStaffData }) => 
-      apiRequest("PATCH", `/api/staff/${id}`, data),
+      supabaseOperations.profiles.update(id, {
+        full_name: data.fullName,
+        role: data.role,
+        theme_preference: data.themePreference
+      }),
     onSuccess: () => {
       toast({
         title: "Staff Member Updated",
         description: "Staff member details have been successfully updated."
       });
       setEditingStaff(null);
-      queryClient.invalidateQueries({ queryKey: ["/api/staff"] });
+      queryClient.invalidateQueries({ queryKey: ['staff'] });
     },
     onError: (error: any) => {
       toast({
@@ -108,13 +119,13 @@ export function StaffManagement() {
 
   // Delete staff mutation
   const deleteStaffMutation = useMutation({
-    mutationFn: (id: string) => apiRequest("DELETE", `/api/staff/${id}`),
+    mutationFn: (id: string) => supabaseOperations.profiles.delete(id),
     onSuccess: () => {
       toast({
         title: "Staff Member Removed",
         description: "Staff member has been successfully removed."
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/staff"] });
+      queryClient.invalidateQueries({ queryKey: ['staff'] });
     },
     onError: (error: any) => {
       toast({

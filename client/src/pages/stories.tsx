@@ -6,11 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { apiRequest } from '@/lib/queryClient';
 import { Search, Sparkles } from 'lucide-react';
 import { Link } from 'wouter';
 import { GradientBackground } from '@/components/common/gradient-background';
-import type { BlogPost, BlogCategory } from '@shared/schema';
+import { supabase } from '@/lib/supabase';
+import type { Database } from '@/lib/database.types';
+
+type BlogPost = Database['public']['Tables']['blog_posts']['Row'];
+type BlogCategory = { id: string; name: string; slug: string };
 
 interface StoriesPageProps {
   params?: { page?: string };
@@ -23,37 +26,38 @@ export function Stories({ params }: StoriesPageProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const currentPage = parseInt(params?.page || '1');
 
-  // Fetch published blog posts
+  // Fetch published blog posts directly from Supabase
   const { data: posts = [], isLoading: postsLoading } = useQuery<BlogPost[]>({
     queryKey: ['stories', 'posts', searchTerm, selectedCategory, currentPage],
     queryFn: async () => {
-      const queryParams = new URLSearchParams({
-        status: 'published',
-        limit: POSTS_PER_PAGE.toString(),
-        offset: ((currentPage - 1) * POSTS_PER_PAGE).toString()
-      });
+      let query = supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('status', 'published')
+        .order('published_at', { ascending: false })
+        .range((currentPage - 1) * POSTS_PER_PAGE, currentPage * POSTS_PER_PAGE - 1);
 
       if (searchTerm) {
-        queryParams.append('search', searchTerm);
+        query = query.or(`title.ilike.%${searchTerm}%,content.ilike.%${searchTerm}%`);
       }
 
       if (selectedCategory !== 'all') {
-        queryParams.append('category', selectedCategory);
+        query = query.eq('category_id', selectedCategory);
       }
 
-      const response = await apiRequest('GET', `/api/blog/posts?${queryParams}`);
-      return response.json();
+      const { data, error } = await query;
+      
+      if (error) {
+        throw new Error(`Failed to fetch blog posts: ${error.message}`);
+      }
+      
+      return data || [];
     }
   });
 
-  // Fetch categories for filtering
-  const { data: categories = [] } = useQuery<BlogCategory[]>({
-    queryKey: ['stories', 'categories'],
-    queryFn: async () => {
-      const response = await apiRequest('GET', '/api/blog/categories');
-      return response.json();
-    }
-  });
+  // TODO: Fetch categories for filtering directly from Supabase
+  // For now using empty array until we set up categories table
+  const categories: BlogCategory[] = [];
 
   // Calculate pagination
   const totalPages = Math.ceil(posts.length / POSTS_PER_PAGE);
@@ -196,7 +200,7 @@ export function Stories({ params }: StoriesPageProps) {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {posts.map((post) => {
-                const category = getCategoryInfo(post.categoryId);
+                const category = getCategoryInfo(post.category_id);
 
                 return (
                   <div
@@ -205,10 +209,10 @@ export function Stories({ params }: StoriesPageProps) {
                     onClick={() => window.location.href = `/stories/${post.slug}`}
                   >
                     {/* Cover Image */}
-                    {post.coverImage ? (
+                    {post.cover_image ? (
                       <div className="story-card-image">
                         <img
-                          src={post.coverImage}
+                          src={post.cover_image}
                           alt={post.title}
                         />
                       </div>
@@ -226,7 +230,7 @@ export function Stories({ params }: StoriesPageProps) {
 
                       {/* Date */}
                       <p className="story-card-date">
-                        {formatDate(post.publishedAt || post.createdAt)}
+                        {formatDate(post.published_at || post.created_at)}
                       </p>
 
                       {/* Category Badge - Positioned bottom right */}
@@ -239,7 +243,8 @@ export function Stories({ params }: StoriesPageProps) {
                             {category.name}
                           </Badge>
                         )}
-                        {post.aiGenerated && (
+                        {/* TODO: Add aiGenerated field to database if needed */}
+                        {false && (
                           <Badge 
                             variant="outline" 
                             className="border-cyan/50 text-cyan text-xs bg-gray-800 group-hover:bg-cyan/20 group-hover:text-cyan transition-colors duration-200"

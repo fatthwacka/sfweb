@@ -64,6 +64,20 @@ export const TOOLS_REGISTRY: ToolDefinition[] = [
     limits: {},
     customAction: 'full-page', // Open in full page mode
   },
+  {
+    slug: 'prompt-engine',
+    name: 'Prompt Engine',
+    description: 'AI-powered prompt enhancement with brand intelligence integration for all content types',
+    icon: '🧠',
+    category: 'ai-powered',
+    minTier: 'staff',
+    requiresAuth: true,
+    usesAI: true,
+    usesLocalFiles: false,
+    limits: {},
+    badge: 'new',
+    // Uses standard page navigation
+  },
 
   // === FILE MANAGEMENT (mostly anonymous) ===
   {
@@ -159,6 +173,20 @@ export const TOOLS_REGISTRY: ToolDefinition[] = [
     limits: {},
     badge: 'new',
     customAction: 'full-page', // Open in full page mode for complex dashboard
+  },
+  {
+    slug: 'content-types-admin',
+    name: 'Content Types Admin',
+    description: 'Manage prompt enhancement guidelines for each content type',
+    icon: '⚙️',
+    category: 'automation',
+    minTier: 'staff',
+    requiresAuth: true,
+    usesAI: false,
+    usesLocalFiles: false,
+    limits: {},
+    badge: 'new',
+    // Uses standard page navigation
   },
   {
     slug: 'n8n-gallery-email',

@@ -188,58 +188,172 @@ High-potential workflows for Slyfox mini-apps:
 
 ## 🏗️ CURRENT ARCHITECTURE (DECEMBER 2025)
 
-**⚠️ HYBRID SYSTEM: HARDCODED CORE + DYNAMIC VISUALS + AI-ENHANCED BLOG**
+**⚠️ HYBRID SYSTEM: HARDCODED CORE + DYNAMIC VISUALS + AI-ENHANCED BLOG + BRAND INTELLIGENCE DASHBOARD**
 
-### **📝 Blog System (NEW - December 2025)**
-Complete AI-powered blog management system:
-- **Blog Management**: `/client/src/components/admin/blog-management.tsx` - Full CRUD with filtering
-- **AI Content Generation**: Gemini 2.0-flash integration for automated content creation
-- **Section Enhancement System**: Per-section AI improvements (reduce, increase, grammar, rewrite, tone)
-- **Dynamic Category Management**: Inline category creation with auto-slug generation
-- **Custom Gradients**: Per-article background color customization via Supabase
-- **SEO Optimization**: Auto-generated titles, descriptions, structured data
+### **🧠 Brand Intelligence Dashboard (UPDATED - JANUARY 2026)**
 
-### **🎨 Per-Article Gradient System (NEW - December 2025)**
-Blog posts can override default gradients:
-- **Gradient Storage**: Supabase `siteGradients` table with `blog-post-{id}` keys
-- **Fallback Chain**: Custom gradient → stories-content → defaults
-- **Real-time Editor**: GradientPicker component in blog editor sidebar
-- **Smooth Transitions**: 700ms fade between gradients on page load
-- **Auto-save**: Changes persist automatically with 2-second debounce
+Comprehensive brand profile management system for AI-powered content generation:
 
-### **🤖 AI Enhancement Features (NEW - December 2025)**
-Section-by-section content improvement:
-- **5 Enhancement Options**:
-  - ➖ Reduce (40-50% word reduction)
-  - ➕ Increase (append relevant sentence)
-  - ✅ Grammar (spelling, grammar, flow)
-  - 🔄 Rewrite (complete fresh phrasing)
-  - 📝 Tone (12 professional tone options)
-- **Visual Feedback**: Grey→white→amber states, processing indicators
-- **Undo System**: 10-second auto-dismiss with content restoration
-- **Context-Aware**: Prompts include section title and article context
+**Core Components:**
+- **Dashboard**: `/client/src/components/content-management/` - Content client management with real-time analytics
+- **Brand Profile Editor**: Complete modal system for brand identity configuration
+- **Supabase Integration**: `client_brand_profiles` table with simplified single-record system
+- **Content Control Centre**: Individual client management interfaces
+- **Field Mapping Documentation**: `BRAND_INTELLIGENCE_FIELD_MAPPING.md` - Complete field-to-column mapping
 
-### **Hardcoded Content Pages**
-Core content is hardcoded in React components for optimal performance:
-- **Contact Page**: `/client/src/pages/contact.tsx` - Business info, hours, contact methods
-- **About Page**: `/client/src/pages/about.tsx` - Team members, story, values, stats
-- **Admin Panels**: Text management removed, visual controls (gradients/images) preserved
+**Brand Profile System:**
+```typescript
+interface BrandProfile {
+  // Business Context
+  industry_segment: string;        // AI context for content generation
+  products_services: string;       // Service offerings description
+  
+  // Voice & Tone (12 attributes)
+  voice_tone: {
+    creative, technical, approachable, professional,
+    friendly, authoritative, casual, formal,
+    playful, serious, innovative, traditional
+  };
+  
+  // Visual Identity (6-color system)
+  primary_color: string;
+  secondary_colors: string[];      // 5 additional brand colors
+  
+  // Content Strategy
+  key_messages: string[];          // Core brand messaging
+  key_benefits_features: string[]; // Product/service highlights
+  content_themes: string[];        // Content categorization
+  forbidden_phrases: string[];     // Content restrictions
+}
+```
 
-### **Dynamic Configuration Pages**
-These still use JSON configuration:
-- **Homepage**: Hero slides, services overview, testimonials
-- **Photography Categories**: All 6 static pages use config data
-- **Portfolio**: Featured content and visual settings (now via Supabase gradients API)
-- **Gradients**: All section background colors via Supabase database
-- **Pricing Packages**: Per-card accent colors stored in `pricing_packages` table
+**Technical Architecture:**
+- **Frontend**: React Query for state management, TypeScript interfaces
+- **Backend**: Express.js API with Supabase admin client (simplified delete+insert pattern)
+- **Database**: PostgreSQL via Supabase with RLS policies
+- **No Versioning**: Single active record per client (simplified January 2026)
+- **CSS Framework**: Content-system.css design system with modal variants
 
-### **Key Benefits**
-- ✅ AI-powered content creation and enhancement
-- ✅ Per-article visual customization
-- ✅ Faster page loads (no config loading delays)
-- ✅ Better reliability (eliminates config corruption)
-- ✅ Professional content quality with minimal effort
-- ✅ Granular design control (individual post colors)
+**Key Features:**
+- ✅ Real-time brand profile editing with auto-save
+- ✅ 6-color brand palette management with visual color pickers
+- ✅ 12-attribute voice & tone configuration system
+- ✅ Industry context for AI content generation
+- ✅ Comprehensive content guidelines and restrictions
+- ✅ Clean modal architecture with responsive 2-column layouts
+- ✅ Version control system for brand profile changes
+
+**API Endpoints:**
+- `GET /api/content-management/brand-intelligence/clients` - List all content clients
+- `GET /api/content-management/brand-intelligence/clients/:id` - Get client with full brand profile
+- `PUT /api/content-management/brand-intelligence/clients/:id/brand-profile` - Update brand profile
+- `GET /api/content-management/brand-intelligence/dashboard` - Dashboard analytics
+
+**Current Status (January 1, 2026):**
+- ✅ **Brand Profile Editor**: Complete modal with all enhanced fields
+- ✅ **Layout Optimization**: Fixed unbalanced grid layouts, clean 2-column sections
+- ✅ **Array Field Handling**: Fixed add/remove functionality for all dynamic arrays
+- ✅ **6-Color Palette**: Primary + 5 secondary colors with visual pickers
+- ✅ **12 Voice Attributes**: Expanded voice/tone options for AI context
+- ✅ **Modal Architecture**: Clean separation of sections with proper responsive design
+- ✅ **Font Optimization**: Removed problematic font preload causing console warnings
+
+**Next Session Priorities:**
+- **AI Content Settings Panel**: Create separate modal for content examples (good/bad)
+- **Performance Cards**: Implement functional Performance and AI Insights cards
+- **Content Generation**: Connect brand profiles to actual AI content generation
+- **Real Data Integration**: Test with production Supabase data
+
+**Future Development:**
+- **AI Content Settings Panel**: Content examples (good/bad), generation preferences, prompt customization
+- **Performance Analytics**: Content performance tracking and optimization recommendations
+- **Social Media Integration**: Platform-specific content generation and posting
+- **Content Calendar**: Automated content planning and scheduling
+
+### **🧠 PROMPT ENGINE MICROTOOL (NEW - JANUARY 2026)**
+
+**⚠️ FULLY OPERATIONAL: Standalone brand-aware prompt enhancement tool using Gemini 2.0-flash**
+
+### **Core Implementation**
+- **Frontend Page**: `/tools/prompt-engine` with two-panel design and auto-resizing output
+- **Backend API**: `/api/prompt-engine/enhance` and `/api/prompt-engine/health` endpoints
+- **Service Classes**: `PromptEngineService` with Gemini integration + `BrandContextLoader` for Supabase brand data
+- **Reusable Hook**: `usePromptEngine` for easy integration into other content tools
+
+### **Brand Intelligence Integration**
+```typescript
+// Brand context structure
+interface BrandContext {
+  industry: string;           // Business niche and segment
+  visual: string;            // Color personality, visual mood, style notes
+  voice: string;             // Tone, humor level, sentence length preferences
+  audience: string;          // Target demographic descriptions
+  benefits: string[];        // Priority product/service benefits
+  guidelines: string[];      // Positive content examples
+  compliance: string[];      // Forbidden phrases and restrictions
+}
+```
+
+### **Content Type Support**
+- **Image Generation**: Visual style guidance, composition tips, technical parameters
+- **Video Content**: Scene descriptions, pacing, cinematic elements
+- **Social Captions**: Platform-optimized, engaging short-form content
+- **Blog Articles**: SEO-friendly, structured long-form content
+- **Voice Scripts**: Natural speech flow, pronunciation, audio-friendly language
+
+### **Key Features**
+- **AI Enhancement**: Transforms basic prompts using Gemini 2.0-flash (~7-8 second processing)
+- **Brand Feature Toggles**: 6 toggleable brand intelligence panels (industry, visual, voice, audience, benefits, guidelines, compliance)
+- **Auto-Resizing Output**: Enhanced prompts display in full height (200px-600px with scroll)
+- **Brand Influence Tracking**: Shows which brand elements were applied to the enhancement
+- **Copy & Refresh**: One-click copy-to-clipboard and re-enhancement options
+
+### **Technical Architecture**
+```typescript
+// API Request Structure
+POST /api/prompt-engine/enhance
+{
+  "prompt": "Basic prompt text",
+  "contentType": "image|video|caption|blog|script", 
+  "brandContext": {
+    "clientId": "uuid",
+    "enabledFeatures": ["industry", "visual", "voice"]
+  }
+}
+
+// API Response Structure  
+{
+  "enhancedPrompt": "Detailed enhanced prompt text",
+  "alternatives": [],
+  "brandInfluence": {
+    "appliedIndustry": "Photography & Videography",
+    "appliedVisual": "Warm golds and deep blues"
+  },
+  "processingTime": 7038,
+  "metadata": {...}
+}
+```
+
+### **Current Status (January 4, 2026)**
+- ✅ **Core Tool**: Complete standalone prompt enhancement page
+- ✅ **Brand Integration**: Successfully loads and applies Supabase brand profiles  
+- ✅ **API Architecture**: Full REST API with health checks and error handling
+- ✅ **UI Enhancement**: Auto-resizing output containers for long Gemini responses
+- ✅ **Tool Registry**: Properly registered in tools hub with brain emoji and "NEW" badge
+
+### **Next Session Priorities**
+- **Input Requirements Enhancement**: Improve prompt component for better user guidance
+- **Content Type Definitions**: Create Supabase table for content-type-specific parameters (word counts, style guides)
+- **Backend Dashboard**: Simple admin interface for editing content type definitions
+- **Enhanced Brand Panels**: Connect remaining 4 brand intelligence panels (audience, benefits, guidelines, compliance)
+- **Alternative Prompts**: Implement Gemini-based prompt variations system
+
+### **Performance Metrics**
+- **Processing Time**: ~7-8 seconds for comprehensive prompt enhancement
+- **Enhancement Ratio**: Typically 10-20x longer than original (e.g., 32 chars → 4,108 chars)
+- **Brand Context Loading**: ~500ms Supabase query with full profile data
+- **API Reliability**: Graceful fallbacks ensure parent tools never break
+
 
 **📋 For detailed architecture information, see:** [`ARCHITECTURE.md`](./ARCHITECTURE.md)
 
@@ -478,59 +592,26 @@ Before implementing ANY new feature or page:
 6. **NO ARCHITECTURE VARIATIONS**: Follow the documented `GradientBackground` + CSS classes pattern
 7. **TEST COLOR IMPLEMENTATION**: Verify that dashboard color changes reflect on actual pages
 
-### 🛑 MANDATORY VALIDATION CHECKPOINTS
+### 🛑 CORE DEVELOPMENT RULES
 
-BEFORE writing ANY code, validate against these CORE RULES:
+**MANDATORY VALIDATION CHECKLIST:**
+1. ❌ **ZERO INLINE CSS**: Use CSS classes only, never `style={{}}`
+2. ❌ **ZERO HARDCODING**: Use config/constants for all values
+3. ❌ **ZERO MOCK DATA**: Use real config sources
+4. ❌ **ZERO CUSTOM HOOKS**: Extend existing hooks only
+5. ❌ **ZERO ARCHITECTURAL VARIATIONS**: Follow GradientBackground pattern
 
-1. **❌ ZERO INLINE CSS**: Never use `style={{}}` props - use CSS classes only
-2. **❌ ZERO HARDCODING**: Never hardcode colors, URLs, text, or values - use config/constants
-3. **❌ ZERO MOCK DATA**: Never create placeholder/example data - use real config sources
-4. **❌ ZERO CUSTOM HOOKS**: Never create `useCategoryConfig` - extend existing hooks only
-5. **❌ ZERO ARCHITECTURAL VARIATIONS**: Never deviate from GradientBackground pattern
+**COLOR IMPLEMENTATION STANDARD:**
+```tsx
+<GradientBackground section="services" className="py-20">
+  <h2 className="text-salmon">Title</h2>
+  <p className="text-muted-foreground">Content</p>
+</GradientBackground>
+```
 
-### ⚠️ COLOR IMPLEMENTATION STANDARD
+**Available Sections**: `services`, `portfolio`, `testimonials`, `contact`, `blog-post-{id}`
 
-All dynamic colors MUST follow this exact pattern (NO EXCEPTIONS):
-
-1. **Use `GradientBackground` Component**:
-   ```tsx
-   <GradientBackground section="services" className="py-20">
-     <h2 className="text-salmon">Title</h2>
-     <p className="text-muted-foreground">Content</p>
-   </GradientBackground>
-   ```
-
-2. **Use CSS Classes for Colors**:
-   - Headers: `text-salmon`, `text-cyan`
-   - Body text: `text-muted-foreground`
-   - NEVER use `style={{ color: '...' }}` inline styles
-
-3. **Use `useSiteConfig()` Hook**:
-   ```tsx
-   const { config } = useSiteConfig();
-   const sectionData = config?.home?.services || fallback;
-   ```
-
-4. **Available GradientBackground Sections**:
-   - `services` - Service overview sections
-   - `portfolio` - Package/pricing sections
-   - `testimonials` - Gallery/recent work sections
-   - `contact` - Contact/CTA sections
-   - `blog-post-{id}` - Individual blog post gradients
-
-### ⚠️ NO ALBUM-SPECIFIC OR ID-SPECIFIC CODE MODIFICATIONS
-
-When working on dynamic gallery pages or any dynamic content system:
-
-- **NEVER** target specific albums, IDs, slugs, or individual records in conditional logic
-- **NEVER** use conditions like `if (albumSlug === 'specific-album')` or similar targeting
-- **ALWAYS** work on the universal, dynamic code that affects ALL records equally
-- **If experimenting with a single record is needed:**
-  1. Clearly state it's a temporary experiment
-  2. Immediately roll the solution back to universal code once identified
-  3. Never leave album-specific conditions in the codebase
-
-This rule prevents maintenance nightmares, ensures consistent user experience, and maintains system scalability.
+**UNIVERSAL CODE RULE**: Never target specific IDs/slugs - write code that works for ALL records equally.
 
 ---
 
@@ -558,84 +639,21 @@ This rule prevents maintenance nightmares, ensures consistent user experience, a
 
 ### For Claude Code: Development Standards
 
-**🔒 MANDATORY PROTOCOL: RULE VALIDATION BEFORE ANY CODE**
+**MANDATORY PROTOCOL:**
+1. **VALIDATE FIRST** - Check rules before writing any code
+2. **ESCALATE CONSTRAINTS** - Ask for guidance if patterns don't fit
+3. **ZERO TOLERANCE** - Never deviate from established patterns
+4. **FOLLOW EXAMPLES** - Study `services-overview.tsx`, `testimonials.tsx` first
+5. **MAINTAIN CONSISTENCY** - Update documentation when patterns evolve
 
-1. **STOP AND VALIDATE FIRST**
-   - Run through MANDATORY VALIDATION CHECKPOINTS before writing a single line
-   - If ANY checkpoint fails → Ask user for guidance instead of proceeding
-   - Never justify rule violations with "technical constraints" - get approval first
+**ANTI-PATTERNS TO AVOID:**
+❌ Architectural variations ❌ Inline styles ❌ Custom hooks ❌ Inconsistent data sources
 
-2. **ESCALATION PROTOCOL FOR CONSTRAINTS**
-   - If established pattern doesn't fit → STOP and ask for guidance
-   - If data structure doesn't match → STOP and ask how to transform or extend
-   - If CSS classes don't exist → STOP and ask where to add them
-
-3. **ZERO TOLERANCE IMPLEMENTATION**
-   - ❌ NEVER write `style={{}}` - use CSS classes or ask for new ones
-   - ❌ NEVER hardcode values - use config or ask where to get them
-   - ❌ NEVER create mock data - use real data or ask for data structure
-   - ❌ NEVER create architectural variations - extend existing patterns or ask for guidance
-
-4. **ARCHITECTURAL ANALYSIS SEQUENCE**
-   - Read existing working components first (`services-overview.tsx`, `testimonials.tsx`)
-   - Understand the established patterns before implementing variations
-   - Identify and follow the exact data flow and component structure
-   - If pattern doesn't apply → ESCALATE, don't deviate
-
-5. **DOCUMENTATION AND CONSISTENCY**
-   - Update `CLAUDE.md` when patterns evolve (with user approval)
-   - Add clear rules to prevent future inconsistencies
-   - Include working examples in documentation
-   - Follow documented patterns even across different conversation sessions
-
-### Common Anti-Patterns to Avoid
-
-❌ **Creating architectural variations** - stick to established patterns
-❌ **Using inline styles** - use CSS classes defined in index.css
-❌ **Custom hooks for standard functionality** - use `useSiteConfig()` consistently
-❌ **Forgetting section mapping** - ensure `GradientBackground` sections align with CSS
-❌ **Not testing color changes** - verify dashboard updates reflect on pages
-❌ **Inconsistent data sources** - use unified config system, not multiple sources
-
-✅ **Follow working implementations exactly**
-✅ **Use established CSS classes and components**
-✅ **Maintain architectural consistency**
-✅ **Test implementations thoroughly**
-✅ **Update documentation when patterns change**
+**BEST PRACTICES:**
+✅ Follow working implementations ✅ Use established CSS classes ✅ Test thoroughly
 
 ---
 
-## 📚 APPENDIX - LEGACY/UNCERTAIN SECTIONS
-
-*The following sections contain information that may be outdated or superseded by newer implementations. Review carefully before using.*
-
-### Photography Category Pages (Status: Uncertain)
-**Template Architecture:**
-- **Single Template**: `client/src/pages/photography-category.tsx` serves all photography categories
-- **Dynamic Categories**: wedding, portrait, corporate, event, product, graduation, matric-dance
-- **URL Structure**: `/photography/:category` (e.g., `/photography/weddings`)
-- **Title Format**: "Professional [Category Name] Photography" (e.g., "Professional Wedding Photography")
-- **Content Sections**: Hero, About/Features, Packages, Gallery, SEO content
-
-*Note: This may have been superseded by newer category management system. Verify current implementation.*
-
-### Dynamic Configuration Files (Status: Partially Superseded)
-**⚠️ PHOTOGRAPHY CATEGORY SYSTEM ARCHITECTURE**
-
-*Note: Parts of this may be outdated with new blog system and configuration management changes.*
-
-**PRIMARY FILES:**
-
-1. **`/shared/types/category-config.ts`** - DEFAULT FALLBACK CONTENT
-   - Contains `defaultCategoryPageConfig` used by admin dashboard when no saved data exists
-   - Used by admin component when `config.categoryPages.photography.[category]` is empty
-
-2. **`/server/data/site-config-overrides.json`** - PERSISTENT SAVED DATA
-   - Stores actual saved content from admin dashboard
-   - Structure: `categoryPages.photography.[category]` (e.g., `categoryPages.photography.corporate`)
-   - API: `/api/site-config/bulk` (PATCH method ONLY)
-
-*Verify if this is still the current configuration management approach.*
 
 ### Contact Form & Email System (Status: Current - December 2025)
 
@@ -648,237 +666,42 @@ This rule prevents maintenance nightmares, ensures consistent user experience, a
 - **reCAPTCHA Service** (`server/recaptcha-service.ts`): Google reCAPTCHA v3 bot protection
 - **reCAPTCHA Site Key**: Loaded in `client/index.html` via Google script
 
-**⚠️ Known Issue & Fix: reCAPTCHA Timeout (December 2025)**
+**⚠️ Known Issue: reCAPTCHA Timeout (FIXED - December 2025)**
 
-**Symptoms:**
-- Contact form button works for validation errors (shows toast on invalid phone)
-- Button presses silently with no response when all fields are valid
-- Works in development but fails in production
-- Backend API works fine when tested directly via curl
+**Issue**: Contact form button silent failure in production (works in development)
+**Cause**: `executeRecaptcha()` Promise can hang indefinitely
+**Fix**: 5-second timeout wrapper using `Promise.race()` - form never hangs
 
-**Root Cause:**
-The `executeRecaptcha()` Promise from `react-google-recaptcha-v3` can hang indefinitely in production environments. This happens when:
-- reCAPTCHA script loads slowly or partially
-- Network issues prevent reCAPTCHA from completing verification
-- Third-party script blockers interfere with Google's reCAPTCHA service
-
-**The Fix (Implemented):**
-A 5-second timeout wrapper using `Promise.race()` ensures the form never hangs:
-```typescript
-// Execute reCAPTCHA with timeout (don't block form submission if it fails)
-let recaptchaToken: string | null = null;
-if (isRecaptchaLoaded()) {
-  try {
-    const timeoutPromise = new Promise<null>((resolve) =>
-      setTimeout(() => resolve(null), 5000)
-    );
-    recaptchaToken = await Promise.race([
-      executeRecaptcha('contact_form'),
-      timeoutPromise
-    ]);
-    if (!recaptchaToken) {
-      console.warn('reCAPTCHA timed out or failed, proceeding without token');
-    }
-  } catch (error) {
-    console.error('reCAPTCHA error:', error);
-  }
-}
-```
-
-**Backend Handling:**
-The backend (`server/routes.ts`) handles missing tokens gracefully - it logs a warning but still processes the submission. This ensures legitimate users aren't blocked by reCAPTCHA failures.
-
-**Troubleshooting Contact Form Issues:**
-1. **Check browser console** - Look for reCAPTCHA errors or network failures
-2. **Test backend directly**: `curl -X POST https://slyfoxstudios.co.za/api/contact -H "Content-Type: application/json" -d '{"name":"Test","email":"test@test.com","message":"test","phone":""}'`
-3. **Verify reCAPTCHA keys** - Check `.env` has valid `RECAPTCHA_SECRET_KEY`
-4. **Check email service** - Verify Gmail SMTP credentials in `.env`
+**Troubleshooting:**
+1. Check browser console for reCAPTCHA errors
+2. Test API directly: `curl -X POST https://slyfoxstudios.co.za/api/contact`
+3. Verify `.env` has valid `RECAPTCHA_SECRET_KEY` and Gmail SMTP credentials
 
 ---
 
 ## 🛡️ ENHANCED SECURITY SYSTEM (December 2025)
 
-### **Pre-Commit Safety Hooks to Prevent Future Leaks**
+**🚨 CRITICAL: Automated security scanning and mandatory confirmation implemented**
 
-**🚨 CRITICAL UPDATE: Automated Security Scanning + Mandatory Confirmation Implemented**
+### **Key Security Features:**
+- **Pre-commit hooks**: Automatically scan for API keys, tokens, and credentials
+- **Mandatory confirmation**: Every commit requires explicit "yes" confirmation
+- **Environment validation**: Server startup verifies all required variables
+- **Supabase key separation**: Clear client vs server key distinction
 
-A comprehensive pre-commit hook system has been implemented to prevent accidental exposure of sensitive credentials and API keys. **Every commit now requires explicit manual confirmation.**
-
-#### **Safety Hook Components:**
-
-**1. Git Pre-Commit Hook (`/.git/hooks/pre-commit`)**
+### **Environment Variables (Standard Format)**
 ```bash
-#!/bin/sh
-# Automated security scanning before every commit
-
-echo "🔍 Running security checks..."
-
-# Check for Supabase API keys
-if git diff --cached --name-only | xargs grep -l "sb_secret_" 2>/dev/null; then
-    echo "❌ BLOCKED: Supabase secret key detected in staged files"
-    echo "💡 Remove hardcoded keys and use environment variables instead"
-    exit 1
-fi
-
-# Check for environment variable leaks
-if git diff --cached --name-only | xargs grep -l "SUPABASE_SECRET_KEY.*=" 2>/dev/null; then
-    echo "❌ BLOCKED: Environment variable assignment detected"
-    exit 1
-fi
-
-# Check for N8N token patterns
-if git diff --cached --name-only | xargs grep -l "Bearer eyJ[a-zA-Z0-9]" 2>/dev/null; then
-    echo "❌ BLOCKED: Hardcoded Bearer token detected"
-    exit 1
-fi
-
-# Check for password patterns
-if git diff --cached --name-only | xargs grep -l "password.*=" 2>/dev/null; then
-    echo "⚠️ WARNING: Password assignment detected - verify this is safe"
-fi
-
-echo "✅ Security checks passed"
-```
-
-**2. Environment Variable Validation (`server/startup-validation.ts`)**
-```typescript
-// Validates required environment variables at server startup
-export function validateEnvironmentVariables() {
-  const required = [
-    'VITE_SUPABASE_URL',
-    'VITE_SUPABASE_PUBLISHABLE_KEY',
-    'SUPABASE_SECRET_KEY',
-    'SMTP_EMAIL',
-    'SMTP_PASSWORD'
-  ];
-
-  const missing = required.filter(key => !process.env[key]);
-
-  if (missing.length > 0) {
-    console.error('❌ Missing required environment variables:', missing);
-    process.exit(1);
-  }
-
-  console.log('✅ All required environment variables present');
-}
-```
-
-**3. Supabase Key Format Validation**
-New environment variable naming enforces clarity and prevents confusion:
-- **Client Keys**: `VITE_SUPABASE_PUBLISHABLE_KEY` (safe for browser exposure, starts with `sb_publishable_`)
-- **Server Keys**: `SUPABASE_SECRET_KEY` (server-only admin access, starts with `sb_secret_`)
-
-#### **Security Measures Implemented:**
-
-**✅ Mandatory Commit Confirmation (NEW - December 2025)**
-- **EVERY commit requires typing "yes"** to proceed - no accidental commits possible
-- **Shows file list** before any git operation for manual review
-- **Blocks all automated commits** - human confirmation required for every operation
-- **Prevents batch operations** without conscious review of each change
-
-**✅ Automatic Secret Detection**
-- Pre-commit hooks scan for hardcoded API keys before allowing commits
-- **Enhanced pattern matching** for Supabase keys (`sb_secret_*`, `sb_publishable_*`), N8N tokens (`Bearer eyJ*`), and all major API providers
-- Blocks commits containing sensitive data with clear error messages
-
-**✅ Environment Variable Enforcement**
-- Server startup validates all required environment variables are present
-- Production deployment scripts verify configuration before deployment
-- Clear error messages guide resolution of missing credentials
-
-**✅ Key Format Standardization**
-- New Supabase key naming convention prevents confusion between client/server keys
-- Descriptive variable names make security implications clear
-- Consistent format across all environments (development, staging, production)
-
-#### **Historical Security Issue Resolved**
-
-**Background**: In December 2025, a major security audit revealed multiple instances where sensitive API keys were inadvertently committed to the repository, including:
-- Hardcoded N8N authentication tokens in `server/routes.ts`
-- Mixed usage of old vs new Supabase environment variable names
-- Inconsistent environment variable validation across different components
-
-**Resolution**: Complete security overhaul implemented with:
-1. **Retroactive cleanup** of all hardcoded credentials from codebase
-2. **Automated prevention** through pre-commit hooks
-3. **Standardized naming** for all environment variables
-4. **Enhanced validation** at startup and deployment time
-
-### **Updated Supabase Authentication Architecture**
-
-#### **New Direct Method Integration (December 2025)**
-
-**Previous Architecture**: Mixed client-side and server-side Supabase integration with inconsistent key usage
-
-**New Architecture**: Unified, secure Supabase integration with proper key separation
-
-**Key Components:**
-
-**1. Server-Side Supabase Client (`server/lib/supabase.ts`)**
-```typescript
-import { createClient } from '@supabase/supabase-js';
-
-// Unified Supabase client for all server operations
-export const supabase = createClient(
-  process.env.VITE_SUPABASE_URL!,
-  process.env.SUPABASE_SECRET_KEY!,  // Admin access for server operations
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
-```
-
-**2. Client-Side Integration (`client/src/lib/supabase.ts`)**
-```typescript
-import { createClient } from '@supabase/supabase-js';
-
-// Client-safe Supabase client for browser operations
-export const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL!,
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY!  // Safe for browser exposure
-);
-```
-
-**3. Environment Variable Migration**
-```bash
-# Current standard (Dec 2025)
+# Client keys (browser-safe)
 VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_[project_id]_[random_string]
+
+# Server keys (admin access)  
 SUPABASE_SECRET_KEY=sb_secret_[project_id]_[random_string]
 ```
 
-#### **Security Benefits:**
+### **Security Measures Active:**
+- ✅ **Automatic secret detection** for Supabase, N8N, and major API providers
+- ✅ **Commit confirmation required** - prevents accidental commits
+- ✅ **Startup validation** ensures all required environment variables present
+- ✅ **Production deployment verification** checks configuration before deploy
 
-**🔒 Clear Key Separation**
-- Publishable keys for client-side operations (row-level security enforced)
-- Secret keys for server-side admin operations (bypass RLS when needed)
-- Naming convention makes security implications immediately clear
-
-**🔒 Improved Access Control**
-- Server operations use admin client with full database access
-- Client operations respect row-level security policies
-- No client access to sensitive admin operations
-
-**🔒 Future-Proof Architecture**
-- Consistent with Supabase's latest security recommendations
-- Easy key rotation without code changes
-- Clear audit trail for all database operations
-
-#### **Migration Impact:**
-
-**✅ All Files Updated**: Complete codebase migration to new key format completed
-- 21+ files updated across client and server components
-- All old environment variable references removed
-- Comprehensive testing verified functionality maintained
-
-**✅ Production Ready**: New system deployed and verified in production
-- All API endpoints functioning correctly
-- Authentication flow working seamlessly
-- Gallery access and admin operations confirmed
-
-**✅ Documentation Updated**: All technical documentation reflects new system
-- Environment setup guides updated
-- Deployment documentation includes new validation steps
-- Security procedures documented for future developers
+**📋 For detailed security implementation:** Check `/.git/hooks/pre-commit` and `server/startup-validation.ts`

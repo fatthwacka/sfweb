@@ -11,6 +11,7 @@ import { CategoryPageConfig, defaultCategoryPageConfig } from '@shared/types/cat
 import { PricingPackagesEditor } from '@/components/admin/pricing-packages-editor';
 import { createPageIdentifier } from '@shared/types/pricing';
 import { useCategoryHeroes } from '@/hooks/use-category-heroes';
+import { useSiteConfig } from '@/hooks/use-site-config';
 
 interface CategoryPageSettingsProps {
   type: 'photography' | 'videography';
@@ -35,6 +36,7 @@ const COMPRESSION_THRESHOLD_KB = 650; // Only compress images larger than this
 
 export function CategoryPageSettings({ type, category }: CategoryPageSettingsProps) {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const { config: siteConfig, updateConfigBulk, isLoading, isUpdating: isSiteConfigUpdating } = useSiteConfig();
   const [config, setConfig] = useState<SiteConfig>(defaultSiteConfig);
   const [heroUploading, setHeroUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -130,56 +132,30 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
     });
   };
 
-  // Site configuration query
-  const { data: siteConfig, isLoading } = useQuery({
-    queryKey: ['/api/site-config'],
-    queryFn: async () => {
-      const response = await fetch('/api/site-config');
-      if (!response.ok) throw new Error('Failed to load site configuration');
-      return response.json() as SiteConfig;
-    }
-  });
-
   // Update local config when data loads
   useEffect(() => {
     if (siteConfig) {
-      setConfig(siteConfig);
+      setConfig(siteConfig as SiteConfig);
     }
   }, [siteConfig]);
 
-  // Save mutation
-  const saveMutation = useMutation({
-    mutationFn: async (newConfig: SiteConfig) => {
-      const response = await fetch('/api/site-config/bulk', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(newConfig)
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to save configuration');
-      }
-      
-      return response.json();
-    },
-    onSuccess: () => {
+  // Save function using useSiteConfig hook
+  const saveConfiguration = async (newConfig: SiteConfig) => {
+    try {
+      await updateConfigBulk(newConfig);
       setHasUnsavedChanges(false);
       toast({
         title: "Changes saved successfully!",
         description: `${category} ${type} page updated.`
       });
-      queryClient.invalidateQueries(['/api/site-config']);
-    },
-    onError: (error) => {
+    } catch (error) {
       toast({
         title: "Save failed",
-        description: `Unable to save changes: ${error.message}`,
+        description: `Unable to save changes: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive"
       });
     }
-  });
+  };
 
   // Update category page configuration
   const updateCategoryConfig = (updates: Partial<CategoryPageConfig>) => {
@@ -434,7 +410,7 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
 
   // Handle save
   const handleSave = () => {
-    saveMutation.mutate(config);
+    saveConfiguration(config);
   };
 
   if (isLoading) {
@@ -699,11 +675,11 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
                   )}
                   <Button
                     onClick={handleSave}
-                    disabled={!hasUnsavedChanges || saveMutation.isPending}
+                    disabled={!hasUnsavedChanges || isSiteConfigUpdating}
                     className="btn-salmon"
                   >
                     <Save className="w-4 h-4 mr-2" />
-                    {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
+                    {isSiteConfigUpdating ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </div>
               </div>
@@ -774,11 +750,11 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
                   )}
                   <Button
                     onClick={handleSave}
-                    disabled={!hasUnsavedChanges || saveMutation.isPending}
+                    disabled={!hasUnsavedChanges || isSiteConfigUpdating}
                     className="btn-salmon"
                   >
                     <Save className="w-4 h-4 mr-2" />
-                    {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
+                    {isSiteConfigUpdating ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </div>
               </div>
@@ -873,11 +849,11 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
                   )}
                   <Button
                     onClick={handleSave}
-                    disabled={!hasUnsavedChanges || saveMutation.isPending}
+                    disabled={!hasUnsavedChanges || isSiteConfigUpdating}
                     className="btn-salmon"
                   >
                     <Save className="w-4 h-4 mr-2" />
-                    {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
+                    {isSiteConfigUpdating ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </div>
               </div>

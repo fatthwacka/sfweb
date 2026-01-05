@@ -5,7 +5,7 @@ async function testSupabaseAuth() {
   console.log('Testing Supabase connection...');
   
   const supabaseUrl = process.env.VITE_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const serviceKey = process.env.SUPABASE_SECRET_KEY;
   
   console.log('Supabase URL:', supabaseUrl);
   console.log('Service Key present:', !!serviceKey);

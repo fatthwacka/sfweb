@@ -2,7 +2,7 @@ import React, { useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SHOOT_TYPES } from '@shared/schema';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+import { supabaseOperations } from '@/lib/supabase-operations';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -67,8 +67,17 @@ export function BasicInfoSection({
 
   // Classification update mutation
   const classificationMutation = useMutation({
-    mutationFn: (classification: string) => 
-      apiRequest('PATCH', `/api/shoots/${shootId}/images/classification`, { classification }),
+    mutationFn: async (classification: string) => {
+      // Get all images for this shoot and update their classification
+      const shootImages = await supabaseOperations.images.getByShoot(shootId);
+      const imageIds = shootImages.map(img => img.id);
+      
+      if (imageIds.length > 0) {
+        await supabaseOperations.images.updateClassification(imageIds, classification);
+      }
+      
+      return { success: true, updatedCount: imageIds.length, message: `Updated ${imageIds.length} images to "${classification}" classification` };
+    },
     onSuccess: (response) => {
       toast({
         title: "Success", 
@@ -76,8 +85,8 @@ export function BasicInfoSection({
         duration: 2000
       });
       // Refresh image data
-      queryClient.invalidateQueries({ queryKey: ['/api/images'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['images'] });
+      queryClient.invalidateQueries({ queryKey: ['shoots', shootId] });
     },
     onError: (error: any) => {
       toast({
@@ -585,17 +594,7 @@ export function AddImagesSection({ onUpload, isUploading, toast, shootId, mediaT
 
   const checkConflicts = async (files: File[]): Promise<{ conflicts: ConflictInfo[]; safe: string[] }> => {
     const filenames = files.map(f => f.name);
-    const response = await fetch('/api/images/check-conflicts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ shootId, filenames })
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to check for conflicts');
-    }
-    
-    const result = await response.json();
+    const result = await supabaseOperations.images.checkConflicts(shootId, filenames);
     
     // Add file sizes to conflicts from selected files
     result.conflicts = result.conflicts.map((conflict: ConflictInfo) => {
@@ -611,17 +610,7 @@ export function AddImagesSection({ onUpload, isUploading, toast, shootId, mediaT
 
   const checkVideoConflicts = async (files: File[]): Promise<{ conflicts: VideoConflictInfo[]; safe: string[] }> => {
     const filenames = files.map(f => f.name);
-    const response = await fetch('/api/videos/check-conflicts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ shootId, filenames })
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to check for video conflicts');
-    }
-    
-    const result = await response.json();
+    const result = await supabaseOperations.videos.checkConflicts(shootId, filenames);
     
     // Add file sizes and duration to conflicts from selected files
     result.conflicts = result.conflicts.map((conflict: VideoConflictInfo) => {
@@ -1085,11 +1074,7 @@ function PortfolioGroupSection({ editableShoot, setEditableShootWithAutoSave }: 
   // Fetch existing group names for dropdown
   const { data: existingGroups = [] } = useQuery<string[]>({
     queryKey: ['portfolio-groups'],
-    queryFn: async () => {
-      const response = await fetch('/api/portfolio/groups');
-      if (!response.ok) return [];
-      return response.json();
-    }
+    queryFn: () => supabaseOperations.portfolio.getGroups()
   });
 
   // Generate slug from group name

@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabaseOperations } from "@/lib/supabase-operations";
 import { 
   ArrowUp,
   ArrowDown,
@@ -55,14 +56,11 @@ export function GalleryEditor({ shootId }: GalleryEditorProps) {
     }
   });
 
-  // Fetch images for this shoot
+  // Fetch images for this shoot using Supabase operations
   const { data: images = [], isLoading } = useQuery({
-    queryKey: ['/api/images', shootId],
-    queryFn: async () => {
-      const response = await fetch(`/api/images?shootId=${shootId}`);
-      if (!response.ok) throw new Error('Failed to fetch images');
-      return response.json();
-    }
+    queryKey: ['images', 'by-shoot', shootId],
+    queryFn: () => supabaseOperations.images.getByShoot(shootId),
+    staleTime: 30 * 1000, // Cache for 30 seconds
   });
 
   // Update shoot customization
@@ -195,7 +193,7 @@ export function GalleryEditor({ shootId }: GalleryEditorProps) {
                 }`}
               >
                 <img 
-                  src={image.storagePath} 
+                  src={image.storage_path} 
                   alt={image.filename}
                   className="w-full h-48 object-cover"
                 />
@@ -273,7 +271,7 @@ export function GalleryEditor({ shootId }: GalleryEditorProps) {
                 {/* Download Count */}
                 <div className="absolute bottom-2 right-2 bg-black/80 text-white px-2 py-1 rounded text-sm flex items-center gap-1">
                   <Download className="w-3 h-3" />
-                  {image.downloadCount}
+                  {image.download_count}
                 </div>
               </div>
             ))}

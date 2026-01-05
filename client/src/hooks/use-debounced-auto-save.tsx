@@ -1,7 +1,7 @@
 import { useCallback, useRef, useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
+import { supabaseOperations } from '@/lib/supabase-operations';
 
 interface UseAutoSaveOptions {
   shootId: string;
@@ -22,14 +22,14 @@ export function useAutoSaveGallerySettings({ shootId, debounceMs = 1000 }: UseAu
   const pendingSettingsRef = useRef<any>(null);
 
   const saveAppearanceMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('PATCH', `/api/shoots/${shootId}`, data),
+    mutationFn: (data: any) => supabaseOperations.shoots.update(shootId, data),
     onMutate: () => {
       setSaveStatus({ status: 'saving' });
     },
     onSuccess: () => {
       // OPTIMIZED: Only invalidate the specific shoot query, and delay it slightly
       setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['/api/shoots', shootId] });
+        queryClient.invalidateQueries({ queryKey: ['shoots', shootId] });
       }, 100);
       // Removed invalidation of all shoots query for better performance
       setSaveStatus({ 
@@ -70,8 +70,11 @@ export function useAutoSaveGallerySettings({ shootId, debounceMs = 1000 }: UseAu
       clearTimeout(timeoutRef.current);
     }
 
+    // Convert camelCase to snake_case for Supabase
+    const snakeCaseData = { gallery_settings: gallerySettings };
+    
     // Store the latest settings
-    pendingSettingsRef.current = { gallerySettings };
+    pendingSettingsRef.current = snakeCaseData;
 
     // Set new timeout
     timeoutRef.current = setTimeout(() => {
@@ -88,9 +91,10 @@ export function useAutoSaveGallerySettings({ shootId, debounceMs = 1000 }: UseAu
       clearTimeout(timeoutRef.current);
     }
     
-    const data = { gallerySettings };
-    pendingSettingsRef.current = data;
-    saveAppearanceMutation.mutate(data);
+    // Convert camelCase to snake_case for Supabase
+    const snakeCaseData = { gallery_settings: gallerySettings };
+    pendingSettingsRef.current = snakeCaseData;
+    saveAppearanceMutation.mutate(snakeCaseData);
   }, [saveAppearanceMutation]);
 
   // Cleanup timeout on unmount

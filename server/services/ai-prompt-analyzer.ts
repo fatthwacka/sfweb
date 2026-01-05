@@ -15,6 +15,16 @@ export interface PromptAnalysisRequest {
   imageStyle: string;
 }
 
+export interface StandalonePromptRequest {
+  userPrompt: string;
+  artStyle: string;
+  imageStyle: string;
+  includeTitle?: boolean;
+  includeSubtitle?: boolean;
+  titleText?: string;
+  subtitleText?: string;
+}
+
 export interface PromptAnalysisResult {
   suggestedPrompt: string;
   analysisReasoning: string;
@@ -24,6 +34,8 @@ export interface PromptAnalysisResult {
 
 export class AIPromptAnalyzer {
   private geminiApiKey = process.env.GEMINI_API_KEY;
+  private lastRequestTime = 0;
+  private minRequestInterval = 2000; // 2 seconds minimum between requests
 
   constructor() {
     if (!this.geminiApiKey) {
@@ -33,6 +45,18 @@ export class AIPromptAnalyzer {
 
   async analyzeContent(request: PromptAnalysisRequest): Promise<PromptAnalysisResult> {
     console.log('🧠 Starting AI prompt analysis...');
+    
+    // Rate limiting - ensure minimum delay between requests
+    const now = Date.now();
+    const timeSinceLastRequest = now - this.lastRequestTime;
+    
+    if (timeSinceLastRequest < this.minRequestInterval) {
+      const delay = this.minRequestInterval - timeSinceLastRequest;
+      console.log(`⏳ Rate limiting: waiting ${delay}ms before API call...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+    
+    this.lastRequestTime = Date.now();
     
     const analysisPrompt = this.buildAnalysisPrompt(request);
     
@@ -81,7 +105,89 @@ export class AIPromptAnalyzer {
 
     } catch (error: any) {
       console.error('💥 Error analyzing content:', error);
+      
+      // Add delay on any error to prevent spam retries
+      if (error.message.includes('429') || error.message.includes('quota')) {
+        console.log('⏳ Rate limit hit - adding 5 second delay...');
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      } else {
+        console.log('⏳ Adding 2 second delay after error...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+      
       throw new Error(`Prompt analysis failed: ${error.message}`);
+    }
+  }
+
+  async enhanceStandalonePrompt(request: StandalonePromptRequest): Promise<PromptAnalysisResult> {
+    console.log('✨ Starting standalone prompt enhancement...');
+    
+    // Rate limiting - ensure minimum delay between requests
+    const now = Date.now();
+    const timeSinceLastRequest = now - this.lastRequestTime;
+    
+    if (timeSinceLastRequest < this.minRequestInterval) {
+      const delay = this.minRequestInterval - timeSinceLastRequest;
+      console.log(`⏳ Rate limiting: waiting ${delay}ms before API call...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+    
+    this.lastRequestTime = Date.now();
+    
+    const enhancementPrompt = this.buildStandalonePrompt(request);
+    
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${this.geminiApiKey}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: enhancementPrompt
+              }]
+            }],
+            generationConfig: {
+              temperature: 0.8,
+              topK: 40,
+              topP: 0.95,
+              maxOutputTokens: 1200,
+            },
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('❌ Gemini API error:', response.status, errorData);
+        throw new Error(`Gemini API error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (!result.candidates || result.candidates.length === 0) {
+        throw new Error('No response from Gemini API');
+      }
+
+      const enhancementText = result.candidates[0].content.parts[0].text;
+      const parsedEnhancement = this.parseAnalysisResponse(enhancementText);
+
+      console.log('✅ Standalone prompt enhancement completed successfully');
+      
+      return parsedEnhancement;
+
+    } catch (error: any) {
+      console.error('💥 Error enhancing prompt:', error);
+      
+      // Add delay on any error to prevent spam retries
+      if (error.message.includes('429') || error.message.includes('quota')) {
+        await this.delay(5000);
+      }
+      
+      throw error;
     }
   }
 
@@ -134,6 +240,64 @@ For ${imageStyle} composition:
 - If casual: Relaxed atmosphere, informal style, approachable feel
 - If dramatic: High contrast, striking composition, bold elements
 - If corporate: Business environment, professional atmosphere, clean aesthetic
+
+RESPOND ONLY WITH THE JSON OBJECT - NO ADDITIONAL TEXT.
+`;
+  }
+
+  private buildStandalonePrompt(request: StandalonePromptRequest): string {
+    const { userPrompt, artStyle, imageStyle, includeTitle, includeSubtitle, titleText, subtitleText } = request;
+
+    // Build text overlay instructions
+    let textOverlayInstructions = '';
+    const overlayRequests = [];
+    
+    if (includeTitle && titleText) {
+      overlayRequests.push(`prominently display the title text "${titleText}" at the top of the image`);
+    }
+    
+    if (includeSubtitle && subtitleText) {
+      overlayRequests.push(`include the subtitle text "${subtitleText}" in smaller text below the main title`);
+    }
+    
+    if (overlayRequests.length > 0) {
+      textOverlayInstructions = `\n\nTEXT OVERLAY REQUIREMENTS:
+The enhanced prompt MUST include instructions to ${overlayRequests.join(' and ')}. Position the text overlays prominently but naturally within the composition, ensuring they are readable against the background.`;
+    }
+
+    return `
+You are an expert AI image prompt engineer specializing in enhancing user prompts for professional image generation. Transform the following user prompt into an optimized prompt for ${artStyle} style ${imageStyle} images.
+
+USER PROMPT:
+"${userPrompt}"
+
+TARGET STYLE:
+- Art Style: ${artStyle}
+- Image Style: ${imageStyle}${textOverlayInstructions}
+
+TASK:
+Enhance and optimize the user prompt, then provide a comprehensive analysis in the following JSON format:
+
+{
+  "suggestedPrompt": "The enhanced and optimized prompt for image generation",
+  "analysisReasoning": "Brief explanation of the improvements made to the original prompt",
+  "alternativePrompts": ["alternative enhanced prompt 1", "alternative enhanced prompt 2", "alternative enhanced prompt 3"],
+  "keyVisualElements": ["enhanced element 1", "enhanced element 2", "enhanced element 3", "enhanced element 4"]
+}
+
+ENHANCEMENT GUIDELINES:
+1. Preserve the user's core intent and subject matter
+2. Add professional photography/artistic terminology relevant to the style
+3. Include specific details about composition, lighting, and mood
+4. Incorporate style-specific keywords (${artStyle} + ${imageStyle})
+5. Add technical parameters that improve image quality
+6. Suggest complementary visual elements that enhance the scene
+7. Remove any vague terms and replace with specific descriptive language
+8. Ensure the prompt flows naturally and is easy to understand${includeTitle || includeSubtitle ? '\n9. CRITICAL: Include the specified text overlay requirements in the enhanced prompt' : ''}
+
+STYLE-SPECIFIC ENHANCEMENTS:
+- For ${artStyle}: Apply appropriate artistic techniques and visual characteristics
+- For ${imageStyle}: Include relevant mood, setting, and compositional elements
 
 RESPOND ONLY WITH THE JSON OBJECT - NO ADDITIONAL TEXT.
 `;

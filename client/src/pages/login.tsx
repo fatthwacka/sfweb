@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,9 +13,30 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, user, isLoading: authLoading } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+
+  // Handle redirects after successful authentication
+  useEffect(() => {
+    if (user && !authLoading) {
+      console.log('🔄 Login redirect: user role is', user.role, 'email:', user.email);
+      
+      if (user.role === "client") {
+        console.log('✅ Redirecting client to /client-portal');
+        setLocation("/client-portal");
+      } else if (user.role === "super_admin") {
+        console.log('✅ Redirecting super_admin to /admin');
+        setLocation("/admin");
+      } else if (user.role === "staff") {
+        console.log('✅ Redirecting staff to /dashboard');
+        setLocation("/dashboard");
+      } else {
+        console.log('✅ Redirecting unknown role to home');
+        setLocation("/");
+      }
+    }
+  }, [user, authLoading, setLocation]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,36 +45,23 @@ export default function Login() {
     try {
       await login(email, password);
       
-      // Get user info from localStorage to determine redirect
-      const savedUser = localStorage.getItem("user");
-      if (savedUser) {
-        const user = JSON.parse(savedUser);
-        console.log('Login redirect: user role is', user.role);
-        if (user.role === "client") {
-          console.log('Redirecting client to /client-portal');
-          setLocation("/client-portal");
-        } else if (user.role === "staff" || user.role === "super_admin") {
-          console.log('Redirecting staff to /dashboard');
-          setLocation("/dashboard");
-        } else {
-          setLocation("/");
-        }
-      } else {
-        setLocation("/");
-      }
-      
+      // Success! The useEffect above will handle redirect when user state updates
       toast({
         title: "Login Successful",
         description: "Welcome back!"
       });
+      
+      // Reset loading state after short delay to allow redirect
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 1000);
     } catch (error) {
       toast({
         title: "Login Failed",
         description: "Please check your email and password.",
         variant: "destructive"
       });
-    } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Reset loading state on error
     }
   };
 

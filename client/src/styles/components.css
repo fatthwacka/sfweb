@@ -43,6 +43,35 @@
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 107, 107, 0.1);
   }
 
+  /* Radio Button Classes - Reusable styled radio buttons */
+  .radio-btn-base {
+    @apply relative cursor-pointer rounded-lg border-2 px-3 py-2 text-center transition-all duration-200 hover:shadow-md;
+  }
+
+  .radio-btn-text {
+    @apply text-sm font-semibold;
+  }
+
+  .radio-btn-desc {
+    @apply text-xs opacity-75;
+  }
+
+  .radio-btn-purple-selected {
+    @apply border-purple-500 bg-white text-purple-900 ring-2 ring-purple-200;
+  }
+
+  .radio-btn-blue-selected {
+    @apply border-blue-500 bg-white text-blue-900 ring-2 ring-blue-200;
+  }
+
+  .radio-btn-unselected {
+    @apply border-gray-600 bg-gray-800 text-white hover:border-gray-500;
+  }
+
+  .radio-btn-brand-selected {
+    @apply border-blue-400 bg-white text-blue-900 ring-2 ring-blue-200;
+  }
+
   /* Universal Button Classes - replace all inline button styling */
   .btn-salmon {
     @apply px-8 py-4 rounded-lg font-barlow font-semibold text-lg transition-all duration-300;
@@ -883,5 +912,51 @@
     .slider-handle {
       transition: none;
     }
+  }
+
+  /* Service Bubble Buttons */
+  .btn-service-bubble {
+    @apply px-3 py-2 md:px-5 md:py-2.5 font-barlow font-normal rounded-full transition-all duration-300 text-sm whitespace-nowrap flex-shrink-0 relative overflow-hidden border text-gray-200 flex items-center gap-1.5;
+    @apply hover:border-purple-400/60 hover:bg-gradient-to-r hover:from-purple-900/40 hover:via-indigo-800/30 hover:to-purple-700/40 hover:text-white;
+  }
+
+  /* Color variants for service bubble buttons */
+  .btn-service-bubble-blue {
+    @apply bg-gradient-to-r from-blue-950/30 to-gray-800/65 border-blue-600/60;
+  }
+  .btn-service-bubble-blue:hover {
+    @apply from-blue-900/50;
+  }
+
+  .btn-service-bubble-purple {
+    @apply bg-gradient-to-r from-purple-950/30 to-gray-800/65 border-purple-600/60;
+  }
+  .btn-service-bubble-purple:hover {
+    @apply from-purple-900/50;
+  }
+
+  .btn-service-bubble-green {
+    @apply bg-gradient-to-r from-green-950/30 to-gray-800/65 border-green-600/60;
+  }
+  .btn-service-bubble-green:hover {
+    @apply from-green-900/50;
+  }
+
+  .btn-service-bubble-orange {
+    @apply bg-gradient-to-r from-orange-950/30 to-gray-800/65 border-orange-600/60;
+  }
+  .btn-service-bubble-orange:hover {
+    @apply from-orange-900/50;
+  }
+
+  /* Shimmer effect for service bubble buttons */
+  .btn-service-bubble-shimmer {
+    @apply absolute inset-0 opacity-0 group-hover:opacity-40;
+    background: linear-gradient(45deg, transparent 30%, rgba(168, 85, 247, 0.4) 50%, transparent 70%);
+  }
+
+  /* Glow effect for service bubble buttons */
+  .btn-service-bubble-glow {
+    @apply absolute inset-0 rounded-full bg-gradient-to-r from-purple-500/30 to-indigo-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-lg -z-10;
   }
 }

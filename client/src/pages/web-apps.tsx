@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
@@ -49,30 +50,189 @@ export default function WebApps() {
       <Navigation />
       
       {/* Hero Section */}
-      <GradientBackground section="web-apps-hero" className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0">
-          <img 
-            src="/images/hero/Slyfox-Ai-Automation-and-AppDev-02.jpg" 
-            alt="Web & App Development"
-            className="w-full h-full object-cover opacity-80"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-            }}
-          />
-        </div>
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <GradientBackground section="web-apps-hero" className="relative min-h-[55vh] flex items-center justify-center overflow-hidden">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="mb-6 text-web-apps-hero-primary">
             Web & App Development
           </h1>
           <p className="text-xl md:text-2xl mb-8 text-white max-w-3xl mx-auto">
-            Crafting digital experiences that captivate users and drive business growth
+            Digital experiences that captivate your users and drive business growth
           </p>
-          <div className="flex justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link href="/tools">
+              <motion.div
+                className="service-bubble-container relative group cursor-pointer"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {/* External sparkles container */}
+                <div className="absolute inset-0 pointer-events-none -m-4">
+                  {/* External sparkle particles - show on hover */}
+                  <div className="sparkles opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {[...Array(8)].map((_, i) => (
+                      <motion.div
+                        key={i}
+                        className="absolute w-1.5 h-1.5 bg-purple-300 rounded-full"
+                        style={{
+                          left: `${10 + (i * 12)}%`,
+                          top: i % 2 === 0 ? '-8px' : '100%',
+                        }}
+                        animate={{
+                          scale: [0, 1.2, 0],
+                          opacity: [0, 1, 0],
+                          rotate: [0, 180, 360],
+                          y: i % 2 === 0 ? [0, -10, 0] : [0, 10, 0],
+                        }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          delay: i * 0.25,
+                          ease: "easeInOut"
+                        }}
+                      />
+                    ))}
+                    {/* Additional corner sparkles */}
+                    {[...Array(4)].map((_, i) => (
+                      <motion.div
+                        key={`corner-${i}`}
+                        className="absolute w-1 h-1 bg-yellow-300 rounded-full"
+                        style={{
+                          left: i < 2 ? '-6px' : '100%',
+                          top: i % 2 === 0 ? '20%' : '80%',
+                        }}
+                        animate={{
+                          scale: [0, 1, 0],
+                          opacity: [0, 0.8, 0],
+                        }}
+                        transition={{
+                          duration: 1.8,
+                          repeat: Infinity,
+                          delay: i * 0.3 + 0.5,
+                          ease: "easeInOut"
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Main bubble button - with subtle colour hints per service */}
+                <div className="btn-service-bubble btn-service-bubble-green group-hover:bg-gradient-to-r group-hover:from-purple-900/80 group-hover:via-indigo-800/70 group-hover:to-purple-700/80">
+                  
+                  {/* Enhanced shimmer effect - purple streak */}
+                  <motion.div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-40"
+                    style={{
+                      background: 'linear-gradient(45deg, transparent 30%, rgba(168, 85, 247, 0.4) 50%, transparent 70%)',
+                    }}
+                    animate={{
+                      x: ['-100%', '100%'],
+                    }}
+                    transition={{
+                      duration: 1.2,
+                      repeat: Infinity,
+                      repeatDelay: 1.5,
+                      ease: "easeInOut"
+                    }}
+                  />
+                  
+                  {/* Content */}
+                  <div className="relative z-10 flex items-center gap-2">
+                    <Wrench className="w-4 h-4" />
+                    <span>Tools</span>
+                  </div>
+                </div>
+                
+                {/* Enhanced glow effect on hover */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500/30 to-indigo-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-lg -z-10" />
+              </motion.div>
+            </Link>
+            
             <Link href="/contact">
-              <Button size="lg" className="btn-cyan">
-                Start Your Project
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+              <motion.div
+                className="service-bubble-container relative group cursor-pointer"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {/* External sparkles container */}
+                <div className="absolute inset-0 pointer-events-none -m-4">
+                  {/* External sparkle particles - show on hover */}
+                  <div className="sparkles opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {[...Array(8)].map((_, i) => (
+                      <motion.div
+                        key={i}
+                        className="absolute w-1.5 h-1.5 bg-orange-300 rounded-full"
+                        style={{
+                          left: `${10 + (i * 12)}%`,
+                          top: i % 2 === 0 ? '-8px' : '100%',
+                        }}
+                        animate={{
+                          scale: [0, 1.2, 0],
+                          opacity: [0, 1, 0],
+                          rotate: [0, 180, 360],
+                          y: i % 2 === 0 ? [0, -10, 0] : [0, 10, 0],
+                        }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          delay: i * 0.25,
+                          ease: "easeInOut"
+                        }}
+                      />
+                    ))}
+                    {/* Additional corner sparkles */}
+                    {[...Array(4)].map((_, i) => (
+                      <motion.div
+                        key={`corner-${i}`}
+                        className="absolute w-1 h-1 bg-yellow-300 rounded-full"
+                        style={{
+                          left: i < 2 ? '-6px' : '100%',
+                          top: i % 2 === 0 ? '20%' : '80%',
+                        }}
+                        animate={{
+                          scale: [0, 1, 0],
+                          opacity: [0, 0.8, 0],
+                        }}
+                        transition={{
+                          duration: 1.8,
+                          repeat: Infinity,
+                          delay: i * 0.3 + 0.5,
+                          ease: "easeInOut"
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Main bubble button - orange theme */}
+                <div className="btn-service-bubble btn-service-bubble-orange group-hover:bg-gradient-to-r group-hover:from-orange-900/80 group-hover:via-amber-800/70 group-hover:to-orange-700/80 px-6 py-3">
+                  
+                  {/* Enhanced shimmer effect - orange streak */}
+                  <motion.div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-40"
+                    style={{
+                      background: 'linear-gradient(45deg, transparent 30%, rgba(251, 146, 60, 0.4) 50%, transparent 70%)',
+                    }}
+                    animate={{
+                      x: ['-100%', '100%'],
+                    }}
+                    transition={{
+                      duration: 1.2,
+                      repeat: Infinity,
+                      repeatDelay: 1.5,
+                      ease: "easeInOut"
+                    }}
+                  />
+                  
+                  {/* Content */}
+                  <div className="relative z-10 flex items-center gap-2">
+                    <span>Start Your Project</span>
+                    <ArrowRight className="w-5 h-5" />
+                  </div>
+                </div>
+                
+                {/* Enhanced glow effect on hover */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-500/30 to-amber-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-lg -z-10" />
+              </motion.div>
             </Link>
           </div>
         </div>
