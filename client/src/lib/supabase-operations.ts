@@ -58,6 +58,13 @@ export const clientOperations = {
     address?: string;
     secondaryEmail?: string;
   }): Promise<Client> => {
+    // Get the current user to set as created_by
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      throw new Error(`Authentication required to create client: ${authError?.message || 'User not found'}`);
+    }
+
     const { data, error } = await supabase
       .from('clients')
       .insert([{
@@ -67,6 +74,7 @@ export const clientOperations = {
         phone: clientData.phone || null,
         address: clientData.address || null,
         secondary_email: clientData.secondaryEmail || null,
+        created_by: user.id, // Set the current user as the creator
       }])
       .select()
       .single();
@@ -141,16 +149,34 @@ export const shootOperations = {
     groupName?: string;
     mediaType?: string;
   }): Promise<Shoot> => {
+    // Get the current user to set as created_by
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      throw new Error(`Authentication required to create shoot: ${authError?.message || 'User not found'}`);
+    }
+
+    console.log('Creating shoot with data:', {
+      title: shootData.title,
+      description: shootData.description,
+      client_id: shootData.clientId,
+      custom_slug: shootData.customSlug,
+      is_private: shootData.isPrivate,
+      group_name: shootData.groupName,
+      media_type: shootData.mediaType
+    });
+    
     const { data, error } = await supabase
       .from('shoots')
       .insert([{
         title: shootData.title,
         description: shootData.description || null,
-        client_id: shootData.clientId,
-        custom_slug: shootData.customSlug || null,
-        is_private: shootData.isPrivate || false,
-        group_name: shootData.groupName || null,
-        media_type: shootData.mediaType || 'photo',
+        client_id: shootData.clientId, // snake_case for database
+        custom_slug: shootData.customSlug || null, // snake_case for database
+        is_private: shootData.isPrivate || false, // snake_case for database
+        group_name: shootData.groupName || null, // snake_case for database
+        media_type: shootData.mediaType || 'photo', // snake_case for database
+        created_by: user.id, // Required field for database constraint
       }])
       .select()
       .single();

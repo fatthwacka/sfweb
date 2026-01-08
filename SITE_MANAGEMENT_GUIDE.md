@@ -308,7 +308,98 @@ Each text color control includes:
 
 ### CSS Integration System
 
-#### Section-Specific CSS Variables
+#### Tools Section Independent Styling Architecture
+
+**Separate Design System**: The `/tools/` section uses an independent styling system separate from the main site's gradient-based architecture to allow for specialized UI patterns optimized for data-heavy interfaces.
+
+**CSS File Structure**:
+- **Main Site**: Uses existing gradient system (`[data-gradient-section]` patterns)
+- **Tools Section**: Uses dedicated `tools-system.css` for component-based styling
+
+**Key Design Principles**:
+- Tools **DO NOT** use `GradientBackground` wrapper (independent from main site gradients)
+- Tools use dedicated CSS component classes instead of inline Tailwind utilities
+- Reusable tool patterns extracted to dedicated component system
+- Performance-optimized styling for complex data interfaces
+
+**Implementation Strategy**:
+```
+/client/src/styles/
+├── main.css           # Main site styling
+├── components.css     # Main site components (large file)
+└── tools-system.css   # NEW: Tools-specific styling system
+```
+
+#### Tools Styling Refactor Execution Plan
+
+**Phase 1: Extract Common Patterns**
+1. **Audit Current Tools** - Analyze `/tools/` pages to identify repeated styling patterns
+2. **Create CSS Component Classes** - Extract common Tailwind combinations into reusable CSS classes
+3. **Establish Component Library** - Build reusable React components for tools
+
+**Phase 2: Create tools-system.css**
+```css
+/* Core tool layout patterns */
+.tool-container { @apply min-h-screen bg-gray-900; }
+.tool-header { @apply container mx-auto px-4 pt-32 pb-8; }
+.tool-card { @apply bg-white/5 border border-white/10 rounded-xl; }
+.tool-controls { @apply bg-white/5 border border-white/10 rounded-xl p-6; }
+
+/* Media selectors and buttons */
+.media-selector { @apply flex bg-white/10 rounded-lg p-1; }
+.media-tab { @apply px-6 py-3 rounded-md font-medium transition-all; }
+.media-tab--active { @apply bg-salmon text-white shadow-lg; }
+.media-tab--inactive { @apply text-gray-300 hover:text-white hover:bg-white/10; }
+
+/* Status badges and indicators */
+.status-badge { @apply px-3 py-1 rounded-lg text-sm font-medium; }
+.status-badge--success { @apply bg-green-500/10 border border-green-500/20 text-green-300; }
+.status-badge--info { @apply bg-blue-500/10 border border-blue-500/20 text-blue-300; }
+.status-badge--warning { @apply bg-yellow-500/10 border border-yellow-500/20 text-yellow-300; }
+
+/* Grid and list layouts */
+.media-grid { @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6; }
+.media-item { @apply bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:border-white/30 transition-all duration-200; }
+.media-item__preview { @apply aspect-square relative group; }
+.media-item__info { @apply p-3; }
+
+/* Loading and error states */
+.loading-spinner { @apply w-5 h-5 border-2 border-salmon border-r-transparent rounded-full animate-spin; }
+.error-state { @apply bg-red-500/10 border border-red-500/20 rounded-lg p-4; }
+```
+
+**Phase 3: Component Extraction**
+```tsx
+// /components/tools/
+├── ToolLayout.tsx           # Common page wrapper
+├── MediaSelector.tsx        # Tab-based type selector  
+├── MediaGrid.tsx            # Reusable file browser
+├── LoadingState.tsx         # Consistent loading UI
+├── StatusBadge.tsx          # Performance indicators
+├── ToolCard.tsx             # Common card wrapper
+└── VideoThumbnail.tsx       # Optimized video previews
+```
+
+**Phase 4: Refactor Priority Order**
+1. **Cloud Storage Browser** - Most complex, highest impact
+2. **VEO Video Generator** - Likely similar patterns
+3. **Other tools** - Apply established patterns
+4. **Tools Hub** - Landing page consistency
+
+**Phase 5: Performance Benefits**
+- **Reduced Bundle Size** - CSS classes instead of repeated Tailwind utilities
+- **Faster Development** - Reusable components instead of copy/paste
+- **Consistent UX** - Shared behavior patterns across tools
+- **Easier Maintenance** - Single source of truth for styling
+
+**Implementation Rules**:
+- ✅ Tools never import `GradientBackground`
+- ✅ Tools use `tools-system.css` classes exclusively  
+- ✅ Extract any pattern repeated >2 times
+- ✅ Component props for variants, not inline classes
+- ✅ Performance-first approach for data-heavy interfaces
+
+#### Section-Specific CSS Variables (Main Site Only)
 Text colors are applied via section-specific CSS variables that automatically resolve to actual colors:
 
 ```css

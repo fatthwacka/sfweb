@@ -27,6 +27,7 @@
     "deploy:vps": "echo 'First run: npm run deploy:commit' && echo 'Then: npm run vps:connect' && echo 'Finally: cd /opt/sfweb && git pull origin main && docker-compose down && docker-compose up -d --build'"
   },
   "dependencies": {
+    "@google-cloud/storage": "^7.18.0",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
     "@mozilla/readability": "^0.6.0",

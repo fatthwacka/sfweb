@@ -8,6 +8,22 @@ import { ToolDefinition, ToolCategory, TIER_HIERARCHY, AccessTier } from '../typ
 import { GeminiIcon, OpenAIIcon } from '../../client/src/components/icons';
 
 export const TOOLS_REGISTRY: ToolDefinition[] = [
+  // === VEO VIDEO GENERATOR TEST ===
+  {
+    slug: 'veo-video-generator',
+    name: 'VEO Video Generator',
+    description: 'Generate professional AI videos using Google Vertex AI VEO model with advanced prompt enhancement',
+    icon: '🎬',
+    category: 'ai-powered',
+    minTier: 'staff',
+    requiresAuth: true,
+    usesAI: true,
+    usesLocalFiles: false,
+    limits: {},
+    badge: 'new',
+    // Uses standard page navigation
+  },
+  
   // === AI CONTENT CREATION (verified minimum) ===
   {
     slug: 'ai-image-generator',
@@ -73,6 +89,20 @@ export const TOOLS_REGISTRY: ToolDefinition[] = [
     minTier: 'staff',
     requiresAuth: true,
     usesAI: true,
+    usesLocalFiles: false,
+    limits: {},
+    badge: 'new',
+    // Uses standard page navigation
+  },
+  {
+    slug: 'cloud-storage-browser',
+    name: 'Cloud Storage Browser',
+    description: 'Browse, view, and manage Google Cloud Storage files with grid view, search, and download features',
+    icon: '☁️',
+    category: 'file-management',
+    minTier: 'staff',
+    requiresAuth: true,
+    usesAI: false,
     usesLocalFiles: false,
     limits: {},
     badge: 'new',

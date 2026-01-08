@@ -36,7 +36,7 @@ Location: `/Users/daddapiggy/.claude/mcp_servers.json`
     "args": ["-y", "n8n-mcp"],
     "env": {
       "N8N_HOST": "http://168.231.86.89:5678",
-      "N8N_API_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyNmJjNTRhMC1jNDU0LTRjYTYtODdkYy03MGJiNDJiNDY4YTAiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzY2NzYwODk1LCJleHAiOjE3NzQ0Nzk2MDB9.aOpPh0BTOZF4s-EJN4ALttl9igX3VKKsdiFzy8Hdsc0"
+      "N8N_API_KEY": "your_n8n_jwt_token_here"
     }
   }
 }

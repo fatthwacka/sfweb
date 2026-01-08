@@ -563,77 +563,140 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { slug } = req.params;
       
-      // Get the shoot details first
-      const shoot = await storage.getShootBySlug(slug);
+      // Create Supabase client with server-side secret key
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL!,
+        process.env.SUPABASE_SECRET_KEY!
+      );
+
+      // Get the shoot details first using direct Supabase query
+      // Try both custom_slug and id to match frontend logic
+      const { data: shoots, error: shootsError } = await supabase
+        .from('shoots')
+        .select('*');
+
+      if (shootsError || !shoots) {
+        console.log(`❌ Error fetching shoots:`, shootsError);
+        return res.status(500).json({ message: "Database error" });
+      }
+
+      console.log(`🔍 Looking for shoot with slug: "${slug}"`);
+      console.log(`🔍 Available shoots: ${shoots.length}`);
+      shoots.forEach(s => {
+        console.log(`  - ID: ${s.id}, custom_slug: ${s.custom_slug}, title: ${s.title}`);
+      });
+
+      // Find shoot by custom_slug or ID (same logic as frontend)
+      const shoot = shoots.find(s => 
+        s.custom_slug === slug || s.id === slug
+      );
+        
       if (!shoot) {
         console.log(`❌ Shoot not found: ${slug}`);
+        console.log(`❌ Searched for custom_slug="${slug}" OR id="${slug}"`);
         return res.status(404).json({ message: "Gallery not found" });
       }
 
+      console.log(`✅ Found shoot: ${shoot.title} (ID: ${shoot.id}, custom_slug: ${shoot.custom_slug})`)
+
       // Check if gallery is private
-      if (shoot.isPrivate) {
+      if (shoot.is_private) {
         console.log(`❌ Gallery is private: ${slug}`);
         return res.status(403).json({ message: "Private gallery", type: "private" });
       }
 
-      // Get all images for this shoot
-      const images = await storage.getImagesByShoot(shoot.id);
-      if (!images || images.length === 0) {
-        console.log(`❌ No images found for: ${slug}`);
-        return res.status(404).json({ message: "No images found" });
+      // Get all media for this shoot (both images and videos) using direct Supabase query
+      console.log(`🔍 Searching for media with shoot_id: ${shoot.id}`);
+      
+      const { data: images, error: imagesError } = await supabase
+        .from('images')
+        .select('*')
+        .eq('shoot_id', shoot.id)
+        .order('sequence', { ascending: true });
+
+      const { data: videos, error: videosError } = await supabase
+        .from('videos')
+        .select('*')
+        .eq('shoot_id', shoot.id)
+        .order('sequence', { ascending: true });
+
+      console.log(`📊 Media found: ${images?.length || 0} images, ${videos?.length || 0} videos`);
+      if (imagesError) console.log(`❌ Images error:`, imagesError);
+      if (videosError) console.log(`❌ Videos error:`, videosError);
+
+      if ((imagesError && videosError) || (!images?.length && !videos?.length)) {
+        console.log(`❌ No media found for: ${slug}`, { imagesError, videosError });
+        return res.status(404).json({ message: "No media found" });
       }
 
-      // Limit to albums with ≤65 images for reliable downloads
-      if (images.length > 65) {
-        console.log(`❌ Album too large: ${images.length} images (max 65 for now)`);
+      // Combine images and videos, sort by sequence
+      const allMedia = [
+        ...(images || []).map(item => ({ ...item, mediaType: 'image' })),
+        ...(videos || []).map(item => ({ ...item, mediaType: 'video' }))
+      ].sort((a, b) => a.sequence - b.sequence);
+
+      if (allMedia.length === 0) {
+        console.log(`❌ No media found for: ${slug}`);
+        return res.status(404).json({ message: "No media found" });
+      }
+
+      // Limit to albums with ≤65 media files for reliable downloads
+      if (allMedia.length > 65) {
+        console.log(`❌ Album too large: ${allMedia.length} files (max 65 for now)`);
         return res.status(413).json({ 
           message: "Album too large", 
-          details: `This album has ${images.length} images. Currently only albums with 65 images or fewer can be downloaded.`
+          details: `This album has ${allMedia.length} files. Currently only albums with 65 files or fewer can be downloaded.`
         });
       }
 
-      console.log(`📦 Preparing ZIP download for ${images.length} images`);
+      console.log(`📦 Preparing ZIP download for ${allMedia.length} files (${images?.length || 0} images, ${videos?.length || 0} videos)`);
       
       // Create ZIP using JSZip (now properly installed!)
       const JSZip = (await import('jszip')).default;
       const zip = new JSZip();
 
       // Track progress
-      let processedImages = 0;
+      let processedFiles = 0;
       
-      // Add each image to the ZIP
-      for (const image of images.sort((a, b) => a.sequence - b.sequence)) {
+      // Add each media file to the ZIP
+      for (const mediaItem of allMedia) {
         try {
-          console.log(`📄 Processing image ${processedImages + 1}/${images.length}: ${image.filename}`);
+          console.log(`📄 Processing ${mediaItem.mediaType} ${processedFiles + 1}/${allMedia.length}: ${mediaItem.filename}`);
           
           // Extract the storage path for Supabase
           let storagePath;
-          if (image.storagePath.includes('supabase.co')) {
-            // Full URL format: extract path after /storage/v1/object/public/gallery-images/
-            const urlParts = image.storagePath.split('/storage/v1/object/public/gallery-images/');
-            storagePath = urlParts[1];
+          let bucketName;
+          
+          if (mediaItem.mediaType === 'video') {
+            bucketName = 'gallery-videos';
+            if (mediaItem.storage_path.includes('supabase.co')) {
+              const urlParts = mediaItem.storage_path.split('/storage/v1/object/public/gallery-videos/');
+              storagePath = urlParts[1];
+            } else {
+              storagePath = mediaItem.storage_path;
+            }
           } else {
-            // Already just the storage path
-            storagePath = image.storagePath;
+            bucketName = 'gallery-images';
+            if (mediaItem.storage_path.includes('supabase.co')) {
+              const urlParts = mediaItem.storage_path.split('/storage/v1/object/public/gallery-images/');
+              storagePath = urlParts[1];
+            } else {
+              storagePath = mediaItem.storage_path;
+            }
           }
 
           if (!storagePath) {
-            console.warn(`⚠️ Invalid storage path for image: ${image.id}`);
+            console.warn(`⚠️ Invalid storage path for ${mediaItem.mediaType}: ${mediaItem.id}`);
             continue;
           }
 
-          // Download image from Supabase Storage
-          const supabase = createClient(
-            process.env.VITE_SUPABASE_URL!,
-            process.env.SUPABASE_SECRET_KEY!
-          );
-
+          // Download file from Supabase Storage
           const { data: fileData, error: downloadError } = await supabase.storage
-            .from('gallery-images')
+            .from(bucketName)
             .download(storagePath);
 
           if (downloadError || !fileData) {
-            console.warn(`⚠️ Failed to download image ${image.id}:`, downloadError);
+            console.warn(`⚠️ Failed to download ${mediaItem.mediaType} ${mediaItem.id}:`, downloadError);
             continue;
           }
 
@@ -641,27 +704,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const buffer = Buffer.from(await fileData.arrayBuffer());
 
           // Generate consistent sequential filename using loop index
-          const extension = image.filename.split('.').pop() || 'jpg';
-          const sequentialFilename = `image-${String(processedImages + 1).padStart(3, '0')}.${extension}`;
+          const extension = mediaItem.filename.split('.').pop() || (mediaItem.mediaType === 'video' ? 'mp4' : 'jpg');
+          const mediaTypePrefix = mediaItem.mediaType === 'video' ? 'video' : 'image';
+          const sequentialFilename = `${mediaTypePrefix}-${String(processedFiles + 1).padStart(3, '0')}.${extension}`;
 
           // Add to ZIP
           zip.file(sequentialFilename, buffer);
 
-          processedImages++;
-          console.log(`✅ Added to ZIP: ${sequentialFilename} (${processedImages}/${images.length})`);
+          processedFiles++;
+          console.log(`✅ Added to ZIP: ${sequentialFilename} (${processedFiles}/${allMedia.length})`);
           
-        } catch (imageError) {
-          console.warn(`⚠️ Error processing image ${image.id}:`, imageError);
+        } catch (mediaError) {
+          console.warn(`⚠️ Error processing ${mediaItem.mediaType} ${mediaItem.id}:`, mediaError);
           continue;
         }
       }
 
-      if (processedImages === 0) {
-        console.log(`❌ No images could be processed`);
-        return res.status(500).json({ message: "No images could be downloaded" });
+      if (processedFiles === 0) {
+        console.log(`❌ No files could be processed`);
+        return res.status(500).json({ message: "No files could be downloaded" });
       }
 
-      console.log(`🎉 ZIP creation complete: ${processedImages}/${images.length} images processed`);
+      console.log(`🎉 ZIP creation complete: ${processedFiles}/${allMedia.length} files processed`);
       
       // Generate ZIP file
       const zipBuffer = await zip.generateAsync({ 
@@ -6220,6 +6284,86 @@ Return ONLY the enhanced subtitle text. No explanations, quotes, or formatting.`
     }
   });
 
+  // AI Video Generation - Generate videos using Vertex AI VEO
+  app.post('/api/ai/generate-video', async (req, res) => {
+    try {
+      const {
+        prompt,
+        model,
+        resolution,
+        aspectRatio,
+        duration,
+        sampleCount,
+        image
+      } = req.body;
+
+      if (!prompt || !prompt.trim()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Video prompt is required',
+        });
+      }
+
+      if (!image || !image.bytesBase64Encoded || !image.mimeType) {
+        return res.status(400).json({
+          success: false,
+          error: 'Starting frame image is required',
+        });
+      }
+
+      // CRITICAL: Force sample count to 1 for cost control
+      const forcedSampleCount = 1;
+      if (sampleCount !== 1) {
+        console.warn('⚠️ Sample count forced to 1 for cost control!');
+      }
+
+      console.log('🎬 Starting AI video generation...');
+      console.log('🎥 Video specifications:', {
+        model: model || 'veo-3.0-generate-001',
+        resolution: resolution || '1080p',
+        aspectRatio: aspectRatio || '16:9',
+        duration: duration || 6,
+        sampleCount: forcedSampleCount
+      });
+
+      const { VertexAIVeoGenerator } = await import('./services/vertex-ai-veo-generator');
+      const generator = new VertexAIVeoGenerator();
+
+      const result = await generator.generateVideo({
+        prompt: prompt.trim(),
+        model: model || 'veo-3.0-generate-001',
+        resolution: resolution || '1080p',
+        aspectRatio: aspectRatio || '16:9',
+        duration: duration || 6,
+        sampleCount: forcedSampleCount, // ALWAYS 1
+        image: {
+          bytesBase64Encoded: image.bytesBase64Encoded,
+          mimeType: image.mimeType
+        }
+      });
+
+      console.log('✅ AI video generation completed');
+
+      res.json({
+        success: true,
+        videoUrl: result.videoUrl,
+        prompt: result.prompt,
+        metadata: result.metadata,
+        timestamp: new Date().toISOString(),
+      });
+
+    } catch (error: any) {
+      console.error('💥 AI video generation error:', error);
+
+      res.status(500).json({
+        success: false,
+        error: 'Video generation failed',
+        details: error.message,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  });
+
   // === UNSPLASH INTEGRATION ENDPOINTS ===
 
   // AI-powered Unsplash search term generation
@@ -6379,6 +6523,377 @@ Your search term:`;
         error: 'Unsplash search failed',
         details: error.message,
         timestamp: new Date().toISOString(),
+      });
+    }
+  });
+
+  // === CLOUD STORAGE BROWSER API ===
+
+  // Simple in-memory cache for cloud storage files
+  let cloudStorageCache: any = null;
+  let cacheTimestamp = 0;
+  const CACHE_DURATION = 60000; // 1 minute cache
+
+  // GET /api/cloud-storage/files - List all files in Google Cloud Storage
+  app.get('/api/cloud-storage/files', async (req, res) => {
+    try {
+      const now = Date.now();
+      
+      // Return cached data if still valid
+      if (cloudStorageCache && (now - cacheTimestamp) < CACHE_DURATION) {
+        console.log('📁 Returning cached cloud storage files');
+        return res.json({
+          ...cloudStorageCache,
+          cached: true,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      console.log('📁 Loading files from Google Cloud Storage...');
+      const startTime = Date.now();
+
+      // Import Google Cloud Storage
+      const { Storage } = await import('@google-cloud/storage');
+      
+      const storage = new Storage({
+        projectId: process.env.GOOGLE_PROJECT_ID,
+        credentials: {
+          type: 'service_account',
+          project_id: process.env.GOOGLE_PROJECT_ID,
+          private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
+          private_key: process.env.GOOGLE_PRIVATE_KEY,
+          client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+          client_id: process.env.GOOGLE_CLIENT_ID,
+          auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+          token_uri: 'https://oauth2.googleapis.com/token',
+          auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
+          client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL}`,
+        }
+      });
+
+      const buckets = ['netfox-veo-generations']; // Add more buckets as needed
+      const allFiles: any[] = [];
+
+      for (const bucketName of buckets) {
+        try {
+          const bucket = storage.bucket(bucketName);
+          
+          // ⚡ CRITICAL PERFORMANCE FIX: Use includeMetadata to eliminate individual getMetadata() calls
+          const [files] = await bucket.getFiles({
+            includeMetadata: true,
+            maxResults: 1000
+          });
+          
+          console.log(`📂 Found ${files.length} files in bucket: ${bucketName}`);
+
+          for (const file of files) {
+            // Use metadata from getFiles call instead of separate getMetadata() - MAJOR SPEED IMPROVEMENT
+            const metadata = file.metadata;
+            
+            // ⚡ FAST file type detection using extension instead of MIME type parsing
+            const fileName = file.name || '';
+            const extension = fileName.toLowerCase().split('.').pop() || '';
+            let type = 'other';
+            
+            // Extension-based detection is much faster than MIME type analysis
+            if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].includes(extension)) {
+              type = 'image';
+            } else if (['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'm4v'].includes(extension)) {
+              type = 'video';
+            }
+            
+            // Simplified MIME type handling
+            let mimeType = metadata?.contentType || 'application/octet-stream';
+            if (!metadata?.contentType) {
+              if (type === 'image') mimeType = `image/${extension}`;
+              else if (type === 'video') mimeType = `video/${extension}`;
+            }
+
+            // Build public URL
+            const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
+
+            allFiles.push({
+              name: fileName.split('/').pop() || fileName,
+              path: fileName,
+              size: parseInt(metadata?.size || '0'),
+              type,
+              mimeType,
+              lastModified: metadata?.updated || metadata?.timeCreated || new Date().toISOString(),
+              publicUrl,
+              bucket: bucketName
+            });
+          }
+        } catch (bucketError) {
+          console.error(`❌ Error accessing bucket ${bucketName}:`, bucketError);
+        }
+      }
+
+      // Calculate stats
+      const stats = {
+        totalFiles: allFiles.length,
+        totalSize: allFiles.reduce((sum, file) => sum + file.size, 0),
+        images: allFiles.filter(f => f.type === 'image').length,
+        videos: allFiles.filter(f => f.type === 'video').length,
+        other: allFiles.filter(f => f.type === 'other').length
+      };
+
+      const loadTime = Date.now() - startTime;
+      console.log(`✅ Loaded ${allFiles.length} files from ${buckets.length} buckets in ${loadTime}ms`);
+      console.log(`📊 Stats: ${stats.images} images, ${stats.videos} videos, ${stats.other} other`);
+      console.log(`⚡ Performance: ${loadTime < 3000 ? 'FAST' : loadTime < 5000 ? 'MODERATE' : 'SLOW'} (${loadTime}ms)`);
+
+      // Cache the response
+      const responseData = {
+        success: true,
+        files: allFiles,
+        stats,
+        buckets
+      };
+      cloudStorageCache = responseData;
+      cacheTimestamp = now;
+
+      res.json({
+        ...responseData,
+        cached: false,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error: any) {
+      console.error('💥 Cloud Storage listing error:', error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Failed to list cloud storage files',
+        details: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  // DELETE /api/cloud-storage/delete - Delete a file from Google Cloud Storage
+  app.delete('/api/cloud-storage/delete', async (req, res) => {
+    try {
+      const { bucket: bucketName, filePath } = req.body;
+
+      if (!bucketName || !filePath) {
+        return res.status(400).json({
+          success: false,
+          error: 'Bucket name and file path are required'
+        });
+      }
+
+      console.log(`🗑️ Deleting file: ${filePath} from bucket: ${bucketName}`);
+
+      // Import Google Cloud Storage
+      const { Storage } = await import('@google-cloud/storage');
+      
+      const storage = new Storage({
+        projectId: process.env.GOOGLE_PROJECT_ID,
+        credentials: {
+          type: 'service_account',
+          project_id: process.env.GOOGLE_PROJECT_ID,
+          private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
+          private_key: process.env.GOOGLE_PRIVATE_KEY,
+          client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+          client_id: process.env.GOOGLE_CLIENT_ID,
+          auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+          token_uri: 'https://oauth2.googleapis.com/token',
+          auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
+          client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL}`,
+        }
+      });
+
+      const bucket = storage.bucket(bucketName);
+      const file = bucket.file(filePath);
+
+      // Check if file exists
+      const [exists] = await file.exists();
+      if (!exists) {
+        return res.status(404).json({
+          success: false,
+          error: 'File not found'
+        });
+      }
+
+      // Delete the file
+      await file.delete();
+
+      console.log(`✅ File deleted successfully: ${filePath}`);
+
+      res.json({
+        success: true,
+        message: 'File deleted successfully',
+        filePath,
+        bucketName,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error: any) {
+      console.error('💥 Cloud Storage delete error:', error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Failed to delete file from cloud storage',
+        details: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  // GET /api/cloud-storage/thumbnail/:bucketName/:filePath* - Generate optimized video thumbnail
+  app.get('/api/cloud-storage/thumbnail/:bucketName/:filePath(*)', async (req, res) => {
+    try {
+      const { bucketName, filePath } = req.params;
+      console.log(`📥 Received thumbnail request: bucket=${bucketName}, file=${filePath}`);
+      
+      if (!bucketName || !filePath) {
+        return res.status(400).json({
+          success: false,
+          error: 'Bucket name and file path are required'
+        });
+      }
+
+      console.log(`🎬 Generating thumbnail for: ${bucketName}/${filePath}`);
+
+      // Import required modules
+      const { Storage } = await import('@google-cloud/storage');
+      const ffmpeg = (await import('fluent-ffmpeg')).default;
+      const { promises: fs } = await import('fs');
+      const path = await import('path');
+      const { v4: uuidv4 } = await import('uuid');
+
+      const storage = new Storage({
+        projectId: process.env.GOOGLE_PROJECT_ID,
+        credentials: {
+          type: 'service_account',
+          project_id: process.env.GOOGLE_PROJECT_ID,
+          private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
+          private_key: process.env.GOOGLE_PRIVATE_KEY,
+          client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+          client_id: process.env.GOOGLE_CLIENT_ID,
+          auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+          token_uri: 'https://oauth2.googleapis.com/token',
+          auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
+          client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL}`,
+        }
+      });
+
+      // Generate thumbnail path
+      const thumbnailPath = `thumbnails/${filePath}.thumbnail.jpg`;
+      
+      // Check if thumbnail already exists
+      const bucket = storage.bucket(bucketName);
+      const thumbnailFile = bucket.file(thumbnailPath);
+      const [exists] = await thumbnailFile.exists();
+      
+      if (exists) {
+        console.log(`✅ Thumbnail already exists: ${thumbnailPath}`);
+        const publicUrl = `https://storage.googleapis.com/${bucketName}/${thumbnailPath}`;
+        return res.redirect(publicUrl);
+      }
+
+      // Get original video file
+      const videoFile = bucket.file(filePath);
+      const [videoExists] = await videoFile.exists();
+      
+      if (!videoExists) {
+        return res.status(404).json({
+          success: false,
+          error: 'Video file not found'
+        });
+      }
+
+      // Create temporary file paths
+      const tempDir = '/tmp';
+      const tempVideoPath = path.join(tempDir, `video_${uuidv4()}.mp4`);
+      const tempThumbnailPath = path.join(tempDir, `thumbnail_${uuidv4()}.jpg`);
+
+      // Download video to temp location
+      console.log(`📥 Downloading video: ${filePath}`);
+      const videoStream = videoFile.createReadStream();
+      const fsLib = await import('fs');
+      const writeStream = fsLib.createWriteStream(tempVideoPath);
+      
+      await new Promise((resolve, reject) => {
+        videoStream.pipe(writeStream);
+        writeStream.on('finish', resolve);
+        writeStream.on('error', reject);
+      });
+
+      // Generate optimized thumbnail using FFmpeg with seeking-based approach (3.8x faster)
+      console.log(`🎞️ Generating thumbnail with optimized FFmpeg seeking...`);
+      const thumbnailStartTime = Date.now();
+      
+      await new Promise((resolve, reject) => {
+        ffmpeg(tempVideoPath)
+          // ⚡ PERFORMANCE: Use input seeking (-ss before -i) for 3.8x faster processing
+          .seekInput(2) // Seek to 2 seconds using fast input seeking
+          .frames(1) // Extract only 1 frame for efficiency
+          .videoFilter('thumbnail,setsar=1') // Use thumbnail filter for best frame selection
+          .size('480x360') // Optimized size for web display (16:9 aspect ratio)
+          .format('jpeg')
+          .videoCodec('mjpeg') // MJPEG for fast encoding
+          .outputOptions([
+            '-an', // No audio processing for speed
+            '-q:v 3', // Quality level 3 for balance of size/quality (research recommended)
+            '-y' // Overwrite existing files
+          ])
+          .output(tempThumbnailPath)
+          .on('start', (command) => {
+            console.log(`🚀 FFmpeg command: ${command}`);
+          })
+          .on('end', () => {
+            const thumbnailTime = Date.now() - thumbnailStartTime;
+            console.log(`✅ Thumbnail generated in ${thumbnailTime}ms (optimized seeking)`);
+            resolve(null);
+          })
+          .on('error', (error) => {
+            console.error('❌ FFmpeg error:', error);
+            reject(error);
+          })
+          .run();
+      });
+
+      // Upload thumbnail to GCS
+      console.log(`📤 Uploading thumbnail: ${thumbnailPath}`);
+      await bucket.upload(tempThumbnailPath, {
+        destination: thumbnailPath,
+        metadata: {
+          contentType: 'image/jpeg',
+          cacheControl: 'public, max-age=3600' // Cache for 1 hour
+        }
+      });
+
+      // Make thumbnail publicly accessible
+      await thumbnailFile.makePublic();
+
+      // Clean up temp files
+      try {
+        await fs.unlink(tempVideoPath);
+        await fs.unlink(tempThumbnailPath);
+      } catch (cleanupError) {
+        console.error('⚠️ Cleanup error:', cleanupError);
+      }
+
+      const publicUrl = `https://storage.googleapis.com/${bucketName}/${thumbnailPath}`;
+      console.log(`🎊 Thumbnail ready: ${publicUrl}`);
+
+      res.json({
+        success: true,
+        thumbnailUrl: publicUrl,
+        originalFile: filePath,
+        bucket: bucketName,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error: any) {
+      console.error('💥 Thumbnail generation error:', error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Failed to generate video thumbnail',
+        details: error.message,
+        timestamp: new Date().toISOString()
       });
     }
   });

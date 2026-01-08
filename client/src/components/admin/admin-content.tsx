@@ -329,10 +329,11 @@ export function AdminContent({ userRole }: AdminContentProps) {
         description: "Client created successfully"
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('Create client error:', error);
       toast({
         title: "Error",
-        description: "Failed to create client",
+        description: error?.message || "Failed to create client",
         variant: "destructive"
       });
     }
@@ -345,7 +346,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
         const result = await supabaseOperations.shoots.create({
           title: data.title,
           description: data.description,
-          clientId: data.client_id,
+          clientId: data.clientId,
           customSlug: data.customSlug,
           isPrivate: data.isPrivate,
           groupName: data.groupName
@@ -1686,7 +1687,7 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                       .trim();
 
                                     const data = {
-                                      clientId: client.email, // Use email instead of numeric ID
+                                      clientId: client.email, // Use client email for database relationship
                                       title: title,
                                       description: formData.get('description') as string || '',
                                       shootType: formData.get('shootType') as string,

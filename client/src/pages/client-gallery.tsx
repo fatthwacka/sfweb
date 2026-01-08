@@ -487,7 +487,60 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     setSelectedImages(newSelected);
   };
 
-  // Download image function with proper file download
+  // Download media function with support for both images and videos
+  const downloadMedia = async (item: MediaItem) => {
+    try {
+      let downloadUrl: string;
+      let downloadFilename: string;
+      let mediaTypeName: string;
+
+      if (item.mediaType === 'video') {
+        downloadUrl = VideoUrl.forDownload(item as Video);
+        mediaTypeName = 'video';
+        // Get proper video extension from filename or fallback to .mp4
+        const originalExtension = item.filename ? 
+          item.filename.split('.').pop()?.toLowerCase() : 'mp4';
+        downloadFilename = item.filename && item.filename !== "null"
+          ? item.filename
+          : `${shoot?.title?.replace(/[^a-zA-Z0-9]/g, "-")}-video-${Date.now()}.${originalExtension}`;
+      } else {
+        downloadUrl = ImageUrl.forFullSize(item.storage_path);
+        mediaTypeName = 'image';
+        // Get proper image extension from filename or fallback to .jpg
+        const originalExtension = item.filename ? 
+          item.filename.split('.').pop()?.toLowerCase() : 'jpg';
+        downloadFilename = item.filename && item.filename !== "null"
+          ? item.filename
+          : `${shoot?.title?.replace(/[^a-zA-Z0-9]/g, "-")}-image-${Date.now()}.${originalExtension}`;
+      }
+
+      const response = await fetch(downloadUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = downloadFilename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      // Show success toast that auto-dismisses
+      toast({
+        title: "Download complete",
+        description: `${downloadFilename} has been downloaded`,
+        duration: 3000, // Auto-dismiss after 3 seconds
+      });
+    } catch (error) {
+      toast({
+        title: "Download failed",
+        description: `Could not download the ${item.mediaType}. Please try again.`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Legacy function for backward compatibility - prefer downloadMedia()
   const downloadImage = async (storagePath: string, filename: string) => {
     try {
       const fullSizeUrl = ImageUrl.forFullSize(storagePath);
@@ -1479,13 +1532,10 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  downloadImage(
-                                    item.storagePath,
-                                    item.originalName,
-                                  );
+                                  downloadMedia(item);
                                 }}
                                 className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                                title="Download Image"
+                                title="Download"
                               >
                                 <Download className="w-4 h-4 text-white" />
                               </button>
@@ -1636,13 +1686,10 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    downloadImage(
-                                      item.storagePath,
-                                      item.originalName,
-                                    );
+                                    downloadMedia(item);
                                   }}
                                   className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                                  title="Download Image"
+                                  title="Download"
                                 >
                                   <Download className="w-4 h-4 text-white" />
                                 </button>
@@ -1847,13 +1894,10 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
             <span>•</span>
             <button
               onClick={() =>
-                downloadImage(
-                  mediaItems[modalImageIndex]?.storagePath,
-                  mediaItems[modalImageIndex]?.originalName,
-                )
+                downloadMedia(mediaItems[modalImageIndex])
               }
               className="p-2 rounded-full hover:bg-white/30 bg-white/20 transition-colors"
-              title="Download Image"
+              title="Download"
             >
               <Download className="w-4 h-4" />
             </button>
