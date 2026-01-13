@@ -12,13 +12,14 @@ const promptService = new PromptEngineService();
 // Main prompt enhancement endpoint
 router.post('/enhance', async (req, res) => {
   try {
-    const { 
-      prompt, 
-      contentType = 'image', 
+    const {
+      prompt,
+      contentType = 'image',
       brandContext,
       artStyle,
       imageStyle,
-      targetLength
+      targetLength,
+      startingFrameImage  // For video: base64 image to provide visual context
     } = req.body;
 
     // Validate required fields
@@ -32,7 +33,8 @@ router.post('/enhance', async (req, res) => {
     console.log(`🧠 Enhancing ${contentType} prompt with brand context:`, {
       promptLength: prompt.length,
       brandEnabled: !!brandContext?.clientId,
-      features: brandContext?.enabledFeatures || []
+      features: brandContext?.enabledFeatures || [],
+      hasStartingFrame: !!startingFrameImage
     });
 
     const startTime = Date.now();
@@ -42,7 +44,8 @@ router.post('/enhance', async (req, res) => {
       brandContext,
       artStyle,
       imageStyle,
-      targetLength
+      targetLength,
+      startingFrameImage  // Pass through to service for multimodal Gemini call
     });
 
     const processingTime = Date.now() - startTime;

@@ -146,9 +146,19 @@ export class VertexAIVeoGenerator {
     // Add video-specific enhancements
     const videoEnhancements = [];
 
+    // CRITICAL: Always enforce single continuous shot - VEO handles cuts poorly
+    videoEnhancements.push('single continuous shot');
+    videoEnhancements.push('one unbroken take');
+
+    // Add smooth camera motion descriptors (only if user hasn't specified camera movement)
+    const hasUserCameraDirection = /\b(pan|dolly|orbit|zoom|tracking|static|steadicam)\b/i.test(prompt);
+    if (!hasUserCameraDirection) {
+      videoEnhancements.push('smooth gradual camera movement');
+    }
+
     // Add motion descriptions
     if (!prompt.toLowerCase().includes('motion') && !prompt.toLowerCase().includes('movement')) {
-      videoEnhancements.push('smooth natural motion');
+      videoEnhancements.push('fluid natural motion');
     }
 
     // Add cinematic quality
@@ -163,9 +173,9 @@ export class VertexAIVeoGenerator {
       videoEnhancements.push('good quality');
     }
 
-    // Add duration-appropriate pacing
+    // Add duration-appropriate pacing - always smooth
     if (request.duration <= 4) {
-      videoEnhancements.push('dynamic pacing');
+      videoEnhancements.push('focused smooth action');
     } else if (request.duration >= 8) {
       videoEnhancements.push('steady deliberate movement');
     }
@@ -174,16 +184,31 @@ export class VertexAIVeoGenerator {
       prompt += `, ${videoEnhancements.join(', ')}`;
     }
 
-    // Add technical specifications
-    prompt += ', professional video production, well-composed shots, stable camera work';
+    // Add technical specifications emphasising continuous shot
+    prompt += ', professional video production, well-composed framing, stable camera work, seamless flow';
 
-    // Add negative prompts for video
+    // CRITICAL: Explicit prohibitions - VEO produces poor results with these
+    const prohibitions = [
+      'no cuts',
+      'no scene changes',
+      'no angle changes',
+      'no jump cuts',
+      'no sudden camera movements',
+      'no abrupt transitions',
+      'no switching perspectives',
+      'no multiple shots'
+    ];
+    prompt += `. IMPORTANT: ${prohibitions.join(', ')}`;
+
+    // Additional negative prompts for quality
     const negativePrompts = [
-      'blurry motion', 
-      'unstable camera', 
-      'poor quality', 
-      'jarring movements', 
-      'unnatural motion'
+      'blurry motion',
+      'unstable camera',
+      'poor quality',
+      'jarring movements',
+      'unnatural motion',
+      'choppy editing',
+      'disjointed footage'
     ];
     prompt += `. Avoid: ${negativePrompts.join(', ')}`;
 
@@ -238,7 +263,7 @@ export class VertexAIVeoGenerator {
       parameters: {
         aspectRatio: request.aspectRatio,
         resolution: request.resolution,
-        videoDuration: request.duration,
+        durationSeconds: request.duration, // Correct VEO API parameter name
         sampleCount: request.sampleCount, // ALWAYS 1
       }
     };

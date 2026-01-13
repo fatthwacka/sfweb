@@ -3,8 +3,8 @@
  * Uses Google Vertex AI Imagen and Gemini models for professional image creation
  */
 
-import { useState, useEffect } from 'react';
-import { ArrowLeft, Sparkles, Loader2, Download, Info, Eye, Brain, CheckSquare, Square } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, Sparkles, Loader2, Download, Info, Eye, Brain, CheckSquare, Square, Upload, Package, User, Cat, Palette, X } from 'lucide-react';
 import { useLocation } from 'wouter';
 
 import { Navigation } from '@/components/layout/navigation';
@@ -118,7 +118,15 @@ const getDefaultModel = () => {
 
 export default function AIImageGenerator() {
   const [, setLocation] = useLocation();
-  
+
+  // Reference image (Image Ingredients) state
+  const [referenceImage, setReferenceImage] = useState<File | null>(null);
+  const [referenceImagePreview, setReferenceImagePreview] = useState<string | null>(null);
+  const [referenceImageBase64, setReferenceImageBase64] = useState<string | null>(null);
+  const [referenceSubjectType, setReferenceSubjectType] = useState<'product' | 'person' | 'animal' | 'style'>('product');
+  const [referenceSubjectDescription, setReferenceSubjectDescription] = useState('');
+  const referenceFileInputRef = useRef<HTMLInputElement>(null);
+
   // AI Generator state
   const [prompt, setPrompt] = useState('');
   const [model, setModel] = useState(getDefaultModel().value);
@@ -349,6 +357,80 @@ export default function AIImageGenerator() {
     }
   };
 
+  // Reference image (Image Ingredients) handlers
+  const handleReferenceImageSelect = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'Invalid file type',
+        description: 'Please select a PNG, JPEG, or WebP image.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (file.size > 7 * 1024 * 1024) {
+      toast({
+        title: 'File too large',
+        description: 'Please select an image under 7MB.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setReferenceImage(file);
+    setReferenceImagePreview(URL.createObjectURL(file));
+
+    try {
+      const base64 = await fileToBase64(file);
+      setReferenceImageBase64(base64);
+      toast({
+        title: 'Reference image added',
+        description: `${file.name} ready for Image Ingredients generation.`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Processing failed',
+        description: 'Could not process image. Please try another.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64 = (reader.result as string).split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeReferenceImage = () => {
+    setReferenceImage(null);
+    setReferenceImagePreview(null);
+    setReferenceImageBase64(null);
+    setReferenceSubjectDescription('');
+    if (referenceFileInputRef.current) {
+      referenceFileInputRef.current.value = '';
+    }
+  };
+
+  const handleReferenceDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      handleReferenceImageSelect(files[0]);
+    }
+  };
+
+  const supportsImageIngredients = () => {
+    const modelConfig = getModelConfig(model);
+    return modelConfig.category === 'nano-banana';
+  };
+
   const generateImage = async () => {
     if (!prompt.trim()) {
       toast({
@@ -384,6 +466,15 @@ export default function AIImageGenerator() {
             finalBenefits: generateBenefitsSelection(checkedPriority, checkedSecondary),
             brandData: brandProfile?.client
           } : undefined,
+          // Image Ingredients - reference image for product/subject placement
+          ...(referenceImageBase64 && supportsImageIngredients() && {
+            referenceImage: {
+              bytesBase64Encoded: referenceImageBase64,
+              mimeType: referenceImage?.type || 'image/png',
+              subjectType: referenceSubjectType,
+              subjectDescription: referenceSubjectDescription || undefined,
+            }
+          }),
         }),
       });
 
@@ -555,6 +646,135 @@ export default function AIImageGenerator() {
                         )}
                       </div>
                     </div>
+
+                    {/* Image Ingredients Section - Only for Nano Banana models */}
+                    {supportsImageIngredients() && (
+                      <div className="space-y-3 p-4 bg-gradient-to-br from-purple-900/30 to-indigo-900/30 border border-purple-600/50 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <h3 className="text-sm font-semibold text-purple-300">🧪 Image Ingredients</h3>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <Info className="h-3 w-3 text-purple-400" />
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  <div className="space-y-1 text-xs">
+                                    <p><strong>Product Placement:</strong> Upload a product image and describe the scene - AI will place your product in the generated image.</p>
+                                    <p><strong>Style Transfer:</strong> Upload a style reference to influence the visual style of generation.</p>
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                          {referenceImage && (
+                            <Button
+                              onClick={removeReferenceImage}
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-2 text-red-400 hover:text-red-300 hover:bg-red-900/30"
+                            >
+                              <X className="h-3 w-3 mr-1" />
+                              Remove
+                            </Button>
+                          )}
+                        </div>
+
+                        {!referenceImage ? (
+                          <div
+                            className="border-2 border-dashed border-purple-500/50 rounded-lg p-4 text-center cursor-pointer hover:border-purple-400/70 hover:bg-purple-900/20 transition-colors"
+                            onDrop={handleReferenceDrop}
+                            onDragOver={(e) => e.preventDefault()}
+                            onClick={() => referenceFileInputRef.current?.click()}
+                          >
+                            <Upload className="h-8 w-8 text-purple-400 mx-auto mb-2" />
+                            <p className="text-purple-200 text-sm font-medium">
+                              Drop product/reference image here
+                            </p>
+                            <p className="text-xs text-purple-400 mt-1">
+                              PNG, JPEG, WebP • Max 7MB
+                            </p>
+                            <input
+                              ref={referenceFileInputRef}
+                              type="file"
+                              accept="image/png,image/jpeg,image/webp"
+                              onChange={(e) => e.target.files?.[0] && handleReferenceImageSelect(e.target.files[0])}
+                              className="hidden"
+                            />
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {/* Preview */}
+                            <div className="flex items-start space-x-3">
+                              <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-purple-500 flex-shrink-0">
+                                <img
+                                  src={referenceImagePreview!}
+                                  alt="Reference"
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-purple-200 truncate">
+                                  {referenceImage.name}
+                                </p>
+                                <p className="text-xs text-purple-400">
+                                  {(referenceImage.size / 1024).toFixed(0)} KB
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Subject Type Selection */}
+                            <div className="space-y-2">
+                              <Label className="text-xs text-purple-300">Subject Type</Label>
+                              <div className="grid grid-cols-4 gap-2">
+                                {[
+                                  { value: 'product', label: 'Product', icon: Package },
+                                  { value: 'person', label: 'Person', icon: User },
+                                  { value: 'animal', label: 'Animal', icon: Cat },
+                                  { value: 'style', label: 'Style', icon: Palette },
+                                ].map(({ value, label, icon: Icon }) => (
+                                  <button
+                                    key={value}
+                                    onClick={() => setReferenceSubjectType(value as any)}
+                                    className={`
+                                      flex flex-col items-center justify-center p-2 rounded-md border transition-all
+                                      ${referenceSubjectType === value
+                                        ? 'border-purple-400 bg-purple-500/30 text-purple-200'
+                                        : 'border-purple-600/50 bg-purple-900/20 text-purple-400 hover:border-purple-500/70'
+                                      }
+                                    `}
+                                  >
+                                    <Icon className="h-4 w-4 mb-1" />
+                                    <span className="text-xs">{label}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Subject Description */}
+                            <div className="space-y-1">
+                              <Label className="text-xs text-purple-300">Description (optional)</Label>
+                              <Input
+                                placeholder={`Describe the ${referenceSubjectType}...`}
+                                value={referenceSubjectDescription}
+                                onChange={(e) => setReferenceSubjectDescription(e.target.value)}
+                                className="bg-purple-900/30 border-purple-600/50 text-purple-100 placeholder:text-purple-500 text-sm h-8"
+                              />
+                              <p className="text-xs text-purple-500">
+                                e.g., "red coffee mug with logo", "golden retriever puppy"
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Usage hint */}
+                        <div className="text-xs text-purple-400 bg-purple-900/30 rounded p-2">
+                          💡 <strong>Tip:</strong> Describe how you want the {referenceSubjectType} placed in your prompt below.
+                          {referenceSubjectType === 'product' && ' e.g., "Place this product on a marble countertop in a modern kitchen"'}
+                          {referenceSubjectType === 'style' && ' The generated image will adopt this visual style.'}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Brand Intelligence Section */}
                     <div className="space-y-3 p-4 bg-gray-700 border border-gray-600 rounded-lg">

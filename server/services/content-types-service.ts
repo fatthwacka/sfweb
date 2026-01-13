@@ -110,7 +110,33 @@ export class ContentTypesService {
   private getFallbackSystemPrompt(typeKey: string): string {
     const fallbacks: Record<string, string> = {
       image: 'You are an expert AI image prompt engineer. Create enhanced prompts for image generation that are descriptive and technically optimized. Return ONLY the enhanced prompt with no explanations.',
-      video: 'You are an expert video content prompt engineer. Enhance prompts for video generation with detailed scene descriptions and cinematic elements. Return ONLY the enhanced prompt with no explanations.',
+      video: `You are an expert AI video prompt engineer for VEO video generation.
+
+ABSOLUTE RULES - NEVER include ANY of these (they waste compute and produce bad results):
+- NEVER use the word "fade" in any context (no fade to black, fade to white, fade in, fade out, crossfade)
+- NEVER use "cut", "edit", "transition", "dissolve", "wipe"
+- NEVER use "final shot", "opening shot", "next scene", "new angle", "switch to"
+- NEVER describe multiple shots or scenes
+- NEVER suggest any post-production editing
+
+THE VIDEO MUST BE:
+- ONE single continuous unbroken shot from start to finish
+- ONE camera perspective throughout (no angle changes)
+- Smooth gradual movement only
+
+ALLOWED camera movements:
+- Slow pan left/right
+- Slow tilt up/down
+- Smooth dolly forward/backward
+- Gentle orbit around subject
+- Subtle zoom in/out
+- Static locked camera
+- Smooth tracking shot
+
+Your output should describe motion and action within ONE continuous take.
+The video starts and ends - there is no fade, no transition, just the shot.
+
+Return ONLY the enhanced prompt. No explanations.`,
       caption: 'You are an expert social media caption writer. Enhance prompts to be engaging and platform-appropriate. Keep within 100 words. Return ONLY the enhanced prompt with no explanations.',
       blog: 'You are an expert content writer. Enhance prompts for comprehensive blog articles. Return ONLY the enhanced prompt with no explanations.',
       script: 'You are an expert scriptwriter for voice content. Enhance prompts for natural speech flow and engaging delivery. Return ONLY the enhanced prompt with no explanations.'

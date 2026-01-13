@@ -16,6 +16,8 @@ export interface PromptEngineRequest {
   artStyle?: string;
   imageStyle?: string;
   targetLength?: number;
+  // Optional starting frame image for video enhancement (base64 with mime prefix)
+  startingFrameImage?: string;
 }
 
 export interface PromptEngineResult {
@@ -53,11 +55,11 @@ export class PromptEngineService {
       ? await this.brandLoader.loadBrandContext(request.brandContext.clientId).catch(() => null)
       : null;
 
-    // 4. Build enhanced system prompt
+    // 4. Build enhanced system prompt (adjusts based on whether image is provided)
     const systemPrompt = this.buildSystemPrompt(request, brandContext, contentType);
 
-    // 5. Call Gemini API
-    const geminiResult = await this.callGeminiAPI(systemPrompt, request.prompt);
+    // 5. Call Gemini API (with optional image for video content)
+    const geminiResult = await this.callGeminiAPI(systemPrompt, request.prompt, request.startingFrameImage);
 
     // 6. Process and return results
     return this.processResults(geminiResult, request, brandContext);
@@ -85,18 +87,52 @@ export class PromptEngineService {
       systemPrompt += this.buildBrandContext(brandContext, request.brandContext.enabledFeatures, request.contentType);
     }
 
-    // Add technical parameters
-    if (request.artStyle) {
-      systemPrompt += `\\n\\nART STYLE: ${request.artStyle}`;
-    }
-    if (request.imageStyle) {
-      systemPrompt += `\\nIMAGE STYLE: ${request.imageStyle}`;
-    }
-    if (request.targetLength) {
-      systemPrompt += `\\nTARGET LENGTH: Approximately ${request.targetLength} words`;
+    // Special handling for video with starting frame image
+    if (request.contentType === 'video' && request.startingFrameImage) {
+      systemPrompt += `
+
+CRITICAL - A starting frame image IS PROVIDED. You can SEE this image.
+
+The image IS the opening frame. The camera position is ALREADY SET. DO NOT:
+- Describe the scene (it's already visible in the image)
+- Define a starting camera position (the image IS the starting position)
+- Say "camera starts at" or "opening on" or "we see" (we already see it)
+- Invent elements not visible in the image
+
+YOUR ONLY JOB is to describe what happens NEXT from this exact frame:
+- Take the user's motion intent and ELABORATE on it
+- Describe the camera movement that continues FROM this frame
+- Describe any motion of elements visible in the frame
+- Use SLOW, SMOOTH, GRADUAL movement descriptors
+- Add cinematic quality words but stay true to user's intent
+
+SPEED CONTROL - Always specify slow speeds:
+- "very slow pan" not "pan"
+- "gentle gradual zoom" not "zoom"
+- "smooth unhurried dolly" not "dolly"
+- "leisurely orbit" not "orbit"
+
+Output format: Just describe what happens from the starting frame onwards.
+Example: "Very slow dolly forward, the steam from the cup rises gently, soft focus shift to background, warm golden light intensifies gradually"`;
+    } else if (request.contentType === 'video') {
+      systemPrompt += `
+
+NOTE: No starting frame image provided. Describe the scene AND the motion.
+Use SLOW movement speeds: "very slow pan", "gentle zoom", "gradual dolly".`;
     }
 
-    systemPrompt += `\\n\\nPLEASE ENHANCE THE FOLLOWING PROMPT:`;
+    // Add technical parameters
+    if (request.artStyle) {
+      systemPrompt += `\n\nART STYLE: ${request.artStyle}`;
+    }
+    if (request.imageStyle) {
+      systemPrompt += `\nIMAGE STYLE: ${request.imageStyle}`;
+    }
+    if (request.targetLength) {
+      systemPrompt += `\nTARGET LENGTH: Approximately ${request.targetLength} words`;
+    }
+
+    systemPrompt += `\n\nPLEASE ENHANCE THE FOLLOWING PROMPT:`;
 
     return systemPrompt;
   }
@@ -107,7 +143,23 @@ export class PromptEngineService {
         return `You are an expert AI image prompt engineer. Your task is to enhance prompts for image generation to be more descriptive, visually compelling, and technically optimized for AI image models. Focus on visual details, composition, lighting, style, and mood.`;
         
       case 'video':
-        return `You are an expert video content prompt engineer. Enhance prompts for video generation and scripting. Focus on scene descriptions, visual flow, pacing, and cinematic elements that work well for video content.`;
+        return `You are an expert AI video prompt engineer for VEO video generation.
+
+ABSOLUTE RULES - NEVER include ANY of these (they waste compute and produce bad results):
+- NEVER use the word "fade" in any context (no fade to black, fade to white, fade in, fade out, crossfade)
+- NEVER use "cut", "edit", "transition", "dissolve", "wipe"
+- NEVER use "final shot", "opening shot", "next scene", "new angle", "switch to"
+- NEVER describe multiple shots or scenes
+- NEVER suggest any post-production editing
+
+THE VIDEO MUST BE:
+- ONE single continuous unbroken shot from start to finish
+- ONE camera perspective throughout (no angle changes)
+- Smooth gradual movement only
+
+ALLOWED camera movements: slow pan, slow tilt, smooth dolly, gentle orbit, subtle zoom, static camera, smooth tracking.
+
+Your output should describe motion and action within ONE continuous take.`;
         
       case 'caption':
         return `You are an expert social media caption writer. Enhance prompts to be engaging, platform-appropriate, and compelling for social media audiences. Focus on hooks, engagement, and concise impactful messaging.`;
@@ -213,10 +265,41 @@ export class PromptEngineService {
     return context;
   }
 
-  private async callGeminiAPI(systemPrompt: string, userPrompt: string): Promise<any> {
+  private async callGeminiAPI(systemPrompt: string, userPrompt: string, imageBase64?: string): Promise<any> {
     console.log('🤖 Calling Gemini API for prompt enhancement...');
-    
+
     try {
+      // Build parts array - text only or multimodal (image + text)
+      const parts: any[] = [];
+
+      // If image provided, add it first (helps Gemini understand context)
+      if (imageBase64) {
+        // Extract mime type and base64 data from data URL
+        const matches = imageBase64.match(/^data:(.+);base64,(.+)$/);
+        if (matches) {
+          const mimeType = matches[1];
+          const base64Data = matches[2];
+          const sizeKB = Math.round((base64Data.length * 3/4) / 1024);
+          console.log(`🖼️ Including image in multimodal request: ${mimeType}, ~${sizeKB}KB`);
+
+          parts.push({
+            inlineData: {
+              mimeType: mimeType,
+              data: base64Data
+            }
+          });
+        } else {
+          console.warn('⚠️ Image provided but could not parse base64 data URL format');
+        }
+      } else {
+        console.log('📝 Text-only request (no image)');
+      }
+
+      // Add the text prompt
+      parts.push({
+        text: `${systemPrompt}\n\n"${userPrompt}"`
+      });
+
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${this.geminiApiKey}`,
         {
@@ -226,9 +309,7 @@ export class PromptEngineService {
           },
           body: JSON.stringify({
             contents: [{
-              parts: [{
-                text: `${systemPrompt}\\n\\n"${userPrompt}"`
-              }]
+              parts: parts
             }],
             generationConfig: {
               temperature: 0.7,
@@ -255,7 +336,12 @@ export class PromptEngineService {
 
   private processResults(geminiResult: any, request: PromptEngineRequest, brandContext: any): PromptEngineResult {
     // Extract enhanced prompt from Gemini response
-    const enhancedPrompt = geminiResult?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || request.prompt;
+    let enhancedPrompt = geminiResult?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || request.prompt;
+
+    // For video content, strip any forbidden words that slipped through
+    if (request.contentType === 'video') {
+      enhancedPrompt = this.sanitizeVideoPrompt(enhancedPrompt);
+    }
 
     // Create brand influence summary
     const brandInfluence = this.createBrandInfluenceSummary(brandContext, request.brandContext?.enabledFeatures || []);
@@ -324,5 +410,54 @@ export class PromptEngineService {
 
   async getAvailableContentTypes() {
     return await this.contentTypesService.getAllContentTypes();
+  }
+
+  // Strip forbidden video editing terms that might slip through
+  private sanitizeVideoPrompt(prompt: string): string {
+    // Patterns to remove (case insensitive)
+    const forbiddenPatterns = [
+      /\bfade\s*(to|in|out|from)?\s*(black|white|color)?\b/gi,
+      /\bcrossfade\b/gi,
+      /\bdissolve\b/gi,
+      /\bwipe\s*(to|from)?\b/gi,
+      /\bcut\s*(to|away)?\b/gi,
+      /\bjump\s*cut\b/gi,
+      /\bfinal\s*shot\b/gi,
+      /\bopening\s*shot\b/gi,
+      /\bnext\s*scene\b/gi,
+      /\bnew\s*angle\b/gi,
+      /\bswitch\s*(to|angle|perspective)\b/gi,
+      /\btransition\s*(to|into)?\b/gi,
+      /\bends?\s*with\s*(a\s*)?(fade|black|white)\b/gi,
+      /\bbegins?\s*with\s*(a\s*)?(fade|black|white)\b/gi,
+      /,?\s*fading\s*(to|into|out)?\s*(black|white)?\s*\.?/gi,
+      /\.\s*fade\s*(to|out|in)\s*(black|white)?\.?$/gi,
+    ];
+
+    let sanitized = prompt;
+    let modified = false;
+
+    for (const pattern of forbiddenPatterns) {
+      if (pattern.test(sanitized)) {
+        sanitized = sanitized.replace(pattern, '');
+        modified = true;
+      }
+    }
+
+    // Clean up double spaces, trailing commas, etc.
+    sanitized = sanitized
+      .replace(/\s+/g, ' ')
+      .replace(/,\s*,/g, ',')
+      .replace(/,\s*\./g, '.')
+      .replace(/\.\s*\./g, '.')
+      .replace(/^\s*,\s*/g, '')
+      .replace(/\s*,\s*$/g, '')
+      .trim();
+
+    if (modified) {
+      console.log('🧹 Sanitized video prompt - removed forbidden editing terms');
+    }
+
+    return sanitized;
   }
 }

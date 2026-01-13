@@ -5,6 +5,13 @@
 
 import { GoogleAuth } from 'google-auth-library';
 
+export interface ReferenceImage {
+  bytesBase64Encoded: string;
+  mimeType: string;
+  subjectType: 'product' | 'person' | 'animal' | 'style';
+  subjectDescription?: string;
+}
+
 export interface ImageGenerationRequest {
   prompt: string;
   includeTitle: boolean;
@@ -25,6 +32,8 @@ export interface ImageGenerationRequest {
     finalBenefits: string[];
     brandData: any;
   };
+  // Reference image for product/subject placement (Image Ingredients)
+  referenceImage?: ReferenceImage;
 }
 
 export interface ImageGenerationResult {
@@ -230,14 +239,16 @@ export class VertexAIImageGenerator {
     // Convert aspect ratio to Vertex AI format
     const ratioMap: Record<string, string> = {
       '1:1': '1024x1024',
-      '9:16': '768x1152', // Portrait
-      '4:5': '896x1152', // Instagram portrait
-      '2:3': '768x1152', // Classic portrait
-      '3:2': '1152x768', // Landscape
+      '9:16': '768x1152', // Portrait (tall)
+      '3:4': '768x1024',  // Portrait
+      '4:5': '896x1152',  // Instagram portrait
+      '2:3': '768x1152',  // Classic portrait
+      '3:2': '1152x768',  // Landscape
+      '4:3': '1024x768',  // Standard
       '16:9': '1152x768', // Widescreen
     };
 
-    let baseSize = ratioMap[aspectRatio] || '1152x768';
+    let baseSize = ratioMap[aspectRatio] || '1024x1024';
     
     // Adjust for requested resolution
     if (resolution !== 1000) {
@@ -256,13 +267,15 @@ export class VertexAIImageGenerator {
     const ratioMap: Record<string, string> = {
       '1:1': '1:1',
       '9:16': '9:16',
+      '3:4': '3:4',
       '4:5': '4:5',
       '2:3': '2:3',
       '3:2': '3:2',
+      '4:3': '4:3',
       '16:9': '16:9',
     };
-    
-    return ratioMap[aspectRatio] || '16:9';
+
+    return ratioMap[aspectRatio] || '1:1';
   }
 
   private async getAccessToken(): Promise<string> {
@@ -462,23 +475,56 @@ export class VertexAIImageGenerator {
     // Gemini image generation requires 'global' location, not regional
     const geminiLocation = 'global';
     const endpoint = `https://aiplatform.googleapis.com/v1/projects/${this.projectId}/locations/${geminiLocation}/publishers/google/models/${model}:generateContent`;
-    
+
     console.log('🌐 Gemini endpoint:', endpoint);
     console.log('🤖 Using Gemini model:', model);
     console.log('📍 Using global location for Gemini');
     console.log('🔄 Getting access token...');
-    
+
     const accessToken = await this.getAccessToken();
     console.log('🔑 Access token length:', accessToken.length);
-    
+
+    // Build parts array - include reference image if provided (Image Ingredients)
+    const parts: any[] = [];
+
+    // Add reference image first if provided (for product/subject placement)
+    if (originalRequest?.referenceImage) {
+      const refImg = originalRequest.referenceImage;
+      console.log('🖼️ Adding reference image for subject placement');
+      console.log('📦 Subject type:', refImg.subjectType);
+      console.log('📝 Subject description:', refImg.subjectDescription || 'none');
+      console.log('🗂️ MIME type:', refImg.mimeType);
+      console.log('📊 Base64 length:', refImg.bytesBase64Encoded.length);
+
+      // Enhance prompt with subject context for better placement
+      const subjectContext = refImg.subjectDescription
+        ? `Using the provided ${refImg.subjectType} image (${refImg.subjectDescription}), `
+        : `Using the provided ${refImg.subjectType} image, `;
+
+      parts.push({
+        inlineData: {
+          mimeType: refImg.mimeType,
+          data: refImg.bytesBase64Encoded
+        }
+      });
+
+      // Prepend subject context to prompt
+      parts.push({
+        text: subjectContext + prompt
+      });
+    } else {
+      // No reference image - just use the text prompt
+      parts.push({
+        text: prompt
+      });
+    }
+
     // Build the request payload for Gemini image generation
     // CRITICAL: Must include both TEXT and IMAGE in response_modalities
     const requestBody = {
       contents: [{
         role: 'user',
-        parts: [{
-          text: prompt
-        }]
+        parts: parts
       }],
       generationConfig: {
         responseModalities: ['TEXT', 'IMAGE'], // Must include both!

@@ -126,16 +126,17 @@ export default function CloudStorageBrowser() {
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [typeFilter, setTypeFilter] = useState<string>('image'); // Default to images for fast loading
   const [bucketFilter, setBucketFilter] = useState<string>('all');
+  const [folderPrefix, setFolderPrefix] = useState<string>('ai-images/'); // Default to AI generated images folder
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
   const [selectedFile, setSelectedFile] = useState<CloudFile | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [stats, setStats] = useState<FileStats | null>(null);
 
-  // Load files from Google Cloud Storage
+  // Load files from Google Cloud Storage when folder prefix changes
   useEffect(() => {
     loadFiles();
-  }, []);
+  }, [folderPrefix]);
 
   // Filter and sort files
   useEffect(() => {
@@ -189,7 +190,10 @@ export default function CloudStorageBrowser() {
   const loadFiles = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/cloud-storage/files', {
+      const url = folderPrefix
+        ? `/api/cloud-storage/files?prefix=${encodeURIComponent(folderPrefix)}`
+        : '/api/cloud-storage/files';
+      const response = await fetch(url, {
         headers: {
           'Authorization': 'Bearer staff-token'
         }
@@ -358,21 +362,6 @@ export default function CloudStorageBrowser() {
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                 Browse, view, and manage Google Cloud Storage files with advanced grid view, search, and download capabilities
               </p>
-              {typeFilter === 'video' && (
-                <div className="mt-4 bg-gradient-to-r from-gray-800/90 to-gray-700/90 border border-blue-500/30 rounded-lg p-4 max-w-2xl mx-auto backdrop-blur-sm">
-                  <p className="text-sm text-blue-200">
-                    🎬 <strong>Video Mode:</strong> Thumbnails are generated on-demand for optimal quality. 
-                    First load may take a few seconds per video.
-                  </p>
-                </div>
-              )}
-              {typeFilter === 'image' && (
-                <div className="mt-4 bg-gradient-to-r from-gray-800/90 to-gray-700/90 border border-green-500/30 rounded-lg p-4 max-w-2xl mx-auto backdrop-blur-sm">
-                  <p className="text-sm text-green-200">
-                    📸 <strong>Image Mode:</strong> Fast loading with instant previews for optimal browsing experience.
-                  </p>
-                </div>
-              )}
             </div>
           </div>
 
@@ -402,105 +391,132 @@ export default function CloudStorageBrowser() {
             </div>
           )}
 
-          {/* Media Type Selector */}
-          <div className="bg-gradient-to-br from-gray-800/90 to-gray-700/80 border border-white/20 rounded-xl p-4 mb-6 backdrop-blur-sm">
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <h3 className="text-lg font-medium text-white">Browse Media:</h3>
-              <div className="flex bg-gray-900/60 rounded-lg p-1">
-                <button
-                  onClick={() => setTypeFilter('image')}
-                  className={`px-6 py-3 rounded-md font-medium transition-all ${
-                    typeFilter === 'image'
-                      ? 'bg-salmon text-white shadow-lg'
-                      : 'text-gray-300 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  📸 Images ({stats?.images || 0})
-                </button>
-                <button
-                  onClick={() => setTypeFilter('video')}
-                  className={`px-6 py-3 rounded-md font-medium transition-all ${
-                    typeFilter === 'video'
-                      ? 'bg-salmon text-white shadow-lg'
-                      : 'text-gray-300 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  🎬 Videos ({stats?.videos || 0})
-                </button>
-                <button
-                  onClick={() => setTypeFilter('all')}
-                  className={`px-6 py-3 rounded-md font-medium transition-all ${
-                    typeFilter === 'all'
-                      ? 'bg-salmon text-white shadow-lg'
-                      : 'text-gray-300 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  📁 All Files ({stats?.totalFiles || 0})
-                </button>
-              </div>
-            </div>
-          </div>
+          {/* Unified Controls Bar */}
+          <div className="bg-gradient-to-br from-gray-800/90 to-gray-700/80 border border-white/20 rounded-xl p-4 mb-8 backdrop-blur-sm">
+            <div className="flex flex-col gap-4">
+              {/* Top Row: Folder & Media Type Selectors */}
+              <div className="flex flex-col lg:flex-row items-center justify-center gap-4">
+                {/* Folder Selector */}
+                <div className="flex bg-gray-900/60 rounded-lg p-1">
+                  <button
+                    onClick={() => setFolderPrefix('ai-images/')}
+                    className={`px-4 py-2 rounded-md font-medium transition-all text-sm ${
+                      folderPrefix === 'ai-images/'
+                        ? 'bg-salmon text-white shadow-lg'
+                        : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    🖼️ Full Res Images
+                  </button>
+                  <button
+                    onClick={() => setFolderPrefix('compressed-images/')}
+                    className={`px-4 py-2 rounded-md font-medium transition-all text-sm ${
+                      folderPrefix === 'compressed-images/'
+                        ? 'bg-salmon text-white shadow-lg'
+                        : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    📦 Compressed Images
+                  </button>
+                </div>
 
-          {/* Controls */}
-          <div className="bg-gradient-to-br from-gray-800/90 to-gray-700/80 border border-white/20 rounded-xl p-6 mb-8 backdrop-blur-sm">
-            <div className="flex flex-col lg:flex-row gap-4">
-              {/* Search */}
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search files..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 bg-gray-900/60 border-gray-600/40 text-white placeholder-gray-400 focus:bg-gray-900/80"
-                  />
+                {/* Divider */}
+                <div className="hidden lg:block w-px h-8 bg-gray-600" />
+
+                {/* Media Type Selector */}
+                <div className="flex bg-gray-900/60 rounded-lg p-1">
+                  <button
+                    onClick={() => setTypeFilter('image')}
+                    className={`px-4 py-2 rounded-md font-medium transition-all text-sm ${
+                      typeFilter === 'image'
+                        ? 'bg-salmon text-white shadow-lg'
+                        : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    📸 Images ({stats?.images || 0})
+                  </button>
+                  <button
+                    onClick={() => setTypeFilter('video')}
+                    className={`px-4 py-2 rounded-md font-medium transition-all text-sm ${
+                      typeFilter === 'video'
+                        ? 'bg-salmon text-white shadow-lg'
+                        : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    🎬 Videos ({stats?.videos || 0})
+                  </button>
+                  <button
+                    onClick={() => setTypeFilter('all')}
+                    className={`px-4 py-2 rounded-md font-medium transition-all text-sm ${
+                      typeFilter === 'all'
+                        ? 'bg-salmon text-white shadow-lg'
+                        : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    📁 All ({stats?.totalFiles || 0})
+                  </button>
                 </div>
               </div>
 
-              {/* Filters */}
-              <div className="flex flex-wrap gap-4">
+              {/* Bottom Row: Search & Sort/Filter */}
+              <div className="flex flex-col lg:flex-row gap-3">
+                {/* Search */}
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search files..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 h-9 bg-gray-900/60 border-gray-600/40 text-white placeholder-gray-400 focus:bg-gray-900/80"
+                    />
+                  </div>
+                </div>
 
-                <Select value={bucketFilter} onValueChange={setBucketFilter}>
-                  <SelectTrigger className="w-40 bg-gray-900/60 border-gray-600/40 text-white focus:bg-gray-900/80">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Buckets</SelectItem>
-                    {uniqueBuckets.map(bucket => (
-                      <SelectItem key={bucket} value={bucket}>{bucket}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* Filters */}
+                <div className="flex flex-wrap gap-2">
+                  <Select value={bucketFilter} onValueChange={setBucketFilter}>
+                    <SelectTrigger className="w-36 h-9 bg-gray-900/60 border-gray-600/40 text-white focus:bg-gray-900/80">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Buckets</SelectItem>
+                      {uniqueBuckets.map(bucket => (
+                        <SelectItem key={bucket} value={bucket}>{bucket}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
-                <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
-                  <SelectTrigger className="w-32 bg-gray-900/60 border-gray-600/40 text-white focus:bg-gray-900/80">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="name">Name</SelectItem>
-                    <SelectItem value="size">Size</SelectItem>
-                    <SelectItem value="date">Date</SelectItem>
-                    <SelectItem value="type">Type</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
+                    <SelectTrigger className="w-28 h-9 bg-gray-900/60 border-gray-600/40 text-white focus:bg-gray-900/80">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name">Name</SelectItem>
+                      <SelectItem value="size">Size</SelectItem>
+                      <SelectItem value="date">Date</SelectItem>
+                      <SelectItem value="type">Type</SelectItem>
+                    </SelectContent>
+                  </Select>
 
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                  className="bg-gray-900/60 border-gray-600/40 text-white hover:bg-gray-900/80"
-                >
-                  {sortOrder === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />}
-                </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                    className="h-9 w-9 bg-gray-900/60 border-gray-600/40 text-white hover:bg-gray-900/80"
+                  >
+                    {sortOrder === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />}
+                  </Button>
 
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                  className="bg-gray-900/60 border-gray-600/40 text-white hover:bg-gray-900/80"
-                >
-                  {viewMode === 'grid' ? <List className="w-4 h-4" /> : <Grid className="w-4 h-4" />}
-                </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                    className="h-9 w-9 bg-gray-900/60 border-gray-600/40 text-white hover:bg-gray-900/80"
+                  >
+                    {viewMode === 'grid' ? <List className="w-4 h-4" /> : <Grid className="w-4 h-4" />}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

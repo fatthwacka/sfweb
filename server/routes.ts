@@ -1860,7 +1860,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get the shoot's shootType to use as classification for uploaded images
       const shoot = await storage.getShoot(shootId);
-      const classification = shoot?.shootType?.toLowerCase() || null;
+      const classification = shoot?.shootType?.toLowerCase() || 'general';
       console.log(`📸 Shoot ${shootId} has shootType: ${shoot?.shootType} → classification: ${classification}`);
 
       for (const file of files) {
@@ -4760,6 +4760,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Image upload endpoint - accepts base64 data URL and uploads to Cloud Storage
+  app.post("/api/upload/image", async (req, res) => {
+    try {
+      const { dataUrl } = req.body;
+
+      if (!dataUrl || typeof dataUrl !== 'string') {
+        return res.status(400).json({ error: 'Missing or invalid dataUrl parameter' });
+      }
+
+      // Validate it's a valid data URL
+      if (!dataUrl.startsWith('data:image/')) {
+        return res.status(400).json({ error: 'Invalid image data URL format' });
+      }
+
+      // Extract base64 data (remove "data:image/jpeg;base64," prefix)
+      const base64Match = dataUrl.match(/^data:image\/\w+;base64,(.+)$/);
+      if (!base64Match) {
+        return res.status(400).json({ error: 'Could not parse base64 data from URL' });
+      }
+
+      const base64Data = base64Match[1];
+      const imageBuffer = Buffer.from(base64Data, 'base64');
+
+      console.log(`📤 Uploading compressed image: ${(imageBuffer.length / 1024).toFixed(1)} KB`);
+
+      // Upload to Google Cloud Storage
+      const { GoogleAuth } = await import('google-auth-library');
+      const auth = new GoogleAuth({
+        credentials: {
+          type: 'service_account',
+          project_id: process.env.GOOGLE_PROJECT_ID,
+          private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+          client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+        },
+        scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+      });
+
+      const authClient = await auth.getClient();
+      const accessToken = await authClient.getAccessToken();
+
+      const bucketName = 'netfox-veo-generations';
+      const fileName = `compressed-images/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.jpg`;
+
+      const uploadUrl = `https://storage.googleapis.com/upload/storage/v1/b/${bucketName}/o?uploadType=media&name=${encodeURIComponent(fileName)}`;
+
+      const uploadResponse = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken.token}`,
+          'Content-Type': 'image/jpeg',
+          'Content-Length': imageBuffer.length.toString(),
+        },
+        body: imageBuffer,
+      });
+
+      if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text();
+        throw new Error(`Cloud Storage upload failed: ${uploadResponse.status} - ${errorText}`);
+      }
+
+      // Make the object publicly readable
+      const aclUrl = `https://storage.googleapis.com/storage/v1/b/${bucketName}/o/${encodeURIComponent(fileName)}/acl`;
+      const aclResponse = await fetch(aclUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          entity: 'allUsers',
+          role: 'READER'
+        }),
+      });
+
+      if (!aclResponse.ok) {
+        console.warn('⚠️ Could not set public ACL, object may not be publicly accessible');
+      }
+
+      const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
+      console.log(`✅ Image uploaded: ${publicUrl}`);
+
+      res.json({ success: true, url: publicUrl });
+
+    } catch (error: any) {
+      console.error('❌ Image upload error:', error);
+      res.status(500).json({ error: 'Failed to upload image', details: error.message });
+    }
+  });
+
   // TEST ENDPOINT: Direct storage bucket verification (for deletion testing)
   app.get("/api/test/storage-verification", async (req, res) => {
     try {
@@ -6232,7 +6321,8 @@ Return ONLY the enhanced subtitle text. No explanations, quotes, or formatting.`
         resolution,
         aspectRatio,
         model,
-        articleContext
+        articleContext,
+        referenceImage, // Image Ingredients - for product/subject placement
       } = req.body;
 
       if (!prompt || !prompt.trim()) {
@@ -6243,13 +6333,18 @@ Return ONLY the enhanced subtitle text. No explanations, quotes, or formatting.`
       }
 
       console.log('🎨 Starting AI image generation...');
+      if (referenceImage) {
+        console.log('🧪 Image Ingredients mode - reference image provided');
+        console.log('📦 Subject type:', referenceImage.subjectType);
+        console.log('📊 Base64 length:', referenceImage.bytesBase64Encoded?.length || 0);
+      }
 
       const { VertexAIImageGenerator } = await import('./services/vertex-ai-image-generator');
       const generator = new VertexAIImageGenerator();
 
       // Clean resolution format for processing
       const cleanResolution = resolution ? resolution.replace('px', '') : '1024';
-      
+
       const result = await generator.generateImage({
         prompt: prompt.trim(),
         includeTitle: includeTitle || false,
@@ -6260,6 +6355,7 @@ Return ONLY the enhanced subtitle text. No explanations, quotes, or formatting.`
         aspectRatio: aspectRatio || '1:1',
         model: model || 'imagen-4.0-generate-001',
         articleContext,
+        referenceImage, // Pass through Image Ingredients reference
       });
 
       console.log('✅ AI image generation completed');
@@ -6529,32 +6625,33 @@ Your search term:`;
 
   // === CLOUD STORAGE BROWSER API ===
 
-  // Simple in-memory cache for cloud storage files
-  let cloudStorageCache: any = null;
-  let cacheTimestamp = 0;
+  // Simple in-memory cache for cloud storage files (keyed by prefix)
+  const cloudStorageCaches: Record<string, { data: any; timestamp: number }> = {};
   const CACHE_DURATION = 60000; // 1 minute cache
 
   // GET /api/cloud-storage/files - List all files in Google Cloud Storage
   app.get('/api/cloud-storage/files', async (req, res) => {
     try {
       const now = Date.now();
-      
+      const prefix = (req.query.prefix as string) || ''; // Optional folder prefix filter
+      const cacheKey = prefix || '_all_';
+
       // Return cached data if still valid
-      if (cloudStorageCache && (now - cacheTimestamp) < CACHE_DURATION) {
-        console.log('📁 Returning cached cloud storage files');
+      if (cloudStorageCaches[cacheKey] && (now - cloudStorageCaches[cacheKey].timestamp) < CACHE_DURATION) {
+        console.log(`📁 Returning cached cloud storage files for prefix: "${prefix || 'all'}"`);
         return res.json({
-          ...cloudStorageCache,
+          ...cloudStorageCaches[cacheKey].data,
           cached: true,
           timestamp: new Date().toISOString()
         });
       }
 
-      console.log('📁 Loading files from Google Cloud Storage...');
+      console.log(`📁 Loading files from Google Cloud Storage... (prefix: "${prefix || 'none'}")`);
       const startTime = Date.now();
 
       // Import Google Cloud Storage
       const { Storage } = await import('@google-cloud/storage');
-      
+
       const storage = new Storage({
         projectId: process.env.GOOGLE_PROJECT_ID,
         credentials: {
@@ -6577,11 +6674,13 @@ Your search term:`;
       for (const bucketName of buckets) {
         try {
           const bucket = storage.bucket(bucketName);
-          
+
           // ⚡ CRITICAL PERFORMANCE FIX: Use includeMetadata to eliminate individual getMetadata() calls
+          // Use prefix filter if provided (e.g., 'images/' or 'compressed-images/')
           const [files] = await bucket.getFiles({
             includeMetadata: true,
-            maxResults: 1000
+            maxResults: 1000,
+            ...(prefix ? { prefix } : {})
           });
           
           console.log(`📂 Found ${files.length} files in bucket: ${bucketName}`);
@@ -6642,15 +6741,15 @@ Your search term:`;
       console.log(`📊 Stats: ${stats.images} images, ${stats.videos} videos, ${stats.other} other`);
       console.log(`⚡ Performance: ${loadTime < 3000 ? 'FAST' : loadTime < 5000 ? 'MODERATE' : 'SLOW'} (${loadTime}ms)`);
 
-      // Cache the response
+      // Cache the response (keyed by prefix)
       const responseData = {
         success: true,
         files: allFiles,
         stats,
-        buckets
+        buckets,
+        prefix: prefix || null
       };
-      cloudStorageCache = responseData;
-      cacheTimestamp = now;
+      cloudStorageCaches[cacheKey] = { data: responseData, timestamp: now };
 
       res.json({
         ...responseData,

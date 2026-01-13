@@ -66,7 +66,7 @@ export default function VEOVideoGenerator() {
   // Video generation state
   const [prompt, setPrompt] = useState('');
   const [model, setModel] = useState(getDefaultModel().value);
-  const [resolution, setResolution] = useState('720p'); // Default to 720p for cost-effective testing
+  const [resolution, setResolution] = useState('1080p'); // Default to 1080p for best quality
   const [aspectRatio, setAspectRatio] = useState('9:16'); // Default to vertical for social media
   const [duration, setDuration] = useState(4); // Default 4 seconds for lowest cost
   const [isGenerating, setIsGenerating] = useState(false);
@@ -201,19 +201,73 @@ export default function VEOVideoGenerator() {
     }
   };
 
-  // Prompt enhancement
+  // Compress image specifically for prompt enhancement (smaller for speed)
+  const compressImageForPromptEngine = async (): Promise<string | null> => {
+    if (!startingFrameImage) return null;
+
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+
+      img.onload = () => {
+        // Use 768px max for prompt enhancement - enough detail, fast upload
+        const maxSize = 768;
+        let { width, height } = img;
+
+        if (width > height) {
+          if (width > maxSize) {
+            height = (height * maxSize) / width;
+            width = maxSize;
+          }
+        } else {
+          if (height > maxSize) {
+            width = (width * maxSize) / height;
+            height = maxSize;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        // Use 70% quality for smaller file size
+        const base64 = canvas.toDataURL('image/jpeg', 0.7);
+        const sizeKB = Math.round((base64.length * 3/4) / 1024);
+        console.log(`🖼️ Compressed image for prompt engine: ${width}x${height}, ~${sizeKB}KB`);
+        resolve(base64);
+      };
+
+      img.onerror = () => resolve(null);
+      img.src = URL.createObjectURL(startingFrameImage);
+    });
+  };
+
+  // Prompt enhancement - sends starting frame to Gemini if available
   const enhancePrompt = async () => {
     if (!prompt.trim()) return;
 
     setIsEnhancingPrompt(true);
     try {
+      // Build request body - include starting frame image if available
+      const requestBody: any = {
+        prompt: prompt.trim(),
+        contentType: 'video'
+      };
+
+      // If we have a starting frame, compress it smaller for prompt enhancement
+      if (startingFrameImage) {
+        const smallImage = await compressImageForPromptEngine();
+        if (smallImage) {
+          requestBody.startingFrameImage = smallImage;
+          console.log('🖼️ Sending starting frame to prompt enhancer for context-aware enhancement');
+        }
+      }
+
       const response = await fetch('/api/prompt-engine/enhance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: prompt.trim(),
-          contentType: 'video'
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (response.ok) {
@@ -222,7 +276,9 @@ export default function VEOVideoGenerator() {
           setPrompt(data.enhancedPrompt);
           toast({
             title: 'Prompt Enhanced',
-            description: 'Your video description has been optimized.',
+            description: compressedImageData
+              ? 'Motion description optimized based on your starting frame.'
+              : 'Your video description has been optimized.',
           });
         }
       }
@@ -534,7 +590,7 @@ export default function VEOVideoGenerator() {
                     />
 
                     <p className="text-xs text-gray-400">
-                      Describe the motion, camera movements, and scene changes you want to see in your video.
+                      Describe the motion and camera movement (pan, dolly, orbit, zoom, or static). Single continuous shots work best.
                     </p>
                   </div>
 
