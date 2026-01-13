@@ -45,8 +45,8 @@ const serveStatic = (app: express.Express) => {
   });
 };
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json({ limit: '10mb' })); // Increased for base64 image uploads (VEO prompt enhancement)
+app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
 app.use((req, res, next) => {
   const start = Date.now();
