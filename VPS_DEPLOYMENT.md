@@ -484,6 +484,14 @@ ssh slyfox-vps "docker stats --no-stream"  # Container resources
 - **Verification**: Bundle filename changes (e.g., index-ABC123.js → index-XYZ789.js) indicates new variables embedded
 - **Prevention**: Always verify VITE variables in production bundle after environment changes
 
+**HTTP 413 Payload Too Large (NEW - Jan 2026)**
+- **Symptom**: API requests with base64 images fail with 413 error
+- **Root Cause**: Express body parser limit not set in `prod-index.ts`
+- **Affected Features**: VEO prompt enhancement with starting frames, image uploads
+- **Fix Location**: `server/prod-index.ts` line 48
+- **Solution**: Ensure limit is set: `app.use(express.json({ limit: '10mb' }))`
+- **Note**: This is a global setting - one fix covers all routes
+
 **HTTP 500 responses**
 - Check: `ssh slyfox-vps "cd /opt/sfweb && docker compose logs app"`
 - Common: File permissions on public assets
@@ -671,14 +679,23 @@ ssh slyfox-vps "cd /opt/sfweb && chmod -R 644 public/images && find public -type
 
 # 🎯 DEPLOYMENT HISTORY
 
-**Last Successful Deployment**: 2025-12-30 (Preview Tab Modernization)
-**Critical Modernization Applied**:
+**Last Successful Deployment**: 2026-01-13 (VEO Video Generator & Prompt Engine Enhancement)
+**Features Deployed**:
+- VEO Video Generator with image-aware prompt enhancement
+- Gemini multimodal integration for starting frame context
+- Fixed VEO duration parameter (videoDuration → durationSeconds)
+- Default 1080p resolution for VEO
+- Prompt sanitisation to prevent cuts/fades/transitions
+- Image Ingredients (reference images) for AI Image Generator
+- Cloud Storage Browser folder filtering (ai-images/, compressed-images/)
+- Fixed 413 Payload Too Large error (10MB body parser limit in prod-index.ts)
+
+**Previous Deployment**: 2025-12-30 (Preview Tab Modernization)
+**Previous Modernization**:
 - Complete Preview tab Express API → Direct Supabase operations conversion
 - New `supabase-operations.ts` infrastructure (1,300+ lines) deployed
 - Fixed field name mismatches (created_at→createdAt, storage_path→storagePath)
 - Enhanced client selection hooks with backward compatibility
-- Improved conflict resolution system with proper TypeScript interfaces
-- Real-time React Query cache invalidation for Gallery Management
 
 **Previous Deployment**: 2025-12-29 (Supabase migration + VITE environment variables fix)
 **Previous Critical Fixes**:

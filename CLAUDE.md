@@ -126,11 +126,34 @@ IMGBB_API_KEY=your_imgbb_api_key
 
 ### **Key Features**
 - **Real AI Generation**: Replaces Unsplash fallbacks with actual AI-generated images
+- **Image Ingredients**: Upload reference images (product PNGs) for scene placement
 - **Style Controls**: Art style (photorealistic, illustrated, cinematic, etc.) + image style (professional, lifestyle, dramatic, etc.)
 - **Aspect Ratio Support**: 1:1, 9:16, 4:5, 2:3, 3:2, 16:9 with proper Vertex AI formatting
 - **Resolution Scaling**: 512px to 2048px with intelligent size calculations
 - **Rate Limiting**: 3-second minimum intervals between API calls
 - **Error Handling**: Graceful fallbacks and detailed logging
+
+### **Image Ingredients (Reference Images)**
+Upload a product PNG and have AI place it naturally into generated scenes:
+```typescript
+// Reference image structure
+interface ReferenceImage {
+  base64Data: string;      // Image data (PNG recommended for transparency)
+  subjectType: 'product' | 'person' | 'animal' | 'style';
+  description?: string;    // Optional description for better placement
+}
+
+// API includes reference in multimodal request
+POST /api/ai/generate-image
+{
+  "prompt": "Professional product photo on marble surface",
+  "referenceImage": {
+    "base64Data": "data:image/png;base64,...",
+    "subjectType": "product",
+    "description": "Skincare bottle with gold cap"
+  }
+}
+```
 
 ### **Technical Notes**
 - **Dependencies**: Requires `google-auth-library` package for authentication
@@ -143,6 +166,116 @@ IMGBB_API_KEY=your_imgbb_api_key
 - **Authentication Errors**: Verify service account JSON format and environment variables
 - **API Errors**: Check Cloud Console for Vertex AI API quotas and permissions
 - **Rate Limiting**: System enforces 3-second minimum between requests to prevent overuse
+
+---
+
+## 🎥 VEO VIDEO GENERATOR (NEW - JANUARY 2026)
+
+**⚠️ FULLY OPERATIONAL: AI video generation using Google Vertex AI VEO with image-aware prompt enhancement**
+
+### **Core Implementation**
+- **Frontend Page**: `/tools/veo-video-generator` with starting frame upload and prompt enhancement
+- **Backend Service**: `VertexAIVeoGenerator` in `/server/services/vertex-ai-veo-generator.ts`
+- **Prompt Engine Integration**: Image-aware enhancement via `/api/prompt-engine/enhance`
+- **Cloud Storage**: Generated videos stored in `netfox-veo-generations` bucket
+
+### **Key Features**
+- **Starting Frame Upload**: Upload an image as the first frame of your video
+- **Image-Aware Prompt Enhancement**: Gemini sees your starting frame and describes only the motion
+- **Single Continuous Shot**: All prompts enforce one unbroken camera movement (no cuts/fades/transitions)
+- **Duration Control**: 5-8 second videos with `durationSeconds` parameter
+- **Resolution Options**: 720p or 1080p (default)
+- **Aspect Ratios**: 16:9, 9:16, 1:1
+
+### **Prompt Enhancement Rules**
+The prompt engine enforces strict video generation rules:
+```typescript
+// FORBIDDEN (waste compute, produce bad results):
+- "fade", "cut", "transition", "dissolve", "wipe"
+- "final shot", "opening shot", "next scene", "new angle"
+- Multiple shots or scenes
+- Any post-production editing terms
+
+// ALLOWED camera movements:
+- "very slow pan left/right"
+- "gentle gradual zoom in/out"
+- "smooth unhurried dolly forward/backward"
+- "leisurely orbit around subject"
+- Static locked camera
+```
+
+### **Image-Aware Enhancement**
+When a starting frame is uploaded:
+- Gemini **sees** the actual image
+- Does NOT describe the scene (it's already visible)
+- Does NOT define starting camera position (the image IS the position)
+- ONLY describes what happens NEXT from that frame
+- Uses slow speed qualifiers ("very slow pan" not "pan")
+
+### **Technical Architecture**
+```typescript
+// API Request with starting frame
+POST /api/prompt-engine/enhance
+{
+  "prompt": "slow zoom into the coffee cup",
+  "contentType": "video",
+  "startingFrameImage": "data:image/jpeg;base64,..." // 768px compressed
+}
+
+// VEO Generation Request
+POST /api/veo/generate
+{
+  "prompt": "Enhanced video prompt...",
+  "startingFrameUrl": "https://storage.googleapis.com/...",
+  "duration": 5,
+  "resolution": "1080p",
+  "aspectRatio": "16:9"
+}
+```
+
+### **Post-Processing Sanitisation**
+Even after enhancement, prompts are sanitised to remove forbidden terms:
+```typescript
+// Patterns automatically stripped:
+/\bfade\s*(to|in|out|from)?\s*(black|white)?\b/gi
+/\bcut\s*(to|away)?\b/gi
+/\bfinal\s*shot\b/gi
+/\btransition\s*(to|into)?\b/gi
+// ... and more
+```
+
+### **Troubleshooting**
+- **413 Payload Too Large**: Fixed in `prod-index.ts` with `express.json({ limit: '10mb' })`
+- **Duration Not Working**: Use `durationSeconds` parameter (not `videoDuration`)
+- **Cuts/Fades in Output**: Check prompt sanitiser is running; avoid editing terminology in prompts
+- **Policy Violation**: Content moderation triggered; adjust prompt content
+
+---
+
+## 📁 CLOUD STORAGE BROWSER (JANUARY 2026)
+
+**Tool for browsing and managing AI-generated assets in Google Cloud Storage**
+
+### **Location**: `/tools/cloud-storage-browser`
+
+### **Folder Structure**
+```
+netfox-veo-generations/
+├── ai-images/           # Full resolution AI-generated images (Imagen 3.0)
+├── ai-videos/           # AI-generated videos (VEO)
+└── compressed-images/   # Compressed starting frames for VEO (768px)
+```
+
+### **UI Features**
+- **Folder Selector**: Toggle between "Full Res Images" (`ai-images/`) and "Compressed Images" (`compressed-images/`)
+- **Media Type Filter**: Images or Videos
+- **Sort Options**: By date or name, ascending/descending
+- **Search**: Filter by filename
+- **Unified Menu Bar**: All controls in single consolidated bar
+
+### **Backend Caching**
+- Per-prefix caching for folder filtering
+- Automatic cache invalidation on new uploads
 
 ---
 
@@ -314,14 +447,15 @@ interface BrandContext {
 POST /api/prompt-engine/enhance
 {
   "prompt": "Basic prompt text",
-  "contentType": "image|video|caption|blog|script", 
+  "contentType": "image|video|caption|blog|script",
   "brandContext": {
     "clientId": "uuid",
     "enabledFeatures": ["industry", "visual", "voice"]
-  }
+  },
+  "startingFrameImage": "data:image/jpeg;base64,..."  // Optional: for video content type
 }
 
-// API Response Structure  
+// API Response Structure
 {
   "enhancedPrompt": "Detailed enhanced prompt text",
   "alternatives": [],
@@ -334,12 +468,14 @@ POST /api/prompt-engine/enhance
 }
 ```
 
-### **Current Status (January 4, 2026)**
+### **Current Status (January 13, 2026)**
 - ✅ **Core Tool**: Complete standalone prompt enhancement page
-- ✅ **Brand Integration**: Successfully loads and applies Supabase brand profiles  
+- ✅ **Brand Integration**: Successfully loads and applies Supabase brand profiles
 - ✅ **API Architecture**: Full REST API with health checks and error handling
 - ✅ **UI Enhancement**: Auto-resizing output containers for long Gemini responses
 - ✅ **Tool Registry**: Properly registered in tools hub with brain emoji and "NEW" badge
+- ✅ **Image-Aware Video Enhancement**: Gemini multimodal sees starting frames (768px compressed)
+- ✅ **Video Prompt Sanitisation**: Post-processing strips forbidden editing terms
 
 ### **Next Session Priorities**
 - **Input Requirements Enhancement**: Improve prompt component for better user guidance
