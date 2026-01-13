@@ -8,13 +8,53 @@ import { CategoryFeaturedGrid } from "@/components/shared/category-featured-grid
 import { PricingPackagesDisplay } from "@/components/sections/pricing-packages-display";
 import { PhotographyNavigation } from "@/components/sections/photography-navigation";
 import { useCategoryHero } from "@/hooks/use-category-heroes";
+import { PortfolioGrid } from "@/components/portfolio/portfolio-grid";
+import { useQuery } from "@tanstack/react-query";
 
 // Hardcoded defaults for SEO - crawlers see this immediately
 const DEFAULT_HERO_IMAGE = "/images/services/wedding-photography.jpg";
 
+interface Shoot {
+  id: string;
+  title: string;
+  description?: string;
+  mediaType: 'photo' | 'video';
+  customSlug?: string;
+  coverImageUrl?: string;
+  coverVideoInfo?: {
+    id: string;
+    storagePath: string;
+    optimizedPath?: string;
+    thumbnailPath: string;
+    duration?: number;
+    filename: string;
+  };
+  isGroup?: boolean;
+  groupName?: string;
+  shootCount?: number;
+  shoots?: Array<{
+    id: string;
+    title: string;
+    mediaType: 'photo' | 'video';
+    customSlug?: string;
+  }>;
+}
+
 export default function PhotographyWeddings() {
   // Fetch hero image and display settings from Supabase (falls back to defaults)
   const { heroImage, heroHeight, imageAlign } = useCategoryHero('photography', 'weddings');
+
+  // Fetch wedding-related albums (wedding, engagement, maternity, newborn)
+  const { data: recentAlbums = [], isLoading: albumsLoading } = useQuery<Shoot[]>({
+    queryKey: ['portfolio', 'cards', 'wedding-related'],
+    queryFn: async () => {
+      const response = await fetch('/api/portfolio/cards?shootTypes=wedding,engagement,maternity,newborn');
+      if (!response.ok) {
+        throw new Error('Failed to fetch albums');
+      }
+      return response.json();
+    }
+  });
 
   return (
     <div className="min-h-screen bg-background text-foreground background-gradient-blobs">
@@ -112,6 +152,47 @@ export default function PhotographyWeddings() {
           ctaLink="/contact"
           ctaText="Book Now"
         />
+      </GradientBackground>
+
+      {/* Recent Albums Section */}
+      <GradientBackground
+        section="photography-wedding-albums"
+        className="py-20"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl mb-6">
+              Recent Albums
+            </h2>
+            <h3 className="text-xl text-muted-foreground">
+              A selection of wedding, engagement, maternity and newborn galleries
+            </h3>
+          </div>
+
+          {albumsLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 max-w-7xl mx-auto">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div key={index} className="aspect-square bg-gray-800/50 rounded-lg animate-pulse" />
+              ))}
+            </div>
+          ) : recentAlbums.length > 0 ? (
+            <PortfolioGrid portfolioItems={recentAlbums.slice(0, 6)} />
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No albums available yet</p>
+            </div>
+          )}
+
+          {recentAlbums.length > 6 && (
+            <div className="text-center mt-12">
+              <Link href="/portfolio">
+                <Button className="btn-salmon">
+                  View All Galleries
+                </Button>
+              </Link>
+            </div>
+          )}
+        </div>
       </GradientBackground>
 
       <PhotographyNavigation />

@@ -198,6 +198,21 @@ export class SupabaseStorage implements IStorage {
       .orderBy(desc(shoots.createdAt));
   }
 
+  // Filter public shoots by shootType (e.g., wedding, engagement, maternity, newborn)
+  async getPublicShootsByTypes(shootTypes: string[]): Promise<Shoot[]> {
+    if (shootTypes.length === 0) {
+      return [];
+    }
+    // Build case-insensitive filter for shootTypes
+    const lowerTypes = shootTypes.map(t => t.toLowerCase());
+    return await db.select().from(shoots)
+      .where(and(
+        eq(shoots.isPrivate, false),
+        sql`LOWER(${shoots.shootType}) IN (${sql.join(lowerTypes.map(t => sql`${t}`), sql`, `)})`
+      ))
+      .orderBy(desc(shoots.createdAt));
+  }
+
   // OPTIMIZED: Get shoots with banner image data in a single query (JOIN)
   async getPublicShootsWithBannerByGroupName(groupName: string): Promise<(Shoot & { bannerImage?: { id: string; storagePath: string } })[]> {
     const result = await db

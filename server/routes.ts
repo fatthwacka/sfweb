@@ -949,10 +949,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Optimized portfolio endpoint - only fetches essential cover image data
+  // Optional query param: ?shootTypes=wedding,engagement,maternity,newborn (comma-separated)
   app.get("/api/portfolio/cards", async (req, res) => {
     try {
-      // OPTIMIZED: Batch fetch all data in parallel instead of N+1 queries
-      const publicShoots = await storage.getPublicShoots();
+      // Filter by shootTypes at database level if query param provided
+      const shootTypesParam = req.query.shootTypes as string | undefined;
+      let publicShoots;
+
+      if (shootTypesParam) {
+        // Use direct Supabase query with .in() filter for shootTypes
+        const supabase = createClient(
+          process.env.VITE_SUPABASE_URL!,
+          process.env.SUPABASE_SECRET_KEY!
+        );
+        const shootTypes = shootTypesParam.split(',').map(t => t.trim().toLowerCase());
+        const { data, error } = await supabase
+          .from('shoots')
+          .select('*')
+          .eq('is_private', false)
+          .in('shoot_type', shootTypes)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Supabase query error:', error);
+          throw new Error(error.message);
+        }
+        // Map snake_case to camelCase for consistency with storage layer
+        publicShoots = (data || []).map((s: any) => ({
+          id: s.id,
+          clientId: s.client_id,
+          title: s.title,
+          location: s.location,
+          shootDate: s.shoot_date,
+          shootType: s.shoot_type,
+          description: s.description,
+          notes: s.notes,
+          isPrivate: s.is_private,
+          bannerImageId: s.banner_image_id,
+          seoTags: s.seo_tags,
+          viewCount: s.view_count,
+          createdBy: s.created_by,
+          customSlug: s.custom_slug,
+          customTitle: s.custom_title,
+          gallerySettings: s.gallery_settings,
+          mediaType: s.media_type,
+          groupName: s.group_name,
+          createdAt: s.created_at,
+          updatedAt: s.updated_at,
+        }));
+      } else {
+        publicShoots = await storage.getPublicShoots();
+      }
 
       // Separate shoots by type
       const videoShootIds = publicShoots.filter(s => s.mediaType === 'video').map(s => s.id);

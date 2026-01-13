@@ -50,6 +50,7 @@ export interface IStorage {
   getShootsByClientEmail(email: string): Promise<Shoot[]>;
   getPublicShoots(): Promise<Shoot[]>;
   getPublicShootsByGroupName(groupName: string): Promise<Shoot[]>;
+  getPublicShootsByTypes(shootTypes: string[]): Promise<Shoot[]>;
   getAllShoots(): Promise<Shoot[]>;
   getPortfolioGroups(): Promise<string[]>;
   createShoot(shoot: InsertShoot): Promise<Shoot>;
@@ -737,6 +738,13 @@ export class MemStorage implements IStorage {
   async getPublicShootsByGroupName(groupName: string): Promise<Shoot[]> {
     return Array.from(this.shoots.values()).filter(
       shoot => !shoot.isPrivate && shoot.groupName?.toLowerCase() === groupName.toLowerCase()
+    );
+  }
+
+  async getPublicShootsByTypes(shootTypes: string[]): Promise<Shoot[]> {
+    const lowerTypes = shootTypes.map(t => t.toLowerCase());
+    return Array.from(this.shoots.values()).filter(
+      shoot => !shoot.isPrivate && shoot.shootType && lowerTypes.includes(shoot.shootType.toLowerCase())
     );
   }
 
