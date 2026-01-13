@@ -36,11 +36,13 @@ if (!GEMINI_API_KEY) {
 
 // Business services context
 const BUSINESS_CONTEXT = `
-SlyFox Studios is a creative agency offering these services:
+SlyFox Studios is a creative agency in South Africa offering diverse services:
 - Photography (weddings, portraits, corporate events, products)
 - Videography (promotional videos, event coverage, social content)
 - Social Media Management (content creation, strategy, brand building)
 - AI Automation (workflow optimization, chatbots, business process automation)
+- Web Development (custom websites, e-commerce, web applications)
+Note: Blog content should focus on the specific topic provided, only referencing the business where directly relevant.
 `;
 
 // Content type guidelines
@@ -74,18 +76,18 @@ const contentTypeGuidelines: Record<string, string> = {
 // Content generation prompts
 const prompts = {
   title: (context: string, category?: string, contentType?: string) => `
-    Generate 5 engaging blog post titles about "${context}".
+    Generate 5 engaging blog post titles specifically about "${context}".
     ${category ? `This is for the "${category}" category.` : ''}
     ${contentType && contentTypeGuidelines[contentType] ? `Content style: ${contentType}` : ''}
 
-    Business context: ${BUSINESS_CONTEXT}
+    IMPORTANT: Titles must be directly about "${context}" - not generic business content.
 
     Requirements:
+    - Each title must clearly relate to "${context}"
     - Professional but engaging tone
     - SEO-friendly (60 characters or less)
     - Match the content type style (${contentType || 'general'})
-    - Appeal to potential clients
-    - Avoid clickbait
+    - Avoid clickbait and generic phrases
 
     Return as a JSON array of strings.
   `,
@@ -104,32 +106,44 @@ const prompts = {
   `,
 
   content: (context: string, category?: string, contentType?: string) => `
-You are a JSON content generator. You MUST return ONLY valid JSON matching the EXACT schema below.
+You are an expert content writer creating an insightful, research-backed article. You MUST return ONLY valid JSON matching the schema below.
 
 Topic: "${context}"
 ${category ? `Category: ${category}` : ''}
-Business: Professional photography/videography studio in South Africa.
 
-MANDATORY JSON SCHEMA - Follow this EXACTLY:
+CRITICAL REQUIREMENTS:
+1. The entire article must be specifically about "${context}"
+2. Include SUBSTANCE - specific facts, statistics, examples, or industry insights
+3. Each paragraph must add NEW information - never repeat the same point in different words
+4. Write like an industry expert sharing genuine knowledge, not a marketer filling space
+
+CONTENT QUALITY STANDARDS:
+- Include at least one specific statistic, percentage, or data point per section where relevant
+- Mention real-world examples, case studies, or scenarios
+- Provide actionable tips or practical advice readers can implement
+- Reference industry trends, common mistakes, or expert observations
+- Avoid vague statements like "it's important" or "many businesses struggle" without explaining WHY or HOW
+- Each sentence should teach the reader something new
+
+Business context: SlyFox Studios is a creative agency in South Africa offering photography, videography, social media management, AI automation, and web development. Only mention this where directly relevant to the topic.
+
+MANDATORY JSON SCHEMA:
 {
-  "subtitle": "string (8-12 words expanding on title)",
-  "introduction": "string (2-3 sentences, 30-50 words)",
+  "subtitle": "string (8-12 words - a compelling hook that promises specific value)",
+  "introduction": "string (2-3 sentences that immediately establish why this topic matters with a specific insight)",
   "sections": [
-    {"heading": "string (pain point H2)", "content": "string (5-6 sentences)"},
-    {"heading": "string (solution H2)", "content": "string (5-6 sentences)"},
-    {"heading": "string (results H2)", "content": "string (5-6 sentences)"}
+    {"heading": "string (specific problem H2)", "content": "string (5-6 sentences with concrete examples and data)"},
+    {"heading": "string (actionable solution H2)", "content": "string (5-6 sentences with practical steps or methods)"},
+    {"heading": "string (measurable outcomes H2)", "content": "string (5-6 sentences with specific benefits or results)"}
   ],
-  "pullQuote": "string (10-15 word quotable insight)",
-  "conclusion": {"heading": "string (CTA H2)", "content": "string (2-3 sentences)"}
+  "pullQuote": "string (10-15 word memorable insight that readers would want to share)",
+  "conclusion": {"heading": "string (forward-looking CTA H2)", "content": "string (2-3 sentences)"}
 }
 
-REQUIREMENTS:
+STRUCTURE REQUIREMENTS:
 - sections MUST be an array with exactly 3 objects
 - Each section object MUST have both "heading" and "content" keys
 - conclusion MUST be an object with both "heading" and "content" keys
-- Section 1 heading: Pain point (e.g., "Why Most Businesses Struggle With...")
-- Section 2 heading: How-to solution (e.g., "How to Achieve...")
-- Section 3 heading: Results/benefits (e.g., "The Results You Can Expect")
 - Keep each section content to 5-6 sentences (50-80 words)
 
 ${contentType && contentTypeGuidelines[contentType] ? contentTypeGuidelines[contentType] : ''}

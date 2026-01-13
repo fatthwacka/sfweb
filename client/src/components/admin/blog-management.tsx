@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -970,36 +971,16 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
       const briefText = aiBrief.trim();
       const fullTopic = `${topicText}${briefText ? `. ${briefText}` : ''}`;
 
-      // TODO: Convert AI generation to Supabase Edge Functions
-      console.log('AI generation would use:', { 
-        topic: fullTopic, 
+      // Call the AI generation API endpoint
+      const response = await apiRequest('POST', '/api/ai/generate-full', {
+        topic: fullTopic,
         contentType,
-        category: categories.find(c => c.id === editorPost.categoryId)?.name 
+        category: categories.find(c => c.id === editorPost.categoryId)?.name,
+        customPrompt: showAdvanced && customPrompt !== defaultPrompt ? customPrompt : undefined,
+        saveAsDefault: showAdvanced && saveAsDefault
       });
-      
-      // Placeholder data structure
-      const data = {
-        titles: [`Generated: ${fullTopic}`],
-        sections: {
-          subtitle: 'AI-generated subtitle',
-          introduction: 'AI-generated introduction content...',
-          mainSections: [
-            { heading: 'Section 1', content: 'AI-generated content for section 1...' },
-            { heading: 'Section 2', content: 'AI-generated content for section 2...' },
-            { heading: 'Section 3', content: 'AI-generated content for section 3...' }
-          ],
-          pullQuote: 'AI-generated pull quote',
-          conclusion: {
-            heading: 'Conclusion',
-            content: 'AI-generated conclusion...'
-          }
-        },
-        excerpt: 'AI-generated excerpt...',
-        seoData: {
-          title: `${fullTopic} - Professional Services`,
-          description: 'AI-generated meta description...'
-        }
-      };
+
+      const data = await response.json();
 
       // Set title suggestions
       if (data.titles?.length > 0) {
