@@ -248,8 +248,8 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
           status: post.status,
           published_at: post.publishedAt || null,
           author_id: post.authorId || null,
-          seo_title: post.seoTitle || null,
-          seo_description: post.seoDescription || null,
+          meta_title: post.seoTitle || null,
+          meta_description: post.seoDescription || null,
           featured_section: post.featuredSection || null,
           variable_content: post.variableContent || null,
         });
@@ -267,8 +267,8 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
           status: post.status,
           published_at: post.publishedAt || null,
           author_id: post.authorId || null,
-          seo_title: post.seoTitle || null,
-          seo_description: post.seoDescription || null,
+          meta_title: post.seoTitle || null,
+          meta_description: post.seoDescription || null,
           featured_section: post.featuredSection || null,
           variable_content: post.variableContent || null,
         });
@@ -1493,16 +1493,16 @@ Please provide only the enhanced content without any additional text or explanat
       slug: post.slug,
       content: post.content,
       excerpt: post.excerpt || '',
-      seoTitle: post.seo_title || '',
-      seoDescription: post.seo_description || '',
+      seoTitle: (post as any).meta_title || '',
+      seoDescription: (post as any).meta_description || '',
       coverImage: post.cover_image || undefined,
       postImage1: post.post_image_1 || undefined,
       postImage2: post.post_image_2 || undefined,
       status: post.status as 'draft' | 'published' | 'scheduled',
       categoryId: post.category_id || undefined,
       authorId: post.author_id || undefined,  // Preserve original author
-      publishedAt: post.published_at 
-        ? new Date(post.published_at).toISOString().split('T')[0] 
+      publishedAt: post.published_at
+        ? new Date(post.published_at).toISOString().split('T')[0]
         : new Date().toISOString().split('T')[0] // Fallback to today if no date
     });
 
@@ -1806,8 +1806,8 @@ Please provide only the enhanced content without any additional text or explanat
                         status: postData.status,
                         published_at: postData.publishedAt || null,
                         author_id: postData.authorId || null,
-                        seo_title: postData.seoTitle || null,
-                        seo_description: postData.seoDescription || null,
+                        meta_title: postData.seoTitle || null,
+                        meta_description: postData.seoDescription || null,
                         featured_section: postData.featuredSection || null,
                         variable_content: postData.variableContent || null,
                       })
@@ -1823,8 +1823,8 @@ Please provide only the enhanced content without any additional text or explanat
                         status: postData.status,
                         published_at: postData.publishedAt || null,
                         author_id: postData.authorId || null,
-                        seo_title: postData.seoTitle || null,
-                        seo_description: postData.seoDescription || null,
+                        meta_title: postData.seoTitle || null,
+                        meta_description: postData.seoDescription || null,
                         featured_section: postData.featuredSection || null,
                         variable_content: postData.variableContent || null,
                       });

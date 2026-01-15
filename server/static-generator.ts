@@ -1,8 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { db } from './db';
-import { blogPosts, blogCategories, profiles } from '@shared/schema';
-import { eq } from 'drizzle-orm';
+import { supabaseAdmin } from './supabase-admin';
 
 interface StaticPageData {
   title: string;
@@ -57,39 +55,78 @@ export class StaticBlogGenerator {
     try {
       console.log(`Generating static file for post ID: ${postId}`);
 
-      // Fetch blog post with author and category information
-      const [post] = await db
-        .select({
-          id: blogPosts.id,
-          title: blogPosts.title,
-          slug: blogPosts.slug,
-          excerpt: blogPosts.excerpt,
-          content: blogPosts.content,
-          coverImage: blogPosts.coverImage,
-          seoTitle: blogPosts.seoTitle,
-          seoDescription: blogPosts.seoDescription,
-          publishedAt: blogPosts.publishedAt,
-          createdAt: blogPosts.createdAt,
-          authorName: profiles.fullName,
-          categoryId: blogPosts.categoryId,
-          categoryName: blogCategories.name,
-          categoryColor: blogCategories.color,
-          status: blogPosts.status
-        })
-        .from(blogPosts)
-        .leftJoin(profiles, eq(blogPosts.authorId, profiles.id))
-        .leftJoin(blogCategories, eq(blogPosts.categoryId, blogCategories.id))
-        .where(eq(blogPosts.id, postId));
+      // Fetch blog post with author and category information using direct Supabase
+      const { data: postData, error: postError } = await supabaseAdmin
+        .from('blog_posts')
+        .select(`
+          id,
+          title,
+          slug,
+          excerpt,
+          content,
+          cover_image,
+          meta_title,
+          meta_description,
+          published_at,
+          created_at,
+          status,
+          category_id,
+          author_id
+        `)
+        .eq('id', postId)
+        .single();
 
-      if (!post) {
-        console.error(`Blog post not found: ${postId}`);
+      if (postError || !postData) {
+        console.error(`Blog post not found: ${postId}`, postError);
         return false;
       }
 
-      if (post.status !== 'published') {
-        console.error(`Blog post not published: ${postId} (status: ${post.status})`);
+      if (postData.status !== 'published') {
+        console.error(`Blog post not published: ${postId} (status: ${postData.status})`);
         return false;
       }
+
+      // Fetch author name if author_id exists
+      let authorName: string | null = null;
+      if (postData.author_id) {
+        const { data: authorData } = await supabaseAdmin
+          .from('profiles')
+          .select('full_name')
+          .eq('id', postData.author_id)
+          .single();
+        authorName = authorData?.full_name || null;
+      }
+
+      // Fetch category info if category_id exists
+      let categoryName: string | null = null;
+      let categoryColor: string | null = null;
+      if (postData.category_id) {
+        const { data: categoryData } = await supabaseAdmin
+          .from('blog_categories')
+          .select('name, color')
+          .eq('id', postData.category_id)
+          .single();
+        categoryName = categoryData?.name || null;
+        categoryColor = categoryData?.color || null;
+      }
+
+      // Map to internal interface (snake_case to camelCase)
+      const post: BlogPostForSSR = {
+        id: postData.id,
+        title: postData.title,
+        slug: postData.slug,
+        excerpt: postData.excerpt,
+        content: postData.content,
+        coverImage: postData.cover_image,
+        seoTitle: postData.meta_title,
+        seoDescription: postData.meta_description,
+        publishedAt: postData.published_at,
+        createdAt: postData.created_at,
+        authorName,
+        categoryId: postData.category_id,
+        categoryName,
+        categoryColor
+      };
 
       // Generate static page data
       const pageData = this.generatePageData(post as BlogPostForSSR);
@@ -368,18 +405,19 @@ export class StaticBlogGenerator {
    */
   private async updateSitemap(): Promise<void> {
     try {
-      // Get all published blog posts
-      const publishedPosts = await db
-        .select({
-          slug: blogPosts.slug,
-          publishedAt: blogPosts.publishedAt,
-          updatedAt: blogPosts.updatedAt
-        })
-        .from(blogPosts)
-        .where(eq(blogPosts.status, 'published'));
+      // Get all published blog posts using direct Supabase
+      const { data: publishedPosts, error } = await supabaseAdmin
+        .from('blog_posts')
+        .select('slug, published_at, updated_at')
+        .eq('status', 'published');
+
+      if (error) {
+        console.error('Error fetching published posts for sitemap:', error);
+        return;
+      }
 
       const siteUrl = process.env.SITE_URL || 'https://slyfoxstudios.co.za';
-      
+
       const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Static pages -->
@@ -413,11 +451,11 @@ export class StaticBlogGenerator {
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
-  
+
   <!-- Blog posts -->
-${publishedPosts.map(post => `  <url>
+${(publishedPosts || []).map(post => `  <url>
     <loc>${siteUrl}/stories/${post.slug}</loc>
-    <lastmod>${(post.updatedAt || post.publishedAt || new Date()).toISOString().split('T')[0]}</lastmod>
+    <lastmod>${(post.updated_at || post.published_at || new Date().toISOString()).split('T')[0]}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>`).join('\n')}
@@ -437,10 +475,15 @@ ${publishedPosts.map(post => `  <url>
    */
   async generateAllPublishedPosts(): Promise<number> {
     try {
-      const publishedPosts = await db
-        .select({ id: blogPosts.id })
-        .from(blogPosts)
-        .where(eq(blogPosts.status, 'published'));
+      const { data: publishedPosts, error } = await supabaseAdmin
+        .from('blog_posts')
+        .select('id')
+        .eq('status', 'published');
+
+      if (error || !publishedPosts) {
+        console.error('Error fetching published posts:', error);
+        return 0;
+      }
 
       let successCount = 0;
       for (const post of publishedPosts) {
