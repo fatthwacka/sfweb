@@ -267,18 +267,19 @@ export function AdminContent({ userRole }: AdminContentProps) {
         return false;
       }
 
-      // Engagement filters - only apply to images, skip for videos
-      if (mediaType === 'image') {
-        const hasActiveFilters = Object.values(engagementFilters).some(Boolean);
-        if (hasActiveFilters) {
-          const matchesFilter = (
-            (engagementFilters.featured && (
-              mediaType === 'image' ? item.featured_image : item.featured_video
-            ))
-          );
-          if (!matchesFilter) {
-            return false;
-          }
+      // Engagement filters - apply to both images and videos
+      const hasActiveFilters = Object.values(engagementFilters).some(Boolean);
+      if (hasActiveFilters) {
+        const matchesFilter = (
+          (engagementFilters.hearts && (item.hearts_count > 0)) ||
+          (engagementFilters.likes && (item.likes_count > 0)) ||
+          (engagementFilters.dislikes && (item.dislikes_count > 0)) ||
+          (engagementFilters.featured && (
+            mediaType === 'image' ? item.featured_image : item.featured_video
+          ))
+        );
+        if (!matchesFilter) {
+          return false;
         }
       }
 
@@ -345,11 +346,18 @@ export function AdminContent({ userRole }: AdminContentProps) {
       try {
         const result = await supabaseOperations.shoots.create({
           title: data.title,
-          description: data.description,
+          description: data.description || data.notes,
           clientId: data.clientId,
           customSlug: data.customSlug,
+          customTitle: data.customTitle,
           isPrivate: data.isPrivate,
-          groupName: data.groupName
+          groupName: data.groupName,
+          mediaType: data.mediaType,
+          shootType: data.shootType,
+          shootDate: data.shootDate,
+          location: data.location,
+          notes: data.notes,
+          seoTags: data.seoTags
         });
         console.log("Supabase operation successful:", result);
         return result;
@@ -878,14 +886,23 @@ export function AdminContent({ userRole }: AdminContentProps) {
     }
   });
 
-  // Bulk assignment mutation
+  // Bulk assignment mutation (works for both images and videos)
   const bulkAssignmentMutation = useMutation({
     mutationFn: async ({ imageIds, shootId }: { imageIds: string[], shootId: string }) => {
-      // TODO: Implement bulk assignment in supabase operations
-      throw new Error('Bulk assignment not yet implemented with Supabase operations');
+      console.log(`Bulk assigning ${imageIds.length} ${mediaType === 'video' ? 'videos' : 'images'} to shoot ${shootId}`);
+
+      if (mediaType === 'image') {
+        await supabaseOperations.images.updateShootId(imageIds, shootId);
+      } else {
+        await supabaseOperations.videos.updateShootId(imageIds, shootId);
+      }
+
+      return { success: true, count: imageIds.length, shootId };
     },
     onSuccess: (response) => {
-      queryClient.invalidateQueries({ queryKey: ['images', 'all'] });
+      const mediaTypeName = mediaType === 'video' ? 'videos' : 'images';
+      queryClient.invalidateQueries({ queryKey: ['media', mediaType] });
+      queryClient.invalidateQueries({ queryKey: [mediaType === 'video' ? 'videos' : 'images', 'all'] });
       queryClient.invalidateQueries({ queryKey: ['shoots'] });
       setSelectedImages(new Set());
       setAssignmentModalOpen(false);
@@ -893,17 +910,17 @@ export function AdminContent({ userRole }: AdminContentProps) {
       setSelectedShootId('');
       setNewClientMode(false);
       setNewShootMode(false);
-      
+
       toast({
-        title: "Images Assigned Successfully",
-        description: "Bulk assignment completed" // response.message - not implemented yet
+        title: `${mediaType === 'video' ? 'Videos' : 'Images'} Assigned Successfully`,
+        description: `${response.count} ${mediaTypeName} assigned to album`
       });
     },
     onError: (error) => {
       console.error('Bulk assignment error:', error);
       toast({
         title: "Assignment Failed",
-        description: "Failed to assign images to album",
+        description: `Failed to assign ${mediaType === 'video' ? 'videos' : 'images'} to album`,
         variant: "destructive"
       });
     }
@@ -988,8 +1005,15 @@ export function AdminContent({ userRole }: AdminContentProps) {
           description: `${newShootData.title} photography by SlyFox Studios. Professional ${newShootData.shootType} photographer in ${newShootData.location}.`,
           clientId: targetClientEmail,
           customSlug: `${autoSlug}-slyfox-${new Date().getFullYear()}`,
+          customTitle: newShootData.title.trim(),
           isPrivate: false,
-          groupName: newShootData.title.trim()
+          groupName: newShootData.title.trim(),
+          mediaType: 'photo',
+          shootType: newShootData.shootType,
+          shootDate: null,
+          location: newShootData.location,
+          notes: '',
+          seoTags: ''
         });
         console.log('🎯 SHOOT CREATION RESPONSE:', shootResponse);
         targetShootId = shootResponse.id;
@@ -1698,7 +1722,8 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                       customTitle: formData.get('customTitle') as string || title,
                                       seoTags: formData.get('seoTags') as string || '',
                                       isPrivate: formData.get('isPrivate') === 'on',
-                                      mediaType: (formData.get('mediaType') as string) || 'photo'
+                                      mediaType: (formData.get('mediaType') as string) || 'photo',
+                                      groupName: title // Use shoot title as group name
                                     };
 
                                     createShootMutation.mutate(data);

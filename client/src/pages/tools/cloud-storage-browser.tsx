@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Download, Trash2, Eye, Search, Grid, List, Filter, SortAsc, SortDesc, Calendar, FileImage, Film, Folder } from 'lucide-react';
+import { ArrowLeft, Download, Trash2, Eye, Search, Grid, List, SortAsc, SortDesc, FileImage, Film, Folder, ExternalLink } from 'lucide-react';
 import { useLocation } from 'wouter';
 
 import { Navigation } from '@/components/layout/navigation';
@@ -35,6 +35,11 @@ interface FileStats {
   images: number;
   videos: number;
   other: number;
+}
+
+interface FolderStats {
+  count: number;
+  size: number;
 }
 
 type ViewMode = 'grid' | 'list';
@@ -124,14 +129,15 @@ export default function CloudStorageBrowser() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [sortBy, setSortBy] = useState<SortBy>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
-  const [typeFilter, setTypeFilter] = useState<string>('image'); // Default to images for fast loading
   const [bucketFilter, setBucketFilter] = useState<string>('all');
   const [folderPrefix, setFolderPrefix] = useState<string>('ai-images/'); // Default to AI generated images folder
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
   const [selectedFile, setSelectedFile] = useState<CloudFile | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [stats, setStats] = useState<FileStats | null>(null);
+  const [stats, setStats] = useState<FileStats | null>(null);           // Current folder stats
+  const [globalStats, setGlobalStats] = useState<FileStats | null>(null); // Entire bucket stats
+  const [folderStats, setFolderStats] = useState<Record<string, FolderStats>>({});
 
   // Load files from Google Cloud Storage when folder prefix changes
   useEffect(() => {
@@ -145,15 +151,10 @@ export default function CloudStorageBrowser() {
     // Search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(file => 
+      filtered = filtered.filter(file =>
         file.name.toLowerCase().includes(query) ||
         file.path.toLowerCase().includes(query)
       );
-    }
-
-    // Type filter
-    if (typeFilter !== 'all') {
-      filtered = filtered.filter(file => file.type === typeFilter);
     }
 
     // Bucket filter
@@ -164,7 +165,7 @@ export default function CloudStorageBrowser() {
     // Sort
     filtered.sort((a, b) => {
       let comparison = 0;
-      
+
       switch (sortBy) {
         case 'name':
           comparison = a.name.localeCompare(b.name);
@@ -185,7 +186,7 @@ export default function CloudStorageBrowser() {
 
     setFilteredFiles(filtered);
     setCurrentPage(1); // Reset to first page when filtering
-  }, [files, searchQuery, typeFilter, bucketFilter, sortBy, sortOrder]);
+  }, [files, searchQuery, bucketFilter, sortBy, sortOrder]);
 
   const loadFiles = async () => {
     try {
@@ -206,6 +207,8 @@ export default function CloudStorageBrowser() {
       const data = await response.json();
       setFiles(data.files);
       setStats(data.stats);
+      if (data.globalStats) setGlobalStats(data.globalStats);
+      if (data.folderStats) setFolderStats(data.folderStats);
     } catch (error) {
       console.error('Error loading files:', error);
       toast({
@@ -218,33 +221,25 @@ export default function CloudStorageBrowser() {
     }
   };
 
-  const handleDownload = async (file: CloudFile) => {
-    try {
-      const response = await fetch(file.publicUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = file.name;
-      document.body.appendChild(a);
-      a.click();
-      
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      toast({
-        title: 'Download Started',
-        description: `Downloading ${file.name}`
-      });
-    } catch (error) {
-      console.error('Error downloading file:', error);
-      toast({
-        title: 'Download Failed',
-        description: 'Failed to download file',
-        variant: 'destructive'
-      });
-    }
+  const handleDownload = (file: CloudFile) => {
+    // Use backend proxy to bypass CORS and trigger direct download
+    const downloadUrl = `/api/cloud-storage/download?bucket=${encodeURIComponent(file.bucket)}&path=${encodeURIComponent(file.path)}&filename=${encodeURIComponent(file.name)}`;
+
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    toast({
+      title: 'Download Started',
+      description: `Downloading ${file.name}`
+    });
+  };
+
+  const handleOpenFullRes = (file: CloudFile) => {
+    window.open(file.publicUrl, '_blank');
   };
 
   const handleDelete = async (file: CloudFile) => {
@@ -333,7 +328,7 @@ export default function CloudStorageBrowser() {
   const paginatedFiles = filteredFiles.slice(startIndex, startIndex + itemsPerPage);
 
   // Get unique buckets for filter
-  const uniqueBuckets = Array.from(new Set(files.map(f => f.bucket)));
+  // Bucket filter removed - we only have one bucket
 
   return (
     <GradientBackground section="portfolio">
@@ -365,27 +360,27 @@ export default function CloudStorageBrowser() {
             </div>
           </div>
 
-          {/* Stats Cards */}
-          {stats && (
+          {/* Global Stats Cards - Shows totals for entire bucket */}
+          {(globalStats || stats) && (
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
               <div className="bg-gradient-to-br from-gray-800/90 to-gray-700/80 border border-cyan-400/20 rounded-xl p-4 backdrop-blur-sm">
-                <div className="text-2xl font-bold text-cyan-300">{stats.totalFiles}</div>
+                <div className="text-2xl font-bold text-cyan-300">{globalStats?.totalFiles || stats?.totalFiles || 0}</div>
                 <div className="text-sm text-gray-300">Total Files</div>
               </div>
               <div className="bg-gradient-to-br from-gray-800/90 to-gray-700/80 border border-green-400/20 rounded-xl p-4 backdrop-blur-sm">
-                <div className="text-2xl font-bold text-green-300">{formatFileSize(stats.totalSize)}</div>
+                <div className="text-2xl font-bold text-green-300">{formatFileSize(globalStats?.totalSize || stats?.totalSize || 0)}</div>
                 <div className="text-sm text-gray-300">Total Size</div>
               </div>
               <div className="bg-gradient-to-br from-gray-800/90 to-gray-700/80 border border-purple-400/20 rounded-xl p-4 backdrop-blur-sm">
-                <div className="text-2xl font-bold text-purple-300">{stats.images}</div>
+                <div className="text-2xl font-bold text-purple-300">{globalStats?.images || stats?.images || 0}</div>
                 <div className="text-sm text-gray-300">Images</div>
               </div>
               <div className="bg-gradient-to-br from-gray-800/90 to-gray-700/80 border border-orange-400/20 rounded-xl p-4 backdrop-blur-sm">
-                <div className="text-2xl font-bold text-orange-300">{stats.videos}</div>
+                <div className="text-2xl font-bold text-orange-300">{globalStats?.videos || stats?.videos || 0}</div>
                 <div className="text-sm text-gray-300">Videos</div>
               </div>
               <div className="bg-gradient-to-br from-gray-800/90 to-gray-700/80 border border-yellow-400/20 rounded-xl p-4 backdrop-blur-sm">
-                <div className="text-2xl font-bold text-yellow-300">{stats.other}</div>
+                <div className="text-2xl font-bold text-yellow-300">{globalStats?.other || stats?.other || 0}</div>
                 <div className="text-sm text-gray-300">Other</div>
               </div>
             </div>
@@ -394,8 +389,8 @@ export default function CloudStorageBrowser() {
           {/* Unified Controls Bar */}
           <div className="bg-gradient-to-br from-gray-800/90 to-gray-700/80 border border-white/20 rounded-xl p-4 mb-8 backdrop-blur-sm">
             <div className="flex flex-col gap-4">
-              {/* Top Row: Folder & Media Type Selectors */}
-              <div className="flex flex-col lg:flex-row items-center justify-center gap-4">
+              {/* Top Row: Folder Selector with counts */}
+              <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
                 {/* Folder Selector */}
                 <div className="flex bg-gray-900/60 rounded-lg p-1">
                   <button
@@ -406,7 +401,7 @@ export default function CloudStorageBrowser() {
                         : 'text-gray-300 hover:text-white hover:bg-white/10'
                     }`}
                   >
-                    🖼️ Full Res Images
+                    🖼️ Full Res Images ({folderStats['ai-images/']?.count || 0})
                   </button>
                   <button
                     onClick={() => setFolderPrefix('compressed-images/')}
@@ -416,49 +411,34 @@ export default function CloudStorageBrowser() {
                         : 'text-gray-300 hover:text-white hover:bg-white/10'
                     }`}
                   >
-                    📦 Compressed Images
+                    📦 Compressed ({folderStats['compressed-images/']?.count || 0})
+                  </button>
+                  <button
+                    onClick={() => setFolderPrefix('ai-videos/')}
+                    className={`px-4 py-2 rounded-md font-medium transition-all text-sm ${
+                      folderPrefix === 'ai-videos/'
+                        ? 'bg-salmon text-white shadow-lg'
+                        : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    🎬 Videos ({folderStats['ai-videos/']?.count || 0})
                   </button>
                 </div>
 
-                {/* Divider */}
-                <div className="hidden lg:block w-px h-8 bg-gray-600" />
-
-                {/* Media Type Selector */}
-                <div className="flex bg-gray-900/60 rounded-lg p-1">
-                  <button
-                    onClick={() => setTypeFilter('image')}
-                    className={`px-4 py-2 rounded-md font-medium transition-all text-sm ${
-                      typeFilter === 'image'
-                        ? 'bg-salmon text-white shadow-lg'
-                        : 'text-gray-300 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    📸 Images ({stats?.images || 0})
-                  </button>
-                  <button
-                    onClick={() => setTypeFilter('video')}
-                    className={`px-4 py-2 rounded-md font-medium transition-all text-sm ${
-                      typeFilter === 'video'
-                        ? 'bg-salmon text-white shadow-lg'
-                        : 'text-gray-300 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    🎬 Videos ({stats?.videos || 0})
-                  </button>
-                  <button
-                    onClick={() => setTypeFilter('all')}
-                    className={`px-4 py-2 rounded-md font-medium transition-all text-sm ${
-                      typeFilter === 'all'
-                        ? 'bg-salmon text-white shadow-lg'
-                        : 'text-gray-300 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    📁 All ({stats?.totalFiles || 0})
-                  </button>
+                {/* Current Folder Stats - Smaller format */}
+                <div className="flex items-center gap-3 bg-gray-900/40 rounded-lg px-4 py-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">Folder:</span>
+                    <span className="text-sm font-medium text-cyan-300">{stats?.totalFiles || 0} files</span>
+                  </div>
+                  <div className="w-px h-4 bg-gray-600" />
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-green-300">{formatFileSize(stats?.totalSize || 0)}</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Bottom Row: Search & Sort/Filter */}
+              {/* Bottom Row: Search & Sort */}
               <div className="flex flex-col lg:flex-row gap-3">
                 {/* Search */}
                 <div className="flex-1">
@@ -473,20 +453,8 @@ export default function CloudStorageBrowser() {
                   </div>
                 </div>
 
-                {/* Filters */}
+                {/* Sort Controls */}
                 <div className="flex flex-wrap gap-2">
-                  <Select value={bucketFilter} onValueChange={setBucketFilter}>
-                    <SelectTrigger className="w-36 h-9 bg-gray-900/60 border-gray-600/40 text-white focus:bg-gray-900/80">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Buckets</SelectItem>
-                      {uniqueBuckets.map(bucket => (
-                        <SelectItem key={bucket} value={bucket}>{bucket}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
                   <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
                     <SelectTrigger className="w-28 h-9 bg-gray-900/60 border-gray-600/40 text-white focus:bg-gray-900/80">
                       <SelectValue />
@@ -551,47 +519,65 @@ export default function CloudStorageBrowser() {
                         <>
                           {/* Grid View */}
                           <div className="aspect-square relative group">
-                            {file.type === 'image' ? (
-                              <img
-                                src={file.publicUrl}
-                                alt={file.name}
-                                className="w-full h-full object-cover"
-                                loading="lazy"
-                              />
-                            ) : file.type === 'video' ? (
-                              <VideoThumbnail file={file} />
-                            ) : (
-                              <div className="w-full h-full bg-black/40 flex items-center justify-center">
-                                <Folder className="w-12 h-12 text-muted-foreground" />
-                              </div>
-                            )}
-                            
+                            {/* Clickable thumbnail area - opens modal */}
+                            <div
+                              className="w-full h-full cursor-pointer"
+                              onClick={() => handlePreview(file)}
+                            >
+                              {file.type === 'image' ? (
+                                <img
+                                  src={file.publicUrl}
+                                  alt={file.name}
+                                  className="w-full h-full object-cover"
+                                  loading="lazy"
+                                />
+                              ) : file.type === 'video' ? (
+                                <VideoThumbnail file={file} />
+                              ) : (
+                                <div className="w-full h-full bg-black/40 flex items-center justify-center">
+                                  <Folder className="w-12 h-12 text-muted-foreground" />
+                                </div>
+                              )}
+                            </div>
+
                             {/* Subtle Overlay */}
                             <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
-                            
+
                             {/* Bottom Action Bar */}
                             <div className="absolute bottom-0 left-0 right-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 p-2">
                               <Button
                                 size="sm"
                                 variant="secondary"
-                                onClick={() => handlePreview(file)}
+                                onClick={(e) => { e.stopPropagation(); handlePreview(file); }}
                                 className="bg-white/90 hover:bg-white text-gray-800 h-7 w-7 p-0"
+                                title="Preview"
                               >
                                 <Eye className="w-3 h-3" />
                               </Button>
                               <Button
                                 size="sm"
                                 variant="secondary"
-                                onClick={() => handleDownload(file)}
+                                onClick={(e) => { e.stopPropagation(); handleOpenFullRes(file); }}
                                 className="bg-white/90 hover:bg-white text-gray-800 h-7 w-7 p-0"
+                                title="View Full Resolution"
+                              >
+                                <ExternalLink className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={(e) => { e.stopPropagation(); handleDownload(file); }}
+                                className="bg-white/90 hover:bg-white text-gray-800 h-7 w-7 p-0"
+                                title="Download"
                               >
                                 <Download className="w-3 h-3" />
                               </Button>
                               <Button
                                 size="sm"
                                 variant="destructive"
-                                onClick={() => handleDelete(file)}
+                                onClick={(e) => { e.stopPropagation(); handleDelete(file); }}
                                 className="bg-red-500 hover:bg-red-600 text-white h-7 w-7 p-0"
+                                title="Delete"
                               >
                                 <Trash2 className="w-3 h-3" />
                               </Button>
@@ -667,9 +653,9 @@ export default function CloudStorageBrowser() {
               ) : (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground text-lg">
-                    {searchQuery || typeFilter !== 'all' || bucketFilter !== 'all' 
-                      ? 'No files found matching your filters' 
-                      : 'No files found in cloud storage'
+                    {searchQuery
+                      ? 'No files found matching your search'
+                      : 'No files found in this folder'
                     }
                   </p>
                 </div>
@@ -723,86 +709,75 @@ export default function CloudStorageBrowser() {
           )}
         </div>
 
-        {/* Preview Modal */}
+        {/* Preview Modal - Full screen fit */}
         <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto bg-black/90 border-white/20">
-            <DialogHeader>
-              <DialogTitle className="text-white flex items-center gap-2">
-                {selectedFile && getFileIcon(selectedFile)}
-                {selectedFile?.name}
-              </DialogTitle>
+          <DialogContent className="max-w-[95vw] max-h-[95vh] w-[95vw] h-[95vh] overflow-hidden bg-black/95 border-white/20 p-0 flex flex-col">
+            {/* Hidden header for accessibility - just the title */}
+            <DialogHeader className="sr-only">
+              <DialogTitle>{selectedFile?.name}</DialogTitle>
             </DialogHeader>
-            
+
+            {/* Image/Video Preview - Takes up full space */}
             {selectedFile && (
-              <div className="space-y-4">
-                {/* File Preview */}
-                <div className="flex justify-center">
-                  {selectedFile.type === 'image' ? (
-                    <img
-                      src={selectedFile.publicUrl}
-                      alt={selectedFile.name}
-                      className="max-w-full max-h-96 object-contain rounded-lg"
-                    />
-                  ) : selectedFile.type === 'video' ? (
-                    <video
-                      src={selectedFile.publicUrl}
-                      controls
-                      className="max-w-full max-h-96 rounded-lg"
-                    />
-                  ) : (
-                    <div className="bg-black/40 rounded-lg p-12 text-center">
-                      <Folder className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground">Preview not available for this file type</p>
-                    </div>
-                  )}
-                </div>
+              <div className="flex-1 flex items-center justify-center p-4 overflow-hidden relative">
+                {selectedFile.type === 'image' ? (
+                  <img
+                    src={selectedFile.publicUrl}
+                    alt={selectedFile.name}
+                    className="max-w-full max-h-full object-contain rounded-lg"
+                  />
+                ) : selectedFile.type === 'video' ? (
+                  <video
+                    src={selectedFile.publicUrl}
+                    controls
+                    autoPlay
+                    className="max-w-full max-h-full rounded-lg"
+                  />
+                ) : (
+                  <div className="bg-black/40 rounded-lg p-12 text-center">
+                    <Folder className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">Preview not available for this file type</p>
+                  </div>
+                )}
 
-                {/* File Details */}
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Size:</span>
-                    <span className="ml-2 text-white">{formatFileSize(selectedFile.size)}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Type:</span>
-                    <span className="ml-2 text-white">{selectedFile.mimeType}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Modified:</span>
-                    <span className="ml-2 text-white">{formatDate(selectedFile.lastModified)}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Bucket:</span>
-                    <span className="ml-2 text-white">{selectedFile.bucket}</span>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-3 pt-4 border-t border-white/10">
+                {/* Bottom centre action bar - overlays the image */}
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/80 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
                   <Button
+                    size="sm"
                     onClick={() => handleDownload(selectedFile)}
-                    className="bg-salmon hover:bg-salmon/90"
+                    className="bg-salmon hover:bg-salmon/90 h-9 rounded-full"
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Download
                   </Button>
                   <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleOpenFullRes(selectedFile)}
+                    className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-9 rounded-full"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    View Full Res
+                  </Button>
+                  <div className="w-px h-6 bg-white/20 mx-1" />
+                  <Button
+                    size="sm"
                     variant="destructive"
                     onClick={() => {
                       handleDelete(selectedFile);
                       setPreviewOpen(false);
                     }}
+                    className="h-9 w-9 p-0 rounded-full"
+                    title="Delete"
                   >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
+                    <Trash2 className="w-4 h-4" />
                   </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => window.open(selectedFile.publicUrl, '_blank')}
-                    className="bg-black/40 border-white/20 text-white hover:bg-white/10"
-                  >
-                    Open in New Tab
-                  </Button>
+                </div>
+
+                {/* File info - top left */}
+                <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2 text-sm">
+                  <div className="text-white font-medium truncate max-w-[300px]">{selectedFile.name}</div>
+                  <div className="text-muted-foreground text-xs">{formatFileSize(selectedFile.size)}</div>
                 </div>
               </div>
             )}

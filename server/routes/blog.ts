@@ -12,6 +12,7 @@ import {
 } from '@shared/schema';
 import { eq, desc, and, ilike, inArray } from 'drizzle-orm';
 import { z } from 'zod';
+import { staticBlogGenerator } from '../static-generator';
 
 const router = Router();
 
@@ -290,10 +291,106 @@ router.delete('/posts/:id', async (req, res) => {
       return res.status(404).json({ error: 'Blog post not found' });
     }
 
+    // Also remove static file when deleting
+    if (deletedPost.slug) {
+      try {
+        await staticBlogGenerator.removeStaticPost(deletedPost.slug);
+        console.log(`🗑️ Removed static file for deleted post: ${deletedPost.slug}`);
+      } catch (staticError) {
+        console.warn('Failed to remove static file:', staticError);
+        // Don't fail the delete operation if static file removal fails
+      }
+    }
+
     res.json({ message: 'Blog post deleted successfully' });
   } catch (error) {
     console.error('Error deleting blog post:', error);
     res.status(500).json({ error: 'Failed to delete blog post' });
+  }
+});
+
+// Generate static HTML file for a blog post (for SEO)
+router.post('/posts/:id/generate-static', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    console.log(`📄 Generating static file for post ID: ${id}`);
+
+    // Verify post exists and is published
+    const [post] = await db
+      .select({ id: blogPosts.id, slug: blogPosts.slug, status: blogPosts.status })
+      .from(blogPosts)
+      .where(eq(blogPosts.id, id));
+
+    if (!post) {
+      return res.status(404).json({ error: 'Blog post not found' });
+    }
+
+    if (post.status !== 'published') {
+      return res.status(400).json({
+        error: 'Cannot generate static file for unpublished post',
+        status: post.status
+      });
+    }
+
+    // Generate the static file
+    const success = await staticBlogGenerator.generateStaticPost(id);
+
+    if (success) {
+      console.log(`✅ Static file generated successfully: ${post.slug}.html`);
+      res.json({
+        success: true,
+        message: 'Static file generated successfully',
+        slug: post.slug,
+        path: `/stories/${post.slug}.html`
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to generate static file'
+      });
+    }
+  } catch (error) {
+    console.error('Error generating static file:', error);
+    res.status(500).json({ error: 'Failed to generate static file' });
+  }
+});
+
+// Remove static HTML file for a blog post (when unpublishing)
+router.delete('/posts/:id/static', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Get the post slug
+    const [post] = await db
+      .select({ slug: blogPosts.slug })
+      .from(blogPosts)
+      .where(eq(blogPosts.id, id));
+
+    if (!post || !post.slug) {
+      return res.status(404).json({ error: 'Blog post not found' });
+    }
+
+    // Remove the static file
+    const success = await staticBlogGenerator.removeStaticPost(post.slug);
+
+    if (success) {
+      console.log(`🗑️ Static file removed: ${post.slug}.html`);
+      res.json({
+        success: true,
+        message: 'Static file removed successfully',
+        slug: post.slug
+      });
+    } else {
+      res.json({
+        success: true,
+        message: 'Static file did not exist or was already removed',
+        slug: post.slug
+      });
+    }
+  } catch (error) {
+    console.error('Error removing static file:', error);
+    res.status(500).json({ error: 'Failed to remove static file' });
   }
 });
 

@@ -145,13 +145,19 @@ export const shootOperations = {
     description?: string;
     clientId: string;
     customSlug?: string;
+    customTitle?: string;
     isPrivate?: boolean;
     groupName?: string;
     mediaType?: string;
+    shootType?: string;
+    shootDate?: string;
+    location?: string;
+    notes?: string;
+    seoTags?: string;
   }): Promise<Shoot> => {
     // Get the current user to set as created_by
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+
     if (authError || !user) {
       throw new Error(`Authentication required to create shoot: ${authError?.message || 'User not found'}`);
     }
@@ -161,26 +167,38 @@ export const shootOperations = {
       description: shootData.description,
       client_id: shootData.clientId,
       custom_slug: shootData.customSlug,
+      custom_title: shootData.customTitle,
       is_private: shootData.isPrivate,
       group_name: shootData.groupName,
-      media_type: shootData.mediaType
+      media_type: shootData.mediaType,
+      shoot_type: shootData.shootType,
+      shoot_date: shootData.shootDate,
+      location: shootData.location,
+      notes: shootData.notes,
+      seo_tags: shootData.seoTags
     });
-    
+
     const { data, error } = await supabase
       .from('shoots')
       .insert([{
         title: shootData.title,
         description: shootData.description || null,
-        client_id: shootData.clientId, // snake_case for database
-        custom_slug: shootData.customSlug || null, // snake_case for database
-        is_private: shootData.isPrivate || false, // snake_case for database
-        group_name: shootData.groupName || null, // snake_case for database
-        media_type: shootData.mediaType || 'photo', // snake_case for database
-        created_by: user.id, // Required field for database constraint
+        client_id: shootData.clientId,
+        custom_slug: shootData.customSlug || null,
+        custom_title: shootData.customTitle || null,
+        is_private: shootData.isPrivate || false,
+        group_name: shootData.groupName || null,
+        media_type: shootData.mediaType || 'photo',
+        shoot_type: shootData.shootType || null,
+        shoot_date: shootData.shootDate || null,
+        location: shootData.location || null,
+        notes: shootData.notes || null,
+        seo_tags: shootData.seoTags || null,
+        created_by: user.id,
       }])
       .select()
       .single();
-    
+
     if (error) throw new Error(`Failed to create shoot: ${error.message}`);
     return data;
   },
@@ -198,13 +216,43 @@ export const shootOperations = {
     videoSequences: Record<string, number>;
     media_type: string | null;
   }>): Promise<Shoot> => {
+    // Convert camelCase to snake_case for Supabase
+    const dbUpdates: any = {};
+
+    // Handle snake_case fields (already correct)
+    if (updates.title !== undefined) dbUpdates.title = updates.title;
+    if (updates.description !== undefined) dbUpdates.description = updates.description;
+    if (updates.client_id !== undefined) dbUpdates.client_id = updates.client_id;
+    if (updates.custom_slug !== undefined) dbUpdates.custom_slug = updates.custom_slug;
+    if (updates.is_private !== undefined) dbUpdates.is_private = updates.is_private;
+    if (updates.group_name !== undefined) dbUpdates.group_name = updates.group_name;
+    if (updates.banner_image_id !== undefined) dbUpdates.banner_image_id = updates.banner_image_id;
+    if (updates.gallery_settings !== undefined) dbUpdates.gallery_settings = updates.gallery_settings;
+    if (updates.media_type !== undefined) dbUpdates.media_type = updates.media_type;
+
+    // Handle camelCase aliases (convert to snake_case)
+    if ((updates as any).albumCoverId !== undefined) dbUpdates.cover_image_id = (updates as any).albumCoverId;
+    if ((updates as any).backgroundColor !== undefined) dbUpdates.background_color = (updates as any).backgroundColor;
+    if ((updates as any).customTitle !== undefined) dbUpdates.custom_title = (updates as any).customTitle;
+    if ((updates as any).customSlug !== undefined) dbUpdates.custom_slug = (updates as any).customSlug;
+    if ((updates as any).isPrivate !== undefined) dbUpdates.is_private = (updates as any).isPrivate;
+    if ((updates as any).clientId !== undefined) dbUpdates.client_id = (updates as any).clientId;
+    if ((updates as any).groupName !== undefined) dbUpdates.group_name = (updates as any).groupName;
+    if ((updates as any).coverImageId !== undefined) dbUpdates.cover_image_id = (updates as any).coverImageId;
+    if ((updates as any).bannerImageId !== undefined) dbUpdates.banner_image_id = (updates as any).bannerImageId;
+    if ((updates as any).gallerySettings !== undefined) dbUpdates.gallery_settings = (updates as any).gallerySettings;
+    if ((updates as any).mediaType !== undefined) dbUpdates.media_type = (updates as any).mediaType;
+
+    // Always update the updated_at timestamp
+    dbUpdates.updated_at = new Date().toISOString();
+
     const { data, error } = await supabase
       .from('shoots')
-      .update(updates)
+      .update(dbUpdates)
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) throw new Error(`Failed to update shoot: ${error.message}`);
     return data;
   },
@@ -436,8 +484,17 @@ export const videoOperations = {
       .from('videos')
       .update({ classification })
       .in('id', ids);
-    
+
     if (error) throw new Error(`Failed to update classification: ${error.message}`);
+  },
+
+  updateShootId: async (ids: string[], newShootId: string | null): Promise<void> => {
+    const { error } = await supabase
+      .from('videos')
+      .update({ shoot_id: newShootId })
+      .in('id', ids);
+
+    if (error) throw new Error(`Failed to update video album assignment: ${error.message}`);
   },
 
   delete: async (ids: string[]): Promise<void> => {
@@ -445,7 +502,7 @@ export const videoOperations = {
       .from('videos')
       .delete()
       .in('id', ids);
-    
+
     if (error) throw new Error(`Failed to delete videos: ${error.message}`);
   },
 
@@ -588,10 +645,16 @@ export const blogOperations = {
       content?: string;
       excerpt?: string;
       cover_image?: string;
+      post_image_1?: string;
+      post_image_2?: string;
       category_id?: string;
       status?: string;
       published_at?: string;
       author_id?: string;
+      seo_title?: string;
+      seo_description?: string;
+      featured_section?: any;
+      variable_content?: any;
     }): Promise<BlogPost> => {
       const { data, error } = await supabase
         .from('blog_posts')
@@ -601,26 +664,51 @@ export const blogOperations = {
           content: postData.content || '',
           excerpt: postData.excerpt || '',
           cover_image: postData.cover_image || null,
+          post_image_1: postData.post_image_1 || null,
+          post_image_2: postData.post_image_2 || null,
           category_id: postData.category_id || null,
           status: postData.status || 'draft',
           published_at: postData.published_at || null,
           author_id: postData.author_id || null,
+          seo_title: postData.seo_title || null,
+          seo_description: postData.seo_description || null,
+          featured_section: postData.featured_section || null,
+          variable_content: postData.variable_content || null,
         }])
         .select()
         .single();
-      
+
       if (error) throw new Error(`Failed to create blog post: ${error.message}`);
       return data;
     },
 
-    update: async (id: string, updates: Partial<BlogPost>): Promise<BlogPost> => {
+    update: async (id: string, updates: Partial<BlogPost> & {
+      cover_image?: string | null;
+      post_image_1?: string | null;
+      post_image_2?: string | null;
+      category_id?: string | null;
+      published_at?: string | null;
+      author_id?: string | null;
+      seo_title?: string | null;
+      seo_description?: string | null;
+      featured_section?: any;
+      variable_content?: any;
+    }): Promise<BlogPost> => {
+      // Convert any undefined values to null for Supabase
+      const cleanUpdates = { ...updates };
+      Object.keys(cleanUpdates).forEach(key => {
+        if ((cleanUpdates as any)[key] === undefined) {
+          delete (cleanUpdates as any)[key];
+        }
+      });
+
       const { data, error } = await supabase
         .from('blog_posts')
-        .update(updates)
+        .update(cleanUpdates)
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw new Error(`Failed to update blog post: ${error.message}`);
       return data;
     },

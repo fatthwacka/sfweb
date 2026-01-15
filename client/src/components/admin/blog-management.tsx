@@ -233,7 +233,7 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
   const savePostMutation = useMutation({
     mutationFn: async (post: Partial<InsertBlogPost>) => {
       console.log('Sending blog post data:', JSON.stringify(post, null, 2));
-      
+
       if (selectedPost?.id) {
         // Update existing post
         return supabaseOperations.blog.posts.update(selectedPost.id, {
@@ -242,10 +242,16 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
           content: post.content,
           excerpt: post.excerpt,
           cover_image: post.coverImage || null,
+          post_image_1: post.postImage1 || null,
+          post_image_2: post.postImage2 || null,
           category_id: post.categoryId || null,
           status: post.status,
           published_at: post.publishedAt || null,
           author_id: post.authorId || null,
+          seo_title: post.seoTitle || null,
+          seo_description: post.seoDescription || null,
+          featured_section: post.featuredSection || null,
+          variable_content: post.variableContent || null,
         });
       } else {
         // Create new post
@@ -255,10 +261,16 @@ export function BlogManagement({ userRole }: BlogManagementProps) {
           content: post.content,
           excerpt: post.excerpt,
           cover_image: post.coverImage || null,
+          post_image_1: post.postImage1 || null,
+          post_image_2: post.postImage2 || null,
           category_id: post.categoryId || null,
           status: post.status,
           published_at: post.publishedAt || null,
           author_id: post.authorId || null,
+          seo_title: post.seoTitle || null,
+          seo_description: post.seoDescription || null,
+          featured_section: post.featuredSection || null,
+          variable_content: post.variableContent || null,
         });
       }
     },
@@ -1752,15 +1764,8 @@ Please provide only the enhanced content without any additional text or explanat
                   message: 'Saving story to database...',
                   error: null
                 });
-                console.log('✅ publishProgress state updated');
-                
-                // Add a delay to ensure state update renders  
-                await new Promise(resolve => setTimeout(resolve, 5000));
-                console.log('🎯 MODAL SHOULD BE VISIBLE FOR 5 SECONDS NOW - if you see this and no modal, there is a rendering issue');
-                console.log('🔍 Current publishProgress state:', JSON.stringify(publishProgress, null, 2));
-                
+
                 try {
-                  console.log('📝 Preparing post data...');
                   // Step 1: Prepare post data
                   const postData = {
                     ...editorPost,
@@ -1788,23 +1793,23 @@ Please provide only the enhanced content without any additional text or explanat
                   });
                   
                   // Step 2: Save to database
-                  const url = selectedPost?.id 
-                    ? `/api/blog/posts/${selectedPost.id}` 
-                    : '/api/blog/posts';
-                  const method = selectedPost?.id ? 'PUT' : 'POST';
-                  
-                  console.log(`Saving to database: ${selectedPost?.id ? 'UPDATE' : 'CREATE'}`);
-                  const savedPost = selectedPost?.id 
+                  const savedPost = selectedPost?.id
                     ? await supabaseOperations.blog.posts.update(selectedPost.id, {
                         title: postData.title,
                         slug: postData.slug,
                         content: postData.content,
                         excerpt: postData.excerpt || null,
                         cover_image: postData.coverImage || null,
+                        post_image_1: postData.postImage1 || null,
+                        post_image_2: postData.postImage2 || null,
                         category_id: postData.categoryId || null,
                         status: postData.status,
                         published_at: postData.publishedAt || null,
                         author_id: postData.authorId || null,
+                        seo_title: postData.seoTitle || null,
+                        seo_description: postData.seoDescription || null,
+                        featured_section: postData.featuredSection || null,
+                        variable_content: postData.variableContent || null,
                       })
                     : await supabaseOperations.blog.posts.create({
                         title: postData.title,
@@ -1812,43 +1817,57 @@ Please provide only the enhanced content without any additional text or explanat
                         content: postData.content,
                         excerpt: postData.excerpt || null,
                         cover_image: postData.coverImage || null,
+                        post_image_1: postData.postImage1 || null,
+                        post_image_2: postData.postImage2 || null,
                         category_id: postData.categoryId || null,
                         status: postData.status,
                         published_at: postData.publishedAt || null,
                         author_id: postData.authorId || null,
+                        seo_title: postData.seoTitle || null,
+                        seo_description: postData.seoDescription || null,
+                        featured_section: postData.featuredSection || null,
+                        variable_content: postData.variableContent || null,
                       });
                   
-                  // Update progress
-                  console.log('🔄 Updating to generating step...');
+                  // Update progress - generating static file
                   setPublishProgress(prev => ({
                     ...prev,
                     step: 'generating',
                     message: 'Creating static SEO file...'
                   }));
-                  console.log('✅ Updated to generating step');
-                  
-                  // Step 3: Generate static file (server handles this automatically via the update hook)
-                  // We'll wait a moment for the server to process
-                  await new Promise(resolve => setTimeout(resolve, 1000));
-                  
-                  // Success!
-                  console.log('🎉 Publishing complete, showing success...');
+
+                  // Step 3: Generate static file via API endpoint
+                  const postId = savedPost?.id || selectedPost?.id;
+                  let staticGenerated = false;
+                  if (postId) {
+                    try {
+                      const staticResponse = await fetch(`/api/blog/posts/${postId}/generate-static`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                      });
+
+                      if (staticResponse.ok) {
+                        staticGenerated = true;
+                      }
+                    } catch (staticError) {
+                      // Don't fail the publish - static generation is optional enhancement
+                      console.warn('Static generation failed (non-blocking):', staticError);
+                    }
+                  }
+
+                  // Success - keep modal open until user dismisses it
                   setPublishProgress(prev => ({
                     ...prev,
                     step: 'success',
-                    message: 'Post published successfully!'
+                    message: staticGenerated
+                      ? 'Post published and static file created!'
+                      : 'Post published successfully!'
                   }));
-                  console.log('✅ Success state set, modal should show finish options');
-                  
-                  // Keep modal open until user clicks Finish
-                  
+
                   // Update local state
                   if (!selectedPost?.id && savedPost) {
                     setSelectedPost(savedPost);
                   }
-                  
-                  // Refresh posts list (temporarily disabled to debug refresh issue)
-                  // queryClient.invalidateQueries({ queryKey: ['blog', 'posts'] });
                   
                 } catch (error) {
                   console.error('❌ Publish error caught:', error);
@@ -3576,6 +3595,131 @@ Please provide only the enhanced content without any additional text or explanat
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Publish Progress Modal - MUST be inside editor view for visibility */}
+        {publishProgress.isOpen && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999]">
+            <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4 relative">
+              {/* X Close Button - only show on success or error */}
+              {(publishProgress.step === 'success' || publishProgress.step === 'error') && (
+                <button
+                  onClick={() => setPublishProgress(prev => ({ ...prev, isOpen: false }))}
+                  className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
+
+              {/* Modal Header with Icon */}
+              <div className="flex items-center gap-3 mb-4">
+                {publishProgress.step === 'saving' && (
+                  <>
+                    <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+                    <h3 className="text-lg font-semibold text-gray-900">Publishing Story...</h3>
+                  </>
+                )}
+                {publishProgress.step === 'generating' && (
+                  <>
+                    <Loader2 className="w-6 h-6 animate-spin text-green-500" />
+                    <h3 className="text-lg font-semibold text-gray-900">Creating SEO File...</h3>
+                  </>
+                )}
+                {publishProgress.step === 'success' && (
+                  <>
+                    <CheckCircle className="w-6 h-6 text-green-500" />
+                    <h3 className="text-lg font-semibold text-gray-900">Published Successfully!</h3>
+                  </>
+                )}
+                {publishProgress.step === 'error' && (
+                  <>
+                    <AlertCircle className="w-6 h-6 text-red-500" />
+                    <h3 className="text-lg font-semibold text-gray-900">Publishing Failed</h3>
+                  </>
+                )}
+              </div>
+
+              {/* Progress Steps - Show during processing */}
+              {(publishProgress.step === 'saving' || publishProgress.step === 'generating') && (
+                <div className="mb-6 space-y-2">
+                  <div className={`flex items-center gap-2 text-sm ${publishProgress.step === 'saving' ? 'text-blue-600' : 'text-green-600'}`}>
+                    {publishProgress.step === 'saving' ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <CheckCircle className="w-4 h-4" />
+                    )}
+                    <span>Saving to database</span>
+                  </div>
+                  <div className={`flex items-center gap-2 text-sm ${publishProgress.step === 'generating' ? 'text-blue-600' : 'text-gray-400'}`}>
+                    {publishProgress.step === 'generating' ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <div className="w-4 h-4 rounded-full border-2 border-gray-300" />
+                    )}
+                    <span>Creating static SEO file</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Success Content */}
+              {publishProgress.step === 'success' && (
+                <div className="space-y-4">
+                  <div className="text-sm text-green-700 bg-green-50 p-3 rounded space-y-1">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4" />
+                      <span>Story saved to database</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4" />
+                      <span>Static SEO file generated</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4" />
+                      <span>Ready for search engines!</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setPublishProgress(prev => ({ ...prev, isOpen: false }));
+                        setActiveView('posts');
+                      }}
+                      className="border-gray-300 text-gray-700 hover:bg-gray-100"
+                    >
+                      Return to Posts
+                    </Button>
+                    <Button
+                      onClick={() => setPublishProgress(prev => ({ ...prev, isOpen: false }))}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      OK
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Error Content */}
+              {publishProgress.step === 'error' && (
+                <div className="space-y-4">
+                  <p className="text-gray-700">{publishProgress.message}</p>
+                  {publishProgress.error && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
+                      {publishProgress.error}
+                    </div>
+                  )}
+                  <div className="flex justify-end pt-2">
+                    <Button
+                      onClick={() => setPublishProgress(prev => ({ ...prev, isOpen: false }))}
+                      className="bg-gray-600 hover:bg-gray-700 text-white"
+                    >
+                      Close
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -3766,32 +3910,32 @@ Please provide only the enhanced content without any additional text or explanat
         )}
       </div>
 
-      {/* Publish Progress Modal - Fixed Overlay Approach */}
+      {/* Publish Progress Modal */}
       {publishProgress.isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999]" 
-          style={{ zIndex: 9999, position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh' }}
-          ref={(el) => {
-            if (el) {
-              console.log('🎯 MODAL DOM ELEMENT RENDERED!', el);
-              console.log('🔍 Modal computed styles:', window.getComputedStyle(el));
-            }
-          }}
-        >
-          {console.log('🎯 MODAL JSX IS RENDERING!', publishProgress)}
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
-            {/* Modal Header */}
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999]">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4 relative">
+            {/* X Close Button - only show on success or error */}
+            {(publishProgress.step === 'success' || publishProgress.step === 'error') && (
+              <button
+                onClick={() => setPublishProgress(prev => ({ ...prev, isOpen: false }))}
+                className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+
+            {/* Modal Header with Icon */}
             <div className="flex items-center gap-3 mb-4">
               {publishProgress.step === 'saving' && (
                 <>
                   <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-                  <h3 className="text-lg font-semibold text-gray-900">Publishing Story</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Publishing Story...</h3>
                 </>
               )}
               {publishProgress.step === 'generating' && (
                 <>
-                  <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-                  <h3 className="text-lg font-semibold text-gray-900">Creating SEO File</h3>
+                  <Loader2 className="w-6 h-6 animate-spin text-green-500" />
+                  <h3 className="text-lg font-semibold text-gray-900">Creating SEO File...</h3>
                 </>
               )}
               {publishProgress.step === 'success' && (
@@ -3807,54 +3951,84 @@ Please provide only the enhanced content without any additional text or explanat
                 </>
               )}
             </div>
-            
-            {/* Modal Content */}
-            <div className="mb-6">
-              <p className="text-gray-700">{publishProgress.message}</p>
-              {publishProgress.error && (
-                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
-                  {publishProgress.error}
+
+            {/* Progress Steps - Show during processing */}
+            {(publishProgress.step === 'saving' || publishProgress.step === 'generating') && (
+              <div className="mb-6 space-y-2">
+                <div className={`flex items-center gap-2 text-sm ${publishProgress.step === 'saving' ? 'text-blue-600' : 'text-green-600'}`}>
+                  {publishProgress.step === 'saving' ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <CheckCircle className="w-4 h-4" />
+                  )}
+                  <span>Saving to database</span>
                 </div>
-              )}
-            </div>
-            
-            {/* Success Actions */}
+                <div className={`flex items-center gap-2 text-sm ${publishProgress.step === 'generating' ? 'text-blue-600' : 'text-gray-400'}`}>
+                  {publishProgress.step === 'generating' ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <div className="w-4 h-4 rounded-full border-2 border-gray-300" />
+                  )}
+                  <span>Creating static SEO file</span>
+                </div>
+              </div>
+            )}
+
+            {/* Success Content */}
             {publishProgress.step === 'success' && (
               <div className="space-y-4">
-                <div className="text-sm text-green-700 bg-green-50 p-3 rounded">
-                  ✅ Story saved to database<br/>
-                  ✅ Static SEO file generated<br/>
-                  ✅ Ready for search engines!
+                <div className="text-sm text-green-700 bg-green-50 p-3 rounded space-y-1">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Story saved to database</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Static SEO file generated</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Ready for search engines!</span>
+                  </div>
                 </div>
-                <div className="flex justify-end gap-2">
-                  <Button 
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button
                     variant="outline"
                     onClick={() => {
                       setPublishProgress(prev => ({ ...prev, isOpen: false }));
                       setActiveView('posts');
                     }}
+                    className="border-gray-300 text-gray-700 hover:bg-gray-100"
                   >
                     Return to Posts
                   </Button>
-                  <Button 
+                  <Button
                     onClick={() => setPublishProgress(prev => ({ ...prev, isOpen: false }))}
                     className="bg-green-600 hover:bg-green-700 text-white"
                   >
-                    Finish
+                    OK
                   </Button>
                 </div>
               </div>
             )}
-            
-            {/* Error Actions */}
+
+            {/* Error Content */}
             {publishProgress.step === 'error' && (
-              <div className="flex justify-end">
-                <Button 
-                  variant="outline"
-                  onClick={() => setPublishProgress(prev => ({ ...prev, isOpen: false }))}
-                >
-                  Close
-                </Button>
+              <div className="space-y-4">
+                <p className="text-gray-700">{publishProgress.message}</p>
+                {publishProgress.error && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
+                    {publishProgress.error}
+                  </div>
+                )}
+                <div className="flex justify-end pt-2">
+                  <Button
+                    onClick={() => setPublishProgress(prev => ({ ...prev, isOpen: false }))}
+                    className="bg-gray-600 hover:bg-gray-700 text-white"
+                  >
+                    Close
+                  </Button>
+                </div>
               </div>
             )}
           </div>

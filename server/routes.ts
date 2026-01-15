@@ -6683,11 +6683,12 @@ Your search term:`;
       const prefix = (req.query.prefix as string) || ''; // Optional folder prefix filter
       const cacheKey = prefix || '_all_';
 
-      // Return cached data if still valid
-      if (cloudStorageCaches[cacheKey] && (now - cloudStorageCaches[cacheKey].timestamp) < CACHE_DURATION) {
+      // Return cached data if still valid AND has the new folderStats field
+      const cachedData = cloudStorageCaches[cacheKey];
+      if (cachedData && (now - cachedData.timestamp) < CACHE_DURATION && cachedData.data.folderStats) {
         console.log(`📁 Returning cached cloud storage files for prefix: "${prefix || 'all'}"`);
         return res.json({
-          ...cloudStorageCaches[cacheKey].data,
+          ...cachedData.data,
           cached: true,
           timestamp: new Date().toISOString()
         });
@@ -6774,7 +6775,7 @@ Your search term:`;
         }
       }
 
-      // Calculate stats
+      // Calculate stats for current prefix/folder (filtered files)
       const stats = {
         totalFiles: allFiles.length,
         totalSize: allFiles.reduce((sum, file) => sum + file.size, 0),
@@ -6782,6 +6783,63 @@ Your search term:`;
         videos: allFiles.filter(f => f.type === 'video').length,
         other: allFiles.filter(f => f.type === 'other').length
       };
+
+      // Always calculate global stats and folder stats by fetching ALL files
+      let globalStats = stats;
+      let folderStats: Record<string, { count: number; size: number }> = {
+        'ai-images/': { count: 0, size: 0 },
+        'ai-videos/': { count: 0, size: 0 },
+        'compressed-images/': { count: 0, size: 0 }
+      };
+
+      // Get all files from bucket (unfiltered) to calculate global stats
+      const bucket = storage.bucket('netfox-veo-generations');
+      const [allBucketFiles] = await bucket.getFiles({ includeMetadata: true, maxResults: 1000 });
+
+      let globalImages = 0;
+      let globalVideos = 0;
+      let globalOther = 0;
+      let globalSize = 0;
+
+      for (const file of allBucketFiles) {
+        const metadata = file.metadata;
+        const fileName = file.name || '';
+        const fileSize = parseInt(metadata?.size || '0');
+        const extension = fileName.toLowerCase().split('.').pop() || '';
+
+        // Count by type
+        if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].includes(extension)) {
+          globalImages++;
+        } else if (['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'm4v'].includes(extension)) {
+          globalVideos++;
+        } else {
+          globalOther++;
+        }
+        globalSize += fileSize;
+
+        // Count by folder
+        if (fileName.startsWith('ai-images/')) {
+          folderStats['ai-images/'].count++;
+          folderStats['ai-images/'].size += fileSize;
+        } else if (fileName.startsWith('ai-videos/')) {
+          folderStats['ai-videos/'].count++;
+          folderStats['ai-videos/'].size += fileSize;
+        } else if (fileName.startsWith('compressed-images/')) {
+          folderStats['compressed-images/'].count++;
+          folderStats['compressed-images/'].size += fileSize;
+        }
+      }
+
+      globalStats = {
+        totalFiles: allBucketFiles.length,
+        totalSize: globalSize,
+        images: globalImages,
+        videos: globalVideos,
+        other: globalOther
+      };
+
+      console.log(`📊 Global stats: ${globalStats.totalFiles} files, ${globalStats.images} images, ${globalStats.videos} videos`);
+      console.log(`📁 Folder stats: ai-images=${folderStats['ai-images/'].count}, compressed=${folderStats['compressed-images/'].count}, videos=${folderStats['ai-videos/'].count}`);
 
       const loadTime = Date.now() - startTime;
       console.log(`✅ Loaded ${allFiles.length} files from ${buckets.length} buckets in ${loadTime}ms`);
@@ -6792,7 +6850,9 @@ Your search term:`;
       const responseData = {
         success: true,
         files: allFiles,
-        stats,
+        stats,           // Stats for current folder/prefix
+        globalStats,     // Stats for entire bucket
+        folderStats,     // Stats per folder
         buckets,
         prefix: prefix || null
       };
@@ -6812,6 +6872,84 @@ Your search term:`;
         error: 'Failed to list cloud storage files',
         details: error.message,
         timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  // GET /api/cloud-storage/download - Proxy download from Google Cloud Storage (bypasses CORS)
+  app.get('/api/cloud-storage/download', async (req, res) => {
+    try {
+      const { bucket: bucketName, path: filePath, filename } = req.query;
+
+      if (!bucketName || !filePath) {
+        return res.status(400).json({
+          success: false,
+          error: 'Bucket name and file path are required'
+        });
+      }
+
+      console.log(`⬇️ Downloading file: ${filePath} from bucket: ${bucketName}`);
+
+      // Import Google Cloud Storage
+      const { Storage } = await import('@google-cloud/storage');
+
+      const storage = new Storage({
+        projectId: process.env.GOOGLE_PROJECT_ID,
+        credentials: {
+          type: 'service_account',
+          project_id: process.env.GOOGLE_PROJECT_ID,
+          private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
+          private_key: process.env.GOOGLE_PRIVATE_KEY,
+          client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+          client_id: process.env.GOOGLE_CLIENT_ID,
+          auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+          token_uri: 'https://oauth2.googleapis.com/token',
+          auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
+          client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL}`,
+        }
+      });
+
+      const bucket = storage.bucket(bucketName as string);
+      const file = bucket.file(filePath as string);
+
+      // Check if file exists
+      const [exists] = await file.exists();
+      if (!exists) {
+        return res.status(404).json({
+          success: false,
+          error: 'File not found'
+        });
+      }
+
+      // Get file metadata for content type
+      const [metadata] = await file.getMetadata();
+      const contentType = metadata.contentType || 'application/octet-stream';
+      const downloadFilename = (filename as string) || (filePath as string).split('/').pop() || 'download';
+
+      // Set headers for download
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Disposition', `attachment; filename="${downloadFilename}"`);
+      if (metadata.size) {
+        res.setHeader('Content-Length', metadata.size);
+      }
+
+      // Stream the file directly to response
+      const readStream = file.createReadStream();
+      readStream.on('error', (err) => {
+        console.error('❌ Stream error:', err);
+        if (!res.headersSent) {
+          res.status(500).json({ success: false, error: 'Failed to stream file' });
+        }
+      });
+
+      readStream.pipe(res);
+
+    } catch (error: any) {
+      console.error('💥 Cloud Storage download error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to download file',
+        details: error.message
       });
     }
   });

@@ -52,43 +52,43 @@ interface Shoot {
 
 interface Image {
   id: string;
-  shoot_id: string;
+  shootId: string;
   filename: string;
-  storage_path: string;
-  file_size: number | null;
+  storagePath: string;
+  fileSize: number | null;
   sequence: number;
-  featured_image: boolean;
+  featuredImage: boolean;
   classification: string;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface Video {
   id: string;
-  shoot_id: string;
+  shootId: string;
   filename: string;
-  storage_path: string;
-  optimized_path?: string | null;
-  thumbnail_path: string;
-  file_size: number;
+  storagePath: string;
+  optimizedPath?: string | null;
+  thumbnailPath: string;
+  fileSize: number;
   sequence: number;
   duration?: number;
   width?: number;
   height?: number;
-  featured_video: boolean;
+  featuredVideo: boolean;
   classification: string;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface MediaItem extends Partial<Image>, Partial<Video> {
   mediaType: 'image' | 'video';
   id: string;
-  shoot_id: string;
+  shootId: string;
   filename: string;
-  storage_path: string;
+  storagePath: string;
   sequence: number;
-  created_at: string;
+  createdAt: string;
 }
 
 interface Client {
@@ -504,7 +504,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
           ? item.filename
           : `${shoot?.title?.replace(/[^a-zA-Z0-9]/g, "-")}-video-${Date.now()}.${originalExtension}`;
       } else {
-        downloadUrl = ImageUrl.forFullSize(item.storage_path);
+        downloadUrl = ImageUrl.forFullSize(item.storagePath);
         mediaTypeName = 'image';
         // Get proper image extension from filename or fallback to .jpg
         const originalExtension = item.filename ? 
