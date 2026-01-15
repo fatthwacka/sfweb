@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { supabaseAdmin } from './supabase-admin';
+import { supabaseAdmin } from './supabase-auth';
 
 interface StaticPageData {
   title: string;
@@ -65,8 +65,8 @@ export class StaticBlogGenerator {
           excerpt,
           content,
           cover_image,
-          meta_title,
-          meta_description,
+          seo_title,
+          seo_description,
           published_at,
           created_at,
           status,
@@ -118,8 +118,8 @@ export class StaticBlogGenerator {
         excerpt: postData.excerpt,
         content: postData.content,
         coverImage: postData.cover_image,
-        seoTitle: postData.meta_title,
-        seoDescription: postData.meta_description,
+        seoTitle: postData.seo_title,
+        seoDescription: postData.seo_description,
         publishedAt: postData.published_at,
         createdAt: postData.created_at,
         authorName,

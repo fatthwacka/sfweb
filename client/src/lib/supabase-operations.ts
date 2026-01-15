@@ -651,8 +651,8 @@ export const blogOperations = {
       status?: string;
       published_at?: string;
       author_id?: string;
-      meta_title?: string;
-      meta_description?: string;
+      seo_title?: string;
+      seo_description?: string;
       featured_section?: any;
       variable_content?: any;
     }): Promise<BlogPost> => {
@@ -670,8 +670,8 @@ export const blogOperations = {
           status: postData.status || 'draft',
           published_at: postData.published_at || null,
           author_id: postData.author_id || null,
-          meta_title: postData.meta_title || null,
-          meta_description: postData.meta_description || null,
+          seo_title: postData.seo_title || null,
+          seo_description: postData.seo_description || null,
           featured_section: postData.featured_section || null,
           variable_content: postData.variable_content || null,
         }])
@@ -689,8 +689,8 @@ export const blogOperations = {
       category_id?: string | null;
       published_at?: string | null;
       author_id?: string | null;
-      meta_title?: string | null;
-      meta_description?: string | null;
+      seo_title?: string | null;
+      seo_description?: string | null;
       featured_section?: any;
       variable_content?: any;
     }): Promise<BlogPost> => {
