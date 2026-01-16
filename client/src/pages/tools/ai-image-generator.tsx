@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Sparkles, Loader2, Download, Info, Eye, Brain, CheckSquare, Square, Upload, Package, User, Cat, Palette, X } from 'lucide-react';
+import { ArrowLeft, Sparkles, Loader2, Download, Info, Eye, Brain, CheckSquare, Square, Upload, Package, User, Cat, Palette, X, Image, Mountain } from 'lucide-react';
 import { useLocation } from 'wouter';
 
 import { Navigation } from '@/components/layout/navigation';
@@ -19,7 +19,9 @@ import { toast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import { GradientBackground } from '@/components/common/gradient-background';
 
-// AI Model configurations
+// AI Model configurations - Nano Banana (Gemini) and Imagen families
+// Note: Imagen 4.0 does NOT support reference images - text-to-image only
+// Nano Banana (Gemini) supports up to 14 reference images natively
 const VERTEX_MODELS = [
   {
     value: 'gemini-3-pro-image-preview-4k',
@@ -31,6 +33,8 @@ const VERTEX_MODELS = [
     resolutions: ['4K'],
     nativeResolution: '4K',
     nativeResolutionFormat: 'k-scale',
+    maxIngredients: 6, // 4 products + model + scene
+    supportsReferenceImages: true,
     default: true,
   },
   {
@@ -43,6 +47,8 @@ const VERTEX_MODELS = [
     resolutions: ['2048px', '1536px', '1024px'],
     nativeResolution: '2048px',
     nativeResolutionFormat: 'px',
+    maxIngredients: 0, // Imagen 4.0 does NOT support reference images
+    supportsReferenceImages: false,
   },
   {
     value: 'gemini-3-pro-image-preview-2k',
@@ -54,41 +60,36 @@ const VERTEX_MODELS = [
     resolutions: ['2K'],
     nativeResolution: '2K',
     nativeResolutionFormat: 'k-scale',
+    maxIngredients: 6,
+    supportsReferenceImages: true,
   },
   {
-    value: 'imagen-4.0-generate-001',
+    value: 'coming-soon',
     position: { row: 1, col: 1 },
-    label: 'Imagen Standard',
-    description: 'Mid-range quality (~$0.04)',
-    category: 'imagen',
-    aspectRatios: ['1:1', '3:4', '4:3', '9:16', '16:9'],
-    resolutions: ['1536px', '1024px'],
-    nativeResolution: '1536px',
-    nativeResolutionFormat: 'px',
-  },
-  {
-    value: 'gemini-3-pro-image-preview-1k',
-    position: { row: 2, col: 0 },
-    label: 'Nano Fast',
-    description: 'Budget AI ($0.134)',
-    category: 'nano-banana',
-    aspectRatios: ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'],
-    resolutions: ['1K'],
-    nativeResolution: '1K',
-    nativeResolutionFormat: 'k-scale',
-  },
-  {
-    value: 'imagen-4.0-fast-generate-001',
-    position: { row: 2, col: 1 },
-    label: 'Imagen Fast',
-    description: 'Budget option (~$0.039)',
-    category: 'imagen',
-    aspectRatios: ['1:1', '3:4', '4:3', '9:16', '16:9'],
+    label: 'Coming Soon',
+    description: 'Future model slot',
+    category: 'placeholder',
+    aspectRatios: ['1:1'],
     resolutions: ['1024px'],
     nativeResolution: '1024px',
     nativeResolutionFormat: 'px',
+    maxIngredients: 0,
+    supportsReferenceImages: false,
+    disabled: true,
   },
 ];
+
+// Image Ingredient slot definitions with clear tag labels
+const INGREDIENT_SLOTS = [
+  { id: 'product1', tag: '[product1]', label: 'Product 1', icon: 'Package', group: 'always' },
+  { id: 'product2', tag: '[product2]', label: 'Product 2', icon: 'Package', group: 'always' },
+  { id: 'product3', tag: '[product3]', label: 'Product 3', icon: 'Package', group: 'selectable' },
+  { id: 'product4', tag: '[product4]', label: 'Product 4', icon: 'Package', group: 'selectable' },
+  { id: 'model', tag: '[model]', label: 'Model', icon: 'User', group: 'selectable' },
+  { id: 'scene', tag: '[scene]', label: 'Scene', icon: 'Image', group: 'selectable' },
+] as const;
+
+type IngredientSlotId = typeof INGREDIENT_SLOTS[number]['id'];
 
 const ART_STYLES = [
   { value: 'photorealistic', label: 'Photorealistic', description: 'Realistic photography style' },
@@ -119,13 +120,37 @@ const getDefaultModel = () => {
 export default function AIImageGenerator() {
   const [, setLocation] = useLocation();
 
-  // Reference image (Image Ingredients) state
-  const [referenceImage, setReferenceImage] = useState<File | null>(null);
-  const [referenceImagePreview, setReferenceImagePreview] = useState<string | null>(null);
-  const [referenceImageBase64, setReferenceImageBase64] = useState<string | null>(null);
-  const [referenceSubjectType, setReferenceSubjectType] = useState<'product' | 'person' | 'animal' | 'style'>('product');
-  const [referenceSubjectDescription, setReferenceSubjectDescription] = useState('');
-  const referenceFileInputRef = useRef<HTMLInputElement>(null);
+  // Image Ingredients state - supports up to 6 slots
+  interface ImageIngredient {
+    file: File;
+    preview: string;
+    base64: string;
+    mimeType: string;  // Store separately since File.type is immutable after compression
+    description: string;
+  }
+
+  const [ingredients, setIngredients] = useState<Record<IngredientSlotId, ImageIngredient | null>>({
+    product1: null,
+    product2: null,
+    product3: null,
+    product4: null,
+    model: null,
+    scene: null,
+  });
+
+  // For Imagen models: which of the "selectable" slots (product3, product4, model, scene) are active
+  // Default: model and scene are active, product3 and product4 are inactive
+  const [imagenActiveSlots, setImagenActiveSlots] = useState<Set<string>>(new Set(['model', 'scene']));
+
+  // File input refs for each slot
+  const ingredientRefs = {
+    product1: useRef<HTMLInputElement>(null),
+    product2: useRef<HTMLInputElement>(null),
+    product3: useRef<HTMLInputElement>(null),
+    product4: useRef<HTMLInputElement>(null),
+    model: useRef<HTMLInputElement>(null),
+    scene: useRef<HTMLInputElement>(null),
+  };
 
   // AI Generator state
   const [prompt, setPrompt] = useState('');
@@ -200,6 +225,256 @@ export default function AIImageGenerator() {
       setBrandProfile(null);
     }
   }, [selectedBrand]);
+
+  // ========== Image Ingredients Helper Functions ==========
+
+  // Track which slot is being dragged over for visual feedback
+  const [dragOverSlot, setDragOverSlot] = useState<IngredientSlotId | null>(null);
+
+  // Handle drag events for drop zones
+  const handleDragOver = (e: React.DragEvent, slotId: IngredientSlotId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isSlotActive(slotId) && !ingredients[slotId]) {
+      setDragOverSlot(slotId);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverSlot(null);
+  };
+
+  const handleDrop = async (e: React.DragEvent, slotId: IngredientSlotId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverSlot(null);
+
+    if (!isSlotActive(slotId)) {
+      toast({
+        title: 'Slot not active',
+        description: 'This slot is not available for the current model.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      const file = files[0];
+      await handleIngredientSelect(slotId, file);
+    }
+  };
+
+  // Check if current model is Imagen (no reference image support)
+  const isImagenModel = () => getModelConfig(model).category === 'imagen';
+
+  // Check if current model supports reference images
+  const supportsReferenceImages = () => getModelConfig(model).supportsReferenceImages !== false;
+
+  // Check if a slot is active for the current model
+  const isSlotActive = (slotId: IngredientSlotId): boolean => {
+    const slot = INGREDIENT_SLOTS.find(s => s.id === slotId);
+    if (!slot) return false;
+
+    // "always" group slots (product1, product2) are always active
+    if (slot.group === 'always') return true;
+
+    // For Nano Banana, all 6 slots are active
+    if (!isImagenModel()) return true;
+
+    // For Imagen, only 2 of the 4 "selectable" slots are active
+    return imagenActiveSlots.has(slotId);
+  };
+
+  // Toggle a selectable slot for Imagen (pick 2 of 4 logic)
+  const toggleImagenSlot = (slotId: IngredientSlotId) => {
+    const slot = INGREDIENT_SLOTS.find(s => s.id === slotId);
+    if (!slot || slot.group !== 'selectable') return;
+
+    const newActive = new Set(imagenActiveSlots);
+
+    if (newActive.has(slotId)) {
+      // Already active - don't allow deactivation directly
+      // (user must click another inactive slot to swap)
+      return;
+    }
+
+    // Activating an inactive slot - need to deactivate one of the current active ones
+    newActive.add(slotId);
+
+    // Remove the first (oldest) active selectable slot
+    const activeArray = Array.from(imagenActiveSlots);
+    if (activeArray.length >= 2) {
+      newActive.delete(activeArray[0]);
+    }
+
+    // Clear any ingredient from the now-deactivated slot
+    const deactivatedSlot = activeArray[0] as IngredientSlotId;
+    if (ingredients[deactivatedSlot]) {
+      setIngredients(prev => ({ ...prev, [deactivatedSlot]: null }));
+      toast({
+        title: 'Slot Swapped',
+        description: `${INGREDIENT_SLOTS.find(s => s.id === deactivatedSlot)?.label} deactivated. Image cleared.`,
+      });
+    }
+
+    setImagenActiveSlots(newActive);
+  };
+
+  // File to base64 converter
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64 = (reader.result as string).split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Compress and resize image for model/scene slots (reduces payload size significantly)
+  const compressImage = (file: File, maxSize: number, quality: number): Promise<{ base64: string; mimeType: string }> => {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      img.onload = () => {
+        // Calculate new dimensions maintaining aspect ratio
+        let { width, height } = img;
+        if (width > maxSize || height > maxSize) {
+          if (width > height) {
+            height = Math.round((height * maxSize) / width);
+            width = maxSize;
+          } else {
+            width = Math.round((width * maxSize) / height);
+            height = maxSize;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        // Convert to JPEG for better compression (model/scene don't need transparency)
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        const base64 = dataUrl.split(',')[1];
+
+        resolve({ base64, mimeType: 'image/jpeg' });
+      };
+
+      img.onerror = () => reject(new Error('Failed to load image for compression'));
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  // Handle file selection for a specific slot
+  const handleIngredientSelect = async (slotId: IngredientSlotId, file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'Invalid file type',
+        description: 'Please select a PNG, JPEG, or WebP image.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (file.size > 20 * 1024 * 1024) {
+      toast({
+        title: 'File too large',
+        description: 'Please select an image under 20MB.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const preview = URL.createObjectURL(file);
+      let base64: string;
+      let mimeType: string = file.type;
+
+      // Compress model/scene images to reduce payload (2400px max, 80% quality)
+      // Products keep original quality for pixel-accurate reproduction
+      if (slotId === 'model' || slotId === 'scene') {
+        const compressed = await compressImage(file, 2400, 0.8);
+        base64 = compressed.base64;
+        mimeType = compressed.mimeType;
+      } else {
+        base64 = await fileToBase64(file);
+      }
+
+      setIngredients(prev => ({
+        ...prev,
+        [slotId]: {
+          file,
+          preview,
+          base64,
+          mimeType,  // Store mimeType separately (may differ from file.type after compression)
+          description: '',
+        },
+      }));
+
+      const slot = INGREDIENT_SLOTS.find(s => s.id === slotId);
+      toast({
+        title: `${slot?.label} Added`,
+        description: `Use ${slot?.tag} in your prompt to reference this image.`,
+      });
+    } catch (error) {
+      console.error('Image processing error:', error);
+      toast({
+        title: 'Processing failed',
+        description: error instanceof Error ? error.message : 'Could not process image. Please try another.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Remove an ingredient from a slot
+  const removeIngredient = (slotId: IngredientSlotId) => {
+    if (ingredients[slotId]?.preview) {
+      URL.revokeObjectURL(ingredients[slotId]!.preview);
+    }
+    setIngredients(prev => ({ ...prev, [slotId]: null }));
+
+    const ref = ingredientRefs[slotId];
+    if (ref.current) {
+      ref.current.value = '';
+    }
+  };
+
+  // Update ingredient description
+  const updateIngredientDescription = (slotId: IngredientSlotId, description: string) => {
+    setIngredients(prev => {
+      if (!prev[slotId]) return prev;
+      return {
+        ...prev,
+        [slotId]: { ...prev[slotId]!, description },
+      };
+    });
+  };
+
+  // Get active ingredient tags for prompt helper
+  const getActiveIngredientTags = (): string[] => {
+    return INGREDIENT_SLOTS
+      .filter(slot => isSlotActive(slot.id) && ingredients[slot.id])
+      .map(slot => slot.tag);
+  };
+
+  // Get slot icon component
+  const getSlotIcon = (iconName: string) => {
+    switch (iconName) {
+      case 'Package': return Package;
+      case 'User': return User;
+      case 'Image': return Mountain; // Using Mountain for scene/landscape
+      default: return Package;
+    }
+  };
+
+  // ========== End Image Ingredients Helpers ==========
 
   // Benefits selection algorithm from handoff document
   const generateBenefitsSelection = (checkedPriority: string[], checkedSecondary: string[]) => {
@@ -318,30 +593,60 @@ export default function AIImageGenerator() {
 
   const enhancePrompt = async () => {
     if (!prompt.trim()) return;
-    
+
     setIsEnhancingPrompt(true);
     try {
+      // Get active ingredient info for context
+      const activeIngredients = INGREDIENT_SLOTS
+        .filter(slot => isSlotActive(slot.id) && ingredients[slot.id])
+        .map(slot => ({
+          tag: slot.tag,
+          type: slot.id.startsWith('product') ? 'product' : slot.id,
+          description: ingredients[slot.id]?.description || '',
+        }));
+
       const response = await fetch('/api/ai/enhance-prompt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          userPrompt: prompt, 
-          artStyle, 
+        body: JSON.stringify({
+          userPrompt: prompt,
+          artStyle,
           imageStyle,
           // Include title/subtitle if checked
           includeTitle,
           includeSubtitle,
           titleText: includeTitle ? transformTextCase(titleText, titleCase) : '',
-          subtitleText: includeSubtitle ? transformTextCase(subtitleText, subtitleCase) : ''
+          subtitleText: includeSubtitle ? transformTextCase(subtitleText, subtitleCase) : '',
+          // Include ingredient tags for auto-injection
+          imageIngredients: activeIngredients.length > 0 ? activeIngredients : undefined,
         })
       });
 
       if (response.ok) {
         const data = await response.json();
-        setPrompt(data.suggestedPrompt || data.enhancedPrompt);
+        let enhancedPrompt = data.suggestedPrompt || data.enhancedPrompt;
+
+        // If there are active ingredients but no tags in the enhanced prompt, append them
+        if (activeIngredients.length > 0) {
+          const existingTags = activeIngredients.filter(ing => enhancedPrompt.includes(ing.tag));
+          const missingTags = activeIngredients.filter(ing => !enhancedPrompt.includes(ing.tag));
+
+          if (missingTags.length > 0 && missingTags.length === activeIngredients.length) {
+            // No tags were included - add a reference section
+            const tagList = activeIngredients.map(ing => {
+              const desc = ing.description ? ` (${ing.description})` : '';
+              return `${ing.tag}${desc}`;
+            }).join(', ');
+            enhancedPrompt = `Using reference images: ${tagList}. ${enhancedPrompt}`;
+          }
+        }
+
+        setPrompt(enhancedPrompt);
         toast({
           title: 'Prompt Enhanced',
-          description: 'Your image description has been optimized for AI generation.',
+          description: activeIngredients.length > 0
+            ? `Optimized with ${activeIngredients.length} ingredient tag(s) included.`
+            : 'Your image description has been optimized for AI generation.',
         });
       } else {
         throw new Error('Enhancement failed');
@@ -357,78 +662,22 @@ export default function AIImageGenerator() {
     }
   };
 
-  // Reference image (Image Ingredients) handlers
-  const handleReferenceImageSelect = async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: 'Invalid file type',
-        description: 'Please select a PNG, JPEG, or WebP image.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (file.size > 7 * 1024 * 1024) {
-      toast({
-        title: 'File too large',
-        description: 'Please select an image under 7MB.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setReferenceImage(file);
-    setReferenceImagePreview(URL.createObjectURL(file));
-
-    try {
-      const base64 = await fileToBase64(file);
-      setReferenceImageBase64(base64);
-      toast({
-        title: 'Reference image added',
-        description: `${file.name} ready for Image Ingredients generation.`,
-      });
-    } catch (error) {
-      toast({
-        title: 'Processing failed',
-        description: 'Could not process image. Please try another.',
-        variant: 'destructive',
-      });
-    }
+  // Check if any ingredients are uploaded
+  const hasIngredients = () => {
+    return Object.values(ingredients).some(ing => ing !== null);
   };
 
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const base64 = (reader.result as string).split(',')[1];
-        resolve(base64);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const removeReferenceImage = () => {
-    setReferenceImage(null);
-    setReferenceImagePreview(null);
-    setReferenceImageBase64(null);
-    setReferenceSubjectDescription('');
-    if (referenceFileInputRef.current) {
-      referenceFileInputRef.current.value = '';
-    }
-  };
-
-  const handleReferenceDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) {
-      handleReferenceImageSelect(files[0]);
-    }
-  };
-
-  const supportsImageIngredients = () => {
-    const modelConfig = getModelConfig(model);
-    return modelConfig.category === 'nano-banana';
+  // Get active ingredients for API call
+  const getActiveIngredients = () => {
+    return INGREDIENT_SLOTS
+      .filter(slot => isSlotActive(slot.id) && ingredients[slot.id])
+      .map(slot => ({
+        slotId: slot.id,
+        tag: slot.tag,
+        base64: ingredients[slot.id]!.base64,
+        mimeType: ingredients[slot.id]!.mimeType,  // Use stored mimeType (correct after compression)
+        description: ingredients[slot.id]!.description,
+      }));
   };
 
   const generateImage = async () => {
@@ -466,15 +715,8 @@ export default function AIImageGenerator() {
             finalBenefits: generateBenefitsSelection(checkedPriority, checkedSecondary),
             brandData: brandProfile?.client
           } : undefined,
-          // Image Ingredients - reference image for product/subject placement
-          ...(referenceImageBase64 && supportsImageIngredients() && {
-            referenceImage: {
-              bytesBase64Encoded: referenceImageBase64,
-              mimeType: referenceImage?.type || 'image/png',
-              subjectType: referenceSubjectType,
-              subjectDescription: referenceSubjectDescription || undefined,
-            }
-          }),
+          // Image Ingredients - multiple reference images for composition
+          imageIngredients: getActiveIngredients().length > 0 ? getActiveIngredients() : undefined,
         }),
       });
 
@@ -507,19 +749,16 @@ export default function AIImageGenerator() {
         <div className="container mx-auto px-4 pt-32 pb-8">
           {/* Page Header */}
           <div className="mb-8">
-            <div className="flex items-center gap-4 mb-4">
-              <Button 
-                variant="ghost" 
-                size="sm" 
+            <div className="text-center">
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setLocation('/tools')}
-                className="bg-gray-200 text-gray-700 font-light hover:bg-white hover:text-gray-900"
+                className="bg-gray-200 text-gray-700 font-light hover:bg-white hover:text-gray-900 mb-4"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Tools
               </Button>
-            </div>
-            
-            <div className="text-center">
               <h1 className="text-4xl font-bold text-salmon mb-4">AI Image Generator</h1>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                 Generate professional images using Google Vertex AI with custom prompts, styles, and text overlays
@@ -647,134 +886,254 @@ export default function AIImageGenerator() {
                       </div>
                     </div>
 
-                    {/* Image Ingredients Section - Only for Nano Banana models */}
-                    {supportsImageIngredients() && (
-                      <div className="space-y-3 p-4 bg-gradient-to-br from-purple-900/30 to-indigo-900/30 border border-purple-600/50 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <h3 className="text-sm font-semibold text-purple-300">🧪 Image Ingredients</h3>
+                    {/* Image Ingredients Section - 6 slots for Nano Banana, collapsed for Imagen */}
+                    <div className={`p-4 rounded-lg border transition-all ${
+                      supportsReferenceImages()
+                        ? 'space-y-4 bg-gradient-to-br from-purple-900/30 to-indigo-900/30 border-purple-600/50'
+                        : 'bg-gray-800/50 border-gray-600/50'
+                    }`}>
+                      {/* Header with model info */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <h3 className={`text-sm font-semibold ${supportsReferenceImages() ? 'text-purple-300' : 'text-gray-500'}`}>
+                            🧪 Image Ingredients
+                          </h3>
+                          {supportsReferenceImages() && (
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger>
                                   <Info className="h-3 w-3 text-purple-400" />
                                 </TooltipTrigger>
-                                <TooltipContent className="max-w-xs">
-                                  <div className="space-y-1 text-xs">
-                                    <p><strong>Product Placement:</strong> Upload a product image and describe the scene - AI will place your product in the generated image.</p>
-                                    <p><strong>Style Transfer:</strong> Upload a style reference to influence the visual style of generation.</p>
+                                <TooltipContent className="max-w-sm">
+                                  <div className="space-y-2 text-xs">
+                                    <p><strong>Nano Banana:</strong> Up to 6 images (4 products + model + scene)</p>
+                                    <p>Reference uploaded images using tags like <code className="bg-gray-700 px-1 rounded">[product1]</code> in your prompt.</p>
                                   </div>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
-                          </div>
-                          {referenceImage && (
-                            <Button
-                              onClick={removeReferenceImage}
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 px-2 text-red-400 hover:text-red-300 hover:bg-red-900/30"
-                            >
-                              <X className="h-3 w-3 mr-1" />
-                              Remove
-                            </Button>
                           )}
                         </div>
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          supportsReferenceImages()
+                            ? 'bg-purple-500/30 text-purple-300'
+                            : 'bg-gray-600/30 text-gray-500'
+                        }`}>
+                          {supportsReferenceImages() ? 'Nano: 6 slots' : 'Not available'}
+                        </span>
+                      </div>
 
-                        {!referenceImage ? (
-                          <div
-                            className="border-2 border-dashed border-purple-500/50 rounded-lg p-4 text-center cursor-pointer hover:border-purple-400/70 hover:bg-purple-900/20 transition-colors"
-                            onDrop={handleReferenceDrop}
-                            onDragOver={(e) => e.preventDefault()}
-                            onClick={() => referenceFileInputRef.current?.click()}
-                          >
-                            <Upload className="h-8 w-8 text-purple-400 mx-auto mb-2" />
-                            <p className="text-purple-200 text-sm font-medium">
-                              Drop product/reference image here
-                            </p>
-                            <p className="text-xs text-purple-400 mt-1">
-                              PNG, JPEG, WebP • Max 7MB
-                            </p>
-                            <input
-                              ref={referenceFileInputRef}
-                              type="file"
-                              accept="image/png,image/jpeg,image/webp"
-                              onChange={(e) => e.target.files?.[0] && handleReferenceImageSelect(e.target.files[0])}
-                              className="hidden"
-                            />
-                          </div>
-                        ) : (
-                          <div className="space-y-3">
-                            {/* Preview */}
-                            <div className="flex items-start space-x-3">
-                              <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-purple-500 flex-shrink-0">
-                                <img
-                                  src={referenceImagePreview!}
-                                  alt="Reference"
-                                  className="w-full h-full object-cover"
+                      {/* Collapsed message for Imagen */}
+                      {!supportsReferenceImages() && (
+                        <p className="text-xs text-gray-500 italic">
+                          Imagen Ultra is text-only. Select a Nano model to use reference images.
+                        </p>
+                      )}
+
+                      {/* Only show slots when model supports reference images */}
+                      {supportsReferenceImages() && (
+                      <>
+                      {/* Product Slots Row (1-4) */}
+                      <div className="space-y-2">
+                        <Label className="text-xs text-purple-300 font-medium">Products</Label>
+                        <div className="grid grid-cols-4 gap-2">
+                          {INGREDIENT_SLOTS.filter(slot => slot.id.startsWith('product')).map((slot) => {
+                            const SlotIcon = getSlotIcon(slot.icon);
+                            const isActive = isSlotActive(slot.id);
+                            const ingredient = ingredients[slot.id];
+                            const isSelectable = slot.group === 'selectable';
+
+                            return (
+                              <div key={slot.id} className="relative">
+                                {/* Slot container with drag and drop */}
+                                <div
+                                  className={`
+                                    relative rounded-lg border-2 border-dashed transition-all overflow-hidden
+                                    ${!isActive
+                                      ? 'border-gray-600/50 bg-gray-800/30 opacity-50'
+                                      : dragOverSlot === slot.id
+                                        ? 'border-green-400 bg-green-500/30 scale-105'
+                                        : ingredient
+                                          ? 'border-purple-400 bg-purple-500/20'
+                                          : 'border-purple-500/50 hover:border-purple-400/70 hover:bg-purple-900/20 cursor-pointer'
+                                    }
+                                  `}
+                                  onClick={() => {
+                                    if (!isActive && isSelectable && isImagenModel()) {
+                                      toggleImagenSlot(slot.id);
+                                    } else if (isActive && !ingredient) {
+                                      ingredientRefs[slot.id].current?.click();
+                                    }
+                                  }}
+                                  onDragOver={(e) => handleDragOver(e, slot.id)}
+                                  onDragEnter={(e) => handleDragOver(e, slot.id)}
+                                  onDragLeave={handleDragLeave}
+                                  onDrop={(e) => handleDrop(e, slot.id)}
+                                >
+                                  {ingredient ? (
+                                    <div className="aspect-square relative">
+                                      <img
+                                        src={ingredient.preview}
+                                        alt={slot.label}
+                                        className="w-full h-full object-cover"
+                                      />
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          removeIngredient(slot.id);
+                                        }}
+                                        className="absolute top-1 right-1 p-1 rounded-full bg-red-500/80 hover:bg-red-500 text-white"
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <div className="aspect-square flex flex-col items-center justify-center p-2">
+                                      <SlotIcon className={`h-5 w-5 mb-1 ${isActive ? 'text-purple-400' : 'text-gray-500'}`} />
+                                      <span className={`text-[10px] ${isActive ? 'text-purple-300' : 'text-gray-500'}`}>
+                                        {!isActive && isImagenModel() ? 'Click to enable' : dragOverSlot === slot.id ? 'Drop here!' : 'Drop image'}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Tag label below slot */}
+                                <div className={`text-center mt-1 ${isActive ? 'text-purple-300' : 'text-gray-500'}`}>
+                                  <code className="text-[10px] bg-gray-800/50 px-1 rounded">{slot.tag}</code>
+                                </div>
+
+                                {/* Hidden file input */}
+                                <input
+                                  ref={ingredientRefs[slot.id]}
+                                  type="file"
+                                  accept="image/png,image/jpeg,image/webp"
+                                  onChange={(e) => {
+                                    if (e.target.files?.[0]) {
+                                      handleIngredientSelect(slot.id, e.target.files[0]);
+                                    }
+                                  }}
+                                  className="hidden"
                                 />
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-purple-200 truncate">
-                                  {referenceImage.name}
-                                </p>
-                                <p className="text-xs text-purple-400">
-                                  {(referenceImage.size / 1024).toFixed(0)} KB
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Subject Type Selection */}
-                            <div className="space-y-2">
-                              <Label className="text-xs text-purple-300">Subject Type</Label>
-                              <div className="grid grid-cols-4 gap-2">
-                                {[
-                                  { value: 'product', label: 'Product', icon: Package },
-                                  { value: 'person', label: 'Person', icon: User },
-                                  { value: 'animal', label: 'Animal', icon: Cat },
-                                  { value: 'style', label: 'Style', icon: Palette },
-                                ].map(({ value, label, icon: Icon }) => (
-                                  <button
-                                    key={value}
-                                    onClick={() => setReferenceSubjectType(value as any)}
-                                    className={`
-                                      flex flex-col items-center justify-center p-2 rounded-md border transition-all
-                                      ${referenceSubjectType === value
-                                        ? 'border-purple-400 bg-purple-500/30 text-purple-200'
-                                        : 'border-purple-600/50 bg-purple-900/20 text-purple-400 hover:border-purple-500/70'
-                                      }
-                                    `}
-                                  >
-                                    <Icon className="h-4 w-4 mb-1" />
-                                    <span className="text-xs">{label}</span>
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-
-                            {/* Subject Description */}
-                            <div className="space-y-1">
-                              <Label className="text-xs text-purple-300">Description (optional)</Label>
-                              <Input
-                                placeholder={`Describe the ${referenceSubjectType}...`}
-                                value={referenceSubjectDescription}
-                                onChange={(e) => setReferenceSubjectDescription(e.target.value)}
-                                className="bg-purple-900/30 border-purple-600/50 text-purple-100 placeholder:text-purple-500 text-sm h-8"
-                              />
-                              <p className="text-xs text-purple-500">
-                                e.g., "red coffee mug with logo", "golden retriever puppy"
-                              </p>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Usage hint */}
-                        <div className="text-xs text-purple-400 bg-purple-900/30 rounded p-2">
-                          💡 <strong>Tip:</strong> Describe how you want the {referenceSubjectType} placed in your prompt below.
-                          {referenceSubjectType === 'product' && ' e.g., "Place this product on a marble countertop in a modern kitchen"'}
-                          {referenceSubjectType === 'style' && ' The generated image will adopt this visual style.'}
+                            );
+                          })}
                         </div>
                       </div>
-                    )}
+
+                      {/* Model & Scene Slots Row */}
+                      <div className="space-y-2">
+                        <Label className="text-xs text-purple-300 font-medium">Subject & Environment</Label>
+                        <div className="grid grid-cols-2 gap-3">
+                          {INGREDIENT_SLOTS.filter(slot => slot.id === 'model' || slot.id === 'scene').map((slot) => {
+                            const SlotIcon = getSlotIcon(slot.icon);
+                            const isActive = isSlotActive(slot.id);
+                            const ingredient = ingredients[slot.id];
+                            const isSelectable = slot.group === 'selectable';
+
+                            return (
+                              <div key={slot.id} className="relative">
+                                {/* Slot container with drag and drop */}
+                                <div
+                                  className={`
+                                    relative rounded-lg border-2 border-dashed transition-all overflow-hidden
+                                    ${!isActive
+                                      ? 'border-gray-600/50 bg-gray-800/30 opacity-50 cursor-pointer'
+                                      : dragOverSlot === slot.id
+                                        ? 'border-green-400 bg-green-500/30 scale-105'
+                                        : ingredient
+                                          ? 'border-purple-400 bg-purple-500/20'
+                                          : 'border-purple-500/50 hover:border-purple-400/70 hover:bg-purple-900/20 cursor-pointer'
+                                    }
+                                  `}
+                                  onClick={() => {
+                                    if (!isActive && isSelectable && isImagenModel()) {
+                                      toggleImagenSlot(slot.id);
+                                    } else if (isActive && !ingredient) {
+                                      ingredientRefs[slot.id].current?.click();
+                                    }
+                                  }}
+                                  onDragOver={(e) => handleDragOver(e, slot.id)}
+                                  onDragEnter={(e) => handleDragOver(e, slot.id)}
+                                  onDragLeave={handleDragLeave}
+                                  onDrop={(e) => handleDrop(e, slot.id)}
+                                >
+                                  {ingredient ? (
+                                    <div className="aspect-video relative">
+                                      <img
+                                        src={ingredient.preview}
+                                        alt={slot.label}
+                                        className="w-full h-full object-cover"
+                                      />
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          removeIngredient(slot.id);
+                                        }}
+                                        className="absolute top-1 right-1 p-1 rounded-full bg-red-500/80 hover:bg-red-500 text-white"
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </button>
+                                      {/* Description input for model/scene */}
+                                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                                        <Input
+                                          placeholder={`Describe ${slot.label.toLowerCase()}...`}
+                                          value={ingredient.description}
+                                          onChange={(e) => updateIngredientDescription(slot.id, e.target.value)}
+                                          onClick={(e) => e.stopPropagation()}
+                                          className="h-6 text-xs bg-black/50 border-purple-500/50 text-white placeholder:text-gray-400"
+                                        />
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="aspect-video flex flex-col items-center justify-center p-3">
+                                      <SlotIcon className={`h-6 w-6 mb-1 ${isActive ? 'text-purple-400' : 'text-gray-500'}`} />
+                                      <span className={`text-xs font-medium ${isActive ? 'text-purple-200' : 'text-gray-500'}`}>
+                                        {slot.label}
+                                      </span>
+                                      <span className={`text-[10px] ${isActive ? 'text-purple-400' : 'text-gray-500'}`}>
+                                        {!isActive && isImagenModel() ? 'Click to enable' : dragOverSlot === slot.id ? 'Drop here!' : 'Drop or click'}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Tag label below slot */}
+                                <div className={`text-center mt-1 ${isActive ? 'text-purple-300' : 'text-gray-500'}`}>
+                                  <code className="text-xs bg-gray-800/50 px-1.5 py-0.5 rounded">{slot.tag}</code>
+                                </div>
+
+                                {/* Hidden file input */}
+                                <input
+                                  ref={ingredientRefs[slot.id]}
+                                  type="file"
+                                  accept="image/png,image/jpeg,image/webp"
+                                  onChange={(e) => {
+                                    if (e.target.files?.[0]) {
+                                      handleIngredientSelect(slot.id, e.target.files[0]);
+                                    }
+                                  }}
+                                  className="hidden"
+                                />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Active tags summary */}
+                      {hasIngredients() && (
+                        <div className="text-xs text-purple-400 bg-purple-900/30 rounded p-2">
+                          <strong>Active tags:</strong>{' '}
+                          {getActiveIngredientTags().map((tag, i) => (
+                            <code key={tag} className="bg-gray-800 px-1 rounded mx-0.5">{tag}</code>
+                          ))}
+                          <span className="text-purple-500 ml-2">← Use these in your prompt</span>
+                        </div>
+                      )}
+
+                      </>
+                      )}
+                    </div>
 
                     {/* Brand Intelligence Section */}
                     <div className="space-y-3 p-4 bg-gray-700 border border-gray-600 rounded-lg">
@@ -985,15 +1344,31 @@ export default function AIImageGenerator() {
                         <div className="grid grid-cols-2 gap-3">
                           {VERTEX_MODELS.map((modelOption) => {
                             if (!modelOption.position) return null;
-                            
-                            const { row, col } = modelOption.position;
-                            
+
+                            const { col } = modelOption.position;
+                            const isDisabled = modelOption.disabled;
+
+                            // Disabled placeholder slot
+                            if (isDisabled) {
+                              return (
+                                <div
+                                  key={modelOption.value}
+                                  className="radio-btn-base opacity-40 cursor-not-allowed bg-gray-800/50 border-gray-600/50"
+                                >
+                                  <div className="space-y-1">
+                                    <div className="radio-btn-text text-gray-500">{modelOption.label}</div>
+                                    <div className="radio-btn-desc text-gray-600">{modelOption.description}</div>
+                                  </div>
+                                </div>
+                              );
+                            }
+
                             return (
                               <label
                                 key={modelOption.value}
                                 className={`radio-btn-base ${
                                   model === modelOption.value
-                                    ? col === 0 
+                                    ? col === 0
                                       ? 'radio-btn-purple-selected'
                                       : 'radio-btn-blue-selected'
                                     : 'radio-btn-unselected'
@@ -1011,7 +1386,7 @@ export default function AIImageGenerator() {
                                 <div className="space-y-1">
                                   <div className="radio-btn-text">{modelOption.label}</div>
                                   <div className="radio-btn-desc">
-                                    {modelOption.nativeResolutionFormat === 'k-scale' 
+                                    {modelOption.nativeResolutionFormat === 'k-scale'
                                       ? modelOption.resolutions.join(', ')
                                       : modelOption.resolutions.slice(0, 2).join(', ')
                                     } {modelOption.description.match(/\(\$[\d\.]+\)/)?.[0] || '(~$0.04)'}

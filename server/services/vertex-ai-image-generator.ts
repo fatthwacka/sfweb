@@ -5,6 +5,16 @@
 
 import { GoogleAuth } from 'google-auth-library';
 
+// Single image ingredient with slot information
+export interface ImageIngredient {
+  slotId: 'product1' | 'product2' | 'product3' | 'product4' | 'model' | 'scene';
+  tag: string;  // e.g., '[product1]', '[model]', '[scene]'
+  base64: string;
+  mimeType: string;
+  description?: string;
+}
+
+// Legacy interface for backwards compatibility
 export interface ReferenceImage {
   bytesBase64Encoded: string;
   mimeType: string;
@@ -32,7 +42,9 @@ export interface ImageGenerationRequest {
     finalBenefits: string[];
     brandData: any;
   };
-  // Reference image for product/subject placement (Image Ingredients)
+  // NEW: Multiple image ingredients for composition (up to 6 for Gemini, 4 for Imagen)
+  imageIngredients?: ImageIngredient[];
+  // Legacy: Single reference image (deprecated, kept for backwards compatibility)
   referenceImage?: ReferenceImage;
 }
 
@@ -295,15 +307,15 @@ export class VertexAIImageGenerator {
       console.log('✅ Successfully obtained OAuth 2.0 access token');
       return accessTokenResponse.token;
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Failed to get OAuth access token:', error);
-      throw new Error(`Authentication failed: ${error.message}`);
+      throw new Error(`Authentication failed: ${error?.message || 'Unknown error'}`);
     }
   }
 
   private async uploadToCloudStorage(base64Data: string): Promise<string> {
     const bucketName = 'netfox-veo-generations';
-    const fileName = `ai-images/generated-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.png`;
+    const fileName = `ai-images/generated-${Date.now()}-${Math.random().toString(36).substring(2, 11)}.png`;
     
     try {
       console.log(`📤 Uploading to Cloud Storage: gs://${bucketName}/${fileName}`);
@@ -334,8 +346,8 @@ export class VertexAIImageGenerator {
         throw new Error(`Cloud Storage upload failed: ${response.status} - ${errorText}`);
       }
 
-      const result = await response.json();
-      
+      await response.json(); // Consume response body
+
       // Make the object publicly readable
       const aclUrl = `https://storage.googleapis.com/storage/v1/b/${bucketName}/o/${encodeURIComponent(fileName)}/acl`;
       const aclResponse = await fetch(aclUrl, {
@@ -370,11 +382,6 @@ export class VertexAIImageGenerator {
     }
   }
 
-  private async delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-
   private async callVertexAI(prompt: string, imageSpec: any, model: string, originalRequest?: ImageGenerationRequest): Promise<string> {
     // Extract actual model name (handle frontend unique IDs)
     let actualModel = model;
@@ -398,23 +405,34 @@ export class VertexAIImageGenerator {
       return await this.callGeminiAPI(prompt, imageSpec, actualModel, originalRequest);
     } else {
       console.log('📡 Routing to Imagen API for model:', actualModel);
-      return await this.callImagenAPI(prompt, imageSpec, actualModel);
+      return await this.callImagenAPI(prompt, imageSpec, actualModel, originalRequest);
     }
   }
 
-  private async callImagenAPI(prompt: string, imageSpec: any, model: string): Promise<string> {
+  private async callImagenAPI(prompt: string, imageSpec: any, model: string, originalRequest?: ImageGenerationRequest): Promise<string> {
     console.log('🔴 ENTERING IMAGEN API METHOD for model:', model);
+
+    // IMPORTANT: Imagen 4.0 does NOT support reference images at all
+    // It's text-to-image only. Reference images are handled by Gemini models (Nano Banana)
+    // See: https://docs.cloud.google.com/vertex-ai/generative-ai/docs/models/imagen/4-0-ultra-generate-001
+    const hasReferenceImages = originalRequest?.imageIngredients && originalRequest.imageIngredients.length > 0;
+    if (hasReferenceImages) {
+      console.log('⚠️ Warning: Reference images provided but Imagen 4.0 does not support them');
+      console.log('   Images will be ignored. Use Nano Banana (Gemini) models for reference image support.');
+    }
+
     const endpoint = `https://${this.location}-aiplatform.googleapis.com/v1/projects/${this.projectId}/locations/${this.location}/publishers/google/models/${model}:predict`;
-    
+
     console.log('🌐 Vertex AI endpoint:', endpoint);
     console.log('🤖 Using model:', model);
     console.log('🔄 Getting access token...');
-    
+
     const accessToken = await this.getAccessToken();
     console.log('🔑 Access token length:', accessToken.length);
-    
-    // Build the request payload for Imagen (text-to-image generation)
-    const requestBody = {
+
+    // Imagen 4.0 is text-to-image only - build simple request
+    // Reference images are NOT supported by Imagen 4.0 models
+    const requestBody: any = {
       instances: [{
         prompt: prompt
       }],
@@ -484,22 +502,41 @@ export class VertexAIImageGenerator {
     const accessToken = await this.getAccessToken();
     console.log('🔑 Access token length:', accessToken.length);
 
-    // Build parts array - include reference image if provided (Image Ingredients)
+    // Build parts array - simple structure: images first, then prompt
     const parts: any[] = [];
 
-    // Add reference image first if provided (for product/subject placement)
-    if (originalRequest?.referenceImage) {
-      const refImg = originalRequest.referenceImage;
-      console.log('🖼️ Adding reference image for subject placement');
-      console.log('📦 Subject type:', refImg.subjectType);
-      console.log('📝 Subject description:', refImg.subjectDescription || 'none');
-      console.log('🗂️ MIME type:', refImg.mimeType);
-      console.log('📊 Base64 length:', refImg.bytesBase64Encoded.length);
+    // Add image ingredients if present
+    if (originalRequest?.imageIngredients && originalRequest.imageIngredients.length > 0) {
+      console.log('🧪 Adding', originalRequest.imageIngredients.length, 'reference images');
 
-      // Enhance prompt with subject context for better placement
-      const subjectContext = refImg.subjectDescription
-        ? `Using the provided ${refImg.subjectType} image (${refImg.subjectDescription}), `
-        : `Using the provided ${refImg.subjectType} image, `;
+      // Add all images first
+      for (const ingredient of originalRequest.imageIngredients) {
+        console.log(`📦 Adding ${ingredient.slotId}: ${ingredient.mimeType}, ${ingredient.base64?.length || 0} bytes`);
+
+        parts.push({
+          inlineData: {
+            mimeType: ingredient.mimeType,
+            data: ingredient.base64
+          }
+        });
+      }
+
+      // Build a simple reference list for the prompt
+      const refs = originalRequest.imageIngredients
+        .map(i => `[${i.slotId}]`)
+        .join(', ');
+
+      // Add the prompt with reference context
+      parts.push({
+        text: `Reference images provided: ${refs}\n\n${prompt}`
+      });
+
+      console.log('📝 Prompt with refs:', prompt.substring(0, 200) + '...');
+    }
+    // Legacy: Single reference image support
+    else if (originalRequest?.referenceImage) {
+      const refImg = originalRequest.referenceImage;
+      console.log('🖼️ Legacy mode: Adding single reference image');
 
       parts.push({
         inlineData: {
@@ -508,12 +545,17 @@ export class VertexAIImageGenerator {
         }
       });
 
-      // Prepend subject context to prompt
+      const subjectContext = refImg.subjectDescription
+        ? `Using the provided ${refImg.subjectType} image (${refImg.subjectDescription}), `
+        : `Using the provided ${refImg.subjectType} image, `;
+
       parts.push({
         text: subjectContext + prompt
       });
-    } else {
-      // No reference image - just use the text prompt
+    }
+    // No images - text-only generation
+    else {
+      console.log('📝 Text-only generation (no reference images)');
       parts.push({
         text: prompt
       });
@@ -566,43 +608,16 @@ export class VertexAIImageGenerator {
         throw new Error('No image data in Gemini response');
       }
 
-      console.log('🔍 Gemini response structure analysis:');
-      console.log('  - candidates length:', result.candidates.length);
-      console.log('  - first candidate content parts:', result.candidates[0].content.parts.length);
-      
-      // Log the structure of each part to debug the response format
-      result.candidates[0].content.parts.forEach((part, index) => {
-        console.log(`  - Part ${index}:`, Object.keys(part));
-        if (part.inline_data) {
-          console.log(`    - inline_data keys:`, Object.keys(part.inline_data));
-        }
-        if (part.inlineData) {
-          console.log(`    - inlineData keys:`, Object.keys(part.inlineData));
-        }
-      });
-
-      // Try both inline_data and inlineData formats (Google APIs sometimes vary)
-      // Note: Gemini typically uses camelCase (inlineData), not snake_case (inline_data)
-      let imagePart = result.candidates[0].content.parts.find(part => part.inlineData);
-      if (!imagePart) {
-        imagePart = result.candidates[0].content.parts.find(part => part.inline_data);
-      }
+      // Extract image from response parts (try both camelCase and snake_case formats)
+      const parts = result.candidates[0].content.parts;
+      const imagePart = parts.find((p: any) => p.inlineData) || parts.find((p: any) => p.inline_data);
 
       if (!imagePart) {
-        console.error('❌ No image part found. Available part keys:', result.candidates[0].content.parts.map(part => Object.keys(part)));
-        throw new Error('No image data found in Gemini response parts');
+        throw new Error('No image data found in Gemini response');
       }
 
-      // Extract base64 data from either format (prioritize Gemini's camelCase format)
-      let base64Image;
-      if (imagePart.inlineData && imagePart.inlineData.data) {
-        base64Image = imagePart.inlineData.data;
-        console.log('✅ Found image data in inlineData.data format');
-      } else if (imagePart.inline_data && imagePart.inline_data.data) {
-        base64Image = imagePart.inline_data.data;
-        console.log('✅ Found image data in inline_data.data format');
-      } else {
-        console.error('❌ Image part found but no data. Part structure:', JSON.stringify(imagePart, null, 2));
+      const base64Image = imagePart.inlineData?.data || imagePart.inline_data?.data;
+      if (!base64Image) {
         throw new Error('No base64 data in image part');
       }
       
@@ -615,33 +630,6 @@ export class VertexAIImageGenerator {
       console.error('💥 Gemini generation error:', error);
       throw error;
     }
-  }
-
-  private parseGeminiResolution(resolution: string): string {
-    // Convert K format to actual pixel dimensions
-    const resolutionMap: Record<string, string> = {
-      '1K': '1024',
-      '2K': '2048', 
-      '4K': '4096'
-    };
-    
-    return resolutionMap[resolution] || '1024';
-  }
-
-
-  private extractKeywords(prompt: string): string {
-    // Remove style modifiers and extract core subject matter
-    const cleanPrompt = prompt
-      .replace(/,.*style.*,/gi, '')
-      .replace(/high quality.*$/gi, '')
-      .replace(/avoid:.*$/gi, '')
-      .replace(/relating to.*?,/gi, '')
-      .replace(/with theme:.*?,/gi, '')
-      .trim();
-
-    // Extract the first meaningful part of the prompt
-    const words = cleanPrompt.split(/[,.]/).filter(part => part.trim().length > 3);
-    return words.slice(0, 3).join(' ').trim() || 'abstract art';
   }
 
   /**
