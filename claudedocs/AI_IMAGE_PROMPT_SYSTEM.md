@@ -1,7 +1,7 @@
 # AI Image Generator - Prompt Enhancement System
 
-> **Document Version:** 1.0
-> **Last Updated:** January 2026
+> **Document Version:** 2.0
+> **Last Updated:** 18 January 2026
 > **Status:** Current Implementation
 
 ---
@@ -13,11 +13,73 @@
 3. [Data Flow](#data-flow)
 4. [Prompt Components](#prompt-components)
 5. [Enhancement Paths](#enhancement-paths)
-6. [Database Schema](#database-schema)
-7. [API Endpoints](#api-endpoints)
-8. [Frontend Integration](#frontend-integration)
-9. [Fallback Hierarchy](#fallback-hierarchy)
-10. [Configuration Options](#configuration-options)
+6. [Brand Asset Metadata Flow](#brand-asset-metadata-flow)
+7. [Database Schema](#database-schema)
+8. [API Endpoints](#api-endpoints)
+9. [Frontend Integration](#frontend-integration)
+10. [Fallback Hierarchy](#fallback-hierarchy)
+11. [Configuration Options](#configuration-options)
+
+---
+
+## Critical Architecture Decisions (January 2026)
+
+### Consolidated Prompt Path System
+
+**Problem Solved:** customSystemPrompt was causing early-return that bypassed all PATH A/B logic, resulting in:
+- Metadata not appearing in enhanced prompts
+- User settings ignored
+- No creativity enhancements
+- No quality rules applied
+
+**Solution:** Consolidated two-path system where:
+- **PATH A (no assets):** Full creative freedom, customSystemPrompt as "ADDITIONAL USER GUIDANCE" but quality rules still apply
+- **PATH B (has assets):** ALWAYS injects product metadata + quality + targeted creativity, customSystemPrompt is supplementary (never replacement)
+
+**Key Code Location:** `server/services/ai-prompt-analyzer.ts` → `buildStandalonePrompt()` method
+
+### Brand Asset Metadata Flow
+
+Metadata flows from Supabase through the Brand Asset Picker to the prompt enhancer:
+
+```
+Supabase (client_brand_assets)
+    ↓
+BrandAssetPicker (fetches asset + client industry)
+    ↓
+handleBrandAssetSelect (stores in ingredients state with brandAssetMetadata)
+    ↓
+generateImage API call (sends imageIngredients array)
+    ↓
+ai-prompt-analyzer (extracts metadata, builds product specs)
+    ↓
+Gemini enhanced prompt (includes material, similarTo, usageNotes, industry)
+```
+
+### Race Condition Fix
+
+**Problem:** Two separate `setIngredients` calls were racing - the second one read stale state.
+
+**Solution:** Combined everything into a single atomic `setIngredients` call in `handleBrandAssetSelect`:
+
+```typescript
+// WRONG (race condition)
+handleIngredientSelect(...);  // Sets basic ingredient
+setIngredients(prev => ({ ...prev, [slot]: { ...prev[slot], brandAssetMetadata } }));  // Reads stale state!
+
+// CORRECT (single atomic update)
+setIngredients(prev => ({
+  ...prev,
+  [slot]: {
+    file, preview, base64, mimeType, description,
+    brandAssetMetadata: { assetId, assetName, material, similarTo, usageNotes, clientIndustry }
+  }
+}));
+```
+
+### Brand Intelligence Panel Status
+
+The Brand Intelligence panel UI is **kept visible** but **disconnected from prompt path**. All brand context now flows through the asset attachment path (brandAssetMetadata). This avoids confusion when mixing assets from different brands in one image.
 
 ---
 
@@ -234,6 +296,82 @@ DO NOT:
 ```
 
 **Key Difference:** Path B explicitly instructs Gemini NOT to describe the reference images themselves, since Vertex AI will see them directly.
+
+---
+
+## Brand Asset Metadata Flow
+
+### Overview
+
+Brand assets stored in Supabase carry metadata that enriches the prompt enhancement process. This metadata includes material composition, product type similarity, and usage guidance.
+
+### Supabase Table: `client_brand_assets`
+
+| Column | Type | Purpose |
+|--------|------|---------|
+| `name` | TEXT | Asset display name |
+| `asset_type` | TEXT | 'product', 'logo', 'texture', etc. |
+| `material` | TEXT | 'glass', 'metal', 'fabric', 'ceramic', etc. |
+| `similar_to` | TEXT | What it resembles: "perfume bottle", "skincare jar" |
+| `usage_notes` | TEXT | Guidance: "Use as hero product", "works well with marble" |
+| `client_id` | UUID | Links to content_clients table |
+
+### Frontend Flow
+
+```typescript
+// 1. BrandAssetPicker fetches asset from Supabase
+const asset = { name, material, similar_to, usage_notes, asset_type, client_id };
+const clientInfo = { id: client.id, industry: client.industry };
+
+// 2. handleBrandAssetSelect stores metadata in ingredients state (SINGLE atomic update)
+setIngredients(prev => ({
+  ...prev,
+  [brandAssetTargetSlot]: {
+    file, preview, base64, mimeType,
+    description: asset.similar_to || asset.name,
+    brandAssetMetadata: {
+      assetId: asset.id,
+      assetName: asset.name,
+      assetType: asset.asset_type || 'product',
+      material: asset.material,
+      similarTo: asset.similar_to,
+      usageNotes: asset.usage_notes,
+      clientId: asset.client_id || clientInfo?.id,
+      clientIndustry: clientInfo?.industry,
+    },
+  },
+}));
+```
+
+### Backend Extraction (ai-prompt-analyzer.ts)
+
+```typescript
+// buildStandalonePrompt() extracts metadata for PATH B
+for (const product of loadedProducts) {
+  const meta = product.brandAssetMetadata;
+  const specs: string[] = [];
+
+  if (meta.assetName) specs.push(`"${meta.assetName}"`);
+  if (meta.similarTo) specs.push(`is a ${meta.similarTo}`);
+  if (meta.material) specs.push(`made of ${meta.material}`);
+  if (meta.clientIndustry) specs.push(`from the ${meta.clientIndustry} industry`);
+  if (meta.usageNotes) specs.push(`— usage note: ${meta.usageNotes}`);
+
+  productSpecs.push(`${tag}: ${specs.join(', ')}`);
+}
+```
+
+### Example Enhanced Prompt Output
+
+**User prompt:** "product on marble surface"
+**With brand asset metadata:**
+
+```
+[product1]: "Luxury Face Serum", is a skincare bottle, made of glass,
+from the Beauty & Skincare industry — usage note: Hero product, premium positioning
+```
+
+This metadata is injected into the Gemini system prompt, ensuring the AI understands the product's context without having to infer it from the image alone.
 
 ---
 
