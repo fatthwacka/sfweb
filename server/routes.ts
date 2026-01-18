@@ -3709,6 +3709,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Content types management for prompt enhancement guidelines
   app.use('/api/content-types', contentTypesRouter);
 
+  // AI prompt overrides for client-specific system prompts
+  const aiPromptOverridesRouter = await import('./routes/ai-prompt-overrides');
+  app.use('/api/ai-prompt-overrides', aiPromptOverridesRouter.default);
+
   // Use the pricing packages router for pricing management
   app.use(pricingPackagesRouter);
 
@@ -6179,17 +6183,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI Prompt Enhancement - Enhance standalone user prompts  
+  // AI Prompt Enhancement - Enhance standalone user prompts
   app.post('/api/ai/enhance-prompt', async (req, res) => {
     try {
-      const { 
-        userPrompt, 
-        artStyle, 
-        imageStyle, 
-        includeTitle, 
-        includeSubtitle, 
-        titleText, 
-        subtitleText 
+      const {
+        userPrompt,
+        artStyle,
+        imageStyle,
+        includeTitle,
+        includeSubtitle,
+        titleText,
+        subtitleText,
+        imageIngredients,  // Reference images that are already uploaded
+        customSystemPrompt  // Optional: user-provided system prompt override
       } = req.body;
       if (!userPrompt) {
         return res.status(400).json({
@@ -6199,9 +6205,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log('✨ Starting prompt enhancement...');
+      console.log('📷 Image ingredients:', imageIngredients?.length || 0);
+      if (customSystemPrompt) {
+        console.log('🧠 Using custom system prompt');
+      }
       const { AIPromptAnalyzer } = await import('./services/ai-prompt-analyzer');
       const analyzer = new AIPromptAnalyzer();
-      
+
       const result = await analyzer.enhanceStandalonePrompt({
         userPrompt,
         artStyle: artStyle || 'photorealistic',
@@ -6210,6 +6220,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         includeSubtitle,
         titleText,
         subtitleText,
+        imageIngredients,  // Pass to analyzer for image-aware enhancement
+        customSystemPrompt,  // Pass custom system prompt if provided
       });
 
       console.log('✅ Prompt enhancement completed');
@@ -6356,6 +6368,189 @@ Return ONLY the enhanced subtitle text. No explanations, quotes, or formatting.`
     }
   });
 
+  // AI Image Generation - Preview API Payload (DRY RUN - No Vertex call)
+  app.post('/api/ai/preview-image-payload', async (req, res) => {
+    try {
+      const {
+        prompt,
+        includeTitle,
+        includeSubtitle,
+        artStyle,
+        imageStyle,
+        resolution,
+        aspectRatio,
+        model,
+        articleContext,
+        imageIngredients,
+        referenceImage,
+      } = req.body;
+
+      if (!prompt || !prompt.trim()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Image prompt is required',
+        });
+      }
+
+      console.log('🔍 Building preview payload (dry run)...');
+
+      // Import the generator to use its internal methods
+      const { VertexAIImageGenerator } = await import('./services/vertex-ai-image-generator');
+
+      // Build the enhanced prompt manually (same logic as in the generator)
+      let enhancedPrompt = prompt.trim();
+
+      // Add text overlay requests if requested
+      const textOverlays = [];
+      if (includeTitle && articleContext?.headline) {
+        textOverlays.push(`with text overlay "${articleContext.headline}" prominently displayed at the top`);
+      }
+      if (includeSubtitle && articleContext?.hook) {
+        textOverlays.push(`with subtitle text "${articleContext.hook}" in smaller text below the main title`);
+      }
+      if (textOverlays.length > 0) {
+        enhancedPrompt = `${enhancedPrompt}, ${textOverlays.join(', ')}`;
+      }
+
+      // Add style modifiers
+      const artModifiers: Record<string, string> = {
+        'photorealistic': 'photorealistic, realistic photography, natural lighting',
+        'illustrated': 'illustration style, digital art, artistic rendering',
+        'cinematic': 'cinematic lighting, dramatic composition, movie-like quality',
+        'minimalist': 'minimalist design, clean composition, simple elements',
+        'abstract': 'abstract art style, conceptual design, artistic abstraction',
+        'vintage': 'vintage style, retro aesthetic, classic timeless look',
+        'modern': 'modern style, contemporary design, sleek and current',
+        'artistic': 'artistic interpretation, creative composition, expressive style',
+      };
+
+      const styleModifiers: Record<string, string> = {
+        'professional': 'professional setting, business appropriate, polished look',
+        'lifestyle': 'lifestyle photography, natural setting, authentic feel',
+        'dramatic': 'dramatic lighting, high contrast, striking composition',
+        'minimalist': 'clean minimalist composition, uncluttered design',
+        'corporate': 'corporate style, business environment, professional atmosphere',
+        'creative': 'creative composition, unique perspective, innovative artistic approach',
+        'warm': 'warm inviting atmosphere, cozy friendly feel, welcoming ambiance',
+        'modern': 'contemporary modern aesthetic, sleek current design, up-to-date style',
+      };
+
+      const artMod = artModifiers[artStyle || 'photorealistic'] || (artStyle || 'photorealistic');
+      const styleMod = styleModifiers[imageStyle || 'professional'] || (imageStyle || 'professional');
+      enhancedPrompt = `${enhancedPrompt}, ${artMod} style, ${styleMod} composition`;
+
+      // Add quality specifications
+      enhancedPrompt += ', high quality, professional, sharp details, well composed';
+
+      // Add negative prompts
+      const negativePrompts = ['blurry', 'low quality', 'distorted', 'poorly composed'];
+      if (textOverlays.length === 0) {
+        negativePrompts.push('text overlays', 'watermarks');
+      }
+      enhancedPrompt += `. Avoid: ${negativePrompts.join(', ')}`;
+
+      // Determine API type
+      const isGemini = model?.includes('gemini');
+
+      // Build the preview payload structure
+      let previewPayload: any;
+
+      if (isGemini) {
+        // Gemini API format
+        const parts: any[] = [];
+
+        // Add image ingredients if present
+        if (imageIngredients && imageIngredients.length > 0) {
+          for (const ingredient of imageIngredients) {
+            parts.push({
+              inlineData: {
+                mimeType: ingredient.mimeType,
+                data: `[BASE64_DATA_${ingredient.slotId.toUpperCase()}_${ingredient.base64?.length || 0}_BYTES]`
+              }
+            });
+          }
+          const refs = imageIngredients.map((i: any) => `[${i.slotId}]`).join(', ');
+          parts.push({ text: `Reference images provided: ${refs}\n\n${enhancedPrompt}` });
+        } else if (referenceImage) {
+          parts.push({
+            inlineData: {
+              mimeType: referenceImage.mimeType,
+              data: `[BASE64_DATA_REFERENCE_${referenceImage.bytesBase64Encoded?.length || 0}_BYTES]`
+            }
+          });
+          const subjectContext = referenceImage.subjectDescription
+            ? `Using the provided ${referenceImage.subjectType} image (${referenceImage.subjectDescription}), `
+            : `Using the provided ${referenceImage.subjectType} image, `;
+          parts.push({ text: subjectContext + enhancedPrompt });
+        } else {
+          parts.push({ text: enhancedPrompt });
+        }
+
+        previewPayload = {
+          apiType: 'Gemini (Nano Banana)',
+          endpoint: `https://aiplatform.googleapis.com/v1/projects/[PROJECT_ID]/locations/global/publishers/google/models/${model}:generateContent`,
+          requestBody: {
+            contents: [{ role: 'user', parts }],
+            generationConfig: {
+              responseModalities: ['TEXT', 'IMAGE'],
+              imageConfig: {
+                aspectRatio: aspectRatio || '1:1',
+                imageSize: resolution || '2K'
+              }
+            }
+          }
+        };
+      } else {
+        // Imagen API format
+        const ratioMap: Record<string, string> = {
+          '1:1': '1:1', '9:16': '9:16', '3:4': '3:4', '4:5': '4:5',
+          '2:3': '2:3', '3:2': '3:2', '4:3': '4:3', '16:9': '16:9',
+        };
+
+        previewPayload = {
+          apiType: 'Imagen 4.0',
+          endpoint: `https://[LOCATION]-aiplatform.googleapis.com/v1/projects/[PROJECT_ID]/locations/[LOCATION]/publishers/google/models/${model || 'imagen-4.0-ultra-generate-001'}:predict`,
+          requestBody: {
+            instances: [{ prompt: enhancedPrompt }],
+            parameters: {
+              sampleCount: 1,
+              aspectRatio: ratioMap[aspectRatio || '1:1'] || '1:1',
+              safetyFilterLevel: "block_some",
+              personGeneration: "allow_adult"
+            }
+          },
+          note: imageIngredients?.length > 0
+            ? '⚠️ Imagen 4.0 does NOT support reference images - they will be ignored. Use Nano Banana for reference image support.'
+            : undefined
+        };
+      }
+
+      res.json({
+        success: true,
+        preview: previewPayload,
+        enhancedPrompt,
+        settings: {
+          model: model || 'imagen-4.0-ultra-generate-001',
+          artStyle: artStyle || 'photorealistic',
+          imageStyle: imageStyle || 'professional',
+          resolution: resolution || '1024',
+          aspectRatio: aspectRatio || '1:1',
+          ingredientCount: imageIngredients?.length || 0
+        },
+        timestamp: new Date().toISOString(),
+      });
+
+    } catch (error: any) {
+      console.error('💥 Preview payload error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to build preview payload',
+        details: error.message,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  });
+
   // AI Image Generation - Generate images using Vertex AI
   app.post('/api/ai/generate-image', async (req, res) => {
     try {
@@ -6369,7 +6564,8 @@ Return ONLY the enhanced subtitle text. No explanations, quotes, or formatting.`
         aspectRatio,
         model,
         articleContext,
-        referenceImage, // Image Ingredients - for product/subject placement
+        imageIngredients, // NEW: Multiple image ingredients for composition
+        referenceImage, // Legacy: Single reference image (backwards compatibility)
       } = req.body;
 
       if (!prompt || !prompt.trim()) {
@@ -6379,12 +6575,7 @@ Return ONLY the enhanced subtitle text. No explanations, quotes, or formatting.`
         });
       }
 
-      console.log('🎨 Starting AI image generation...');
-      if (referenceImage) {
-        console.log('🧪 Image Ingredients mode - reference image provided');
-        console.log('📦 Subject type:', referenceImage.subjectType);
-        console.log('📊 Base64 length:', referenceImage.bytesBase64Encoded?.length || 0);
-      }
+      console.log('🎨 AI image generation:', model, imageIngredients?.length || 0, 'ingredients');
 
       const { VertexAIImageGenerator } = await import('./services/vertex-ai-image-generator');
       const generator = new VertexAIImageGenerator();
@@ -6402,7 +6593,8 @@ Return ONLY the enhanced subtitle text. No explanations, quotes, or formatting.`
         aspectRatio: aspectRatio || '1:1',
         model: model || 'imagen-4.0-generate-001',
         articleContext,
-        referenceImage, // Pass through Image Ingredients reference
+        imageIngredients, // NEW: Multiple image ingredients
+        referenceImage, // Legacy: Single reference image (backwards compatibility)
       });
 
       console.log('✅ AI image generation completed');

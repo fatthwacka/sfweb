@@ -15,10 +15,24 @@ export interface PromptAnalysisRequest {
   imageStyle: string;
 }
 
+// Brand asset metadata for intelligent prompt enhancement
+export interface BrandAssetMetadata {
+  assetId: string;
+  assetName: string;
+  assetType: string;       // product, logo, material, style_reference, background, texture
+  material?: string;       // glass, metal, fabric, etc.
+  similarTo?: string;      // e.g., "perfume bottle", "skincare jar"
+  usageNotes?: string;     // usage guidance from brand settings
+  clientId?: string;       // for industry context lookup
+  clientIndustry?: string; // e.g., "Beauty & Skincare", "Fashion"
+}
+
 export interface ImageIngredientInfo {
   tag: string;       // e.g., '[product1]', '[model]', '[scene]'
+  slotId: string;    // e.g., 'product1', 'model', 'scene'
   type: string;      // 'product', 'model', or 'scene'
   description?: string;
+  brandAssetMetadata?: BrandAssetMetadata; // Optional: rich metadata from brand assets
 }
 
 export interface StandalonePromptRequest {
@@ -30,6 +44,7 @@ export interface StandalonePromptRequest {
   titleText?: string;
   subtitleText?: string;
   imageIngredients?: ImageIngredientInfo[];  // Reference images already uploaded
+  customSystemPrompt?: string;  // Optional: user-provided system prompt override
 }
 
 export interface PromptAnalysisResult {
@@ -458,44 +473,109 @@ RESPOND ONLY WITH THE JSON OBJECT - NO ADDITIONAL TEXT.
   }
 
   private buildStandalonePrompt(request: StandalonePromptRequest): string {
-    const { userPrompt, artStyle, imageStyle, includeTitle, includeSubtitle, titleText, subtitleText, imageIngredients } = request;
+    const { userPrompt, artStyle, imageStyle, includeTitle, includeSubtitle, titleText, subtitleText, imageIngredients, customSystemPrompt } = request;
 
     const hasAssets = imageIngredients && imageIngredients.length > 0;
 
-    // Text overlay info
+    // Text overlay info (used in both paths)
     let textOverlay = '';
     if (includeTitle && titleText) textOverlay += `Include text overlay: "${titleText}". `;
     if (includeSubtitle && subtitleText) textOverlay += `Subtitle: "${subtitleText}". `;
 
     // ═══════════════════════════════════════════════════════════════
-    // PATH A: NO ASSETS - Be creative, elaborate the scene
+    // PATH A: NO ASSETS - Full creative freedom with quality focus
+    // (customSystemPrompt can fully override here since no assets to protect)
     // ═══════════════════════════════════════════════════════════════
     if (!hasAssets) {
-      console.log('🎨 PATH A: No assets - creative elaboration mode');
+      console.log('🎨 PATH A: No assets - full creative elaboration mode');
 
-      return `You are an expert image prompt engineer. The user has provided a brief creative concept. Your job is to elaborate it into a rich, detailed image generation prompt.
+      // If custom system prompt provided and no assets, allow it to guide (but still add quality rules)
+      if (customSystemPrompt) {
+        console.log('🎨 PATH A with custom guidance appended');
+        return `You are an expert image prompt engineer creating ULTRA-HIGH DETAIL prompts for professional AI image generation.
 
 USER'S CONCEPT: "${userPrompt}"
 
-STYLE REQUIREMENTS:
-- Art style: ${artStyle}
-- Image style: ${imageStyle}
-${textOverlay ? `- ${textOverlay}` : ''}
+STYLE: ${artStyle}, ${imageStyle}
+${textOverlay ? `TEXT OVERLAY: ${textOverlay}` : ''}
+
+ADDITIONAL USER GUIDANCE:
+${customSystemPrompt}
 
 YOUR TASK:
-Take the user's short concept and expand it into a detailed, evocative image prompt. Add:
-- Specific visual details that bring the scene to life
-- Atmospheric elements (lighting, time of day, weather, mood)
-- Camera perspective and lens characteristics (wide angle, macro, depth of field)
-- Composition guidance (rule of thirds, leading lines, foreground interest)
-- Material textures and surface qualities
-- Colour palette suggestions that match the mood
+Transform the user's concept into an ULTRA-DETAILED, photorealistic prompt. You have FULL CREATIVE FREEDOM - imagine every element of the scene.
 
-Keep the user's core idea intact but enrich it with professional photography/art direction knowledge.
+═══════════════════════════════════════════════════════════════
+MANDATORY QUALITY ENHANCEMENTS:
+═══════════════════════════════════════════════════════════════
+Your prompt MUST include:
+1. PHOTOREALISTIC IMPERFECTIONS: Add subtle dust particles, micro-scratches, fingerprint smudges on glass, fabric texture irregularities, surface wear
+2. HUMAN REALISM (if people present): Specify skin pores, subtle freckles, minor blemishes, natural skin texture variations, asymmetrical features, stray hairs, visible pore texture
+3. SURFACE DETAIL: Specify material grain, reflection imperfections, subtle wear patterns, micro-textures, surface irregularities
+4. LIGHTING NUANCE: Specify caustics, subsurface scattering, chromatic aberration, lens flare characteristics, light falloff
+5. ENVIRONMENTAL PARTICLES: Add floating dust motes in light beams, atmospheric haze, bokeh characteristics, lens artifacts
+
+CREATIVE ELEMENTS TO ADD:
+- Specific, concrete visual details (not vague adjectives)
+- Atmospheric elements with SPECIFIC lighting direction and quality
+- Camera craft: lens mm equivalent, aperture effect, focus plane
+- Material textures with SPECIFIC surface qualities
+- Colour palette with SPECIFIC colour names and tones
+- Composition with SPECIFIC placement and framing
+
+CRITICAL RULES:
+- DO NOT mention aspect ratio or image dimensions (these are set separately)
+- DO NOT use generic terms like "high quality", "professional", "stunning" - be SPECIFIC
+- Use concrete, measurable descriptors rather than subjective adjectives
+- Include at least 3 types of imperfections/texture details
 
 RESPOND WITH JSON ONLY:
 {
-  "suggestedPrompt": "Your elaborated, detailed prompt here",
+  "suggestedPrompt": "Your ultra-detailed prompt with mandatory quality enhancements",
+  "analysisReasoning": "Brief note on creative choices",
+  "alternativePrompts": [],
+  "keyVisualElements": []
+}`;
+      }
+
+      // Standard PATH A - no custom prompt, no assets
+      return `You are an expert image prompt engineer creating ULTRA-HIGH DETAIL prompts for professional AI image generation.
+
+USER'S CONCEPT: "${userPrompt}"
+
+STYLE: ${artStyle}, ${imageStyle}
+${textOverlay ? `TEXT OVERLAY: ${textOverlay}` : ''}
+
+YOUR TASK:
+Transform the user's concept into an ULTRA-DETAILED, photorealistic prompt. You have FULL CREATIVE FREEDOM - imagine every element of the scene.
+
+═══════════════════════════════════════════════════════════════
+MANDATORY QUALITY ENHANCEMENTS:
+═══════════════════════════════════════════════════════════════
+Your prompt MUST include:
+1. PHOTOREALISTIC IMPERFECTIONS: Add subtle dust particles, micro-scratches, fingerprint smudges on glass, fabric texture irregularities, surface wear
+2. HUMAN REALISM (if people present): Specify skin pores, subtle freckles, minor blemishes, natural skin texture variations, asymmetrical features, stray hairs, visible pore texture
+3. SURFACE DETAIL: Specify material grain, reflection imperfections, subtle wear patterns, micro-textures, surface irregularities
+4. LIGHTING NUANCE: Specify caustics, subsurface scattering, chromatic aberration, lens flare characteristics, light falloff
+5. ENVIRONMENTAL PARTICLES: Add floating dust motes in light beams, atmospheric haze, bokeh characteristics, lens artifacts
+
+CREATIVE ELEMENTS TO ADD:
+- Specific, concrete visual details (not vague adjectives)
+- Atmospheric elements with SPECIFIC lighting direction and quality
+- Camera craft: lens mm equivalent, aperture effect, focus plane
+- Material textures with SPECIFIC surface qualities
+- Colour palette with SPECIFIC colour names and tones
+- Composition with SPECIFIC placement and framing
+
+CRITICAL RULES:
+- DO NOT mention aspect ratio or image dimensions (these are set separately)
+- DO NOT use generic terms like "high quality", "professional", "stunning" - be SPECIFIC
+- Use concrete, measurable descriptors rather than subjective adjectives
+- Include at least 3 types of imperfections/texture details
+
+RESPOND WITH JSON ONLY:
+{
+  "suggestedPrompt": "Your ultra-detailed prompt with mandatory quality enhancements",
   "analysisReasoning": "Brief note on creative choices",
   "alternativePrompts": [],
   "keyVisualElements": []
@@ -504,61 +584,141 @@ RESPOND WITH JSON ONLY:
 
     // ═══════════════════════════════════════════════════════════════
     // PATH B: HAS ASSETS - Creative enhancement WITH reference images
+    // TARGETED CREATIVITY: Only restrict imagination for loaded asset types
+    // customSystemPrompt is SUPPLEMENTARY guidance, NOT a replacement
     // ═══════════════════════════════════════════════════════════════
-    console.log('📦 PATH B: Assets present - creative enhancement with refs');
+    console.log('📦 PATH B: Assets present - targeted creativity mode');
+    if (customSystemPrompt) {
+      console.log('📦 PATH B: Custom system prompt will be included as supplementary guidance');
+    }
 
-    // Parse any dimension specifications
+    // Categorise loaded assets by type
+    const loadedProducts = imageIngredients!.filter(i => i.type === 'product' || i.slotId?.startsWith('product'));
+    const hasLoadedModel = imageIngredients!.some(i => i.type === 'model' || i.slotId === 'model');
+    const hasLoadedScene = imageIngredients!.some(i => i.type === 'scene' || i.slotId === 'scene');
+
+    console.log(`📦 Loaded: ${loadedProducts.length} products, model: ${hasLoadedModel}, scene: ${hasLoadedScene}`);
+
+    // Build detailed product specifications from brand asset metadata
+    const productSpecs: string[] = [];
+    for (const product of loadedProducts) {
+      const meta = product.brandAssetMetadata;
+      const tag = product.tag || `[${product.slotId}]`;
+
+      if (meta) {
+        const specs: string[] = [];
+        if (meta.assetName) specs.push(`"${meta.assetName}"`);
+        if (meta.similarTo) specs.push(`is a ${meta.similarTo}`);
+        if (meta.material) specs.push(`made of ${meta.material}`);
+        if (meta.assetType && meta.assetType !== 'product') specs.push(`(${meta.assetType})`);
+        if (meta.clientIndustry) specs.push(`from the ${meta.clientIndustry} industry`);
+        if (meta.usageNotes) specs.push(`— usage note: ${meta.usageNotes}`);
+
+        if (specs.length > 0) {
+          productSpecs.push(`${tag}: ${specs.join(', ')}`);
+          console.log(`📦 Product spec: ${tag} -> ${specs.join(', ')}`);
+        } else {
+          productSpecs.push(`${tag}: product image uploaded`);
+        }
+      } else if (product.description) {
+        productSpecs.push(`${tag}: ${product.description}`);
+      } else {
+        productSpecs.push(`${tag}: product image uploaded`);
+      }
+    }
+
+    // Parse any dimension specifications from user prompt
     const dimPattern = /\d+\.?\d*\s*(?:inch|inches|in|"|cm|mm|ft|foot|feet)\s*(?:wide|tall|high|deep|long|x\s*\d+\.?\d*\s*(?:inch|inches|in|"|cm|mm))?/gi;
     const dimensions = userPrompt.match(dimPattern) || [];
 
-    // Build asset list
-    const assetList = imageIngredients!.map(i => {
-      const tag = i.type === 'product' ? i.tag.replace(/[\[\]]/g, '') : i.type;
-      return `[${tag}]`;
-    }).join(', ');
-
-    // If dimensions found, create real-world comparison
     let sizeGuidance = '';
     if (dimensions.length > 0) {
       const realWorldSize = this.dimensionToRealWorld(dimensions[0]);
-      sizeGuidance = `\n\nSIZE: User said "${dimensions.join(', ')}" → describe as "${realWorldSize}"`;
+      sizeGuidance = `\nSIZE REFERENCE: "${dimensions.join(', ')}" → approximately ${realWorldSize}`;
     }
 
-    return `You are an expert image prompt engineer. The user has uploaded reference images and provided a creative concept. Your job is to elaborate their vision into a rich, cinematic image prompt.
+    // Build targeted creativity guidance
+    const creativityGuidance: string[] = [];
+
+    if (!hasLoadedModel) {
+      creativityGuidance.push('- FREELY IMAGINE any human models, hands, or people - describe their appearance, pose, clothing, expression');
+    }
+    if (!hasLoadedScene) {
+      creativityGuidance.push('- FREELY IMAGINE the environment, backdrop, setting, and location - be creative with scenery');
+    }
+    if (loadedProducts.length === 0) {
+      creativityGuidance.push('- FREELY IMAGINE any products or objects - describe their appearance fully');
+    }
+
+    const restrictions: string[] = [];
+    if (loadedProducts.length > 0) {
+      restrictions.push(`- DO NOT describe the appearance of uploaded products (${loadedProducts.map(p => p.tag || `[${p.slotId}]`).join(', ')}) - they are already defined by the reference images`);
+    }
+    if (hasLoadedModel) {
+      restrictions.push('- DO NOT describe the model\'s appearance - use [model] tag only, their look comes from the reference');
+    }
+    if (hasLoadedScene) {
+      restrictions.push('- DO NOT reimagine the scene/background - use [scene] tag, the setting comes from the reference');
+    }
+
+    // Build the supplementary guidance section (if custom system prompt provided)
+    const supplementaryGuidance = customSystemPrompt
+      ? `
+═══════════════════════════════════════════════════════════════
+ADDITIONAL USER GUIDANCE (incorporate these preferences):
+═══════════════════════════════════════════════════════════════
+${customSystemPrompt}
+`
+      : '';
+
+    return `You are an expert image prompt engineer creating ULTRA-HIGH DETAIL prompts for professional AI image generation.
 
 USER'S CONCEPT: "${userPrompt}"
 
-UPLOADED IMAGES: ${assetList}
-(These are actual images - reference them by tag, never describe their appearance)
+═══════════════════════════════════════════════════════════════
+UPLOADED REFERENCE IMAGES (use these tags - they're real images):
+═══════════════════════════════════════════════════════════════
+${productSpecs.length > 0 ? `PRODUCTS:\n${productSpecs.join('\n')}` : ''}
+${hasLoadedModel ? '[model] - Human model reference uploaded (do not describe their appearance)' : ''}
+${hasLoadedScene ? '[scene] - Background/environment reference uploaded (do not reimagine the setting)' : ''}
+${sizeGuidance}
 
+═══════════════════════════════════════════════════════════════
 STYLE: ${artStyle}, ${imageStyle}
-${textOverlay ? `TEXT: ${textOverlay}` : ''}${sizeGuidance}
+${textOverlay ? `TEXT OVERLAY: ${textOverlay}` : ''}
+${supplementaryGuidance}
+═══════════════════════════════════════════════════════════════
+TARGETED CREATIVITY RULES:
+═══════════════════════════════════════════════════════════════
+${creativityGuidance.length > 0 ? 'BE FULLY CREATIVE WITH:\n' + creativityGuidance.join('\n') : ''}
 
-YOUR TASK:
-Transform the user's concept into an evocative, detailed prompt. Be creative and embellish!
+${restrictions.length > 0 ? 'RESTRICTIONS (preserve these from references):\n' + restrictions.join('\n') : ''}
 
-ADD FREELY:
-- Dramatic lighting (golden hour, rim lighting, soft diffused, dramatic shadows)
-- Atmospheric mood (misty, ethereal, energetic, serene, electric)
-- Camera craft (shallow depth of field, wide angle drama, macro detail, dynamic angle)
-- Surface textures and material qualities (glossy reflections, matte surfaces, fabric textures)
-- Environmental atmosphere (floating particles, light rays, subtle bokeh)
-- Motion and energy (frozen motion, gentle movement, dynamic action)
-- Colour grading and mood (warm tones, cool blues, vibrant saturation)
+═══════════════════════════════════════════════════════════════
+MANDATORY QUALITY ENHANCEMENTS (ALWAYS INCLUDE THESE):
+═══════════════════════════════════════════════════════════════
+Your prompt MUST include:
+1. PHOTOREALISTIC IMPERFECTIONS: Add subtle dust particles, micro-scratches on surfaces, fingerprint smudges on glass, fabric texture irregularities
+2. HUMAN REALISM (if people present): Specify skin pores, subtle freckles, minor blemishes, natural skin texture variations, asymmetrical features, stray hairs
+3. SURFACE DETAIL: Specify material grain, reflection imperfections, subtle wear patterns, micro-textures
+4. LIGHTING NUANCE: Specify caustics, subsurface scattering, chromatic aberration, lens characteristics
+5. ENVIRONMENTAL PARTICLES: Add floating dust motes in light beams, atmospheric haze, bokeh characteristics
 
-DO NOT:
-- Describe what's IN the reference images (their appearance, colours, shapes)
-- Add new people, products, or objects the user didn't mention
-- Remove elements the user requested
+CRITICAL RULES:
+- DO NOT mention aspect ratio or image dimensions (these are set separately)
+- DO NOT use generic terms like "high quality" - be SPECIFIC about what creates quality
+- Reference products by their tags (e.g., [product1]) - NEVER describe their visual appearance
+- Use concrete, specific descriptors rather than vague adjectives
+- ALWAYS include the product metadata in your prompt (material, type, usage context)
 
-EXAMPLE:
-User: "model throws products into air, products are 4 inches"
-Enhanced: "[model] gracefully tosses [product1] and [product2] skyward, palm-sized products suspended in a balletic arc against a gradient studio backdrop, frozen motion with subtle motion trails, dramatic rim lighting creating luminous edges, shallow depth of field with creamy bokeh, high-energy fashion editorial aesthetic"
+EXAMPLE (with loaded product, no model/scene):
+User: "perfume bottle on marble"
+Good: "[product1] (luxury perfume bottle made of glass, from the Beauty & Skincare industry) resting on veined Calacatta marble surface with subtle grey striations, elegant female hand with natural nail polish and visible knuckle creases reaching toward the bottle, soft window light creating caustic patterns through the glass, micro dust particles visible in the light beam, shallow depth of field with creamy bokeh, subtle chromatic aberration at frame edges"
 
 RESPOND WITH JSON ONLY:
 {
-  "suggestedPrompt": "Your richly embellished prompt here",
-  "analysisReasoning": "Brief creative note",
+  "suggestedPrompt": "Your ultra-detailed prompt with product metadata and mandatory quality enhancements",
+  "analysisReasoning": "Brief note on creative approach",
   "alternativePrompts": [],
   "keyVisualElements": []
 }`;

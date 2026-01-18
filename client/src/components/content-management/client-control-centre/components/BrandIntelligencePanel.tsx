@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Package } from 'lucide-react';
 import BrandProfileEditor from './BrandProfileEditor';
+import BrandAssetsEditor from './BrandAssetsEditor';
 
 interface BrandProfile {
   id: string;
@@ -72,6 +75,19 @@ interface BrandIntelligencePanelProps {
 
 export default function BrandIntelligencePanel({ client }: BrandIntelligencePanelProps) {
   const [showBrandEditor, setShowBrandEditor] = useState(false);
+  const [showAssetsEditor, setShowAssetsEditor] = useState(false);
+
+  // Fetch brand assets count for display
+  const { data: assetsData } = useQuery({
+    queryKey: ['brand-assets', client.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/content-management/brand-intelligence/clients/${client.id}/assets`);
+      if (!response.ok) return { assets: [] };
+      return response.json();
+    },
+  });
+
+  const assetsCount = assetsData?.assets?.length || 0;
 
   // Get the active brand profile
   const brandProfile = client.client_brand_profiles?.[0];
@@ -109,15 +125,24 @@ export default function BrandIntelligencePanel({ client }: BrandIntelligencePane
           </button>
         </div>
 
-        {/* Content Performance */}
+        {/* Brand Assets */}
         <div className="p-4 bg-gray-800 rounded-lg border border-gray-600 flex flex-col h-full">
           <div className="text-center mb-3 flex-grow">
-            <div className="text-2xl mb-2">📈</div>
-            <h3 className="text-lg font-semibold text-cyan mb-1">Performance</h3>
-            <p className="text-xs text-gray-400">8.4% engagement, video posts perform best</p>
+            <div className="text-2xl mb-2">
+              <Package className="h-6 w-6 mx-auto text-amber-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-cyan mb-1">Brand Assets</h3>
+            <p className="text-xs text-gray-400">
+              {assetsCount === 0
+                ? 'No assets uploaded yet'
+                : `${assetsCount} asset${assetsCount === 1 ? '' : 's'} for AI generation`}
+            </p>
           </div>
-          <button className="w-full bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded text-sm border border-gray-600 mt-auto">
-            View Analytics
+          <button
+            className="w-full bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded text-sm mt-auto"
+            onClick={() => setShowAssetsEditor(true)}
+          >
+            {assetsCount === 0 ? 'Add Assets' : 'Manage Assets'}
           </button>
         </div>
 
@@ -133,6 +158,13 @@ export default function BrandIntelligencePanel({ client }: BrandIntelligencePane
           </button>
         </div>
       </div>
+
+      {/* Brand Assets Editor Modal */}
+      <BrandAssetsEditor
+        clientId={client.id}
+        isOpen={showAssetsEditor}
+        onClose={() => setShowAssetsEditor(false)}
+      />
 
       {/* Brand Profile Editor Modal */}
       {showBrandEditor && (

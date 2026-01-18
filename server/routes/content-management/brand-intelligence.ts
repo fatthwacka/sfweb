@@ -1,13 +1,22 @@
 import express from 'express';
+import multer from 'multer';
 import { supabaseAdmin as supabase } from '../../supabase-auth.js';
-import type { 
-  ContentClient, 
-  ClientBrandProfile, 
+import type {
+  ContentClient,
+  ClientBrandProfile,
   CreateContentClientRequest,
-  UpdateBrandProfileRequest 
+  UpdateBrandProfileRequest
 } from './types.js';
 
 const router = express.Router();
+
+// Note: Multer is imported but no longer used for brand assets
+// Brand assets now use direct base64 upload with in-browser compression
+// This approach is more efficient and avoids multipart form handling
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB limit (though compression happens client-side)
+});
 
 // ============================================================================
 // DASHBOARD OVERVIEW DATA
@@ -533,6 +542,299 @@ router.put('/clients/:clientId/limits', async (req, res) => {
     res.json({ limits });
   } catch (error) {
     console.error('Generation limits update error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ============================================================================
+// BRAND ASSETS MANAGEMENT
+// ============================================================================
+
+// GET /api/content-management/clients/:clientId/assets - List all brand assets for a client
+router.get('/clients/:clientId/assets', async (req, res) => {
+  try {
+    const { clientId } = req.params;
+
+    const { data: assets, error } = await supabase
+      .from('client_brand_assets')
+      .select('*')
+      .eq('client_id', clientId)
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching brand assets:', error);
+      return res.status(500).json({ error: 'Failed to fetch brand assets' });
+    }
+
+    res.json({ assets: assets || [] });
+  } catch (error) {
+    console.error('Brand assets fetch error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/content-management/clients/:clientId/assets - Upload new brand asset
+router.post('/clients/:clientId/assets', async (req, res) => {
+  try {
+    const { clientId } = req.params;
+
+    // Check if this is multipart form data (file upload) or JSON
+    const contentType = req.headers['content-type'] || '';
+
+    if (contentType.includes('multipart/form-data')) {
+      // Handle file upload - import multer if needed
+      // For now, return a placeholder response
+      return res.status(501).json({
+        error: 'File upload not yet implemented. Please use JSON with image_url for now.'
+      });
+    }
+
+    // Handle JSON body with image_url
+    const assetData = req.body;
+
+    if (!assetData.image_url) {
+      return res.status(400).json({ error: 'image_url is required' });
+    }
+
+    const { data: asset, error } = await supabase
+      .from('client_brand_assets')
+      .insert({
+        client_id: clientId,
+        name: assetData.name || 'Untitled Asset',
+        description: assetData.description || null,
+        asset_type: assetData.asset_type || 'product',
+        image_url: assetData.image_url,
+        thumbnail_url: assetData.thumbnail_url || assetData.image_url,
+        width: assetData.width || null,
+        height: assetData.height || null,
+        file_size_bytes: assetData.file_size_bytes || null,
+        mime_type: assetData.mime_type || null,
+        dominant_colours: assetData.dominant_colours || null,
+        material: assetData.material || null,
+        similar_to: assetData.similar_to || null,
+        usage_notes: assetData.usage_notes || null,
+        placement_guidance: assetData.placement_guidance || null,
+        scale_preference: assetData.scale_preference || 'prominent',
+        preferred_angle: assetData.preferred_angle || null,
+        lighting_notes: assetData.lighting_notes || null,
+        tags: assetData.tags || [],
+        is_active: true,
+        sort_order: assetData.sort_order || 0,
+        created_by: req.user?.id || null
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating brand asset:', error);
+      return res.status(500).json({ error: 'Failed to create brand asset' });
+    }
+
+    res.status(201).json({ asset });
+  } catch (error) {
+    console.error('Brand asset creation error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/content-management/clients/:clientId/assets/upload - Upload new brand asset with base64 image
+// This endpoint receives compressed base64 image data from the frontend and uploads to Supabase Storage
+router.post('/clients/:clientId/assets/upload', async (req, res) => {
+  try {
+    const { clientId } = req.params;
+    const { name, base64, width, height, originalSize, compressedSize, assetType } = req.body;
+
+    // Validate required fields
+    if (!base64) {
+      return res.status(400).json({ error: 'base64 image data is required' });
+    }
+
+    if (!name) {
+      return res.status(400).json({ error: 'name is required' });
+    }
+
+    // Extract base64 data (remove data URL prefix if present)
+    const base64Data = base64.replace(/^data:image\/\w+;base64,/, '');
+    const imageBuffer = Buffer.from(base64Data, 'base64');
+
+    // Generate unique filename with timestamp
+    const timestamp = Date.now();
+    const sanitisedName = name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+    const filename = `${clientId}/${timestamp}-${sanitisedName}.jpg`;
+
+    console.log(`📦 Uploading brand asset to Supabase Storage: ${filename}`);
+    console.log(`📐 Dimensions: ${width}x${height}, Original: ${(originalSize / 1024).toFixed(0)}KB, Compressed: ${(compressedSize / 1024).toFixed(0)}KB`);
+
+    // Upload to Supabase Storage bucket 'brand-assets'
+    // Note: This bucket must be created in Supabase Dashboard with public access enabled
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('brand-assets')
+      .upload(filename, imageBuffer, {
+        contentType: 'image/jpeg',
+        cacheControl: '31536000', // 1 year cache
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error('Supabase Storage upload error:', uploadError);
+      // Check if bucket doesn't exist
+      if (uploadError.message?.includes('not found') || uploadError.message?.includes('Bucket')) {
+        return res.status(500).json({
+          error: 'Storage bucket not configured',
+          details: 'Please create a "brand-assets" bucket in Supabase Dashboard with public access enabled.',
+          originalError: uploadError.message
+        });
+      }
+      return res.status(500).json({ error: 'Failed to upload image to storage', details: uploadError.message });
+    }
+
+    // Get the public URL for the uploaded image
+    const { data: urlData } = supabase.storage
+      .from('brand-assets')
+      .getPublicUrl(filename);
+
+    const imageUrl = urlData.publicUrl;
+    console.log(`✅ Brand asset uploaded successfully: ${imageUrl}`);
+
+    // Create asset record in database
+    const { data: asset, error: dbError } = await supabase
+      .from('client_brand_assets')
+      .insert({
+        client_id: clientId,
+        name: name,
+        description: null,
+        asset_type: assetType || 'product',
+        image_url: imageUrl,
+        thumbnail_url: imageUrl, // Same URL for now, could generate thumbnail later
+        width: width || null,
+        height: height || null,
+        file_size_bytes: compressedSize || null,
+        mime_type: 'image/jpeg',
+        dominant_colours: null,
+        material: null,
+        similar_to: null,
+        usage_notes: null,
+        placement_guidance: null,
+        scale_preference: 'prominent',
+        preferred_angle: null,
+        lighting_notes: null,
+        tags: [],
+        is_active: true,
+        sort_order: 0,
+        created_by: (req as any).user?.id || null
+      })
+      .select()
+      .single();
+
+    if (dbError) {
+      console.error('Database insert error:', dbError);
+      // Try to clean up the uploaded file
+      await supabase.storage.from('brand-assets').remove([filename]);
+      return res.status(500).json({ error: 'Failed to create asset record', details: dbError.message });
+    }
+
+    res.status(201).json({
+      asset,
+      upload: {
+        originalSize,
+        compressedSize,
+        compressionRatio: ((1 - compressedSize / originalSize) * 100).toFixed(1) + '%'
+      }
+    });
+  } catch (error) {
+    console.error('Brand asset upload error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PUT /api/content-management/clients/:clientId/assets/:assetId - Update brand asset
+router.put('/clients/:clientId/assets/:assetId', async (req, res) => {
+  try {
+    const { clientId, assetId } = req.params;
+    const updateData = req.body;
+
+    const { data: asset, error } = await supabase
+      .from('client_brand_assets')
+      .update({
+        name: updateData.name,
+        description: updateData.description,
+        asset_type: updateData.asset_type,
+        material: updateData.material,
+        similar_to: updateData.similar_to,
+        usage_notes: updateData.usage_notes,
+        placement_guidance: updateData.placement_guidance,
+        scale_preference: updateData.scale_preference,
+        preferred_angle: updateData.preferred_angle,
+        lighting_notes: updateData.lighting_notes,
+        tags: updateData.tags,
+        sort_order: updateData.sort_order,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', assetId)
+      .eq('client_id', clientId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating brand asset:', error);
+      return res.status(500).json({ error: 'Failed to update brand asset' });
+    }
+
+    res.json({ asset });
+  } catch (error) {
+    console.error('Brand asset update error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// DELETE /api/content-management/clients/:clientId/assets/:assetId - Soft delete brand asset
+router.delete('/clients/:clientId/assets/:assetId', async (req, res) => {
+  try {
+    const { clientId, assetId } = req.params;
+
+    const { error } = await supabase
+      .from('client_brand_assets')
+      .update({
+        is_active: false,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', assetId)
+      .eq('client_id', clientId);
+
+    if (error) {
+      console.error('Error deleting brand asset:', error);
+      return res.status(500).json({ error: 'Failed to delete brand asset' });
+    }
+
+    res.json({ message: 'Asset deleted successfully' });
+  } catch (error) {
+    console.error('Brand asset deletion error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/content-management/clients/:clientId/assets/:assetId - Get single asset
+router.get('/clients/:clientId/assets/:assetId', async (req, res) => {
+  try {
+    const { clientId, assetId } = req.params;
+
+    const { data: asset, error } = await supabase
+      .from('client_brand_assets')
+      .select('*')
+      .eq('id', assetId)
+      .eq('client_id', clientId)
+      .eq('is_active', true)
+      .single();
+
+    if (error) {
+      console.error('Error fetching brand asset:', error);
+      return res.status(404).json({ error: 'Asset not found' });
+    }
+
+    res.json({ asset });
+  } catch (error) {
+    console.error('Brand asset fetch error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

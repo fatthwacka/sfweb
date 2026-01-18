@@ -202,7 +202,7 @@ export const TOOLS_REGISTRY: ToolDefinition[] = [
     usesLocalFiles: false,
     limits: {},
     badge: 'new',
-    customAction: 'full-page', // Open in full page mode for complex dashboard
+    // Uses standard page navigation (same tab)
   },
   {
     slug: 'content-types-admin',

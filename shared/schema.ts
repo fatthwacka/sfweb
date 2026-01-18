@@ -563,7 +563,6 @@ export const aiPrompts = pgTable("ai_prompts", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
 });
 
-
 // Insert schemas for new tables
 export const insertShootPreviewSchema = createInsertSchema(shootPreviews).omit({
   id: true,
@@ -643,6 +642,7 @@ export const insertAiPromptSchema = createInsertSchema(aiPrompts).omit({
   createdAt: true,
   updatedAt: true,
 });
+
 
 
 // Types for new tables

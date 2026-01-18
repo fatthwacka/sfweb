@@ -272,10 +272,11 @@ export default function BrandIntelDashboard({ className = '' }: BrandIntelDashbo
     <div className="container mx-auto px-4 pt-32 pb-8">
       {/* Page Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-4 mb-4">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+        {/* Centred Back to Tools button */}
+        <div className="flex justify-center mb-6">
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => navigate('/tools')}
             className="bg-gray-200 text-gray-700 font-light hover:bg-white hover:text-gray-900"
           >
@@ -283,7 +284,7 @@ export default function BrandIntelDashboard({ className = '' }: BrandIntelDashbo
             Back to Tools
           </Button>
         </div>
-        
+
         <div className="text-center">
           <h1 className="text-4xl font-bold text-salmon mb-4">Brand Intelligence Dashboard</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6">

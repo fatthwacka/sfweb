@@ -5,6 +5,18 @@
 
 import { GoogleAuth } from 'google-auth-library';
 
+// Brand asset metadata for intelligent prompt enhancement
+export interface BrandAssetMetadata {
+  assetId: string;
+  assetName: string;
+  assetType: string;       // product, logo, material, style_reference, background, texture
+  material?: string;       // glass, metal, fabric, etc.
+  similarTo?: string;      // e.g., "perfume bottle", "skincare jar"
+  usageNotes?: string;     // usage guidance from brand settings
+  clientId?: string;       // for industry context lookup
+  clientIndustry?: string; // e.g., "Beauty & Skincare", "Fashion"
+}
+
 // Single image ingredient with slot information
 export interface ImageIngredient {
   slotId: 'product1' | 'product2' | 'product3' | 'product4' | 'model' | 'scene';
@@ -12,6 +24,7 @@ export interface ImageIngredient {
   base64: string;
   mimeType: string;
   description?: string;
+  brandAssetMetadata?: BrandAssetMetadata; // Optional: populated when loaded from Brand Assets
 }
 
 // Legacy interface for backwards compatibility
@@ -521,17 +534,80 @@ export class VertexAIImageGenerator {
         });
       }
 
-      // Build a simple reference list for the prompt
-      const refs = originalRequest.imageIngredients
-        .map(i => `[${i.slotId}]`)
-        .join(', ');
+      // Build enhanced reference context with brand asset metadata
+      const ingredientDescriptions: string[] = [];
+      for (const ingredient of originalRequest.imageIngredients) {
+        const meta = ingredient.brandAssetMetadata;
+        if (meta) {
+          // Build a rich description from brand asset metadata
+          const parts: string[] = [];
+          parts.push(`[${ingredient.slotId}]`);
 
-      // Add the prompt with reference context
+          if (meta.similarTo) {
+            parts.push(`(${meta.similarTo}`);
+            if (meta.material) {
+              parts.push(`made of ${meta.material}`);
+            }
+            parts.push(')');
+          } else if (meta.assetName) {
+            parts.push(`(${meta.assetName})`);
+          }
+
+          if (meta.clientIndustry) {
+            parts.push(`from the ${meta.clientIndustry} industry`);
+          }
+
+          ingredientDescriptions.push(parts.join(' '));
+
+          // Log the metadata being used
+          console.log(`🏷️ Brand asset metadata for ${ingredient.slotId}:`, {
+            name: meta.assetName,
+            type: meta.assetType,
+            material: meta.material,
+            similarTo: meta.similarTo,
+            industry: meta.clientIndustry
+          });
+        } else {
+          // Fallback to simple description
+          ingredientDescriptions.push(`[${ingredient.slotId}]${ingredient.description ? ` (${ingredient.description})` : ''}`);
+        }
+      }
+
+      const contextualRefs = ingredientDescriptions.join(', ');
+
+      // Build enhanced prompt with product context
+      let enhancedPromptText = `Reference images provided: ${contextualRefs}\n\n`;
+
+      // Add industry/material context if available from any brand asset
+      const industryContext = originalRequest.imageIngredients
+        .filter(i => i.brandAssetMetadata?.clientIndustry)
+        .map(i => i.brandAssetMetadata!.clientIndustry)
+        .filter((v, i, a) => a.indexOf(v) === i)[0]; // Get unique first industry
+
+      const materials = originalRequest.imageIngredients
+        .filter(i => i.brandAssetMetadata?.material)
+        .map(i => i.brandAssetMetadata!.material)
+        .filter((v, i, a) => a.indexOf(v) === i); // Get unique materials
+
+      if (industryContext || materials.length > 0) {
+        enhancedPromptText += 'Context: ';
+        if (industryContext) {
+          enhancedPromptText += `${industryContext} product photography. `;
+        }
+        if (materials.length > 0) {
+          enhancedPromptText += `Product materials include: ${materials.join(', ')}. `;
+        }
+        enhancedPromptText += '\n\n';
+      }
+
+      enhancedPromptText += prompt;
+
+      // Add the prompt with enhanced reference context
       parts.push({
-        text: `Reference images provided: ${refs}\n\n${prompt}`
+        text: enhancedPromptText
       });
 
-      console.log('📝 Prompt with refs:', prompt.substring(0, 200) + '...');
+      console.log('📝 Enhanced prompt with brand context:', enhancedPromptText.substring(0, 300) + '...');
     }
     // Legacy: Single reference image support
     else if (originalRequest?.referenceImage) {

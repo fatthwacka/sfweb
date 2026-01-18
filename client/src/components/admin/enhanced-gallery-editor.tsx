@@ -1089,6 +1089,18 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
                   <span className="text-xs">Retrying...</span>
                 </div>
               )}
+              {shoot?.custom_slug && (
+                <a
+                  href={`/gallery/${shoot.custom_slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-sm text-cyan hover:text-white transition-colors"
+                  title="Open public gallery in new tab"
+                >
+                  <LinkIcon className="w-4 h-4" />
+                  <span>View Public Gallery</span>
+                </a>
+              )}
             </div>
           </div>
         </CardHeader>
