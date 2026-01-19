@@ -23,6 +23,8 @@ export interface BrandAssetMetadata {
   material?: string;       // glass, metal, fabric, etc.
   similarTo?: string;      // e.g., "perfume bottle", "skincare jar"
   usageNotes?: string;     // usage guidance from brand settings
+  size?: string;           // product size (e.g., "50ml", "100g", "Large")
+  flavour?: string;        // product variant/flavour (e.g., "Vanilla", "Original", "Rose Gold")
   clientId?: string;       // for industry context lookup
   clientIndustry?: string; // e.g., "Beauty & Skincare", "Fashion"
 }
@@ -600,31 +602,102 @@ RESPOND WITH JSON ONLY:
     console.log(`📦 Loaded: ${loadedProducts.length} products, model: ${hasLoadedModel}, scene: ${hasLoadedScene}`);
 
     // Build detailed product specifications from brand asset metadata
+    // Create structured, unambiguous descriptions with special emphasis on SIZE
     const productSpecs: string[] = [];
+    const productContextHints: string[] = []; // For creative scene suggestions
+
     for (const product of loadedProducts) {
       const meta = product.brandAssetMetadata;
       const tag = product.tag || `[${product.slotId}]`;
 
       if (meta) {
-        const specs: string[] = [];
-        if (meta.assetName) specs.push(`"${meta.assetName}"`);
-        if (meta.similarTo) specs.push(`is a ${meta.similarTo}`);
-        if (meta.material) specs.push(`made of ${meta.material}`);
-        if (meta.assetType && meta.assetType !== 'product') specs.push(`(${meta.assetType})`);
-        if (meta.clientIndustry) specs.push(`from the ${meta.clientIndustry} industry`);
-        if (meta.usageNotes) specs.push(`— usage note: ${meta.usageNotes}`);
+        // Build a structured specification to avoid grammatical ambiguity
+        // Each attribute is clearly labelled to prevent confusion
+        const specLines: string[] = [];
+        specLines.push(`${tag}:`);
 
-        if (specs.length > 0) {
-          productSpecs.push(`${tag}: ${specs.join(', ')}`);
-          console.log(`📦 Product spec: ${tag} -> ${specs.join(', ')}`);
+        // IDENTITY: What is it similar to?
+        if (meta.similarTo) {
+          specLines.push(`  • Object type: ${meta.similarTo}`);
+        }
+
+        // SIZE: Critical for generation - give it prominence and context
+        if (meta.size) {
+          specLines.push(`  • PHYSICAL SIZE (CRITICAL): ${meta.size}`);
+          specLines.push(`    → Generate the product at this exact scale relative to other objects in the scene`);
+        }
+
+        // MATERIAL: What is the packaging/product made of?
+        if (meta.material) {
+          specLines.push(`  • Packaging material: ${meta.material}`);
+        }
+
+        // VARIANT/FLAVOUR: Product variant, flavour, or colour variant
+        if (meta.flavour) {
+          specLines.push(`  • Variant/Flavour: ${meta.flavour}`);
+        }
+
+        // INDUSTRY: Context for styling
+        if (meta.clientIndustry) {
+          specLines.push(`  • Industry: ${meta.clientIndustry}`);
+        }
+
+        // USAGE: What does this product do?
+        if (meta.usageNotes) {
+          specLines.push(`  • Product purpose: ${meta.usageNotes}`);
+        }
+
+        if (specLines.length > 1) {
+          productSpecs.push(specLines.join('\n'));
+          console.log(`📦 Product spec for ${tag}:`, specLines.slice(1).join(', '));
+
+          // Build creative context hints based on the product attributes
+          // These help the LLM think of complementary scene elements
+          if (meta.flavour || meta.similarTo || meta.usageNotes) {
+            const contextHint = {
+              tag,
+              type: meta.assetType || 'product',
+              flavour: meta.flavour,
+              similarTo: meta.similarTo,
+              size: meta.size,
+              industry: meta.clientIndustry,
+              usageNotes: meta.usageNotes,
+            };
+            productContextHints.push(JSON.stringify(contextHint));
+          }
+        } else if (meta.assetName) {
+          productSpecs.push(`${tag}: "${meta.assetName}" (no additional metadata)`);
         } else {
-          productSpecs.push(`${tag}: product image uploaded`);
+          productSpecs.push(`${tag}: product image uploaded (no metadata)`);
         }
       } else if (product.description) {
         productSpecs.push(`${tag}: ${product.description}`);
       } else {
-        productSpecs.push(`${tag}: product image uploaded`);
+        productSpecs.push(`${tag}: product image uploaded (no metadata)`);
       }
+    }
+
+    // Build creative intelligence guidance if we have product context
+    let creativeIntelligenceGuidance = '';
+    if (productContextHints.length > 0) {
+      creativeIntelligenceGuidance = `
+═══════════════════════════════════════════════════════════════
+CREATIVE INTELLIGENCE (use product context to enrich the scene):
+═══════════════════════════════════════════════════════════════
+Analyse the product attributes and CREATIVELY ADD complementary elements to the scene:
+
+Product Context:
+${productContextHints.join('\n')}
+
+Guidelines for creative enhancement:
+- If the product has a FLAVOUR (e.g., "orange", "vanilla", "strawberry"), consider adding that ingredient naturally to the scene (fresh oranges, vanilla pods, strawberries, etc.)
+- If the product has a specific USE CASE, imagine props that complement that usage (e.g., mixing bowls for baking products, towels for skincare, wine glasses for beverages)
+- Consider the INDUSTRY to set an appropriate mood and styling (luxury for beauty, homey for food, professional for tech)
+- Think about what would make the product's purpose IMMEDIATELY CLEAR to viewers
+- Add elements that tell a STORY about the product without being too literal
+
+IMPORTANT: Be creative but tasteful. Don't overcrowd the scene. Choose 1-3 complementary elements maximum.
+`;
     }
 
     // Parse any dimension specifications from user prompt
@@ -687,6 +760,7 @@ ${sizeGuidance}
 STYLE: ${artStyle}, ${imageStyle}
 ${textOverlay ? `TEXT OVERLAY: ${textOverlay}` : ''}
 ${supplementaryGuidance}
+${creativeIntelligenceGuidance}
 ═══════════════════════════════════════════════════════════════
 TARGETED CREATIVITY RULES:
 ═══════════════════════════════════════════════════════════════
@@ -704,16 +778,51 @@ Your prompt MUST include:
 4. LIGHTING NUANCE: Specify caustics, subsurface scattering, chromatic aberration, lens characteristics
 5. ENVIRONMENTAL PARTICLES: Add floating dust motes in light beams, atmospheric haze, bokeh characteristics
 
+═══════════════════════════════════════════════════════════════
+⚠️ PRODUCT SIZE - CRITICAL FOR CORRECT GENERATION:
+═══════════════════════════════════════════════════════════════
+If a product has PHYSICAL SIZE specified, you MUST:
+- Describe the product's size relationship to nearby objects (e.g., "palm-sized box next to a standard coffee mug")
+- Use relatable size comparisons viewers instantly understand (hand, mug, apple, phone, etc.)
+- NEVER let the AI scale the product incorrectly - reinforce the size throughout the prompt
+- Include at least one size-anchoring object in the scene for reference
+
+═══════════════════════════════════════════════════════════════
 CRITICAL RULES:
+═══════════════════════════════════════════════════════════════
 - DO NOT mention aspect ratio or image dimensions (these are set separately)
 - DO NOT use generic terms like "high quality" - be SPECIFIC about what creates quality
 - Reference products by their tags (e.g., [product1]) - NEVER describe their visual appearance
 - Use concrete, specific descriptors rather than vague adjectives
-- ALWAYS include the product metadata in your prompt (material, type, usage context)
 
-EXAMPLE (with loaded product, no model/scene):
+EXAMPLES (with loaded products, no model/scene):
+
+Example 1 - Perfume (with size anchoring):
 User: "perfume bottle on marble"
-Good: "[product1] (luxury perfume bottle made of glass, from the Beauty & Skincare industry) resting on veined Calacatta marble surface with subtle grey striations, elegant female hand with natural nail polish and visible knuckle creases reaching toward the bottle, soft window light creating caustic patterns through the glass, micro dust particles visible in the light beam, shallow depth of field with creamy bokeh, subtle chromatic aberration at frame edges"
+Product spec:
+  [product1]:
+    • Object type: luxury perfume bottle
+    • PHYSICAL SIZE (CRITICAL): 3 inches tall, palm-sized
+    • Packaging material: glass
+    • Industry: Beauty & Skincare
+Good: "[product1] standing elegantly on veined Calacatta marble, its palm-sized 3-inch form dwarfed slightly by a nearby orchid bloom for scale, elegant female hand with natural nail polish reaching toward the small bottle showing its delicate proportions, soft window light creating caustic patterns through the glass, micro dust particles visible in the light beam"
+
+Example 2 - Food product with flavour and size (CREATIVE INTELLIGENCE):
+User: "product shot on kitchen counter"
+Product spec:
+  [product1]:
+    • Object type: small pack of jelly powder (like a JellO box)
+    • PHYSICAL SIZE (CRITICAL): palm-sized box, about 4 inches wide, 3 inches tall
+    • Packaging material: paper/cardboard
+    • Variant/Flavour: orange
+    • Industry: food
+    • Product purpose: makes a bowl of vibrant jelly dessert
+Good: "[product1] standing upright on a warm wooden kitchen counter, the small palm-sized box positioned next to a standard teaspoon for scale, a clear glass bowl of vibrant wobbly orange jelly dessert beside it catching the light, two fresh orange slices artfully placed nearby showing juicy segments, soft morning kitchen light streaming through a window, natural dust motes floating in the sunbeam"
+
+Notice:
+- Example 2 uses "orange" flavour to add fresh oranges and orange-coloured jelly
+- BOTH examples include size-anchoring objects (orchid bloom, teaspoon) to ensure correct product scale
+- The size is reinforced with relatable terms ("palm-sized", "small")
 
 RESPOND WITH JSON ONLY:
 {

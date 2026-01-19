@@ -130,6 +130,8 @@ export default function AIImageGenerator() {
     material?: string;       // glass, metal, fabric, etc.
     similarTo?: string;      // e.g., "perfume bottle", "skincare jar"
     usageNotes?: string;     // usage guidance from brand settings
+    size?: string;           // product size (e.g., "50ml", "100g", "Large")
+    flavour?: string;        // product variant/flavour (e.g., "Vanilla", "Original", "Rose Gold")
     clientId?: string;       // for industry context lookup
     clientIndustry?: string; // e.g., "Beauty & Skincare", "Fashion"
   }
@@ -849,6 +851,8 @@ export default function AIImageGenerator() {
             material: asset.material,
             similarTo: asset.similar_to,
             usageNotes: asset.usage_notes,
+            size: asset.size,
+            flavour: asset.flavour,
             clientId: asset.client_id || clientInfo?.id,
             clientIndustry: clientInfo?.industry,
           },
@@ -860,6 +864,8 @@ export default function AIImageGenerator() {
         material: asset.material,
         similarTo: asset.similar_to,
         usageNotes: asset.usage_notes,
+        size: asset.size,
+        flavour: asset.flavour,
         clientIndustry: clientInfo?.industry,
       });
 

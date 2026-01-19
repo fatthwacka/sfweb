@@ -13,6 +13,8 @@ export interface BrandAssetMetadata {
   material?: string;       // glass, metal, fabric, etc.
   similarTo?: string;      // e.g., "perfume bottle", "skincare jar"
   usageNotes?: string;     // usage guidance from brand settings
+  size?: string;           // product size (e.g., "50ml", "100g", "Large")
+  flavour?: string;        // product variant/flavour (e.g., "Vanilla", "Original", "Rose Gold")
   clientId?: string;       // for industry context lookup
   clientIndustry?: string; // e.g., "Beauty & Skincare", "Fashion"
 }
@@ -545,12 +547,21 @@ export class VertexAIImageGenerator {
 
           if (meta.similarTo) {
             parts.push(`(${meta.similarTo}`);
+            if (meta.size) {
+              parts.push(`- ${meta.size}`);
+            }
+            if (meta.flavour) {
+              parts.push(`- ${meta.flavour} variant`);
+            }
             if (meta.material) {
               parts.push(`made of ${meta.material}`);
             }
             parts.push(')');
           } else if (meta.assetName) {
-            parts.push(`(${meta.assetName})`);
+            const assetParts: string[] = [meta.assetName];
+            if (meta.size) assetParts.push(`${meta.size}`);
+            if (meta.flavour) assetParts.push(`${meta.flavour}`);
+            parts.push(`(${assetParts.join(' - ')})`);
           }
 
           if (meta.clientIndustry) {
@@ -565,6 +576,8 @@ export class VertexAIImageGenerator {
             type: meta.assetType,
             material: meta.material,
             similarTo: meta.similarTo,
+            size: meta.size,
+            flavour: meta.flavour,
             industry: meta.clientIndustry
           });
         } else {
@@ -578,7 +591,7 @@ export class VertexAIImageGenerator {
       // Build enhanced prompt with product context
       let enhancedPromptText = `Reference images provided: ${contextualRefs}\n\n`;
 
-      // Add industry/material context if available from any brand asset
+      // Add industry/material/flavour context if available from any brand asset
       const industryContext = originalRequest.imageIngredients
         .filter(i => i.brandAssetMetadata?.clientIndustry)
         .map(i => i.brandAssetMetadata!.clientIndustry)
@@ -589,13 +602,37 @@ export class VertexAIImageGenerator {
         .map(i => i.brandAssetMetadata!.material)
         .filter((v, i, a) => a.indexOf(v) === i); // Get unique materials
 
-      if (industryContext || materials.length > 0) {
+      const flavours = originalRequest.imageIngredients
+        .filter(i => i.brandAssetMetadata?.flavour)
+        .map(i => i.brandAssetMetadata!.flavour)
+        .filter((v, i, a) => a.indexOf(v) === i); // Get unique flavours
+
+      const sizes = originalRequest.imageIngredients
+        .filter(i => i.brandAssetMetadata?.size)
+        .map(i => i.brandAssetMetadata!.size)
+        .filter((v, i, a) => a.indexOf(v) === i); // Get unique sizes
+
+      const usageNotes = originalRequest.imageIngredients
+        .filter(i => i.brandAssetMetadata?.usageNotes)
+        .map(i => i.brandAssetMetadata!.usageNotes)
+        .filter((v, i, a) => a.indexOf(v) === i); // Get unique usage notes
+
+      if (industryContext || materials.length > 0 || flavours.length > 0) {
         enhancedPromptText += 'Context: ';
         if (industryContext) {
           enhancedPromptText += `${industryContext} product photography. `;
         }
         if (materials.length > 0) {
-          enhancedPromptText += `Product materials include: ${materials.join(', ')}. `;
+          enhancedPromptText += `Product materials: ${materials.join(', ')}. `;
+        }
+        if (sizes.length > 0) {
+          enhancedPromptText += `Product size: ${sizes.join(', ')}. `;
+        }
+        if (flavours.length > 0) {
+          enhancedPromptText += `Product flavour/variant: ${flavours.join(', ')}. `;
+        }
+        if (usageNotes.length > 0) {
+          enhancedPromptText += `Product use: ${usageNotes.join('; ')}. `;
         }
         enhancedPromptText += '\n\n';
       }

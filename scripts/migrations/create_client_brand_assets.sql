@@ -31,9 +31,9 @@ CREATE TABLE IF NOT EXISTS client_brand_assets (
   placement_guidance TEXT, -- 'centre frame', 'left third', 'background', 'foreground'
   scale_preference TEXT DEFAULT 'prominent', -- 'prominent', 'subtle', 'fill-frame', 'background'
 
-  -- Composition hints
-  preferred_angle TEXT, -- 'front', 'side', '45-degree', 'overhead', 'any'
-  lighting_notes TEXT, -- 'works well with dramatic lighting', 'needs soft diffused light'
+  -- Product attributes for AI prompt enhancement
+  size TEXT, -- Product size: '50ml', '1.7oz', 'palm-sized', 'large bottle'
+  flavour TEXT, -- Product variant/flavour: 'Orange', 'Vanilla', 'Original', 'Rose Gold'
 
   -- Tags for filtering/search
   tags TEXT[],
