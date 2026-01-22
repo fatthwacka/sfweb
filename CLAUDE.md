@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**📁 Detailed Documentation:** See [`SYSTEM_DOCUMENTATION/`](./SYSTEM_DOCUMENTATION/) folder for in-depth guides on specific systems.
+
 ## 🇬🇧 LANGUAGE & SPELLING
 
 **Always use British English spelling throughout this codebase.**
@@ -171,10 +173,13 @@ POST /api/ai/generate-image
 - **Cost**: Approximately $0.02-0.04 per image generation
 
 ### **Troubleshooting**
+
 - **Docker Rebuild Required**: After adding `google-auth-library` dependency
 - **Authentication Errors**: Verify service account JSON format and environment variables
 - **API Errors**: Check Cloud Console for Vertex AI API quotas and permissions
 - **Rate Limiting**: System enforces 3-second minimum between requests to prevent overuse
+
+**📋 Full documentation:** [`SYSTEM_DOCUMENTATION/AI_IMAGE_GENERATOR.md`](./SYSTEM_DOCUMENTATION/AI_IMAGE_GENERATOR.md)
 
 ---
 
