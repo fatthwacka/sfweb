@@ -89,16 +89,25 @@ Available in root directory:
 
 ---
 
-## 🎨 VERTEX AI IMAGE GENERATION (NEW - DECEMBER 2025)
+## 🎨 VERTEX AI IMAGE GENERATION (UPDATED - JANUARY 2026)
 
 **⚠️ FULLY OPERATIONAL: Real AI image generation using Google Vertex AI Imagen 3.0**
 
-### **Core Implementation**
+### **Modular Architecture (January 2026)**
+
+- **Core Component**: `AIImageGeneratorCore.tsx` - Single source of truth for all AI image generation
+- **Full Page**: `/tools/ai-image-generator` wraps core with page layout
+- **Modal Wrapper**: `AIImageGeneratorModal.tsx` for embedding in other tools (e.g., Article Editor)
+- **Unsplash Modal**: `UnsplashModal.tsx` - Dedicated Unsplash search (separated from AI generation)
+
+**Key Benefit**: Any enhancement to `AIImageGeneratorCore` automatically propagates to all deployment contexts.
+
+### **Backend Service**
+
 - **Service**: `VertexAIImageGenerator` in `/server/services/vertex-ai-image-generator.ts`
 - **Authentication**: OAuth 2.0 service account with private key credentials
 - **API**: Google Cloud Vertex AI Imagen 3.0 Generate model
 - **Image Hosting**: ImgBB for generated image URLs
-- **Integration**: AI Image Generator modal in Tools section
 
 ### **Authentication Architecture**
 ```typescript
