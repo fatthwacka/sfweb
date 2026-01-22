@@ -4,8 +4,8 @@
  * Uses client-side Airtable operations for maximum reliability (like the HTML version)
  */
 
-import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Upload, ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { ChevronLeft, ChevronRight, Upload, ArrowLeft, ArrowRight, Sparkles, Search } from 'lucide-react';
 import { useLocation } from 'wouter';
 
 import { Navigation } from '@/components/layout/navigation';
@@ -17,7 +17,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ImageGeneratorModal, type ImageGenerationResult } from '@/components/tools/image-generator-modal';
+import { AIImageGeneratorModal, type ImageGenerationResult } from '@/components/ai-tools/AIImageGeneratorModal';
+import { UnsplashModal, type UnsplashResult } from '@/components/tools/UnsplashModal';
 import { toast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -84,9 +85,8 @@ export default function ArticleEditor() {
   
   // Dynamic filter options (from ALL articles, not filtered)
   const [availableClients, setAvailableClients] = useState<string[]>([]);
-  const [availableSourceTitles, setAvailableSourceTitles] = useState<string[]>([]);
   const [allArticles, setAllArticles] = useState<AirtableArticle[]>([]); // Unfiltered articles for option extraction
-  
+
   // Filters (matching HTML version)
   const [filters, setFilters] = useState<Filters>({
     status: 'All',
@@ -94,6 +94,25 @@ export default function ArticleEditor() {
     sourceTitle: 'All',
     sortOrder: 'Newest First'
   });
+
+  // Compute available source titles based on selected client
+  const availableSourceTitles = useMemo((): string[] => {
+    if (filters.client === 'All') {
+      // Show all source titles when no client filter
+      return Array.from(new Set(
+        allArticles
+          .map(article => article['Source Title'])
+          .filter((title): title is string => !!title && title.trim() !== '')
+      )).sort();
+    }
+    // Filter source titles to only those matching the selected client (case-insensitive)
+    return Array.from(new Set(
+      allArticles
+        .filter(article => article.Client?.toLowerCase() === filters.client.toLowerCase())
+        .map(article => article['Source Title'])
+        .filter((title): title is string => !!title && title.trim() !== '')
+    )).sort();
+  }, [allArticles, filters.client]);
 
   // Parse URL parameters for initial filter state
   useEffect(() => {
@@ -118,7 +137,8 @@ export default function ArticleEditor() {
   const [selectedSearchIndex, setSelectedSearchIndex] = useState(0);
 
   // AI Image Generation States
-  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+  const [isUnsplashModalOpen, setIsUnsplashModalOpen] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [imageAttribution, setImageAttribution] = useState<{user: string; username: string; source: 'unsplash' | 'ai' | 'upload'} | null>(null);
 
@@ -280,17 +300,10 @@ export default function ArticleEditor() {
       const uniqueClients = Array.from(clientMap.values()).sort();
       setAvailableClients(uniqueClients);
 
-      // Extract unique source titles from ALL articles
-      const uniqueSourceTitles = Array.from(new Set(
-        formattedArticles
-          .map(article => article['Source Title'])
-          .filter(title => title && title.trim() !== '')
-      )).sort();
-      setAvailableSourceTitles(uniqueSourceTitles);
+      // Source titles are now computed dynamically via useMemo based on selected client
 
       console.log('Filter options populated:', {
         clients: uniqueClients,
-        sourceTitles: uniqueSourceTitles.length,
         totalArticles: formattedArticles.length
       });
 
@@ -471,10 +484,19 @@ export default function ArticleEditor() {
 
   // Filter change handler
   const handleFilterChange = (filterType: keyof Filters, value: string) => {
-    setFilters(prev => ({
-      ...prev,
-      [filterType]: value
-    }));
+    setFilters(prev => {
+      const newFilters = {
+        ...prev,
+        [filterType]: value
+      };
+
+      // When client changes, reset sourceTitle to 'All' since available sources will change
+      if (filterType === 'client') {
+        newFilters.sourceTitle = 'All';
+      }
+
+      return newFilters;
+    });
   };
 
   // Image upload functionality (matching HTML version exactly)
@@ -696,36 +718,69 @@ export default function ArticleEditor() {
   };
 
   // AI Image Generation Handlers
-  const handleOpenImageGenerator = () => {
-    setIsImageModalOpen(true);
+  const handleOpenAIGenerator = () => {
+    setIsAIModalOpen(true);
   };
 
-  const handleCloseImageGenerator = () => {
-    setIsImageModalOpen(false);
+  const handleCloseAIGenerator = () => {
+    setIsAIModalOpen(false);
   };
 
-  const handleImageGenerated = async (result: ImageGenerationResult) => {
+  const handleOpenUnsplash = () => {
+    setIsUnsplashModalOpen(true);
+  };
+
+  const handleCloseUnsplash = () => {
+    setIsUnsplashModalOpen(false);
+  };
+
+  const handleAIImageGenerated = async (result: ImageGenerationResult) => {
     try {
       // Update the current article with the generated image URL
       handleFieldChange('Image URL', result.imageUrl);
-      
+
       // Store attribution information
       if (result.attribution) {
         setImageAttribution(result.attribution);
       } else {
         setImageAttribution(null);
       }
-      
-      const sourceLabel = result.attribution?.source === 'unsplash' ? 'Unsplash' : 'AI-generated';
+
       toast({
-        title: 'Image Added',
-        description: `${sourceLabel} image has been added to the article. Remember to save your changes.`,
+        title: 'AI Image Added',
+        description: 'AI-generated image has been added to the article. Remember to save your changes.',
       });
     } catch (error: any) {
-      console.error('Error handling generated image:', error);
+      console.error('Error handling AI generated image:', error);
       toast({
         title: 'Error',
-        description: 'Failed to add generated image to article.',
+        description: 'Failed to add AI generated image to article.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleUnsplashSelected = async (result: UnsplashResult) => {
+    try {
+      // Update the current article with the Unsplash image URL
+      handleFieldChange('Image URL', result.imageUrl);
+
+      // Store attribution information
+      setImageAttribution({
+        user: result.attribution.user,
+        username: result.attribution.username,
+        source: 'unsplash',
+      });
+
+      toast({
+        title: 'Unsplash Image Added',
+        description: 'Unsplash image has been added to the article. Remember to save your changes.',
+      });
+    } catch (error: any) {
+      console.error('Error handling Unsplash image:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to add Unsplash image to article.',
         variant: 'destructive',
       });
     }
@@ -1271,15 +1326,26 @@ export default function ArticleEditor() {
                   <CardTitle className="text-lg text-orange-400">Image Controls</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* AI Generate Image Button */}
-                  <Button
-                    onClick={handleOpenImageGenerator}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium"
-                    disabled={!displayCurrentArticle || isGeneratingImage}
-                  >
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    {isGeneratingImage ? 'Generating...' : 'AI Generate Image'}
-                  </Button>
+                  {/* Split buttons: AI Generate and Unsplash */}
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleOpenAIGenerator}
+                      className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium"
+                      disabled={!displayCurrentArticle || isGeneratingImage}
+                    >
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      {isGeneratingImage ? 'Generating...' : 'AI Generate'}
+                    </Button>
+                    <Button
+                      onClick={handleOpenUnsplash}
+                      variant="outline"
+                      className="flex-1 border-cyan-500 text-cyan-400 hover:bg-cyan-500/10 font-medium"
+                      disabled={!displayCurrentArticle}
+                    >
+                      <Search className="h-4 w-4 mr-2" />
+                      Unsplash
+                    </Button>
+                  </div>
 
                   {/* Image Upload Area */}
                   <div 
@@ -1375,11 +1441,21 @@ export default function ArticleEditor() {
         </div>
       </div>
 
-      {/* AI Image Generator Modal */}
-      <ImageGeneratorModal
-        isOpen={isImageModalOpen}
-        onClose={handleCloseImageGenerator}
-        onImageGenerated={handleImageGenerated}
+      {/* AI Image Generator Modal - Uses new modular AIImageGeneratorCore */}
+      <AIImageGeneratorModal
+        isOpen={isAIModalOpen}
+        onClose={handleCloseAIGenerator}
+        onImageGenerated={handleAIImageGenerated}
+        contextText={getArticleContext().content}
+        contextTitle={getArticleContext().headline}
+        contextSubtitle={getArticleContext().hook}
+      />
+
+      {/* Unsplash Image Search Modal */}
+      <UnsplashModal
+        isOpen={isUnsplashModalOpen}
+        onClose={handleCloseUnsplash}
+        onImageSelected={handleUnsplashSelected}
         articleContext={getArticleContext()}
       />
 

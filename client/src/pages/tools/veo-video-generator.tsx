@@ -19,36 +19,40 @@ import { toast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import { GradientBackground } from '@/components/common/gradient-background';
 
-// VEO Model configurations (verified 2025)
+// VEO 3.1 Model configurations (January 2026)
+// Pricing: Per-second billing - $0.40/s (1080p), $0.60/s (4K) for video+audio
+// Fast model: $0.20/s (1080p only, video without audio)
+// Duration: 4-8 seconds per generation (extensions can chain up to 148s)
+const USD_TO_ZAR = 17; // Conversion rate
+
 const VEO_MODELS = [
-  // Best Quality Column
+  // Fast Generation Column (default - cost-effective)
   {
-    value: 'veo-3.0-generate-001',
+    value: 'veo-3.1-fast-generate-001',
     position: { row: 0, col: 0 },
-    label: 'VEO 3 Standard',
-    description: 'Highest quality video generation',
-    category: 'premium',
-    aspectRatios: ['16:9', '9:16'],
-    resolutions: [
-      { value: '1080p', label: '1080p (~$1.50)', price: 1.50 },
-      { value: '720p', label: '720p (~$0.75)', price: 0.75, default: true }
-    ],
-    durations: [4, 6, 8],
-    default: true,
-  },
-  // Fast Generation Column  
-  {
-    value: 'veo-3.0-fast-generate-001',
-    position: { row: 0, col: 1 },
-    label: 'VEO 3 Fast',
-    description: 'High quality with low latency',
+    label: 'VEO 3.1 Fast',
+    description: 'Quick generation, 1080p only',
     category: 'fast',
     aspectRatios: ['16:9', '9:16'],
     resolutions: [
-      { value: '1080p', label: '1080p (~$0.75)', price: 0.75 },
-      { value: '720p', label: '720p (~$0.38)', price: 0.38, default: true }
+      { value: '1080p', label: '1080p', pricePerSecond: 0.20 }
     ],
-    durations: [4, 6, 8],
+    durations: [4, 6, 8], // VEO 3.1 only accepts 4, 6, or 8 seconds
+    default: true,
+  },
+  // Best Quality Column
+  {
+    value: 'veo-3.1-generate-001',
+    position: { row: 0, col: 1 },
+    label: 'VEO 3.1 Standard',
+    description: 'Highest quality with audio',
+    category: 'premium',
+    aspectRatios: ['16:9', '9:16'],
+    resolutions: [
+      { value: '1080p', label: '1080p', pricePerSecond: 0.40 },
+      { value: '4k', label: '4K', pricePerSecond: 0.60 }
+    ],
+    durations: [4, 6, 8], // VEO 3.1 only accepts 4, 6, or 8 seconds
   },
 ];
 
@@ -66,9 +70,9 @@ export default function VEOVideoGenerator() {
   // Video generation state
   const [prompt, setPrompt] = useState('');
   const [model, setModel] = useState(getDefaultModel().value);
-  const [resolution, setResolution] = useState('1080p'); // Default to 1080p for best quality
+  const [resolution, setResolution] = useState('1080p'); // Default to 1080p
   const [aspectRatio, setAspectRatio] = useState('9:16'); // Default to vertical for social media
-  const [duration, setDuration] = useState(4); // Default 4 seconds for lowest cost
+  const [duration, setDuration] = useState(4); // Default 4 seconds (lowest cost)
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedVideo, setGeneratedVideo] = useState<string | null>(null);
   const [isEnhancingPrompt, setIsEnhancingPrompt] = useState(false);
@@ -76,7 +80,10 @@ export default function VEOVideoGenerator() {
   // Starting frame image state
   const [startingFrameImage, setStartingFrameImage] = useState<File | null>(null);
   const [compressedImageData, setCompressedImageData] = useState<string | null>(null);
-  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [croppedPreviewUrl, setCroppedPreviewUrl] = useState<string | null>(null); // Shows actual cropped result
+  const [detectedAspectRatio, setDetectedAspectRatio] = useState<string | null>(null); // Locks after image processed
+  const [isDragOver, setIsDragOver] = useState(false); // Drop zone hover state
+  const [isAnalysingImage, setIsAnalysingImage] = useState(false); // Gemini analysis loading
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Rate limiting state
@@ -98,49 +105,112 @@ export default function VEOVideoGenerator() {
     return () => clearInterval(interval);
   }, [lastRequestTime]);
 
-  // Image processing helper
-  const compressImageToBase64 = async (file: File): Promise<string> => {
+  // Image processing helper - auto-detect best aspect ratio, crop + compress to max 4K
+  // Returns base64 data and detected aspect ratio
+  interface ProcessedImage {
+    base64: string;
+    aspectRatio: '16:9' | '9:16';
+    dimensions: { width: number; height: number };
+  }
+
+  const processImageForVeo = async (file: File): Promise<ProcessedImage> => {
     return new Promise((resolve, reject) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
-      
+
       img.onload = () => {
-        // Target resolution based on user selection
-        const maxWidth = resolution === '1080p' ? 1920 : 1280;
-        const maxHeight = resolution === '1080p' ? 1080 : 720;
-        
-        let { width, height } = img;
-        
-        // Calculate optimal dimensions maintaining aspect ratio
-        if (width > height) {
-          if (width > maxWidth) {
-            height = (height * maxWidth) / width;
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width = (width * maxHeight) / height;
-            height = maxHeight;
-          }
+        const { width: origWidth, height: origHeight } = img;
+        const currentRatio = origWidth / origHeight;
+
+        // Auto-detect best aspect ratio based on image orientation
+        // If wider than 1:1, use 16:9 (landscape); if taller, use 9:16 (portrait)
+        const detectedRatio: '16:9' | '9:16' = currentRatio >= 1 ? '16:9' : '9:16';
+        const [ratioW, ratioH] = detectedRatio.split(':').map(Number);
+        const targetRatio = ratioW / ratioH;
+
+        // Calculate crop dimensions (centre crop to preserve maximum detail)
+        let cropX = 0;
+        let cropY = 0;
+        let cropWidth = origWidth;
+        let cropHeight = origHeight;
+
+        if (currentRatio > targetRatio) {
+          // Image is wider than target - crop sides
+          cropWidth = origHeight * targetRatio;
+          cropX = (origWidth - cropWidth) / 2;
+        } else if (currentRatio < targetRatio) {
+          // Image is taller than target - crop top/bottom
+          cropHeight = origWidth / targetRatio;
+          cropY = (origHeight - cropHeight) / 2;
         }
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        ctx?.drawImage(img, 0, 0, width, height);
-        
+
+        // Calculate final output dimensions (max 4K: 3840x2160 or 2160x3840)
+        const maxLongEdge = 3840;
+        let finalWidth: number;
+        let finalHeight: number;
+
+        if (targetRatio > 1) {
+          // Landscape (16:9): width is long edge
+          finalWidth = Math.min(cropWidth, maxLongEdge);
+          finalHeight = finalWidth / targetRatio;
+        } else {
+          // Portrait (9:16): height is long edge
+          finalHeight = Math.min(cropHeight, maxLongEdge);
+          finalWidth = finalHeight * targetRatio;
+        }
+
+        canvas.width = Math.round(finalWidth);
+        canvas.height = Math.round(finalHeight);
+
+        // Draw cropped and scaled image
+        ctx?.drawImage(
+          img,
+          cropX, cropY, cropWidth, cropHeight,  // Source (crop area)
+          0, 0, canvas.width, canvas.height      // Destination (full canvas)
+        );
+
         // Convert to base64 with 80% quality
         const base64 = canvas.toDataURL('image/jpeg', 0.8);
-        resolve(base64);
+        const sizeKB = Math.round((base64.length * 3/4) / 1024);
+        console.log(`🖼️ Processed starting frame: ${origWidth}x${origHeight} → ${canvas.width}x${canvas.height} (${detectedRatio}), ~${sizeKB}KB`);
+
+        resolve({
+          base64,
+          aspectRatio: detectedRatio,
+          dimensions: { width: canvas.width, height: canvas.height }
+        });
       };
-      
+
       img.onerror = () => reject(new Error('Failed to load image'));
       img.src = URL.createObjectURL(file);
     });
   };
 
-  // Handle file selection
+  // Analyse image with Gemini and generate VEO-optimised prompt
+  const analyseImageAndGeneratePrompt = async (imageBase64: string): Promise<string | null> => {
+    try {
+      const response = await fetch('/api/ai/analyse-image-for-video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image: imageBase64,
+          task: 'veo-prompt-generation'
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.suggestedPrompt || null;
+      }
+      return null;
+    } catch (error) {
+      console.error('Image analysis failed:', error);
+      return null;
+    }
+  };
+
+  // Handle file selection - process immediately, auto-detect aspect ratio, lock it
   const handleFileSelect = async (file: File) => {
     // Validate file type
     if (!file.type.startsWith('image/')) {
@@ -163,39 +233,76 @@ export default function VEOVideoGenerator() {
     }
 
     setStartingFrameImage(file);
-    setImagePreviewUrl(URL.createObjectURL(file));
+    setIsDragOver(false);
 
     try {
-      const compressed = await compressImageToBase64(file);
-      setCompressedImageData(compressed);
-      
+      // Process image: auto-detect aspect ratio, crop, compress
+      const processed = await processImageForVeo(file);
+
+      setCompressedImageData(processed.base64);
+      setCroppedPreviewUrl(processed.base64); // Show the actual cropped result
+      setDetectedAspectRatio(processed.aspectRatio);
+      setAspectRatio(processed.aspectRatio); // Lock the aspect ratio state
+
       toast({
         title: 'Image processed',
-        description: `Optimized for ${resolution} video generation.`,
+        description: `Auto-detected ${processed.aspectRatio}. Analysing for prompt suggestions...`,
       });
+
+      // Analyse image with Gemini and generate suggested prompt
+      setIsAnalysingImage(true);
+      const suggestedPrompt = await analyseImageAndGeneratePrompt(processed.base64);
+      setIsAnalysingImage(false);
+
+      if (suggestedPrompt) {
+        setPrompt(suggestedPrompt);
+        toast({
+          title: 'Prompt generated',
+          description: 'AI-suggested video prompt ready. Feel free to edit it.',
+        });
+      } else {
+        toast({
+          title: 'Ready for prompt',
+          description: 'Image ready. Enter a description for the video motion.',
+        });
+      }
     } catch (error) {
       toast({
         title: 'Processing failed',
         description: 'Could not process image. Please try another.',
         variant: 'destructive',
       });
+      setStartingFrameImage(null);
+      setIsAnalysingImage(false);
     }
   };
 
-  // Handle drag and drop
+  // Handle drag and drop with visual feedback
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    setIsDragOver(false);
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
       handleFileSelect(files[0]);
     }
   };
 
-  // Remove selected image
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  // Remove selected image and unlock aspect ratio
   const removeImage = () => {
     setStartingFrameImage(null);
-    setImagePreviewUrl(null);
+    setCroppedPreviewUrl(null);
     setCompressedImageData(null);
+    setDetectedAspectRatio(null); // Unlock aspect ratio for next image
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -368,11 +475,18 @@ export default function VEOVideoGenerator() {
     }
   };
 
-  // Get current model pricing info
+  // Get current model pricing info (per-second billing × duration)
   const getCurrentPrice = () => {
     const modelConfig = getModelConfig(model);
     const resConfig = modelConfig.resolutions.find(r => r.value === resolution);
-    return resConfig?.price || 0;
+    const pricePerSecond = resConfig?.pricePerSecond || 0.20;
+    return pricePerSecond * duration;
+  };
+
+  // Format price in ZAR with USD in brackets
+  const formatPrice = (usdAmount: number) => {
+    const zarAmount = usdAmount * USD_TO_ZAR;
+    return `R${zarAmount.toFixed(2)} ($${usdAmount.toFixed(2)})`;
   };
 
   return (
@@ -415,23 +529,39 @@ export default function VEOVideoGenerator() {
                   
                   {/* Starting Frame Upload */}
                   <div className="space-y-4 p-6 bg-gray-800 border border-gray-700 rounded-lg">
-                    <h3 className="text-lg font-semibold text-white mb-4">Starting Frame Image</h3>
-                    
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold text-white">Starting Frame Image</h3>
+                      {isAnalysingImage && (
+                        <div className="flex items-center gap-2 text-orange-400 text-sm">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Analysing...</span>
+                        </div>
+                      )}
+                    </div>
+
                     {!startingFrameImage ? (
                       <div
-                        className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-gray-500 transition-colors"
+                        className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all duration-200 ${
+                          isDragOver
+                            ? 'border-orange-500 bg-orange-500/10 scale-[1.02]'
+                            : 'border-gray-600 hover:border-gray-500'
+                        }`}
                         onDrop={handleDrop}
-                        onDragOver={(e) => e.preventDefault()}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
                         onClick={() => fileInputRef.current?.click()}
                       >
-                        <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-white font-medium mb-2">
-                          Drop your image here or click to upload
+                        <Upload className={`h-12 w-12 mx-auto mb-4 transition-colors ${isDragOver ? 'text-orange-400' : 'text-gray-400'}`} />
+                        <p className={`font-medium mb-2 transition-colors ${isDragOver ? 'text-orange-400' : 'text-white'}`}>
+                          {isDragOver ? 'Drop to upload!' : 'Drop your image here or click to upload'}
                         </p>
                         <p className="text-sm text-gray-400">
-                          JPEG or PNG • Max 20MB • Recommended: {resolution} resolution
+                          JPEG or PNG • Max 20MB • Auto-crops to 16:9 or 9:16
                         </p>
-                        
+                        <p className="text-xs text-gray-500 mt-2">
+                          AI will analyse your image and suggest a video prompt
+                        </p>
+
                         <input
                           ref={fileInputRef}
                           type="file"
@@ -442,25 +572,40 @@ export default function VEOVideoGenerator() {
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        <div className="relative">
+                        {/* Square container to accommodate both aspect ratios */}
+                        <div className="relative w-full aspect-square bg-gray-900 rounded-lg flex items-center justify-center overflow-hidden">
                           <img
-                            src={imagePreviewUrl!}
-                            alt="Starting frame"
-                            className="w-full h-48 object-cover rounded-lg"
+                            src={croppedPreviewUrl!}
+                            alt="Cropped starting frame (what VEO will receive)"
+                            className={`max-w-full max-h-full object-contain transition-opacity ${isAnalysingImage ? 'opacity-50' : 'opacity-100'}`}
                           />
+                          {isAnalysingImage && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                              <div className="text-center">
+                                <Loader2 className="h-8 w-8 animate-spin text-orange-400 mx-auto mb-2" />
+                                <p className="text-white text-sm">Generating prompt...</p>
+                              </div>
+                            </div>
+                          )}
                           <Button
                             onClick={removeImage}
                             variant="destructive"
                             size="sm"
                             className="absolute top-2 right-2"
+                            disabled={isAnalysingImage}
                           >
                             <X className="h-4 w-4" />
                           </Button>
+                          {/* Aspect ratio badge */}
+                          <div className="absolute bottom-2 left-2 bg-black/70 px-2 py-1 rounded text-xs text-white">
+                            {detectedAspectRatio} {detectedAspectRatio === '16:9' ? '(Landscape)' : '(Portrait)'}
+                          </div>
                         </div>
-                        
+
                         <div className="text-sm text-gray-400">
                           <p className="font-medium text-white">{startingFrameImage.name}</p>
-                          <p>Optimized for {resolution} generation • Ready for video creation</p>
+                          <p>Auto-cropped to {detectedAspectRatio} • Ready for video creation</p>
+                          <p className="text-xs text-gray-500 mt-1">To change aspect ratio, use an external editor and re-upload</p>
                         </div>
                       </div>
                     )}
@@ -500,7 +645,7 @@ export default function VEOVideoGenerator() {
                                     setResolution(res.value);
                                   }}
                                 >
-                                  {res.label}
+                                  {res.label} (${res.pricePerSecond.toFixed(2)}/s)
                                 </Button>
                               ))}
                             </div>
@@ -512,9 +657,15 @@ export default function VEOVideoGenerator() {
                     {/* Video Settings */}
                     <div className="grid grid-cols-2 gap-4 mt-4">
                       <div className="space-y-2">
-                        <Label className="text-sm text-gray-300">Aspect Ratio</Label>
-                        <Select value={aspectRatio} onValueChange={setAspectRatio}>
-                          <SelectTrigger className="bg-gray-700 border-gray-600">
+                        <Label className="text-sm text-gray-300">
+                          Aspect Ratio {detectedAspectRatio && <span className="text-orange-400">(locked)</span>}
+                        </Label>
+                        <Select
+                          value={aspectRatio}
+                          onValueChange={setAspectRatio}
+                          disabled={!!detectedAspectRatio} // Lock when image is set
+                        >
+                          <SelectTrigger className={`bg-gray-700 border-gray-600 ${detectedAspectRatio ? 'opacity-60 cursor-not-allowed' : ''}`}>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -522,6 +673,9 @@ export default function VEOVideoGenerator() {
                             <SelectItem value="9:16">9:16 (Portrait)</SelectItem>
                           </SelectContent>
                         </Select>
+                        {detectedAspectRatio && (
+                          <p className="text-xs text-gray-500">Set by uploaded image</p>
+                        )}
                       </div>
 
                       <div className="space-y-2">
@@ -555,9 +709,10 @@ export default function VEOVideoGenerator() {
 
                     {/* Cost Display */}
                     <div className="border-t border-gray-600 pt-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-300">Generation Cost:</span>
-                        <span className="font-semibold text-orange-400">${getCurrentPrice().toFixed(2)}</span>
+                      <div className="flex justify-end items-center">
+                        <span className="text-sm font-semibold text-orange-400">
+                          Generation Cost: {formatPrice(getCurrentPrice())}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -613,7 +768,7 @@ export default function VEOVideoGenerator() {
                     ) : (
                       <>
                         <Sparkles className="h-5 w-5 mr-2" />
-                        Generate AI Video (${getCurrentPrice().toFixed(2)})
+                        Generate AI Video ({formatPrice(getCurrentPrice())})
                       </>
                     )}
                   </Button>
@@ -635,7 +790,7 @@ export default function VEOVideoGenerator() {
                         <video
                           controls
                           className="w-full rounded-lg"
-                          poster={imagePreviewUrl || undefined}
+                          poster={croppedPreviewUrl || undefined}
                         >
                           <source src={generatedVideo} type="video/mp4" />
                           Your browser does not support the video tag.
@@ -682,13 +837,13 @@ export default function VEOVideoGenerator() {
                     <div className="flex items-start gap-3">
                       <Info className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
                       <div className="space-y-2 text-sm text-blue-200">
-                        <h4 className="font-semibold">VEO Video Generation Tips</h4>
+                        <h4 className="font-semibold">VEO 3.1 Video Generation Tips</h4>
                         <ul className="space-y-1 text-blue-300">
-                          <li>• Use high-quality starting frame images (1080p+ recommended)</li>
+                          <li>• <strong>Fast model</strong>: Quick generation at $0.20/s (1080p, no audio)</li>
+                          <li>• <strong>Standard model</strong>: Best quality with audio ($0.40-$0.60/s)</li>
                           <li>• Describe specific motions: "camera pans left", "subject walks forward"</li>
-                          <li>• Include lighting and atmosphere details</li>
+                          <li>• Include lighting and atmosphere details for better results</li>
                           <li>• Generation takes 2-3 minutes - please be patient</li>
-                          <li>• Rate limited to 2 generations per minute for cost control</li>
                         </ul>
                       </div>
                     </div>

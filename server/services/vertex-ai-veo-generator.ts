@@ -8,9 +8,9 @@ import { GoogleAuth } from 'google-auth-library';
 export interface VideoGenerationRequest {
   prompt: string;
   model: string;
-  resolution: string; // '720p' | '1080p'
+  resolution: string; // '1080p' | '4k'
   aspectRatio: string; // '16:9' | '9:16'
-  duration: number; // 4 | 6 | 8
+  duration: number; // 4-8 seconds (VEO 3.1 range)
   sampleCount: number; // ALWAYS 1 for cost control
   image: {
     bytesBase64Encoded: string;
@@ -167,7 +167,9 @@ export class VertexAIVeoGenerator {
     }
 
     // Add resolution-based quality descriptors
-    if (request.resolution === '1080p') {
+    if (request.resolution === '4k') {
+      videoEnhancements.push('ultra high definition 4K');
+    } else if (request.resolution === '1080p') {
       videoEnhancements.push('high definition');
     } else {
       videoEnhancements.push('good quality');

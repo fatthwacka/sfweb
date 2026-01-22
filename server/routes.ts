@@ -6619,6 +6619,95 @@ Return ONLY the enhanced subtitle text. No explanations, quotes, or formatting.`
     }
   });
 
+  // AI Image Analysis for VEO Video Generation - Analyse image and generate optimised prompt
+  app.post('/api/ai/analyse-image-for-video', async (req, res) => {
+    try {
+      const { image } = req.body;
+
+      if (!image) {
+        return res.status(400).json({
+          success: false,
+          error: 'Image data is required',
+        });
+      }
+
+      console.log('🔍 Analysing image for VEO video prompt generation...');
+
+      // Use Gemini to analyse the image and generate a VEO-optimised prompt
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
+      // Extract base64 data (remove data URL prefix if present)
+      const base64Data = image.includes(',') ? image.split(',')[1] : image;
+
+      const analysisPrompt = `You are an expert at writing prompts for Google VEO 3.1, an AI video generation model.
+
+Analyse this image and write a creative, imaginative video prompt that describes compelling motion and camera movement starting from this exact frame.
+
+**CRITICAL VEO 3.1 BEST PRACTICES - YOU MUST FOLLOW THESE:**
+
+1. **SINGLE CONTINUOUS SHOT ONLY** - Describe ONE unbroken take. No cuts, no scene changes, no angle changes.
+
+2. **SLOW, DELIBERATE MOVEMENT** - Use qualifiers like "very slow", "gentle", "gradual", "leisurely", "unhurried". Fast movements produce poor results.
+
+3. **ALLOWED CAMERA MOVEMENTS** (pick ONE or static):
+   - "very slow pan left/right"
+   - "gentle gradual zoom in/out"
+   - "smooth unhurried dolly forward/backward"
+   - "leisurely orbit around subject"
+   - "static locked camera" (for subject movement only)
+
+4. **FORBIDDEN TERMS** - NEVER use these words:
+   - "fade", "cut", "transition", "dissolve", "wipe"
+   - "final shot", "opening shot", "next scene", "new angle"
+   - "fast", "quick", "rapid", "sudden", "abrupt"
+   - Any editing or post-production terminology
+
+5. **DESCRIBE WHAT HAPPENS NEXT** - Don't describe what's already visible in the image. Describe the MOTION that will occur from this starting point.
+
+6. **ATMOSPHERE & LIGHTING** - Include subtle atmospheric details: light shifts, shadows moving, particles in air, fabric movement, hair/leaves swaying.
+
+7. **DURATION** - Write for 4-8 seconds of footage. Keep the action focused and achievable in this timeframe.
+
+**OUTPUT FORMAT:**
+Write ONLY the prompt text itself. No explanations, no headers, no markdown. Just the prompt ready to paste directly into VEO.
+
+**LENGTH:** 2-4 sentences, 40-80 words. Concise but evocative.`;
+
+      const result = await model.generateContent([
+        {
+          inlineData: {
+            mimeType: 'image/jpeg',
+            data: base64Data
+          }
+        },
+        { text: analysisPrompt }
+      ]);
+
+      const suggestedPrompt = result.response.text().trim();
+
+      console.log('✅ Image analysis complete, prompt generated');
+      console.log('📝 Suggested prompt:', suggestedPrompt.substring(0, 100) + '...');
+
+      res.json({
+        success: true,
+        suggestedPrompt,
+        timestamp: new Date().toISOString(),
+      });
+
+    } catch (error: any) {
+      console.error('💥 Image analysis error:', error);
+
+      res.status(500).json({
+        success: false,
+        error: 'Image analysis failed',
+        details: error.message,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  });
+
   // AI Video Generation - Generate videos using Vertex AI VEO
   app.post('/api/ai/generate-video', async (req, res) => {
     try {
@@ -6654,7 +6743,7 @@ Return ONLY the enhanced subtitle text. No explanations, quotes, or formatting.`
 
       console.log('🎬 Starting AI video generation...');
       console.log('🎥 Video specifications:', {
-        model: model || 'veo-3.0-generate-001',
+        model: model || 'veo-3.1-fast-generate-001',
         resolution: resolution || '1080p',
         aspectRatio: aspectRatio || '16:9',
         duration: duration || 6,
@@ -6666,7 +6755,7 @@ Return ONLY the enhanced subtitle text. No explanations, quotes, or formatting.`
 
       const result = await generator.generateVideo({
         prompt: prompt.trim(),
-        model: model || 'veo-3.0-generate-001',
+        model: model || 'veo-3.1-fast-generate-001',
         resolution: resolution || '1080p',
         aspectRatio: aspectRatio || '16:9',
         duration: duration || 6,
@@ -6980,8 +7069,10 @@ Your search term:`;
       let globalStats = stats;
       let folderStats: Record<string, { count: number; size: number }> = {
         'ai-images/': { count: 0, size: 0 },
+        'jpg-images/': { count: 0, size: 0 },
+        'thumbnails/': { count: 0, size: 0 },
         'ai-videos/': { count: 0, size: 0 },
-        'compressed-images/': { count: 0, size: 0 }
+        'compressed-images/': { count: 0, size: 0 }  // Legacy folder
       };
 
       // Get all files from bucket (unfiltered) to calculate global stats
@@ -7013,6 +7104,12 @@ Your search term:`;
         if (fileName.startsWith('ai-images/')) {
           folderStats['ai-images/'].count++;
           folderStats['ai-images/'].size += fileSize;
+        } else if (fileName.startsWith('jpg-images/')) {
+          folderStats['jpg-images/'].count++;
+          folderStats['jpg-images/'].size += fileSize;
+        } else if (fileName.startsWith('thumbnails/')) {
+          folderStats['thumbnails/'].count++;
+          folderStats['thumbnails/'].size += fileSize;
         } else if (fileName.startsWith('ai-videos/')) {
           folderStats['ai-videos/'].count++;
           folderStats['ai-videos/'].size += fileSize;
@@ -7031,7 +7128,7 @@ Your search term:`;
       };
 
       console.log(`📊 Global stats: ${globalStats.totalFiles} files, ${globalStats.images} images, ${globalStats.videos} videos`);
-      console.log(`📁 Folder stats: ai-images=${folderStats['ai-images/'].count}, compressed=${folderStats['compressed-images/'].count}, videos=${folderStats['ai-videos/'].count}`);
+      console.log(`📁 Folder stats: ai-images=${folderStats['ai-images/'].count}, jpg-images=${folderStats['jpg-images/'].count}, thumbnails=${folderStats['thumbnails/'].count}, videos=${folderStats['ai-videos/'].count}`);
 
       const loadTime = Date.now() - startTime;
       console.log(`✅ Loaded ${allFiles.length} files from ${buckets.length} buckets in ${loadTime}ms`);
@@ -7196,6 +7293,14 @@ Your search term:`;
 
       console.log(`✅ File deleted successfully: ${filePath}`);
 
+      // Invalidate cache for all prefixes to ensure fresh data
+      delete cloudStorageCaches['_all_'];
+      delete cloudStorageCaches['ai-images/'];
+      delete cloudStorageCaches['jpg-images/'];
+      delete cloudStorageCaches['thumbnails/'];
+      delete cloudStorageCaches['ai-videos/'];
+      delete cloudStorageCaches['compressed-images/'];
+
       res.json({
         success: true,
         message: 'File deleted successfully',
@@ -7210,6 +7315,118 @@ Your search term:`;
       res.status(500).json({
         success: false,
         error: 'Failed to delete file from cloud storage',
+        details: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  // POST /api/cloud-storage/upload-processed - Upload processed images (JPG full-res and thumbnail)
+  app.post('/api/cloud-storage/upload-processed', async (req, res) => {
+    try {
+      const { originalPath, jpgFullResBase64, thumbnailBase64, filename } = req.body;
+
+      if (!originalPath || !jpgFullResBase64 || !thumbnailBase64 || !filename) {
+        return res.status(400).json({
+          success: false,
+          error: 'Missing required fields: originalPath, jpgFullResBase64, thumbnailBase64, filename'
+        });
+      }
+
+      console.log(`📤 Processing upload for: ${filename}`);
+
+      const { Storage } = await import('@google-cloud/storage');
+      const storage = new Storage({
+        projectId: process.env.GOOGLE_PROJECT_ID,
+        credentials: {
+          type: 'service_account',
+          project_id: process.env.GOOGLE_PROJECT_ID,
+          private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
+          private_key: process.env.GOOGLE_PRIVATE_KEY,
+          client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+          client_id: process.env.GOOGLE_CLIENT_ID,
+        }
+      });
+
+      const bucketName = 'netfox-veo-generations';
+      const bucket = storage.bucket(bucketName);
+
+      // Extract base filename (without extension and folder)
+      const baseName = filename.replace(/\.[^/.]+$/, ''); // Remove extension
+      const jpgFilename = `${baseName}.jpg`;
+
+      // Upload JPG full-res to jpg-images/ folder
+      const jpgFullResPath = `jpg-images/${jpgFilename}`;
+      const jpgFullResBuffer = Buffer.from(jpgFullResBase64.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+      const jpgFullResFile = bucket.file(jpgFullResPath);
+
+      // Check if JPG full-res already exists
+      const [jpgExists] = await jpgFullResFile.exists();
+      if (jpgExists) {
+        console.log(`⚠️ JPG full-res already exists, overwriting: ${jpgFullResPath}`);
+      }
+
+      await jpgFullResFile.save(jpgFullResBuffer, {
+        metadata: {
+          contentType: 'image/jpeg',
+          cacheControl: 'public, max-age=31536000',
+        }
+      });
+      await jpgFullResFile.makePublic();
+      console.log(`✅ Uploaded JPG full-res: ${jpgFullResPath} (${(jpgFullResBuffer.length / 1024).toFixed(1)} KB)`);
+
+      // Upload thumbnail to thumbnails/ folder
+      const thumbnailPath = `thumbnails/${jpgFilename}`;
+      const thumbnailBuffer = Buffer.from(thumbnailBase64.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+      const thumbnailFile = bucket.file(thumbnailPath);
+
+      // Check if thumbnail already exists
+      const [thumbExists] = await thumbnailFile.exists();
+      if (thumbExists) {
+        console.log(`⚠️ Thumbnail already exists, overwriting: ${thumbnailPath}`);
+      }
+
+      await thumbnailFile.save(thumbnailBuffer, {
+        metadata: {
+          contentType: 'image/jpeg',
+          cacheControl: 'public, max-age=31536000',
+        }
+      });
+      await thumbnailFile.makePublic();
+      console.log(`✅ Uploaded thumbnail: ${thumbnailPath} (${(thumbnailBuffer.length / 1024).toFixed(1)} KB)`);
+
+      // Invalidate cache for all prefixes
+      delete cloudStorageCaches['_all_'];
+      delete cloudStorageCaches['ai-images/'];
+      delete cloudStorageCaches['jpg-images/'];
+      delete cloudStorageCaches['thumbnails/'];
+      delete cloudStorageCaches['ai-videos/'];
+      delete cloudStorageCaches['compressed-images/'];
+
+      res.json({
+        success: true,
+        message: 'Images processed and uploaded successfully',
+        jpgFullRes: {
+          path: jpgFullResPath,
+          url: `https://storage.googleapis.com/${bucketName}/${jpgFullResPath}`,
+          size: jpgFullResBuffer.length,
+          existed: jpgExists
+        },
+        thumbnail: {
+          path: thumbnailPath,
+          url: `https://storage.googleapis.com/${bucketName}/${thumbnailPath}`,
+          size: thumbnailBuffer.length,
+          existed: thumbExists
+        },
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error: any) {
+      console.error('💥 Cloud Storage upload-processed error:', error);
+
+      res.status(500).json({
+        success: false,
+        error: 'Failed to upload processed images',
         details: error.message,
         timestamp: new Date().toISOString()
       });
