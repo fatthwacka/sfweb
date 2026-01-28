@@ -743,8 +743,165 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  
+
   .image-hover-effect:hover {
     box-shadow: 0 20px 40px rgba(0,0,0,0.3);
   }
+}
+
+/* ==========================================
+ * PAGE-SPECIFIC TYPOGRAPHY SYSTEM
+ * Data attribute scoping for per-page fonts
+ * No specificity wars - predictable cascade
+ *
+ * Available fonts:
+ * - Existing: Quicksand, Saira Condensed, Great Vibes, Forum, Barlow, Corinthia
+ * - New (Jan 2026): EB Garamond, Lora, Pinyon Script, Parisienne, Playfair Display, Lato
+ * ========================================== */
+
+/* ==========================================
+ * PAGE-SPECIFIC TYPOGRAPHY - CLEAN STRUCTURE
+ *
+ * Each page defines CSS custom properties for fonts.
+ * Content sections inherit naturally.
+ * Footer is explicitly excluded.
+ * ========================================== */
+
+/* ------------------------------------
+ * WEDDINGS PAGE - Elegant & Romantic
+ * Pinyon Script (display) + EB Garamond (headers) + Lora (body)
+ * ------------------------------------ */
+[data-page="weddings"] {
+  --page-font-display: 'Pinyon Script', cursive;
+  --page-font-heading: 'EB Garamond', serif;
+  --page-font-body: 'Lora', serif;
+  --page-font-button: 'Lato', sans-serif;
+}
+
+/* ------------------------------------
+ * CORPORATE PAGE - Professional & Clean
+ * ------------------------------------ */
+[data-page="corporate"] {
+  --page-font-display: 'Playfair Display', serif;
+  --page-font-heading: 'Lato', sans-serif;
+  --page-font-body: 'Lato', sans-serif;
+  --page-font-button: 'Lato', sans-serif;
+}
+
+/* ------------------------------------
+ * EVENTS PAGE - Dynamic & Energetic
+ * ------------------------------------ */
+[data-page="events"] {
+  --page-font-display: 'Corinthia', cursive;
+  --page-font-heading: 'Quicksand', sans-serif;
+  --page-font-body: 'Lato', sans-serif;
+  --page-font-button: 'Lato', sans-serif;
+}
+
+/* ------------------------------------
+ * GRADUATION PAGE - Celebratory & Formal
+ * ------------------------------------ */
+[data-page="graduation"] {
+  --page-font-display: 'Parisienne', cursive;
+  --page-font-heading: 'EB Garamond', serif;
+  --page-font-body: 'Lora', serif;
+  --page-font-button: 'Lato', sans-serif;
+}
+
+/* ------------------------------------
+ * PORTRAITS PAGE - Personal & Artistic
+ * ------------------------------------ */
+[data-page="portraits"] {
+  --page-font-display: 'Pinyon Script', cursive;
+  --page-font-heading: 'Lora', serif;
+  --page-font-body: 'Lato', sans-serif;
+  --page-font-button: 'Lato', sans-serif;
+}
+
+/* ------------------------------------
+ * PRODUCTS PAGE - Modern & Commercial
+ * ------------------------------------ */
+[data-page="products"] {
+  --page-font-display: 'Playfair Display', serif;
+  --page-font-heading: 'Lato', sans-serif;
+  --page-font-body: 'Lato', sans-serif;
+  --page-font-button: 'Lato', sans-serif;
+}
+
+/* ------------------------------------
+ * APPLY PAGE FONTS TO CONTENT SECTIONS
+ * Excludes Navigation and Footer
+ * ------------------------------------ */
+[data-page] h1,
+[data-page] h2 {
+  font-family: var(--page-font-display) !important;
+}
+
+[data-page] h3,
+[data-page] h4 {
+  font-family: var(--page-font-heading) !important;
+}
+
+[data-page] p,
+[data-page] li,
+[data-page] span:not(.lucide):not([class*="icon"]) {
+  font-family: var(--page-font-body) !important;
+}
+
+[data-page] button,
+[data-page] .btn-salmon {
+  font-family: var(--page-font-button) !important;
+}
+
+/* ------------------------------------
+ * H2 SIZE ENHANCEMENT FOR ALL PHOTOGRAPHY PAGES
+ * Applies to all 6 photography category pages
+ * ------------------------------------ */
+[data-page="weddings"] [data-gradient-section] h2,
+[data-page="portraits"] [data-gradient-section] h2,
+[data-page="events"] [data-gradient-section] h2,
+[data-page="graduation"] [data-gradient-section] h2,
+[data-page="corporate"] [data-gradient-section] h2,
+[data-page="products"] [data-gradient-section] h2 {
+  font-size: 3rem !important; /* 48px mobile */
+  margin-bottom: 0.25rem !important;
+}
+
+@media (min-width: 1024px) {
+  [data-page="weddings"] [data-gradient-section] h2,
+  [data-page="portraits"] [data-gradient-section] h2,
+  [data-page="events"] [data-gradient-section] h2,
+  [data-page="graduation"] [data-gradient-section] h2,
+  [data-page="corporate"] [data-gradient-section] h2,
+  [data-page="products"] [data-gradient-section] h2 {
+    font-size: 4rem !important; /* 64px desktop */
+  }
+}
+
+/* ------------------------------------
+ * FOOTER - ALWAYS USES GLOBAL FONTS
+ * Resets to site-wide typography
+ * ------------------------------------ */
+[data-page] footer,
+[data-page] footer * {
+  --page-font-display: 'Quicksand', sans-serif;
+  --page-font-heading: 'Quicksand', sans-serif;
+  --page-font-body: 'Roboto', sans-serif;
+  --page-font-button: 'Lato', sans-serif;
+}
+
+[data-page] footer h1,
+[data-page] footer h2,
+[data-page] footer h3,
+[data-page] footer h4,
+[data-page] footer h5,
+[data-page] footer h6 {
+  font-family: 'Quicksand', sans-serif !important;
+}
+
+[data-page] footer p,
+[data-page] footer span,
+[data-page] footer li,
+[data-page] footer a {
+  font-family: 'Roboto', sans-serif !important;
 }

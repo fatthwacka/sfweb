@@ -51,8 +51,8 @@ interface PhotographyNavigationProps {
  * Reusable photography navigation section used across all photography pages
  * Shows all photography categories in a responsive grid
  */
-export function PhotographyNavigation({ 
-  title = "Explore Our Photography Services",
+export function PhotographyNavigation({
+  title = "Photography Services",
   subtitle = (
     <>
       Professional photography for every occasion, and every product. See the{' '}

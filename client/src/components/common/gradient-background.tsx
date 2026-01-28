@@ -14,7 +14,7 @@ interface GradientBackgroundProps {
   // New props for category pages
   categoryType?: 'photography' | 'videography';
   categoryName?: string;
-  categorySectionName?: 'serviceOverview' | 'packages' | 'recentWork' | 'seoContent';
+  categorySectionName?: 'serviceOverview' | 'packages' | 'recentWork' | 'recentAlbums' | 'seoContent';
 }
 
 export function GradientBackground({
@@ -123,7 +123,11 @@ export function GradientBackground({
     // Apply section-specific text color CSS variables - resolve CSS variables to actual colors
     [`--${section}-text-primary`]: resolveColor(textColors?.primary, '#ffffff'),
     [`--${section}-text-secondary`]: resolveColor(textColors?.secondary, '#e2e8f0'),
-    [`--${section}-text-tertiary`]: resolveColor(textColors?.tertiary, '#94a3b8')
+    [`--${section}-text-tertiary`]: resolveColor(textColors?.tertiary, '#94a3b8'),
+    // Also expose gradient colors as CSS variables for child elements (e.g., card overlays)
+    [`--${section}-gradient-start`]: gradientConfig?.startColor || '#1e1e2e',
+    [`--${section}-gradient-middle`]: gradientConfig?.middleColor || gradientConfig?.startColor || '#1e1e2e',
+    [`--${section}-gradient-end`]: gradientConfig?.endColor || '#0f172a'
   } as React.CSSProperties;
 
   // Mark as loaded after gradient data is available

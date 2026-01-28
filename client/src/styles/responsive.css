@@ -606,6 +606,169 @@
   color: var(--videography-seo-text-tertiary, #94a3b8) !important;
 }
 
+/* Photography Category Pages - Recent Albums Sections */
+/* Wedding Albums */
+[data-gradient-section="photography-wedding-albums"] h1,
+[data-gradient-section="photography-wedding-albums"] h2 {
+  color: var(--photography-wedding-albums-text-primary, #ffffff) !important;
+}
+[data-gradient-section="photography-wedding-albums"] p,
+[data-gradient-section="photography-wedding-albums"] h3 {
+  color: var(--photography-wedding-albums-text-secondary, #e2e8f0) !important;
+}
+[data-gradient-section="photography-wedding-albums"] .text-muted-foreground {
+  color: var(--photography-wedding-albums-text-tertiary, #94a3b8) !important;
+}
+
+/* Portrait Albums */
+[data-gradient-section="photography-portrait-albums"] h1,
+[data-gradient-section="photography-portrait-albums"] h2 {
+  color: var(--photography-portrait-albums-text-primary, #ffffff) !important;
+}
+[data-gradient-section="photography-portrait-albums"] p,
+[data-gradient-section="photography-portrait-albums"] h3 {
+  color: var(--photography-portrait-albums-text-secondary, #e2e8f0) !important;
+}
+[data-gradient-section="photography-portrait-albums"] .text-muted-foreground {
+  color: var(--photography-portrait-albums-text-tertiary, #94a3b8) !important;
+}
+
+/* Corporate Albums */
+[data-gradient-section="photography-corporate-albums"] h1,
+[data-gradient-section="photography-corporate-albums"] h2 {
+  color: var(--photography-corporate-albums-text-primary, #ffffff) !important;
+}
+[data-gradient-section="photography-corporate-albums"] p,
+[data-gradient-section="photography-corporate-albums"] h3 {
+  color: var(--photography-corporate-albums-text-secondary, #e2e8f0) !important;
+}
+[data-gradient-section="photography-corporate-albums"] .text-muted-foreground {
+  color: var(--photography-corporate-albums-text-tertiary, #94a3b8) !important;
+}
+
+/* Event Albums */
+[data-gradient-section="photography-event-albums"] h1,
+[data-gradient-section="photography-event-albums"] h2 {
+  color: var(--photography-event-albums-text-primary, #ffffff) !important;
+}
+[data-gradient-section="photography-event-albums"] p,
+[data-gradient-section="photography-event-albums"] h3 {
+  color: var(--photography-event-albums-text-secondary, #e2e8f0) !important;
+}
+[data-gradient-section="photography-event-albums"] .text-muted-foreground {
+  color: var(--photography-event-albums-text-tertiary, #94a3b8) !important;
+}
+
+/* Product Albums */
+[data-gradient-section="photography-product-albums"] h1,
+[data-gradient-section="photography-product-albums"] h2 {
+  color: var(--photography-product-albums-text-primary, #ffffff) !important;
+}
+[data-gradient-section="photography-product-albums"] p,
+[data-gradient-section="photography-product-albums"] h3 {
+  color: var(--photography-product-albums-text-secondary, #e2e8f0) !important;
+}
+[data-gradient-section="photography-product-albums"] .text-muted-foreground {
+  color: var(--photography-product-albums-text-tertiary, #94a3b8) !important;
+}
+
+/* Graduation Albums */
+[data-gradient-section="photography-graduation-albums"] h1,
+[data-gradient-section="photography-graduation-albums"] h2 {
+  color: var(--photography-graduation-albums-text-primary, #ffffff) !important;
+}
+[data-gradient-section="photography-graduation-albums"] p,
+[data-gradient-section="photography-graduation-albums"] h3 {
+  color: var(--photography-graduation-albums-text-secondary, #e2e8f0) !important;
+}
+[data-gradient-section="photography-graduation-albums"] .text-muted-foreground {
+  color: var(--photography-graduation-albums-text-tertiary, #94a3b8) !important;
+}
+
+/* === PHOTOGRAPHY ALBUM CARD COLOR-KEYING === */
+/* Apply section colors to portfolio cards within album sections */
+
+/* Wedding Albums - Card styling
+   Card elements use text-tertiary (controlled by "Card Features" in admin)
+   Footer uses section's gradient-start */
+[data-gradient-section="photography-wedding-albums"] .portfolio-card-title,
+[data-gradient-section="photography-wedding-albums"] .portfolio-card-subtitle {
+  color: var(--photography-wedding-albums-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-wedding-albums"] .portfolio-card-footer {
+  background: color-mix(in srgb, var(--photography-wedding-albums-gradient-start, #1e1e2e) 80%, transparent) !important;
+}
+
+/* Portrait Albums - Card styling (uses text-tertiary for Card Features) */
+[data-gradient-section="photography-portrait-albums"] .portfolio-card-title,
+[data-gradient-section="photography-portrait-albums"] .portfolio-card-subtitle {
+  color: var(--photography-portrait-albums-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-portrait-albums"] .portfolio-card-footer {
+  background: color-mix(in srgb, var(--photography-portrait-albums-gradient-start, #1e1e2e) 80%, transparent) !important;
+}
+
+/* Corporate Albums - Card styling (uses text-tertiary for Card Features) */
+[data-gradient-section="photography-corporate-albums"] .portfolio-card-title,
+[data-gradient-section="photography-corporate-albums"] .portfolio-card-subtitle {
+  color: var(--photography-corporate-albums-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-corporate-albums"] .portfolio-card-footer {
+  background: color-mix(in srgb, var(--photography-corporate-albums-gradient-start, #1e1e2e) 80%, transparent) !important;
+}
+
+/* Event Albums - Card styling (uses text-tertiary for Card Features) */
+[data-gradient-section="photography-event-albums"] .portfolio-card-title,
+[data-gradient-section="photography-event-albums"] .portfolio-card-subtitle {
+  color: var(--photography-event-albums-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-event-albums"] .portfolio-card-footer {
+  background: color-mix(in srgb, var(--photography-event-albums-gradient-start, #1e1e2e) 80%, transparent) !important;
+}
+
+/* Product Albums - Card styling (uses text-tertiary for Card Features) */
+[data-gradient-section="photography-product-albums"] .portfolio-card-title,
+[data-gradient-section="photography-product-albums"] .portfolio-card-subtitle {
+  color: var(--photography-product-albums-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-product-albums"] .portfolio-card-footer {
+  background: color-mix(in srgb, var(--photography-product-albums-gradient-start, #1e1e2e) 80%, transparent) !important;
+}
+
+/* Graduation Albums - Card styling (uses text-tertiary for Card Features) */
+[data-gradient-section="photography-graduation-albums"] .portfolio-card-title,
+[data-gradient-section="photography-graduation-albums"] .portfolio-card-subtitle {
+  color: var(--photography-graduation-albums-text-tertiary, #94a3b8) !important;
+}
+[data-gradient-section="photography-graduation-albums"] .portfolio-card-footer {
+  background: color-mix(in srgb, var(--photography-graduation-albums-gradient-start, #1e1e2e) 80%, transparent) !important;
+}
+
+/* === PHOTOGRAPHY ALBUM CARDS - LAYOUT MODIFICATIONS === */
+/* These styles only apply to cards within photography album sections */
+/* They do NOT affect the global portfolio cards used elsewhere on the site */
+
+/* Hide the "photo gallery" / "video gallery" badges */
+[data-gradient-section^="photography-"][data-gradient-section$="-albums"] .portfolio-card-footer > div:last-child {
+  display: none !important;
+}
+
+/* Reduce footer height/padding - compact overlay */
+[data-gradient-section^="photography-"][data-gradient-section$="-albums"] .portfolio-card-footer {
+  padding: 0.5rem 0.75rem !important; /* Compact vertical padding */
+}
+
+/* Title stays prominent, subtitle smaller for clear hierarchy */
+[data-gradient-section^="photography-"][data-gradient-section$="-albums"] .portfolio-card-title {
+  font-size: 1.25rem !important; /* 20px - prominent title */
+  font-weight: 600 !important;
+  margin-bottom: 0.125rem !important; /* Tighter gap to subtitle */
+}
+
+[data-gradient-section^="photography-"][data-gradient-section$="-albums"] .portfolio-card-subtitle {
+  font-size: 0.75rem !important; /* 12px - small subtitle */
+}
+
 /* === MOBILE IMAGE SELECTION OPTIMIZATIONS === */
 /* Bulletproof mobile viewport lock */
 html, body {

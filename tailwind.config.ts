@@ -108,6 +108,13 @@ export default {
         forum: ["Forum", "serif"],
         barlow: ["Barlow Semi Condensed", "sans-serif"],
         corinthia: ["Corinthia", "cursive"],
+        // New fonts (Jan 2026) for page-specific typography
+        garamond: ["EB Garamond", "serif"],
+        lora: ["Lora", "serif"],
+        "pinyon-script": ["Pinyon Script", "cursive"],
+        parisienne: ["Parisienne", "cursive"],
+        playfair: ["Playfair Display", "serif"],
+        lato: ["Lato", "sans-serif"],
       },
     },
   },

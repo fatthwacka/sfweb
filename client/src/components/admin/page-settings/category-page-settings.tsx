@@ -386,6 +386,16 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
     updateRecentWorkConfig({ images: newImages });
   };
 
+  // Recent albums handlers (for portfolio album cards section)
+  const updateRecentAlbumsConfig = (updates: Partial<CategoryPageConfig['recentAlbums']>) => {
+    updateCategoryConfig({
+      recentAlbums: {
+        ...categoryConfig.recentAlbums,
+        ...updates
+      }
+    });
+  };
+
   // Handle save
   const handleSave = () => {
     saveConfiguration(config);
@@ -409,11 +419,12 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
     <div className="space-y-6">
       <div className="bg-gradient-to-br from-purple-900/30 to-purple-800/20 border border-purple-700/30 rounded-lg p-6">
         <Tabs defaultValue="hero" className="space-y-0">
-          <TabsList className="grid w-full grid-cols-5 bg-slate-800/50 border border-slate-600 mb-0">
+          <TabsList className="grid w-full grid-cols-6 bg-slate-800/50 border border-slate-600 mb-0">
             <TabsTrigger value="hero" className="data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:font-semibold text-slate-300">Hero</TabsTrigger>
             <TabsTrigger value="overview" className="data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:font-semibold text-slate-300">Service Overview</TabsTrigger>
             <TabsTrigger value="packages" className="data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:font-semibold text-slate-300">Packages</TabsTrigger>
             <TabsTrigger value="work" className="data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:font-semibold text-slate-300">Recent Work</TabsTrigger>
+            <TabsTrigger value="albums" className="data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:font-semibold text-slate-300">Recent Albums</TabsTrigger>
             <TabsTrigger value="seo" className="data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:font-semibold text-slate-300">SEO Content</TabsTrigger>
           </TabsList>
 
@@ -802,6 +813,41 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
                     </div>
                   )}
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Recent Albums Section */}
+        <TabsContent value="albums" className="mt-0">
+          <Card>
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle>Recent Albums - Visual Customisation</CardTitle>
+                  <CardDescription>
+                    Manage section colours for the recent portfolio albums display
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Section Colors */}
+              <div className="gallery-slider-container">
+                <GradientPicker
+                  sectionKey={`${type}-${category.replace(/s$/, '')}-albums`}
+                  label="Recent Albums Section Colours"
+                  gradient={categoryConfig.recentAlbums?.gradients}
+                  onChange={(gradient) => updateRecentAlbumsConfig({ gradients: gradient })}
+                  showDirection={true}
+                  showTextColors={true}
+                />
+              </div>
+
+              <div className="p-4 bg-slate-800/30 rounded-lg border border-slate-700">
+                <p className="text-sm text-slate-400">
+                  <span className="text-white font-medium">Note:</span> The album cards displayed in this section are automatically pulled from your portfolio based on the category type (e.g., wedding, engagement, maternity albums for the Weddings page). Use these colour controls to style the section background and text colours.
+                </p>
               </div>
             </CardContent>
           </Card>

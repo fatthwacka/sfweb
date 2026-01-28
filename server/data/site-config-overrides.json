@@ -127,7 +127,7 @@
         {
           "id": "slide-1756052475554",
           "title": "Portraits",
-          "subtitle": "Stunning Glossy Magazine Pics",
+          "subtitle": "Glossy Magazine Pics",
           "image": "/uploads/homepage-main-hero_1756059978969.jpg",
           "cta": "Learn More",
           "gradient": [
@@ -160,7 +160,7 @@
         {
           "id": "test-slide",
           "title": "Headshots",
-          "subtitle": "Profile & Corporate Pics ",
+          "subtitle": "Model  & Corporate Headshots",
           "cta": "Book now",
           "image": "/images/hero/portrait-photography-hero.jpg",
           "gradient": [
@@ -172,7 +172,7 @@
           "id": "slide-1756060051119",
           "title": "Prestige",
           "subtitle": "Celebrity & Event Photography",
-          "image": "/uploads/Celebrity-photography-hero_1756063622855.jpg",
+          "image": "https://dwkjfuhykdjtzvrzdnrr.supabase.co/storage/v1/object/public/gallery-images/blog/DSC08210_1769592145465.jpg",
           "cta": "Learn More",
           "gradient": [
             "rgba(0,0,0,0.7)",
@@ -276,10 +276,12 @@
     "photography": {
       "weddings": {
         "hero": {
-          "image": "/images/hero/wedding-photography-hero.jpg",
+          "image": "https://dwkjfuhykdjtzvrzdnrr.supabase.co/storage/v1/object/public/gallery-images/blog/DSC00233b_1769593049456.jpg",
           "title": "Wedding Photography",
           "subtitle": "Love stories captured timelessly",
-          "ctaText": "Book Session"
+          "ctaText": "Book Session",
+          "heroHeight": 99,
+          "imageAlign": "center"
         },
         "serviceOverview": {
           "title": "Professional Wedding Photography",
@@ -426,10 +428,11 @@
       },
       "portraits": {
         "hero": {
-          "image": "/uploads/homepage-main-hero_1756041774851.jpg",
+          "image": "/uploads/DSC08973_1765118283587.JPG",
           "title": "Portraits",
           "subtitle": "Stunning headshots & portraits",
-          "ctaText": "Book Session"
+          "ctaText": "Book Session",
+          "heroHeight": 92
         },
         "serviceOverview": {
           "title": "Professional Portrait Photography",

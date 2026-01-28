@@ -73,6 +73,13 @@ export interface CategoryPageConfig {
     gradients: GradientConfig;
   };
 
+  // Recent albums section - portfolio album cards display
+  recentAlbums?: {
+    title: string;
+    description: string;
+    gradients: GradientConfig;
+  };
+
   // SEO content section - rich text content
   seoContent: {
     title: string;
@@ -212,12 +219,23 @@ export const defaultCategoryPageConfig: CategoryPageConfig = {
       '/images/gallery/wedding-gallery-2.jpg',
       '/images/gallery/wedding-gallery-3.jpg'
     ],
-    gradients: { 
+    gradients: {
       ...defaultGradientConfig,
       startColor: 'hsl(340, 100%, 15%)',
       middleColor: 'hsl(320, 70%, 12%)',
       endColor: 'hsl(300, 60%, 10%)',
       opacity: 0.7
+    }
+  },
+  recentAlbums: {
+    title: 'Recent Albums',
+    description: 'A selection of recent portfolio galleries',
+    gradients: {
+      ...defaultGradientConfig,
+      startColor: 'hsl(250, 60%, 15%)',
+      middleColor: 'hsl(240, 50%, 12%)',
+      endColor: 'hsl(230, 40%, 10%)',
+      opacity: 0.85
     }
   },
   seoContent: {

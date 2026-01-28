@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
@@ -10,9 +11,14 @@ import { PhotographyNavigation } from "@/components/sections/photography-navigat
 import { useCategoryHero } from "@/hooks/use-category-heroes";
 import { PortfolioGrid } from "@/components/portfolio/portfolio-grid";
 import { useQuery } from "@tanstack/react-query";
+import { getImagesByCategory } from "@/lib/classification-utils";
+import { ImageUrl } from "@/lib/image-utils";
+import type { Image } from "@shared/schema";
 
-// Hardcoded defaults for SEO - crawlers see this immediately
+// Hardcoded defaults for SEO — crawlers see these immediately, config overrides for live viewers
 const DEFAULT_HERO_IMAGE = "/images/services/portrait-photography.jpg";
+const DEFAULT_HERO_TITLE = "Professional Portrait Photography";
+const DEFAULT_HERO_SUBTITLE = "Headshots and personal portraits that tell your story";
 
 interface Shoot {
   id: string;
@@ -41,8 +47,8 @@ interface Shoot {
 }
 
 export default function PhotographyPortraits() {
-  // Fetch hero image and display settings from Supabase (falls back to defaults)
-  const { heroImage, heroHeight, imageAlign } = useCategoryHero('photography', 'portraits');
+  // Hero settings from site-config (falls back to hardcoded SEO defaults)
+  const { heroImage, heroHeight, imageAlign, heroTitle, heroSubtitle } = useCategoryHero('photography', 'portraits');
 
   // Fetch portrait-related albums (portrait, model, fashion, studio, headshot)
   const { data: recentAlbums = [], isLoading: albumsLoading } = useQuery<Shoot[]>({
@@ -56,8 +62,22 @@ export default function PhotographyPortraits() {
     }
   });
 
+  // Fetch featured images for SEO section
+  const { data: featuredImages } = useQuery<Image[]>({
+    queryKey: ['/api/images/featured'],
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Get a random portrait image for the SEO section
+  const seoImage = useMemo(() => {
+    if (!featuredImages) return null;
+    const categoryImages = getImagesByCategory('portraits', featuredImages);
+    if (categoryImages.length === 0) return null;
+    return categoryImages[Math.floor(Math.random() * categoryImages.length)];
+  }, [featuredImages]);
+
   return (
-    <div className="min-h-screen bg-background text-foreground background-gradient-blobs">
+    <div data-page="portraits" className="min-h-screen bg-background text-foreground background-gradient-blobs">
       {/* SEO Meta Tags - Hardcoded for crawler visibility */}
       <title>Portrait Photography Durban | SlyFox Studios</title>
       <meta name="description" content="Professional portrait photography in Durban. Executive headshots, personal branding, and family portraits at our Umhlanga studio." />
@@ -82,26 +102,22 @@ export default function PhotographyPortraits() {
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-corinthia text-white leading-tight hero-title-white" style={{ marginBottom: '-0.5rem' }}>
-            Professional Portrait Photography
+            {heroTitle || DEFAULT_HERO_TITLE}
           </h1>
           <h3 className="text-lg md:text-xl text-white font-quicksand font-light mb-4">
-            Headshots and personal portraits that tell your story
+            {heroSubtitle || DEFAULT_HERO_SUBTITLE}
           </h3>
 
           {/* Scroll Down Button */}
           <div className="flex justify-center">
             <button
               onClick={() => {
-                const servicesElement = document.querySelector('#category-services');
-                if (servicesElement) {
+                // Scroll past the hero to the next section, accounting for nav bar
+                const heroSection = document.querySelector('.hero-section-animated');
+                if (heroSection) {
                   const headerOffset = 80;
-                  const elementPosition = servicesElement.getBoundingClientRect().top;
-                  const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-                  window.scrollTo({
-                    top: offsetPosition,
-                    behavior: 'smooth'
-                  });
+                  const heroBottom = heroSection.getBoundingClientRect().bottom + window.pageYOffset - headerOffset;
+                  window.scrollTo({ top: heroBottom, behavior: 'smooth' });
                 }
               }}
               className="bg-white p-2 rounded-full hover:scale-105 transform transition-all duration-300 shadow-lg cursor-pointer border-none flex items-center justify-center"
@@ -124,8 +140,8 @@ export default function PhotographyPortraits() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6">
-              Recent Portrait Photography
+            <h2 className="text-4xl lg:text-5xl mb-2">
+              Recent Portraits
             </h2>
             <h3 className="text-xl ">
               See our latest portrait photography work
@@ -150,7 +166,7 @@ export default function PhotographyPortraits() {
       >
         <PricingPackagesDisplay
           pageIdentifier="photography_portraits"
-          title="Portrait Photography Packages"
+          title="Portrait Packages"
           description="Professional portrait photography solutions for every need"
           ctaLink="/contact"
           ctaText="Book Now"
@@ -161,13 +177,16 @@ export default function PhotographyPortraits() {
       <GradientBackground
         section="photography-portrait-albums"
         className="py-20"
+        categoryType="photography"
+        categoryName="portraits"
+        categorySectionName="recentAlbums"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6">
+            <h2 className="text-4xl lg:text-5xl mb-2">
               Recent Albums
             </h2>
-            <h3 className="text-xl text-muted-foreground">
+            <h3 className="text-xl">
               A selection of portrait, model, fashion and headshot galleries
             </h3>
           </div>
@@ -198,8 +217,6 @@ export default function PhotographyPortraits() {
         </div>
       </GradientBackground>
 
-      <PhotographyNavigation />
-
       {/* Service Overview Section - Professional Photography Services */}
       <GradientBackground
         id="category-services"
@@ -212,10 +229,10 @@ export default function PhotographyPortraits() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-4xl lg:text-5xl mb-6">
-                Portrait Photography Services
+              <h2 className="text-4xl lg:text-5xl mb-2">
+                Portrait Photography
               </h2>
-              <h3 className="text-xl mb-8 leading-relaxed">
+              <h3 className="text-xl mb-6 leading-relaxed">
                 From executive headshots to family portraits, we create images that capture personality and professionalism in equal measure.
               </h3>
 
@@ -261,51 +278,63 @@ export default function PhotographyPortraits() {
         section="photography-portrait-seo"
         className="py-20"
       >
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-12">
-            <h2 className="text-4xl lg:text-5xl mb-6">
-              Portrait Photography in Durban
-            </h2>
-          </div>
-
-          <div className="max-w-none">
-            <div className="mb-8">
-              <h3 className="text-2xl mb-4">
-                Portrait Photographer in Durban
-              </h3>
-              <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                Whether you need a professional headshot, an updated profile picture, or a creative personal portrait, SlyFox delivers natural, relaxed imagery that actually looks like you. Based in Umhlanga, we shoot studio portraits and on-location sessions across Durban and KwaZulu-Natal. No stiff poses, no awkward smiles – just you at your best.
-              </p>
-            </div>
-
-            <div className="mb-8">
-              <h3 className="text-2xl mb-4">
-                Professional Headshots for LinkedIn & Business
-              </h3>
-              <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                Your headshot does the talking on LinkedIn profiles, company websites, and portfolio pages. A professional profile photo builds authority, credibility, and makes your profile more memorable. Studio sessions can include multiple setups and outfit changes if needed, and give you enough quality shots to allow you to cycle through them and keep looking fresh for the next 2 years.
-              </p>
-            </div>
-
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 items-start">
             <div>
-              <h3 className="text-2xl mb-4">
-                Studio Portrait Sessions in Umhlanga
-              </h3>
-              <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                Controlled lighting, clean backdrops, and a photographer who knows how to get the best out of your look. Our Umhlanga photography studio is set up for individual portraits, corporate headshots, and personal branding shoots.
-              </p>
+              <h2 className="text-4xl lg:text-5xl mb-6">
+                Portrait Photography in Durban
+              </h2>
 
-              <div className="mt-8 text-center">
-                <Link href="/contact">
-                  <Button className="btn-salmon">
-                    Book Your Portrait Session
-                  </Button>
-                </Link>
+              <div className="mb-6">
+                <h3 className="text-2xl mb-3">
+                  Portrait Photographer in Durban
+                </h3>
+                <p className="text-base text-muted-foreground leading-relaxed">
+                  Whether you need a professional headshot, an updated profile picture, or a creative personal portrait, SlyFox delivers natural, relaxed imagery that actually looks like you. Based in Umhlanga, we shoot studio portraits and on-location sessions across Durban and KwaZulu-Natal. No stiff poses, no awkward smiles – just you at your best.
+                </p>
               </div>
+
+              <div className="mb-6">
+                <h3 className="text-2xl mb-3">
+                  Professional Headshots for LinkedIn & Business
+                </h3>
+                <p className="text-base text-muted-foreground leading-relaxed">
+                  Your headshot does the talking on LinkedIn profiles, company websites, and portfolio pages. A professional profile photo builds authority, credibility, and makes your profile more memorable. Studio sessions can include multiple setups and outfit changes if needed, and give you enough quality shots to allow you to cycle through them and keep looking fresh for the next 2 years.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-2xl mb-3">
+                  Studio Portrait Sessions in Umhlanga
+                </h3>
+                <p className="text-base text-muted-foreground leading-relaxed">
+                  Controlled lighting, clean backdrops, and a photographer who knows how to get the best out of your look. Our Umhlanga photography studio is set up for individual portraits, corporate headshots, and personal branding shoots.
+                </p>
+
+                <div className="mt-8">
+                  <Link href="/contact">
+                    <Button className="btn-salmon">
+                      Book Your Portrait Session
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative aspect-[4/5] overflow-hidden rounded-2xl shadow-2xl">
+              {seoImage && (
+                <img
+                  src={ImageUrl.forViewing(seoImage.storagePath)}
+                  alt="Portrait Photography in Durban"
+                  className="w-full h-full object-cover"
+                />
+              )}
             </div>
           </div>
         </div>
       </GradientBackground>
+
+      <PhotographyNavigation />
 
       <Footer />
     </div>
