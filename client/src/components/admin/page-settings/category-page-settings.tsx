@@ -204,15 +204,13 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
     });
   };
 
-  // New hero image upload handler - uploads to Supabase Storage
+  // Hero image upload handler - uploads to local file system and updates site-config
   const handleHeroImageUpload = async (file: File) => {
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({ title: "Error", description: "Please upload an image file", variant: "destructive" });
       return;
     }
 
-    // Validate file size (max 20MB - will be compressed before upload)
     if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
       toast({ title: "Error", description: `Image must be less than ${MAX_FILE_SIZE_MB}MB`, variant: "destructive" });
       return;
@@ -221,18 +219,14 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
     setHeroUploading(true);
 
     try {
-      // Compress image client-side before upload (2400px @ 82% quality)
       const originalSize = file.size;
       const compressedFile = await compressHeroImage(file);
       const compressionRatio = ((originalSize - compressedFile.size) / originalSize * 100).toFixed(0);
 
-      // Upload to Supabase via the category-hero endpoint
       const formData = new FormData();
       formData.append('file', compressedFile);
-      formData.append('category', category);
-      formData.append('type', type);
 
-      const response = await fetch('/api/upload/category-hero', {
+      const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData
       });
@@ -243,13 +237,14 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
       }
 
       const data = await response.json();
+      const imagePath = data.path || `/uploads/${file.name}`;
 
-      // Invalidate the category heroes query to refresh the UI
-      queryClient.invalidateQueries({ queryKey: ['category-heroes'] });
+      // Update site-config with the new local hero image path
+      updateHero({ pageType: type, category, imageUrl: imagePath });
 
       toast({
         title: "Hero image uploaded",
-        description: `Saved to Supabase${Number(compressionRatio) > 5 ? ` (${compressionRatio}% compressed)` : ''}`
+        description: `Saved locally${Number(compressionRatio) > 5 ? ` (${compressionRatio}% compressed)` : ''}`
       });
     } catch (error) {
       console.error('Hero upload error:', error);
@@ -292,31 +287,14 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
     }
   };
 
-  // Reset hero to default (delete from Supabase)
-  const handleResetHero = async () => {
-    try {
-      const response = await fetch(`/api/category-heroes/${type}/${category}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to reset hero image');
-      }
-
-      queryClient.invalidateQueries({ queryKey: ['category-heroes'] });
-
-      toast({
-        title: "Hero image reset",
-        description: "Now using the default hero image"
-      });
-    } catch (error) {
-      toast({
-        title: "Reset failed",
-        description: error instanceof Error ? error.message : "Failed to reset hero image",
-        variant: "destructive"
-      });
-    }
+  // Reset hero to default (clear custom image from site-config)
+  const handleResetHero = () => {
+    // Set image back to empty so the hook falls back to categoryDefaults
+    updateHero({ pageType: type, category, imageUrl: '' });
+    toast({
+      title: "Hero image reset",
+      description: "Now using the default hero image"
+    });
   };
 
   const handleServiceOverviewImageUpload = async (file: File) => {
@@ -447,7 +425,7 @@ export function CategoryPageSettings({ type, category }: CategoryPageSettingsPro
                 <div>
                   <CardTitle>Hero Section - Visual Customization</CardTitle>
                   <CardDescription>
-                    Manage the hero background image for your {categoryDisplayName.toLowerCase()} page (stored in Supabase)
+                    Manage the hero background image for your {categoryDisplayName.toLowerCase()} page
                   </CardDescription>
                 </div>
               </div>

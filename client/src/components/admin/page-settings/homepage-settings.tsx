@@ -484,19 +484,12 @@ export function HomepageSettings() {
   };
 
   // Image thumbnail component
-  const ImageThumbnail = ({ imagePath, onPathChange }: { 
-    imagePath: string; 
+  const ImageThumbnail = ({ imagePath, onPathChange }: {
+    imagePath: string;
     onPathChange: (newPath: string) => void;
   }) => {
-    const [previewUrl, setPreviewUrl] = useState<string>('');
     const [isDragOver, setIsDragOver] = useState(false);
     const isUploading = uploadingFiles.has(imagePath);
-
-    useEffect(() => {
-      // Create preview URL for the image - handle both absolute and relative paths
-      const fullPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
-      setPreviewUrl(`${fullPath}?t=${Date.now()}`);
-    }, [imagePath]);
 
     const handleFileUpload = async (file: File) => {
       const formData = new FormData();
@@ -513,15 +506,12 @@ export function HomepageSettings() {
         if (!response.ok) throw new Error('Upload failed');
 
         const result = await response.json();
-        
-        // Update the image path in the slide
         onPathChange(result.path || `/uploads/${file.name}`);
-        
+
         toast({
           title: "Image uploaded",
           description: `Successfully uploaded ${file.name}`
         });
-        
       } catch (error) {
         toast({
           title: "Upload failed",
@@ -550,7 +540,6 @@ export function HomepageSettings() {
     const handleDrop = (e: React.DragEvent) => {
       e.preventDefault();
       setIsDragOver(false);
-      
       const file = e.dataTransfer.files?.[0];
       if (file && file.type.startsWith('image/')) {
         handleFileUpload(file);
@@ -559,7 +548,7 @@ export function HomepageSettings() {
 
     return (
       <div className="space-y-1">
-        <div 
+        <div
           className={`relative group ${isDragOver ? 'scale-105' : ''}`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -568,12 +557,11 @@ export function HomepageSettings() {
           <div className={`w-20 h-20 rounded-lg overflow-hidden bg-gray-100 border-2 transition-all duration-200 ${
             isDragOver ? 'border-salmon bg-salmon/10' : 'border-gray-200'
           }`}>
-            {previewUrl ? (
+            {imagePath ? (
               <img
-                src={previewUrl}
+                src={imagePath}
                 alt="Hero slide thumbnail"
                 className="w-full h-full object-cover"
-                onError={() => setPreviewUrl('')}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400">

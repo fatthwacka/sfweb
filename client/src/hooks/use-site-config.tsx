@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { siteConfig } from '@/config/site-config';
 import type { SiteConfigInterface, DeepPartial } from '@/config/types';
-import { supabaseOperations } from '@/lib/supabase-operations';
 
 /**
  * Custom hook for managing site configuration
@@ -42,8 +41,13 @@ export function useSiteConfig() {
   // Update site configuration
   const updateConfigMutation = useMutation({
     mutationFn: async ({ path, value }: { path: string; value: any }) => {
-      const updates = { [path]: value };
-      return await supabaseOperations.siteConfig.updateBulk(updates);
+      const response = await fetch('/api/site-config', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path, value }),
+      });
+      if (!response.ok) throw new Error('Failed to update site config');
+      return response.json();
     },
     onSuccess: (data, { path, value }) => {
       // Update the cache optimistically
@@ -55,8 +59,6 @@ export function useSiteConfig() {
         return newData;
       });
       
-      // Invalidate to refetch and ensure consistency
-      queryClient.invalidateQueries({ queryKey: ['site-config'] });
     },
     onError: (error) => {
       console.error('Failed to update site config:', error);
@@ -68,16 +70,20 @@ export function useSiteConfig() {
   // Bulk update configuration
   const updateConfigBulkMutation = useMutation({
     mutationFn: async (updates: DeepPartial<SiteConfigInterface>) => {
-      return await supabaseOperations.siteConfig.updateBulk(updates);
+      const response = await fetch('/api/site-config/bulk', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      if (!response.ok) throw new Error('Failed to bulk update site config');
+      return response.json();
     },
     onSuccess: (data, updates) => {
-      // Update cache with bulk changes
+      // Update cache with saved changes (no refetch needed — server already persisted)
       queryClient.setQueryData(['site-config'], (oldData: SiteConfigInterface | undefined) => {
         if (!oldData) return siteConfig;
         return deepMerge(oldData, updates);
       });
-      
-      queryClient.invalidateQueries({ queryKey: ['site-config'] });
     }
   });
 

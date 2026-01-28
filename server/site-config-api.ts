@@ -1289,15 +1289,24 @@ router.patch('/api/site-config', async (req, res) => {
       });
     }
 
-    // For now, we'll just log the changes and return success
-    // In a full implementation, this would update the actual config file or database
     console.log(`Site config update: ${configPath} = `, value);
-    
-    // Simulate a database update delay
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    res.json({ 
-      success: true, 
+
+    // Set nested value in overrides
+    const keys = configPath.split('.');
+    let current = configOverrides;
+    for (let i = 0; i < keys.length - 1; i++) {
+      if (!(keys[i] in current) || typeof current[keys[i]] !== 'object') {
+        current[keys[i]] = {};
+      }
+      current = current[keys[i]];
+    }
+    current[keys[keys.length - 1]] = value;
+
+    // Save to disk atomically
+    await saveConfigOverrides(configOverrides);
+
+    res.json({
+      success: true,
       message: `Updated ${configPath}`,
       timestamp: new Date().toISOString()
     });

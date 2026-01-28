@@ -2,7 +2,7 @@ import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Camera, Check, ChevronDown } from "lucide-react";
+import { Camera, ChevronDown } from "lucide-react";
 import { GradientBackground } from "@/components/common/gradient-background";
 import { CategoryFeaturedGrid } from "@/components/shared/category-featured-grid";
 import { PricingPackagesDisplay } from "@/components/sections/pricing-packages-display";
@@ -11,8 +11,10 @@ import { useCategoryHero } from "@/hooks/use-category-heroes";
 import { PortfolioGrid } from "@/components/portfolio/portfolio-grid";
 import { useQuery } from "@tanstack/react-query";
 
-// Hardcoded defaults for SEO - crawlers see this immediately
-const DEFAULT_HERO_IMAGE = "/images/services/wedding-photography.jpg";
+// Hardcoded defaults for SEO — crawlers see these immediately, config overrides for live viewers
+const DEFAULT_HERO_IMAGE = "/images/hero/slyfox-wedding-photography-durban-kzn-hero.jpg";
+const DEFAULT_HERO_TITLE = "Professional Wedding Photography";
+const DEFAULT_HERO_SUBTITLE = "Capturing your special day with elegance and style";
 
 interface Shoot {
   id: string;
@@ -41,8 +43,8 @@ interface Shoot {
 }
 
 export default function PhotographyWeddings() {
-  // Fetch hero image and display settings from Supabase (falls back to defaults)
-  const { heroImage, heroHeight, imageAlign } = useCategoryHero('photography', 'weddings');
+  // Hero settings from site-config (falls back to hardcoded SEO defaults)
+  const { heroImage, heroHeight, imageAlign, heroTitle, heroSubtitle } = useCategoryHero('photography', 'weddings');
 
   // Fetch wedding-related albums (wedding, engagement, maternity, newborn)
   const { data: recentAlbums = [], isLoading: albumsLoading } = useQuery<Shoot[]>({
@@ -82,26 +84,22 @@ export default function PhotographyWeddings() {
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-corinthia text-white leading-tight hero-title-white" style={{ marginBottom: '-0.5rem' }}>
-            Professional Wedding Photography
+            {heroTitle || DEFAULT_HERO_TITLE}
           </h1>
-          <h3 className="text-lg md:text-xl text-white font-quicksand font-light mb-4">
-            Capturing your special day with elegance and style
-          </h3>
+          <h2 className="text-lg md:text-xl text-white font-quicksand font-light mb-4">
+            {heroSubtitle || DEFAULT_HERO_SUBTITLE}
+          </h2>
 
           {/* Scroll Down Button */}
           <div className="flex justify-center">
             <button
               onClick={() => {
-                const servicesElement = document.querySelector('#category-services');
-                if (servicesElement) {
-                  const headerOffset = 80; // Account for fixed navigation bar
-                  const elementPosition = servicesElement.getBoundingClientRect().top;
-                  const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-                  window.scrollTo({
-                    top: offsetPosition,
-                    behavior: 'smooth'
-                  });
+                // Scroll past the hero to the next section, accounting for nav bar
+                const heroSection = document.querySelector('.hero-section-animated');
+                if (heroSection) {
+                  const headerOffset = 80;
+                  const heroBottom = heroSection.getBoundingClientRect().bottom + window.pageYOffset - headerOffset;
+                  window.scrollTo({ top: heroBottom, behavior: 'smooth' });
                 }
               }}
               className="bg-white p-2 rounded-full hover:scale-105 transform transition-all duration-300 shadow-lg cursor-pointer border-none flex items-center justify-center"
