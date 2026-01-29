@@ -42,6 +42,7 @@ const PHOTOGRAPHY_CATEGORIES = [
 ];
 
 interface PhotographyNavigationProps {
+  id?: string;
   title?: string;
   subtitle?: string | React.ReactNode;
   className?: string;
@@ -52,6 +53,7 @@ interface PhotographyNavigationProps {
  * Shows all photography categories in a responsive grid
  */
 export function PhotographyNavigation({
+  id,
   title = "Photography Services",
   subtitle = (
     <>
@@ -64,7 +66,7 @@ export function PhotographyNavigation({
   className = "py-16 bg-gradient-to-br from-slate-900 via-slate-700 to-gray-800"
 }: PhotographyNavigationProps) {
   return (
-    <section className={className}>
+    <section id={id} className={className}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl lg:text-4xl mb-4 text-white">

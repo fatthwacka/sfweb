@@ -34,8 +34,8 @@ export default function Photography() {
       <h1 className="sr-only">SlyFox Studios - Professional Photography & Videography in Durban, South Africa</h1>
 
       <Navigation />
-      <EnhancedHeroSlider />
-      <PhotographyNavigation />
+      <EnhancedHeroSlider scrollTarget="#photography-services" />
+      <PhotographyNavigation id="photography-services" />
       <PortfolioShowcase />
       <ClientGalleryAccess />
       

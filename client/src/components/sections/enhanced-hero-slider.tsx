@@ -19,7 +19,11 @@ interface HeroConfig {
   interval: number;
 }
 
-export function EnhancedHeroSlider() {
+interface EnhancedHeroSliderProps {
+  scrollTarget?: string;
+}
+
+export function EnhancedHeroSlider({ scrollTarget = '#services' }: EnhancedHeroSliderProps = {}) {
   const { config, isLoading } = useSiteConfig();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -182,14 +186,14 @@ export function EnhancedHeroSlider() {
           
           {/* CTA Button */}
           <div className="flex justify-center">
-            <button 
+            <button
               onClick={() => {
-                const servicesElement = document.querySelector('#services');
-                if (servicesElement) {
+                const targetElement = document.querySelector(scrollTarget);
+                if (targetElement) {
                   const headerOffset = 80; // Account for fixed navigation bar
-                  const elementPosition = servicesElement.getBoundingClientRect().top;
+                  const elementPosition = targetElement.getBoundingClientRect().top;
                   const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                  
+
                   window.scrollTo({
                     top: offsetPosition,
                     behavior: 'smooth'

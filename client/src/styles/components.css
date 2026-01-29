@@ -960,3 +960,13 @@
     @apply absolute inset-0 rounded-full bg-gradient-to-r from-purple-500/30 to-indigo-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-lg -z-10;
   }
 }
+
+/* Slideshow progress bar animation */
+@keyframes slideshow-progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}

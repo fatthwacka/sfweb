@@ -22,6 +22,7 @@ import {
   ThumbsUp,
   ThumbsDown,
   Play,
+  Pause,
   Package,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
@@ -134,6 +135,11 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
   const [modalImageIndex, setModalImageIndex] = useState<number | null>(null);
   const [navbarVisible, setNavbarVisible] = useState(true);
   const [userInteractions, setUserInteractions] = useState<Map<string, 'heart' | 'like' | 'dislike'>>(new Map());
+  // Slideshow state
+  const [slideshowActive, setSlideshowActive] = useState(false);
+  const [slideshowPaused, setSlideshowPaused] = useState(false);
+  const slideshowIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const SLIDESHOW_INTERVAL = 4000; // 4 seconds per image
   const [bulkDownloadModal, setBulkDownloadModal] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState<{
     isDownloading: boolean;
@@ -250,7 +256,56 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     dragOffsetRef.current = 0;
     setIsDragging(false);
     setIsTransitioning(false);
+    // Stop slideshow when closing modal
+    setSlideshowActive(false);
+    setSlideshowPaused(false);
+    if (slideshowIntervalRef.current) {
+      clearInterval(slideshowIntervalRef.current);
+      slideshowIntervalRef.current = null;
+    }
   };
+
+  // Start slideshow
+  const startSlideshow = (startIndex: number = 0) => {
+    console.log('🎬 Starting slideshow from index:', startIndex);
+    setModalImageIndex(startIndex);
+    setSlideshowActive(true);
+    setSlideshowPaused(false);
+    document.body.style.overflow = "hidden";
+  };
+
+  // Toggle slideshow pause
+  const toggleSlideshowPause = () => {
+    setSlideshowPaused(prev => !prev);
+  };
+
+  // Slideshow auto-advance effect
+  useEffect(() => {
+    // Clear any existing interval
+    if (slideshowIntervalRef.current) {
+      clearInterval(slideshowIntervalRef.current);
+      slideshowIntervalRef.current = null;
+    }
+
+    // Only run if slideshow is active, not paused, and modal is open
+    if (slideshowActive && !slideshowPaused && modalImageIndex !== null && mediaItems.length > 0) {
+      slideshowIntervalRef.current = setInterval(() => {
+        setModalImageIndex(prev => {
+          if (prev === null) return null;
+          const nextIndex = (prev + 1) % mediaItems.length;
+          console.log('🎬 Slideshow advancing to:', nextIndex);
+          return nextIndex;
+        });
+      }, SLIDESHOW_INTERVAL);
+    }
+
+    return () => {
+      if (slideshowIntervalRef.current) {
+        clearInterval(slideshowIntervalRef.current);
+        slideshowIntervalRef.current = null;
+      }
+    };
+  }, [slideshowActive, slideshowPaused, modalImageIndex, mediaItems.length]);
 
   const navigateModal = (direction: "prev" | "next") => {
     if (modalImageIndex === null || mediaItems.length === 0) {
@@ -301,14 +356,19 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     const handleTouchStart = (e: TouchEvent) => {
       // Only handle single touch events
       if (e.touches.length !== 1) return;
-      
+
       // Only handle touches on the image container (not on buttons)
       const target = e.target as Element;
       const isImageContainer = target.closest('.modal-image-container') || target.tagName === 'IMG';
       if (!isImageContainer) return;
-      
+
       console.log('👆 Touch start detected');
-      
+
+      // Pause slideshow while touching (hold-to-pause)
+      if (slideshowActive && !slideshowPaused) {
+        setSlideshowPaused(true);
+      }
+
       // Reset all touch state properly
       touchStartXRef.current = e.touches[0].clientX;
       touchStartYRef.current = e.touches[0].clientY;
@@ -367,9 +427,9 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
       if (!isDraggingRef.current) return;
 
       const currentDragOffset = dragOffsetRef.current; // Use ref value
-      
+
       console.log('👆 Touch end - dragOffset:', currentDragOffset, 'isValidSwipe:', isValidSwipeRef.current);
-      
+
       isDraggingRef.current = false;
       setIsDragging(false);
       setIsTransitioning(true);
@@ -380,7 +440,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
       // Determine if we should navigate based on distance and velocity
       const shouldNavigate = Math.abs(currentDragOffset) > 80 || velocity > 0.3;
-      
+
       console.log('🧮 Navigation check - shouldNavigate:', shouldNavigate, 'velocity:', velocity.toFixed(3));
 
       if (isValidSwipeRef.current && shouldNavigate) {
@@ -388,13 +448,17 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
         const screenWidth = window.innerWidth;
         const direction = currentDragOffset > 0 ? 'prev' : 'next'; // Capture direction before state changes
         const finalOffset = currentDragOffset > 0 ? screenWidth : -screenWidth;
-        
+
         setDragOffset(finalOffset);
         dragOffsetRef.current = finalOffset;
 
         // Navigate after animation completes
         setTimeout(() => {
           navigateModal(direction);
+          // Resume slideshow after swipe navigation
+          if (slideshowActive) {
+            setSlideshowPaused(false);
+          }
         }, 300); // Match transition duration
       } else {
         // No navigation - just snap back to center
@@ -402,15 +466,19 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
           setDragOffset(0);
           dragOffsetRef.current = 0;
           setIsTransitioning(false);
+          // Resume slideshow after hold-to-pause
+          if (slideshowActive) {
+            setSlideshowPaused(false);
+          }
         }, 150);
       }
     };
 
     // Use a timeout to ensure modal DOM is ready
     const timeoutId = setTimeout(() => {
-      // Use a more reliable selector - look for any modal container
-      const modalContainer = document.querySelector('.fixed.inset-0.z-\\[100\\]');
-      
+      // Use data attribute selector for reliability
+      const modalContainer = document.querySelector('[data-modal-index]');
+
       if (modalContainer) {
         modalContainer.addEventListener("touchstart", handleTouchStart, { passive: false });
         modalContainer.addEventListener("touchmove", handleTouchMove, { passive: false });
@@ -424,7 +492,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
     return () => {
       clearTimeout(timeoutId);
       // Clean up with the same selector
-      const modalContainer = document.querySelector('.fixed.inset-0.z-\\[100\\]');
+      const modalContainer = document.querySelector('[data-modal-index]');
       if (modalContainer) {
         modalContainer.removeEventListener("touchstart", handleTouchStart);
         modalContainer.removeEventListener("touchmove", handleTouchMove);
@@ -432,7 +500,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
         console.log('🧹 Touch listeners removed from modal');
       }
     };
-  }, [modalImageIndex]); // Only depend on modal state - mediaItems.length should be stable
+  }, [modalImageIndex, slideshowActive]); // Include slideshow state for touch-to-pause
 
   // Navbar hide/show on scroll
   useEffect(() => {
@@ -615,31 +683,45 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
       });
   };
 
+  // Track pending interactions to prevent rapid clicks
+  const pendingInteractionsRef = useRef<Set<string>>(new Set());
+
   // Handle image interactions (heart, like, dislike)
   const handleImageInteraction = async (imageId: string, type: 'heart' | 'like' | 'dislike', e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
+
+    // Prevent rapid clicks on the same image
+    if (pendingInteractionsRef.current.has(imageId)) {
+      return;
+    }
 
     // Check if user already has this interaction
     const currentInteraction = userInteractions.get(imageId);
     const action = currentInteraction === type ? 'remove' : 'add';
 
-    // Optimistically update UI
-    const newInteractions = new Map(userInteractions);
-    if (action === 'remove') {
-      newInteractions.delete(imageId);
-    } else {
-      newInteractions.set(imageId, type);
-    }
-    setUserInteractions(newInteractions);
+    // Mark as pending
+    pendingInteractionsRef.current.add(imageId);
 
-    // Save to localStorage
+    // Optimistically update UI immediately
+    setUserInteractions(prev => {
+      const newInteractions = new Map(prev);
+      if (action === 'remove') {
+        newInteractions.delete(imageId);
+      } else {
+        newInteractions.set(imageId, type);
+      }
+      return newInteractions;
+    });
+
+    // Save to localStorage synchronously for persistence
     const storageInteractions = getUserInteractions().filter(i => i.imageId !== imageId);
     if (action === 'add') {
       storageInteractions.push({ imageId, type, timestamp: Date.now() });
     }
     saveUserInteractions(storageInteractions);
 
-    // Send to backend
+    // Send to backend (fire and forget for better UX)
     try {
       const response = await fetch(`/api/images/${imageId}/interact`, {
         method: 'POST',
@@ -653,7 +735,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
         throw new Error('Failed to update interaction');
       }
 
-      // Show success toast
+      // Show success toast (brief)
       const messages = {
         heart: action === 'add' ? 'Added to favorites ❤️' : 'Removed from favorites',
         like: action === 'add' ? 'Liked 👍' : 'Like removed',
@@ -662,11 +744,21 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
       toast({
         title: messages[type],
-        duration: 2000,
+        duration: 1500,
       });
     } catch (error) {
       // Revert optimistic update on error
-      setUserInteractions(userInteractions);
+      setUserInteractions(prev => {
+        const revertedInteractions = new Map(prev);
+        if (action === 'add') {
+          revertedInteractions.delete(imageId);
+        } else if (currentInteraction) {
+          revertedInteractions.set(imageId, currentInteraction);
+        }
+        return revertedInteractions;
+      });
+
+      // Revert localStorage
       const originalInteractions = getUserInteractions();
       saveUserInteractions(originalInteractions);
 
@@ -675,6 +767,11 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
         description: "Please try again",
         variant: "destructive",
       });
+    } finally {
+      // Clear pending state after a short delay to prevent rapid re-clicks
+      setTimeout(() => {
+        pendingInteractionsRef.current.delete(imageId);
+      }, 300);
     }
   };
 
@@ -1181,7 +1278,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
             
             {/* Main Title (Shoot Type) with Info Tooltip */}
             <div className="relative group">
-              <h2 className="font-barlow font-bold text-3xl text-white uppercase tracking-wide cursor-default" style={{ color: '#ffffff', opacity: 1 }}>
+              <h2 className="font-barlow font-light text-3xl text-white uppercase tracking-wider cursor-default" style={{ color: '#ffffff', opacity: 1 }}>
                 {shoot.customTitle || shoot.title || (shoot.shootType ? 
                   shoot.shootType.charAt(0).toUpperCase() + shoot.shootType.slice(1) 
                   : "Portfolio")}
@@ -1258,10 +1355,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
               {/* Start Slideshow Button */}
               <div className="relative group flex items-center justify-center">
                 <button
-                  onClick={() => {
-                    console.log('🎬 Starting slideshow from first image');
-                    openModal(0);
-                  }}
+                  onClick={() => startSlideshow(0)}
                   className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 hover:scale-110 transition-all duration-300 p-2 rounded-full flex items-center justify-center"
                   title="Start Slideshow"
                 >
@@ -1424,8 +1518,9 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                           relative group cursor-pointer break-inside-avoid inline-block w-full masonry-item
                           ${selectedImages.has(item.id) ? "ring-2 ring-salmon" : ""}
                         `}
-                        style={{ 
+                        style={{
                           marginBottom: getSpacingStyle(),
+                          touchAction: 'manipulation',
                           ...getBorderStyle()
                         }}
                         onClick={(e) => {
@@ -1465,9 +1560,6 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                           />
                         )}
 
-                        {/* Gallery image overlay */}
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/[0.03] transition-colors duration-300" />
-
                         {/* Selection indicator */}
                         {selectedImages.has(item.id) && (
                           <div className="absolute top-2 right-2 w-6 h-6 bg-salmon rounded-full flex items-center justify-center z-10">
@@ -1475,90 +1567,12 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                           </div>
                         )}
 
-                        {/* Hover overlay with buttons at bottom */}
-                        <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                          <div className="absolute bottom-2 left-2 right-2 flex justify-between gap-2">
-                            {/* Left side - Interaction buttons */}
-                            <div className="flex gap-2">
-                              <button
-                                onClick={(e) => handleImageInteraction(item.id, 'heart', e)}
-                                className={`backdrop-blur-sm p-2 rounded-full hover:bg-red-500 transition-colors ${
-                                  userInteractions.get(item.id) === 'heart'
-                                    ? 'bg-red-500'
-                                    : 'bg-white/20'
-                                }`}
-                                title="Love"
-                              >
-                                <Heart className={`w-4 h-4 ${
-                                  userInteractions.get(item.id) === 'heart'
-                                    ? 'fill-white text-white'
-                                    : 'text-white'
-                                }`} />
-                              </button>
-                              <button
-                                onClick={(e) => handleImageInteraction(item.id, 'like', e)}
-                                className={`backdrop-blur-sm p-2 rounded-full hover:bg-green-500 transition-colors ${
-                                  userInteractions.get(item.id) === 'like'
-                                    ? 'bg-green-500'
-                                    : 'bg-white/20'
-                                }`}
-                                title="Like"
-                              >
-                                <ThumbsUp className={`w-4 h-4 ${
-                                  userInteractions.get(item.id) === 'like'
-                                    ? 'fill-white text-white'
-                                    : 'text-white'
-                                }`} />
-                              </button>
-                              <button
-                                onClick={(e) => handleImageInteraction(item.id, 'dislike', e)}
-                                className={`backdrop-blur-sm p-2 rounded-full hover:bg-yellow-500 transition-colors ${
-                                  userInteractions.get(item.id) === 'dislike'
-                                    ? 'bg-yellow-500'
-                                    : 'bg-white/20'
-                                }`}
-                                title="Dislike"
-                              >
-                                <ThumbsDown className={`w-4 h-4 ${
-                                  userInteractions.get(item.id) === 'dislike'
-                                    ? 'fill-white text-white'
-                                    : 'text-white'
-                                }`} />
-                              </button>
-                            </div>
-
-                            {/* Right side - Action buttons */}
-                            <div className="flex gap-2">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  downloadMedia(item);
-                                }}
-                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                                title="Download"
-                              >
-                                <Download className="w-4 h-4 text-white" />
-                              </button>
-                              <button
-                                onClick={(e) => handleShareImage(actualIndex, e)}
-                                className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                                title="Share Image"
-                              >
-                                <Share2 className="w-4 h-4 text-white" />
-                              </button>
-                              <a
-                                href={ImageUrl.forFullSize(item.storagePath)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className="bg-white/20 backdrop-blur-sm px-3 py-2 rounded-full hover:bg-white/30 transition-colors flex items-center justify-center"
-                                title="View Full Resolution"
-                              >
-                                <span className="text-white text-xs font-bold">HD</span>
-                              </a>
-                            </div>
+                        {/* Heart indicator if user has hearted this image */}
+                        {userInteractions.get(item.id) === 'heart' && (
+                          <div className="absolute bottom-2 left-2 bg-red-500 rounded-full p-1.5 z-10">
+                            <Heart className="w-3 h-3 fill-white text-white" />
                           </div>
-                        </div>
+                        )}
                       </div>
                     );
                   })}
@@ -1581,7 +1595,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                             relative ${getAspectRatioClass()} group cursor-pointer
                             ${selectedImages.has(item.id) ? "ring-2 ring-salmon" : ""}
                           `}
-                          style={getBorderStyle()}
+                          style={{ touchAction: 'manipulation', ...getBorderStyle() }}
                           onClick={(e) => {
                             console.log('🖱️ Gallery item clicked, opening modal at index:', actualIndex);
                             openModal(actualIndex);
@@ -1619,9 +1633,6 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                             />
                           )}
 
-                          {/* Gallery image overlay */}
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/[0.03] transition-colors duration-300" />
-
                           {/* Selection indicator */}
                           {selectedImages.has(item.id) && (
                             <div className="absolute top-2 right-2 w-6 h-6 bg-salmon rounded-full flex items-center justify-center z-10">
@@ -1629,90 +1640,12 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                             </div>
                           )}
 
-                          {/* Hover overlay with buttons at bottom */}
-                          <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <div className="absolute bottom-2 left-2 right-2 flex justify-between gap-2">
-                              {/* Left side - Interaction buttons */}
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={(e) => handleImageInteraction(item.id, 'heart', e)}
-                                  className={`backdrop-blur-sm p-2 rounded-full hover:bg-red-500 transition-colors ${
-                                    userInteractions.get(item.id) === 'heart'
-                                      ? 'bg-red-500'
-                                      : 'bg-white/20'
-                                  }`}
-                                  title="Love"
-                                >
-                                  <Heart className={`w-4 h-4 ${
-                                    userInteractions.get(item.id) === 'heart'
-                                      ? 'fill-white text-white'
-                                      : 'text-white'
-                                  }`} />
-                                </button>
-                                <button
-                                  onClick={(e) => handleImageInteraction(item.id, 'like', e)}
-                                  className={`backdrop-blur-sm p-2 rounded-full hover:bg-green-500 transition-colors ${
-                                    userInteractions.get(item.id) === 'like'
-                                      ? 'bg-green-500'
-                                      : 'bg-white/20'
-                                  }`}
-                                  title="Like"
-                                >
-                                  <ThumbsUp className={`w-4 h-4 ${
-                                    userInteractions.get(item.id) === 'like'
-                                      ? 'fill-white text-white'
-                                      : 'text-white'
-                                  }`} />
-                                </button>
-                                <button
-                                  onClick={(e) => handleImageInteraction(item.id, 'dislike', e)}
-                                  className={`backdrop-blur-sm p-2 rounded-full hover:bg-yellow-500 transition-colors ${
-                                    userInteractions.get(item.id) === 'dislike'
-                                      ? 'bg-yellow-500'
-                                      : 'bg-white/20'
-                                  }`}
-                                  title="Dislike"
-                                >
-                                  <ThumbsDown className={`w-4 h-4 ${
-                                    userInteractions.get(item.id) === 'dislike'
-                                      ? 'fill-white text-white'
-                                      : 'text-white'
-                                  }`} />
-                                </button>
-                              </div>
-
-                              {/* Right side - Action buttons */}
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    downloadMedia(item);
-                                  }}
-                                  className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                                  title="Download"
-                                >
-                                  <Download className="w-4 h-4 text-white" />
-                                </button>
-                                <button
-                                  onClick={(e) => handleShareImage(actualIndex, e)}
-                                  className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-colors"
-                                  title="Share Image"
-                                >
-                                  <Share2 className="w-4 h-4 text-white" />
-                                </button>
-                                <a
-                                  href={ImageUrl.forFullSize(item.storagePath)}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="bg-white/20 backdrop-blur-sm px-3 py-2 rounded-full hover:bg-white/30 transition-colors flex items-center justify-center"
-                                  title="View Full Resolution"
-                                >
-                                  <span className="text-white text-xs font-bold">HD</span>
-                                </a>
-                              </div>
+                          {/* Heart indicator if user has hearted this image */}
+                          {userInteractions.get(item.id) === 'heart' && (
+                            <div className="absolute bottom-2 left-2 bg-red-500 rounded-full p-1.5 z-10">
+                              <Heart className="w-3 h-3 fill-white text-white" />
                             </div>
-                          </div>
+                          )}
                         </div>
                       );
                     })}
@@ -1754,40 +1687,103 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
       {/* Media Modal (Images & Videos) */}
       {modalImageIndex !== null && (
-        <div 
-          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center overflow-hidden" 
-          style={{ touchAction: 'none' }}
+        <div
+          className="fixed inset-0 z-[9999] bg-black flex items-center justify-center"
+          style={{
+            touchAction: 'none',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100vw',
+            height: '100vh',
+            overflow: 'hidden'
+          }}
           data-modal-index={modalImageIndex}
         >
-          {/* Close button */}
+          {/* Close button - discreet, positioned below nav bar */}
           <button
             onClick={closeModal}
-            className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-20"
+            className="absolute bg-gray-400/80 text-white hover:bg-gray-300 transition-colors rounded-full z-[10000] shadow-lg"
+            style={{
+              position: 'absolute',
+              top: '100px',
+              right: '16px',
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            aria-label="Close modal"
           >
-            <X className="w-8 h-8" />
+            <X className="w-5 h-5" />
           </button>
 
-          {/* Left navigation bar - 1/3 screen height clickable area */}
+          {/* Slideshow controls (top left, below nav bar) */}
+          <div className="absolute left-4 flex items-center gap-2 z-[10000]" style={{ top: '100px' }}>
+            {slideshowActive ? (
+              <>
+                <button
+                  onClick={toggleSlideshowPause}
+                  className="text-white hover:text-gray-300 transition-colors bg-black/40 rounded-full p-2 backdrop-blur-sm"
+                  title={slideshowPaused ? "Resume Slideshow" : "Pause Slideshow"}
+                >
+                  {slideshowPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
+                </button>
+                <span className="text-white/70 text-sm bg-black/40 rounded-full px-3 py-1 backdrop-blur-sm">
+                  {slideshowPaused ? 'Paused' : 'Playing'}
+                </span>
+              </>
+            ) : (
+              <button
+                onClick={() => {
+                  setSlideshowActive(true);
+                  setSlideshowPaused(false);
+                }}
+                className="text-white hover:text-gray-300 transition-colors bg-black/40 rounded-full p-2 backdrop-blur-sm"
+                title="Start Slideshow"
+              >
+                <Play className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+
+          {/* Slideshow progress bar */}
+          {slideshowActive && !slideshowPaused && (
+            <div className="absolute top-0 left-0 right-0 h-1 bg-white/20 z-[10000]">
+              <div
+                className="h-full bg-white/80"
+                style={{
+                  animation: `slideshow-progress ${SLIDESHOW_INTERVAL}ms linear`,
+                  animationIterationCount: 'infinite'
+                }}
+              />
+            </div>
+          )}
+
+          {/* Left navigation bar - centered vertically, avoiding top controls */}
           <button
             onClick={() => navigateModal("prev")}
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 h-1/3 w-16 md:w-24 flex items-center justify-center text-white hover:bg-white/10 transition-all z-10 group"
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 h-2/5 w-12 md:w-20 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all z-[10000] group"
             aria-label="Previous media"
           >
-            <ChevronLeft className="w-8 h-8 md:w-12 md:h-12 group-hover:scale-110 transition-transform" />
+            <ChevronLeft className="w-8 h-8 md:w-10 md:h-10 group-hover:scale-110 transition-transform" />
           </button>
 
-          {/* Right navigation bar - 1/3 screen height clickable area */}
+          {/* Right navigation bar - centered vertically, avoiding top controls */}
           <button
             onClick={() => navigateModal("next")}
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 h-1/3 w-16 md:w-24 flex items-center justify-center text-white hover:bg-white/10 transition-all z-10 group"
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 h-2/5 w-12 md:w-20 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all z-[10000] group"
             aria-label="Next media"
           >
-            <ChevronRight className="w-8 h-8 md:w-12 md:h-12 group-hover:scale-110 transition-transform" />
+            <ChevronRight className="w-8 h-8 md:w-10 md:h-10 group-hover:scale-110 transition-transform" />
           </button>
 
-          {/* Modal image container - properly sized to fill available space */}
-          <div className="modal-image-container w-full h-full p-4 md:p-8 flex items-center justify-center">
-            <div 
+          {/* Modal image container - optimized for mobile landscape */}
+          <div className="modal-image-container w-full h-full p-2 sm:p-4 md:p-8 flex items-center justify-center">
+            <div
               className="w-auto h-auto max-w-full max-h-full flex items-center justify-center"
               style={{
                 transform: `translateX(${dragOffset}px)`,
@@ -1800,8 +1796,8 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                   src={VideoUrl.forStreaming(mediaItems[modalImageIndex] as Video)}
                   className="max-w-full max-h-full w-auto h-auto object-contain select-none"
                   style={{
-                    maxWidth: 'calc(100vw - 2rem)',
-                    maxHeight: 'calc(100vh - 8rem)',
+                    maxWidth: 'calc(100vw - 1rem)',
+                    maxHeight: 'calc(100vh - 4rem)',
                     touchAction: 'none'
                   }}
                   controls
@@ -1818,8 +1814,8 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                   alt={mediaItems[modalImageIndex]?.filename}
                   className="max-w-full max-h-full w-auto h-auto object-contain select-none"
                   style={{
-                    maxWidth: 'calc(100vw - 2rem)',
-                    maxHeight: 'calc(100vh - 8rem)',
+                    maxWidth: 'calc(100vw - 1rem)',
+                    maxHeight: 'calc(100vh - 4rem)',
                     touchAction: 'none'
                   }}
                   draggable={false}
@@ -1829,7 +1825,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
           </div>
 
           {/* Image info bar with interaction buttons */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-sm px-4 py-3 rounded-full text-white text-sm z-20">
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 backdrop-blur-sm px-4 py-3 rounded-full text-white text-sm z-[10000]">
             <div className="flex items-center gap-3 whitespace-nowrap">
             {/* Image counter */}
             <span>
