@@ -25,7 +25,8 @@ import {
   Pause,
   Package,
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 interface Shoot {
   id: string;
@@ -1698,7 +1699,7 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
             bottom: 0,
             width: '100vw',
             height: '100vh',
-            overflow: 'hidden'
+            overflow: 'visible'
           }}
           data-modal-index={modalImageIndex}
         >
@@ -1782,13 +1783,17 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
           </button>
 
           {/* Modal image container - optimized for mobile landscape */}
-          <div className="modal-image-container w-full h-full p-2 sm:p-4 md:p-8 flex items-center justify-center">
+          <div
+            className="modal-image-container w-full h-full flex items-center justify-center"
+            style={{ overflow: 'visible' }}
+          >
             <div
               className="w-auto h-auto max-w-full max-h-full flex items-center justify-center"
               style={{
                 transform: `translateX(${dragOffset}px)`,
                 transition: isTransitioning ? 'transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)' : 'none',
-                willChange: 'transform'
+                willChange: 'transform',
+                overflow: 'visible'
               }}
             >
               {mediaItems[modalImageIndex]?.mediaType === 'video' ? (
@@ -1809,17 +1814,44 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                   Your browser does not support the video tag.
                 </video>
               ) : (
-                <img
-                  src={ImageUrl.forViewing(mediaItems[modalImageIndex]?.storagePath)}
-                  alt={mediaItems[modalImageIndex]?.filename}
-                  className="max-w-full max-h-full w-auto h-auto object-contain select-none"
-                  style={{
-                    maxWidth: 'calc(100vw - 1rem)',
-                    maxHeight: 'calc(100vh - 4rem)',
-                    touchAction: 'none'
+                <TransformWrapper
+                  key={modalImageIndex}
+                  initialScale={1}
+                  minScale={1}
+                  maxScale={4}
+                  centerOnInit={true}
+                  limitToBounds={false}
+                  wheel={{ disabled: true }}
+                  doubleClick={{ disabled: true }}
+                  panning={{ disabled: true }}
+                  velocityAnimation={{ disabled: true }}
+                  alignmentAnimation={{ disabled: true }}
+                  onPinchingStop={({ resetTransform }) => {
+                    // Instagram-style: bounce back to scale=1 when fingers release
+                    resetTransform();
                   }}
-                  draggable={false}
-                />
+                >
+                  <TransformComponent
+                    wrapperStyle={{
+                      overflow: 'visible'
+                    }}
+                    contentStyle={{
+                      overflow: 'visible'
+                    }}
+                  >
+                    <img
+                      src={ImageUrl.forViewing(mediaItems[modalImageIndex]?.storagePath)}
+                      alt={mediaItems[modalImageIndex]?.filename}
+                      className="max-w-full max-h-full w-auto h-auto object-contain select-none"
+                      style={{
+                        maxWidth: 'calc(100vw - 1rem)',
+                        maxHeight: 'calc(100vh - 4rem)',
+                        touchAction: 'none'
+                      }}
+                      draggable={false}
+                    />
+                  </TransformComponent>
+                </TransformWrapper>
               )}
             </div>
           </div>
