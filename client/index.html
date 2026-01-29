@@ -19,7 +19,7 @@
     <meta property="og:title" content="SlyFox Studios - Professional Photography & Videography" />
     <meta property="og:description" content="Professional photography and videography services in Durban. Specializing in weddings, portraits, corporate events, and commercial photography." />
     <meta property="og:image" content="/og-image.jpg" />
-    <meta property="og:url" content="https://slyfoxstudios.co.za" />
+    <meta property="og:url" content="https://slyfox.co.za" />
     <meta property="og:type" content="website" />
     
     <!-- Twitter Card Meta Tags -->
@@ -74,28 +74,53 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- Metricool Analytics optimized for background loading -->
+    <!-- Metricool Analytics - reliable loading with retry mechanism -->
     <script>
-      // Load Metricool when completely idle - lowest priority analytics
+      // Diagnostic utility - call window.checkAnalytics() in browser console
+      window.checkAnalytics = function() {
+        console.group('Analytics Status Check');
+        console.log('Google Analytics:', window.gtag ? 'Loaded' : 'Not loaded');
+        console.log('Metricool beTracker:', window.beTracker ? 'Loaded' : 'Not loaded');
+        console.log('Metricool Ready:', window.metricoolReady ? 'Yes' : 'No');
+        console.log('Current path:', window.location.pathname);
+        if (window.beTracker) {
+          console.log('To manually track: beTracker.t({hash:"a3e8654831a8c3870479528bc528b9fc"})');
+        }
+        console.groupEnd();
+        return { ga: !!window.gtag, metricool: !!window.beTracker, ready: !!window.metricoolReady };
+      };
+
+      // Load Metricool after page load (lower priority than GA)
       window.addEventListener('load', function() {
-        loadWhenIdle(function() {
+        setTimeout(function() {
           try {
             var metricool = document.createElement('script');
             metricool.type = 'text/javascript';
             metricool.src = 'https://tracker.metricool.com/resources/be.js';
             metricool.async = true;
-            metricool.defer = true;
-            metricool.onerror = function() { console.warn('Metricool failed to load'); };
+            metricool.onerror = function() { console.warn('[Metricool] Script failed to load'); };
             metricool.onload = function() {
-              try {
+              // Retry mechanism - beTracker may not be immediately available
+              var attempts = 0;
+              var maxAttempts = 10;
+              var checkInterval = setInterval(function() {
+                attempts++;
                 if (window.beTracker) {
-                  beTracker.t({hash:"a3e8654831a8c3870479528bc528b9fc"});
+                  clearInterval(checkInterval);
+                  try {
+                    window.beTracker.t({hash:"a3e8654831a8c3870479528bc528b9fc"});
+                    window.metricoolReady = true;
+                    console.log('[Metricool] Tracking initialised');
+                  } catch(e) { console.warn('[Metricool] Tracking error:', e); }
+                } else if (attempts >= maxAttempts) {
+                  clearInterval(checkInterval);
+                  console.warn('[Metricool] beTracker not available after ' + maxAttempts + ' attempts');
                 }
-              } catch(e) { console.warn('Metricool tracking error:', e); }
+              }, 100);
             };
             document.head.appendChild(metricool);
-          } catch(e) { console.warn('Metricool setup error:', e); }
-        }, 2500);
+          } catch(e) { console.warn('[Metricool] Setup error:', e); }
+        }, 500);
       });
     </script>
   </body>
