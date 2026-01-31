@@ -5585,7 +5585,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : `Summarize this article content concisely:\n\nTitle: ${title}\n\nContent: ${content}`;
       
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${process.env.GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -5633,7 +5633,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : `Suggest better names for these files:\n${filenames.join('\n')}\n\nReturn a JSON object with original filename as key and suggested name as value.`;
       
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${process.env.GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -6280,7 +6280,7 @@ Return ONLY the enhanced title text. No explanations, quotes, or formatting.`;
 
       const { GoogleGenerativeAI } = await import('@google/generative-ai');
       const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
       console.log('🤖 Calling Gemini for title enhancement...');
       const result = await model.generateContent(enhancementPrompt);
@@ -6341,7 +6341,7 @@ Return ONLY the enhanced subtitle text. No explanations, quotes, or formatting.`
 
       const { GoogleGenerativeAI } = await import('@google/generative-ai');
       const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
       console.log('🤖 Calling Gemini for subtitle enhancement...');
       const result = await model.generateContent(enhancementPrompt);
@@ -6834,7 +6834,7 @@ Examples of good search terms:
 Your search term:`;
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${process.env.GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
         {
           method: 'POST',
           headers: {
@@ -7040,13 +7040,26 @@ Your search term:`;
             // Build public URL
             const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
 
+            // Try to extract creation timestamp from filename pattern: generated-{timestamp}-{random}
+            // This gives us the TRUE creation date even if file was re-processed
+            const displayName = fileName.split('/').pop() || fileName;
+            let lastModified = metadata?.updated || metadata?.timeCreated || new Date().toISOString();
+
+            const timestampMatch = displayName.match(/generated-(\d{13})-/);
+            if (timestampMatch) {
+              const originalTimestamp = parseInt(timestampMatch[1], 10);
+              if (!isNaN(originalTimestamp) && originalTimestamp > 0) {
+                lastModified = new Date(originalTimestamp).toISOString();
+              }
+            }
+
             allFiles.push({
-              name: fileName.split('/').pop() || fileName,
+              name: displayName,
               path: fileName,
               size: parseInt(metadata?.size || '0'),
               type,
               mimeType,
-              lastModified: metadata?.updated || metadata?.timeCreated || new Date().toISOString(),
+              lastModified,
               publicUrl,
               bucket: bucketName
             });

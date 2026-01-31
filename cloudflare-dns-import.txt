@@ -1,0 +1,142 @@
+; Zone file for slyfox.co.za
+; Proxied records (website only)
+slyfox.co.za. 300 IN A 168.231.86.89
+www.slyfox.co.za. 300 IN CNAME slyfox.co.za.
+
+; MX Records (email routing)
+slyfox.co.za. 3600 IN MX 10 mx1.rdsa-mail.com.
+slyfox.co.za. 3600 IN MX 20 mx2.rdsa-mail.com.
+slyfox.co.za. 3600 IN MX 30 mx3.rdsa-mail.com.
+
+; Email subdomains
+mail.slyfox.co.za. 3600 IN A 156.38.144.210
+pop.slyfox.co.za. 3600 IN A 156.38.144.210
+imap.slyfox.co.za. 3600 IN A 156.38.144.210
+smtp.slyfox.co.za. 3600 IN A 156.38.144.210
+
+; Hosting tools
+cpanel.slyfox.co.za. 3600 IN A 156.38.144.210
+webmail.slyfox.co.za. 3600 IN A 156.38.144.210
+whm.slyfox.co.za. 3600 IN A 156.38.144.210
+webdisk.slyfox.co.za. 3600 IN A 156.38.144.210
+ftp.slyfox.co.za. 3600 IN A 156.38.144.210
+cpcontacts.slyfox.co.za. 3600 IN A 156.38.144.210
+cpcalendars.slyfox.co.za. 3600 IN A 156.38.144.210
+
+; Client subdomain - mobilehairstylist
+mobilehairstylist.slyfox.co.za. 3600 IN A 156.38.144.210
+www.mobilehairstylist.slyfox.co.za. 3600 IN A 156.38.144.210
+
+; Client subdomain - origindjschool
+origindjschool.slyfox.co.za. 3600 IN A 156.38.144.210
+www.origindjschool.slyfox.co.za. 3600 IN A 156.38.144.210
+
+; Client subdomain - globalcannabis
+globalcannabis.slyfox.co.za. 3600 IN A 156.38.144.210
+www.globalcannabis.slyfox.co.za. 3600 IN A 156.38.144.210
+
+; Client subdomain - naturalelixir
+naturalelixir.slyfox.co.za. 3600 IN A 156.38.144.210
+www.naturalelixir.slyfox.co.za. 3600 IN A 156.38.144.210
+
+; Client subdomain - ranjis
+ranjis.slyfox.co.za. 3600 IN A 156.38.144.210
+www.ranjis.slyfox.co.za. 3600 IN A 156.38.144.210
+
+; Nested subdomain - netfox.co.za
+netfox.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+www.netfox.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+cpanel.netfox.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+webmail.netfox.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+webdisk.netfox.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+whm.netfox.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+cpcontacts.netfox.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+cpcalendars.netfox.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+
+; Nested subdomain - theorigin.co.za
+theorigin.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+www.theorigin.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+cpanel.theorigin.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+webmail.theorigin.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+webdisk.theorigin.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+whm.theorigin.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+cpcontacts.theorigin.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+cpcalendars.theorigin.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+
+; Nested subdomain - vulpin.co.za
+vulpin.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+www.vulpin.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+cpanel.vulpin.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+webmail.vulpin.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+webdisk.vulpin.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+whm.vulpin.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+cpcontacts.vulpin.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+cpcalendars.vulpin.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+
+; Nested subdomain - petgadgets.co.za
+petgadgets.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+www.petgadgets.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+cpanel.petgadgets.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+webmail.petgadgets.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+webdisk.petgadgets.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+whm.petgadgets.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+cpcontacts.petgadgets.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+cpcalendars.petgadgets.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+
+; Nested subdomain - jellispan.co.za
+jellispan.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+www.jellispan.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+cpanel.jellispan.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+webmail.jellispan.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+webdisk.jellispan.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+whm.jellispan.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+cpcontacts.jellispan.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+cpcalendars.jellispan.co.za.slyfox.co.za. 3600 IN A 156.38.144.210
+
+; TXT Records - Root domain
+slyfox.co.za. 300 IN TXT "v=spf1 +ip4:156.38.144.210 +include:_spf.mail.hostinger.com ~all"
+slyfox.co.za. 300 IN TXT "google-site-verification=OfB9rdryfDMxb5mMJoqZs342WMH0JhWrFYWV0-cOzCA"
+slyfox.co.za. 300 IN TXT "google-site-verification=MCNTnf825rUn3oeVIAWDArjnt_HAEbXtT1SU9aFx-FI"
+_dmarc.slyfox.co.za. 3600 IN TXT "v=DMARC1;p=none;sp=none;adkim=r;aspf=r;pct=100;fo=0;rf=afrf;ri=86400"
+default._domainkey.slyfox.co.za. 300 IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1VuTIE/NNM9ayDIZCj0NSpkhMZ9dRoHz9L5feKGST1ZGa53oGkdZbRnvFK8voBNz8tQIwNqzhHI51V7oO+5raco3yRM0mdVUL2p+s7QfBDlZTMmfg8/uOCseESQ6Q0cI53vGMnAGdgUnr56KIakfmr93VrXqVCCVaYCHAAqV9eDJlV/UStppmZ6vV0vm451Iit3Hl6ReIiUt0vnTAZihRNrrCaxyGh379E+ZOENx7ihPtK8n/FAaMfXLB7RXKpqTdkbyTO8D1muGhLHvgfxO45yUURYvpwuMj+7sA4z9A99/4GZDqvcg0ihaLF/eTt3RVSuxX0/drnYcAvN/OtLl+wIDAQAB;"
+
+; TXT Records - mobilehairstylist
+mobilehairstylist.slyfox.co.za. 300 IN TXT "v=spf1 ip4:156.38.144.210 ip4:129.232.194.178 +a +mx +ip4:156.38.248.122 ~all"
+default._domainkey.mobilehairstylist.slyfox.co.za. 300 IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3TQyBEAHZ9qYKOvRZORtwEcTSEgp46TshGuIWHL3kQ1igkSVbCx4dnDNGL8K96tkGNfo+eHIvnGVxT4qpaEaHOQFlXxrHFTTxLAV615lORwYwFG/HtRUJ9ndKI0UIUl1Tm8f012kzn3ZJjM7Ek+trm7/Xat8gGNYOIrvKRalCCIp1aBp9UcunNg+gCIkid/8hMKyB9p9sifMIxY2tk1ACpUyAlnw5WTXsjWhHscv1hqXQVzVa8IXqv5/RmSiKGWTVmRFUCoKy/7hfyfnXf0QRlrAK6ysPG4Y4YPKKC1xChJpBr76ACuBITtGkehJ4GtjGd640D5/zJ9QyQtr+2PqAQIDAQAB;"
+
+; TXT Records - origindjschool
+origindjschool.slyfox.co.za. 300 IN TXT "v=spf1 ip4:156.38.144.210 ip4:129.232.194.178 +a +mx +ip4:156.38.248.122 ~all"
+default._domainkey.origindjschool.slyfox.co.za. 300 IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyjmviEozj5xqNaa/e0gWkoLIr+n2uO5fFgtWkV5T0D/FUDFrPGJf9zVEHQl9YEhEDAyhZJ38Het6tXEwAw1aVCQmlwKlZn4fqF3XVcQWmRXvWFDkEnCqP5wZ6TrbI0gRJM5fnBFzWborOYb2WH0ODOWroA3w03R5fI6d8O00PPAy0cWdXVNynpOsIG+01J/JhgwPyqJBq40VQg0M6AUZDVleT2UDwNw9cjKP/bPB6eb7KUYcTpGrR7kMbP/q6zQqLslNTI8fIHUUVxz9l2J4oBln9Nu4gBgn2Q3CkCA0YdLcGskYrH5VeFmMBhkwEA/oOWl0PKGJvR5RgmcITqo/LQIDAQAB;"
+
+; TXT Records - globalcannabis
+globalcannabis.slyfox.co.za. 300 IN TXT "v=spf1 ip4:156.38.144.210 ip4:129.232.194.178 +a +mx +ip4:156.38.248.122 ~all"
+default._domainkey.globalcannabis.slyfox.co.za. 300 IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwWbVhtDWZSI4hTZ+nPKMB0HPgcope1TC3kOORb11LbmE2PYbjgS3PuvXQD8FogumiOHcpMLV4PxPfnYczt8yMFLTVVJ0aPMoi34Ud8lB3ZerzaDWMODDkqldmTkGbQ5vWjhB++/y7dMfyitvaYTonYMGSIohz99YovsZ5XvPhrC3DqgsCR0+rSncsaVJDIwiLeRJnJ0U/bWmVfC2X9AU7FoBOoezMXwXXMjfs4qyciqYEIKcrjjxilLlFuH7+AHqShPdRCW7XrYuBy92hLoZiIMeIHVnhM982GMPpTAaPxm/t/47jng6mY84KJKDk1ImQYIlOPrHqi9iHns4wJDPBwIDAQAB;"
+
+; TXT Records - naturalelixir
+naturalelixir.slyfox.co.za. 300 IN TXT "v=spf1 ip4:156.38.144.210 ip4:129.232.194.178 +a +mx +ip4:156.38.248.122 ~all"
+default._domainkey.naturalelixir.slyfox.co.za. 300 IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxJ2I9omuX8qC5PiNg/J71AjKVeCPzIBFlrpWLP5GRBgCabynzFhsdeQ+WmtDwZnZH6HpLrsi7TO15snQgrnhE3+wkDD8BFpFtL0ndkbEcJ1ZNR/nvtie3nD/D9EC/81pb2e1bdC71EY+d20USTCD7wIAxVH+peZZiud6AUmiX4XJQlzpl2GcOkCmkAr5Er7b9vYDZEtRKH2jT3OWcRmWeNmC//gyPyh6h661ElRTDer5wBULIwf6LXke798oFQFj2gNy/yl3NG8ZZFV++SxdugfIeeSxyU2HmTVcuWOkHfeiW6rBPdp7YImXWVSuy0TUkAy+EcAh9i/W2h3tBK16MQIDAQAB;"
+
+; TXT Records - ranjis
+ranjis.slyfox.co.za. 300 IN TXT "v=spf1 ip4:156.38.144.210 ip4:129.232.194.178 +a +mx +ip4:156.38.248.122 ~all"
+default._domainkey.ranjis.slyfox.co.za. 300 IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuMVzSaojT875KeOAHXETZ/SqetzZ7uYb0AZguAOABZNutfWV7p313WIiWxjxZD3Vf8MyIjPdumivnjRXjlwfEZ4HCFWgj1n2dE/1R5YQ6L1kvgouOln/Wq3ZwjrHNv0WZFSSHc21rgC26NMU+qdyvhEDCSFMw1qUQvVT31tdqDXI4rG6WwL24y4l89fycXie8RDxDgkzql1V0s2pFgPWODPViIrKpAKFrJ2zhT8N02lLNixIiOs6sOA5PYg3qSOsyXFTjnEpPPDhri27xNt7+UF4ldJ1P9t+tH093ZSY/+oe3EnBX4AFXfuoeMMKXHVfiA7sNdf+D2MnGhhdKj1IWwIDAQAB;"
+
+; TXT Records - netfox.co.za
+netfox.co.za.slyfox.co.za. 3600 IN TXT "v=spf1 +a +mx +ip4:156.38.144.210 ~all"
+default._domainkey.netfox.co.za.slyfox.co.za. 3600 IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsCsZo8HM6XwyVEl581on+0BERgEneKho86Pi3+MUt1PF9mobz5/JC6ow5VxwA1VWuHd2Wcjg56Fju0mX4tdDh3bDKiczli5SqXMitvFdLW2OLhVnuoGqr7VUDzMnfRqnD7GAJ6sKRUKOLtLqwZ9fAom+MC+LAKA2BAmZ2JlC+UUiiRJdg4g8WgmXrUsYhUO4gXzWZp6Bfu3AkXk74kd4hY9zshayhxNU04EdQDUsmg1UBZXRNUKsKKnn7ASn50ZSwYt3nAxEmXdcZxaFZpizCkGKEqO7Wh3eU7VKfUzo0l0gQgXwiZdViBOi2gVIS6EbuxujRhdS4MhEJ5meWNFS7wIDAQAB;"
+
+; TXT Records - theorigin.co.za
+theorigin.co.za.slyfox.co.za. 3600 IN TXT "v=spf1 +a +mx +ip4:156.38.144.210 ~all"
+default._domainkey.theorigin.co.za.slyfox.co.za. 3600 IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAm2zGv2ZhMR9/eGpTS5rwCkNItpL3FrhIiiuj5Qs4JzBMierpZzjwUmy+v2e54aB3IgB6BQpKt26PL3UgzAY7J65sjTxdXwuoEOlS5PMSdb3LlNIhvgmnl0XLl+kO7Joq4E/2VrWZ2gnJQS5QB4TI7o9CdKzq7rz+Pv7e0AICpwAgAlzRAOwkcAA0fJacbLWQpLNGclTaeaJl8ckjc6SEadufpBYnGs+1aZTklrnK1N//nZNoLm+R1xnlD92/rcMgbICqKPOm3DxnLG8M+HZZ/UBLMIAsfuQjodrUVJaQqzo5g/3CvlFu4GhMTNS+h1w0E7cbXIuxfXS+h9Da0RlReQIDAQAB;"
+
+; TXT Records - vulpin.co.za
+vulpin.co.za.slyfox.co.za. 3600 IN TXT "v=spf1 +a +mx +ip4:156.38.144.210 ~all"
+default._domainkey.vulpin.co.za.slyfox.co.za. 3600 IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2uwgMg8WmBdFLSHuVED/cQllPXzyuVx+IzsPfzt3/cPnc4/Eog1qTK1aASi8KAeo6k3uLSPCpzm6Aup72jqMh2vNXbAHKSJTgnab7Aiw080gJZf9YAtjue7/z6YWONIdZhBwWQBrtABdVQac9jvOOf+6qSnTStoXTT32qiI1jbRh9+bIZW76smiI5+mjzZuhLdyQmOMnTmuKFm7j0rw29WTC9yXZgc7Y0FAqJQVpFJQ4wN0fxzgCK1dXtYoGjXNTOLPTRXDSMePSxFAtrfE6T6yibj9AgGSkSLhd3qD0bh2d2eLmf6zFAqv04EDL4w+/Te+Zsa3ZlxqhSt99lx7KhwIDAQAB;"
+
+; TXT Records - petgadgets.co.za
+petgadgets.co.za.slyfox.co.za. 3600 IN TXT "v=spf1 +a +mx +ip4:156.38.144.210 ~all"
+default._domainkey.petgadgets.co.za.slyfox.co.za. 3600 IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlbUOI/91RpK+GdMXqYZ2Wktd+sROtEq46DLCbPuc89YlGxOwxpBLgNIIqccfbNbTXpd4NHcGU1+HsEwnlOOTQbVw5MJueQWzq87R2eMBFXixbVqxy1EK1ZIK8SFXARnbB8C/xv2efNOq4LCnXyKfM20hIL+juBpY7GN28wB3KGTcYUfzXqP53cJ2s0b1pGIux1OqpE8d9TNG6yQ+YrLH6ps6L706cBmwhNVBBFIjPgKTR+keuN4ElVDAIAW7+1yCX4+I2TgeN210w6J3jDKwv/UoUBitYpiXy8Swfy2afVfI8GsS6uT/ez2kP0lAVlwNzYXsUxW9qcos2lbUYxJJ0wIDAQAB;"
+
+; TXT Records - jellispan.co.za
+jellispan.co.za.slyfox.co.za. 3600 IN TXT "v=spf1 +a +mx +ip4:156.38.144.210 ~all"
+default._domainkey.jellispan.co.za.slyfox.co.za. 3600 IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvhWjuWe2AtrC83+L8cvLK8Y6W75EhYJciVIFNg+BSWnXgVcAgJa+NAemtCDyglC3dMG1qUKnSf415jMwgkLGFLQYiWPsMPW6ROnv982O5YM2LCLWFo3LgyPFzUr+G6hWkg/O7Q0aQynJxMZ7kbSFN4BOUaVm8nFgzvC7PN8FPiDLqbfREMViHj+3K7LOX3+LLQO0/mjl6tqyNDZHCJaVjiCwEvmqnxwBY4RTpiQZE4EY9ijIuNNKV0d5vLZacUzCnzS2NhyXAGg1TpgWUeYEJNB2JzMqSDfq4TF2CwFkbnUhHA06fH+w4E4lIOoq+MQVpa35ECRgEV6uab/M++PSfQIDAQAB;"
+_dmarc.jellispan.co.za.slyfox.co.za. 3600 IN TXT "v=DMARC1;p=none;sp=none;adkim=r;aspf=r;pct=100;fo=0;rf=afrf;ri=86400"

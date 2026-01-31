@@ -154,7 +154,7 @@ export default function CloudStorageBrowser() {
 
   // Filter and sort files
   useEffect(() => {
-    let filtered = files;
+    let filtered = [...files]; // Create new array to ensure React detects changes
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
@@ -460,7 +460,11 @@ export default function CloudStorageBrowser() {
   };
 
   const handleOpenFullRes = (file: CloudFile) => {
-    window.open(file.publicUrl, '_blank');
+    // When viewing from thumbnails folder, open the JPG full-res version instead
+    const urlToOpen = folderPrefix === 'thumbnails/' && file.type === 'image'
+      ? getCorrespondingUrl(file, 'jpg-images/')
+      : file.publicUrl;
+    window.open(urlToOpen, '_blank');
   };
 
   const handleDelete = async (file: CloudFile) => {

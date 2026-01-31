@@ -4,8 +4,8 @@
  * Uses client-side Airtable operations for maximum reliability (like the HTML version)
  */
 
-import { useState, useEffect, useMemo, useRef, useCallback, memo } from 'react';
-import { ChevronLeft, ChevronRight, Upload, ArrowLeft, ArrowRight, Sparkles, Search, MinusCircle, PlusCircle, CheckCircle, RefreshCw, MessageSquare, Undo2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, Upload, ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
 import { useLocation } from 'wouter';
 
 import { Navigation } from '@/components/layout/navigation';
@@ -15,11 +15,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AIImageGeneratorModal, type ImageGenerationResult } from '@/components/ai-tools/AIImageGeneratorModal';
-import { UnsplashModal, type UnsplashResult } from '@/components/tools/UnsplashModal';
+import { ImageGeneratorModal, type ImageGenerationResult } from '@/components/tools/image-generator-modal';
 import { toast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -59,264 +57,6 @@ interface Filters {
   sortOrder: string;
 }
 
-// Tone options - defined outside component to prevent recreation
-const toneOptions = [
-  { value: 'humorous', label: 'Humorous' },
-  { value: 'poetic', label: 'Poetic' },
-  { value: 'professional', label: 'Professional' },
-  { value: 'viral', label: 'Viral Attention Grabbing' },
-  { value: 'curiosity', label: 'Curiosity Provoking' },
-  { value: 'question', label: 'Pose a Question' },
-  { value: 'braggy', label: 'Braggy or Showy' }
-];
-
-// Props interface for enhancement tools
-interface EnhancementToolsProps {
-  content: string;
-  sectionKey: string;
-  sectionTitle?: string;
-  onUpdate: (content: string) => void;
-  isHashtags?: boolean;
-  isReady: boolean;
-  processingSection: string | null;
-  showUndo: boolean;
-  hasPreviousContent: boolean;
-  onEnhance: (action: 'reduce' | 'increase' | 'grammar' | 'rewrite') => void;
-  onToneChange: (tone: string) => void;
-  onCustomPrompt: (prompt: string) => void;
-  onUndo: () => void;
-}
-
-// Memoized enhancement tools component - prevents flickering by being stable
-const SectionEnhancementToolsStable = memo(function SectionEnhancementToolsStable({
-  content,
-  sectionKey,
-  sectionTitle,
-  isHashtags = false,
-  isReady,
-  processingSection,
-  showUndo,
-  hasPreviousContent,
-  onEnhance,
-  onToneChange,
-  onCustomPrompt,
-  onUndo
-}: EnhancementToolsProps) {
-  const [localPromptText, setLocalPromptText] = useState('');
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const hasContent = content.trim().length > 0;
-  const isProcessing = processingSection?.startsWith(sectionKey);
-
-  const handleCustomSubmit = () => {
-    if (!localPromptText.trim()) {
-      toast({ title: "Error", description: "Please enter a prompt", variant: "destructive" });
-      return;
-    }
-    setDialogOpen(false);
-    onCustomPrompt(localPromptText);
-    setLocalPromptText('');
-  };
-
-  return (
-    <div className="flex items-center gap-1">
-      {/* Undo Button - Fixed position on LEFT */}
-      <div className="w-8 h-8 flex items-center justify-center">
-        {isReady && showUndo && hasPreviousContent ? (
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={onUndo}
-            className="w-8 h-8 p-0 text-blue-400 hover:text-blue-300"
-            title="Undo last change"
-          >
-            <Undo2 className="w-3.5 h-3.5" />
-          </Button>
-        ) : null}
-      </div>
-
-      {/* Reduce */}
-      <Button
-        size="sm"
-        variant="ghost"
-        disabled={!isReady || !hasContent || isProcessing}
-        onClick={() => onEnhance('reduce')}
-        className={`w-8 h-8 p-0 transition-colors ${!isReady ? 'text-gray-700' : hasContent ? 'text-gray-400 hover:text-white' : 'text-gray-600'} ${
-          processingSection === `${sectionKey}-reduce` ? 'animate-pulse text-amber-400' : ''
-        }`}
-        title={isHashtags ? "Remove one hashtag" : "Reduce word count by 40-50%"}
-      >
-        <MinusCircle className="w-3.5 h-3.5" />
-      </Button>
-
-      {/* Increase */}
-      <Button
-        size="sm"
-        variant="ghost"
-        disabled={!isReady || isProcessing}
-        onClick={() => onEnhance('increase')}
-        className={`w-8 h-8 p-0 transition-colors ${!isReady ? 'text-gray-700' : hasContent ? 'text-gray-400 hover:text-white' : 'text-gray-600'} ${
-          processingSection === `${sectionKey}-increase` ? 'animate-pulse text-amber-400' : ''
-        }`}
-        title={isHashtags ? "Add one hashtag" : "Increase word count by 40-50%"}
-      >
-        <PlusCircle className="w-3.5 h-3.5" />
-      </Button>
-
-      {/* Grammar Check - Not for hashtags */}
-      {!isHashtags && (
-        <Button
-          size="sm"
-          variant="ghost"
-          disabled={!isReady || !hasContent || isProcessing}
-          onClick={() => onEnhance('grammar')}
-          className={`w-8 h-8 p-0 transition-colors ${!isReady ? 'text-gray-700' : hasContent ? 'text-gray-400 hover:text-white' : 'text-gray-600'} ${
-            processingSection === `${sectionKey}-grammar` ? 'animate-pulse text-amber-400' : ''
-          }`}
-          title="Grammar and spelling check"
-        >
-          <CheckCircle className="w-3.5 h-3.5" />
-        </Button>
-      )}
-
-      {/* Rewrite */}
-      <Button
-        size="sm"
-        variant="ghost"
-        disabled={!isReady || !hasContent || isProcessing}
-        onClick={() => onEnhance('rewrite')}
-        className={`w-8 h-8 p-0 transition-colors ${!isReady ? 'text-gray-700' : hasContent ? 'text-gray-400 hover:text-white' : 'text-gray-600'} ${
-          processingSection === `${sectionKey}-rewrite` ? 'animate-pulse text-amber-400' : ''
-        }`}
-        title={isHashtags ? "Regenerate 4 categorised hashtags" : "Complete rewrite (±40% word count)"}
-      >
-        <RefreshCw className="w-3.5 h-3.5" />
-      </Button>
-
-      {/* Custom Prompt */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogTrigger asChild>
-          <Button
-            size="sm"
-            variant="ghost"
-            disabled={!isReady || !hasContent || isProcessing}
-            className={`w-8 h-8 p-0 transition-colors ${!isReady ? 'text-gray-700' : hasContent ? 'text-gray-400 hover:text-white' : 'text-gray-600'} ${
-              processingSection === `${sectionKey}-custom` ? 'animate-pulse text-amber-400' : ''
-            }`}
-            title="Custom prompt for this section"
-          >
-            <MessageSquare className="w-3.5 h-3.5" />
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px] bg-gray-800 border-gray-700">
-          <DialogHeader>
-            <DialogTitle className="text-white">Custom Enhancement Prompt</DialogTitle>
-            <DialogDescription className="text-gray-300">
-              Provide specific instructions for how to enhance {sectionTitle || 'this section'}.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <Textarea
-              placeholder={isHashtags
-                ? "e.g., 'Generate hashtags focused on photography and visual content'"
-                : "e.g., 'Make this more engaging with a call to action' or 'Add statistics about the photography industry'"
-              }
-              value={localPromptText}
-              onChange={(e) => setLocalPromptText(e.target.value)}
-              className="bg-gray-900 text-gray-200 border-gray-600 min-h-[120px]"
-              rows={5}
-            />
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setDialogOpen(false);
-                setLocalPromptText('');
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleCustomSubmit}
-              disabled={!localPromptText || processingSection === `${sectionKey}-custom`}
-              className="bg-orange-600 hover:bg-orange-700"
-            >
-              {processingSection === `${sectionKey}-custom` ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Applying...
-                </>
-              ) : (
-                'Apply Prompt'
-              )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Tone Selector - Not for hashtags */}
-      {!isHashtags && (
-        <Select onValueChange={onToneChange} disabled={!isReady || !hasContent || isProcessing}>
-          <SelectTrigger className={`w-28 h-8 text-xs transition-colors ${!isReady ? 'text-gray-700' : hasContent ? 'text-gray-400' : 'text-gray-600'} ${
-            processingSection === `${sectionKey}-tone` ? 'animate-pulse text-amber-400' : ''
-          }`}>
-            <SelectValue placeholder="Tone" />
-          </SelectTrigger>
-          <SelectContent className="min-w-36">
-            {toneOptions.map(option => (
-              <SelectItem key={option.value} value={option.value} className="px-4 py-2">
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
-    </div>
-  );
-});
-
-// Overlay spinner component - also moved outside
-const FieldOverlaySpinner = memo(function FieldOverlaySpinner({
-  processingSection,
-  sectionKey,
-  isVisible
-}: {
-  processingSection: string | null;
-  sectionKey: string;
-  isVisible: boolean;
-}) {
-  if (!isVisible) return null;
-
-  const currentAction = processingSection?.split('-')[1];
-
-  return (
-    <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center rounded-md z-10">
-      <div className="text-center">
-        <div className="relative mb-3">
-          <div className="w-10 h-10 mx-auto">
-            <div className="absolute inset-0 border-3 border-cyan-500/30 rounded-full"></div>
-            <div className="absolute inset-0 border-3 border-transparent border-t-cyan-400 rounded-full animate-spin"></div>
-            <div className="absolute inset-1 border-2 border-transparent border-t-orange-400 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
-          </div>
-        </div>
-        <p className="text-sm text-gray-300 font-medium">
-          {currentAction === 'reduce' && 'Reducing...'}
-          {currentAction === 'increase' && 'Expanding...'}
-          {currentAction === 'grammar' && 'Checking...'}
-          {currentAction === 'rewrite' && 'Rewriting...'}
-          {currentAction === 'tone' && 'Adjusting tone...'}
-          {currentAction === 'custom' && 'Applying...'}
-        </p>
-        <div className="flex items-center justify-center gap-1 mt-2">
-          <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-          <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-          <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-        </div>
-      </div>
-    </div>
-  );
-});
-
 export default function ArticleEditor() {
   const [location] = useLocation();
   
@@ -344,8 +84,9 @@ export default function ArticleEditor() {
   
   // Dynamic filter options (from ALL articles, not filtered)
   const [availableClients, setAvailableClients] = useState<string[]>([]);
+  const [availableSourceTitles, setAvailableSourceTitles] = useState<string[]>([]);
   const [allArticles, setAllArticles] = useState<AirtableArticle[]>([]); // Unfiltered articles for option extraction
-
+  
   // Filters (matching HTML version)
   const [filters, setFilters] = useState<Filters>({
     status: 'All',
@@ -353,25 +94,6 @@ export default function ArticleEditor() {
     sourceTitle: 'All',
     sortOrder: 'Newest First'
   });
-
-  // Compute available source titles based on selected client
-  const availableSourceTitles = useMemo((): string[] => {
-    if (filters.client === 'All') {
-      // Show all source titles when no client filter
-      return Array.from(new Set(
-        allArticles
-          .map(article => article['Source Title'])
-          .filter((title): title is string => !!title && title.trim() !== '')
-      )).sort();
-    }
-    // Filter source titles to only those matching the selected client (case-insensitive)
-    return Array.from(new Set(
-      allArticles
-        .filter(article => article.Client?.toLowerCase() === filters.client.toLowerCase())
-        .map(article => article['Source Title'])
-        .filter((title): title is string => !!title && title.trim() !== '')
-    )).sort();
-  }, [allArticles, filters.client]);
 
   // Parse URL parameters for initial filter state
   useEffect(() => {
@@ -396,16 +118,9 @@ export default function ArticleEditor() {
   const [selectedSearchIndex, setSelectedSearchIndex] = useState(0);
 
   // AI Image Generation States
-  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-  const [isUnsplashModalOpen, setIsUnsplashModalOpen] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [imageAttribution, setImageAttribution] = useState<{user: string; username: string; source: 'unsplash' | 'ai' | 'upload'} | null>(null);
-
-  // Enhancement system state
-  const [processingSection, setProcessingSection] = useState<string | null>(null);
-  const [previousContent, setPreviousContent] = useState<{[key: string]: string}>({});
-  const [showUndo, setShowUndo] = useState<{[key: string]: boolean}>({});
-  const [enhancementsReady, setEnhancementsReady] = useState(false);
 
   // Load configuration on mount
   useEffect(() => {
@@ -425,15 +140,6 @@ export default function ArticleEditor() {
       fetchArticles();
     }
   }, [filters, config]);
-
-  // Enable enhancement tools after page stabilises (prevents flickering)
-  useEffect(() => {
-    if (!loading && currentArticle) {
-      // Small delay to let React finish rendering before enabling tools
-      const timer = setTimeout(() => setEnhancementsReady(true), 500);
-      return () => clearTimeout(timer);
-    }
-  }, [loading, currentArticle]);
 
   // Apply search filtering to ALL articles (not just filtered ones) - search ALL fields
   const filteredArticles = searchQuery.trim() 
@@ -574,20 +280,17 @@ export default function ArticleEditor() {
       const uniqueClients = Array.from(clientMap.values()).sort();
       setAvailableClients(uniqueClients);
 
-      // Auto-match default client filter to actual Airtable case (e.g., 'slyfox' -> 'SlyFox')
-      // This ensures the dropdown displays correctly on page load
-      const matchedClient = uniqueClients.find(
-        c => c.toLowerCase() === filters.client.toLowerCase()
-      );
-      if (matchedClient && matchedClient !== filters.client) {
-        console.log('🔧 Auto-correcting client filter case:', filters.client, '→', matchedClient);
-        setFilters(prev => ({ ...prev, client: matchedClient }));
-      }
-
-      // Source titles are now computed dynamically via useMemo based on selected client
+      // Extract unique source titles from ALL articles
+      const uniqueSourceTitles = Array.from(new Set(
+        formattedArticles
+          .map(article => article['Source Title'])
+          .filter(title => title && title.trim() !== '')
+      )).sort();
+      setAvailableSourceTitles(uniqueSourceTitles);
 
       console.log('Filter options populated:', {
         clients: uniqueClients,
+        sourceTitles: uniqueSourceTitles.length,
         totalArticles: formattedArticles.length
       });
 
@@ -768,19 +471,10 @@ export default function ArticleEditor() {
 
   // Filter change handler
   const handleFilterChange = (filterType: keyof Filters, value: string) => {
-    setFilters(prev => {
-      const newFilters = {
-        ...prev,
-        [filterType]: value
-      };
-
-      // When client changes, reset sourceTitle to 'All' since available sources will change
-      if (filterType === 'client') {
-        newFilters.sourceTitle = 'All';
-      }
-
-      return newFilters;
-    });
+    setFilters(prev => ({
+      ...prev,
+      [filterType]: value
+    }));
   };
 
   // Image upload functionality (matching HTML version exactly)
@@ -1002,69 +696,36 @@ export default function ArticleEditor() {
   };
 
   // AI Image Generation Handlers
-  const handleOpenAIGenerator = () => {
-    setIsAIModalOpen(true);
+  const handleOpenImageGenerator = () => {
+    setIsImageModalOpen(true);
   };
 
-  const handleCloseAIGenerator = () => {
-    setIsAIModalOpen(false);
+  const handleCloseImageGenerator = () => {
+    setIsImageModalOpen(false);
   };
 
-  const handleOpenUnsplash = () => {
-    setIsUnsplashModalOpen(true);
-  };
-
-  const handleCloseUnsplash = () => {
-    setIsUnsplashModalOpen(false);
-  };
-
-  const handleAIImageGenerated = async (result: ImageGenerationResult) => {
+  const handleImageGenerated = async (result: ImageGenerationResult) => {
     try {
       // Update the current article with the generated image URL
       handleFieldChange('Image URL', result.imageUrl);
-
+      
       // Store attribution information
       if (result.attribution) {
         setImageAttribution(result.attribution);
       } else {
         setImageAttribution(null);
       }
-
+      
+      const sourceLabel = result.attribution?.source === 'unsplash' ? 'Unsplash' : 'AI-generated';
       toast({
-        title: 'AI Image Added',
-        description: 'AI-generated image has been added to the article. Remember to save your changes.',
+        title: 'Image Added',
+        description: `${sourceLabel} image has been added to the article. Remember to save your changes.`,
       });
     } catch (error: any) {
-      console.error('Error handling AI generated image:', error);
+      console.error('Error handling generated image:', error);
       toast({
         title: 'Error',
-        description: 'Failed to add AI generated image to article.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleUnsplashSelected = async (result: UnsplashResult) => {
-    try {
-      // Update the current article with the Unsplash image URL
-      handleFieldChange('Image URL', result.imageUrl);
-
-      // Store attribution information
-      setImageAttribution({
-        user: result.attribution.user,
-        username: result.attribution.username,
-        source: 'unsplash',
-      });
-
-      toast({
-        title: 'Unsplash Image Added',
-        description: 'Unsplash image has been added to the article. Remember to save your changes.',
-      });
-    } catch (error: any) {
-      console.error('Error handling Unsplash image:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to add Unsplash image to article.',
+        description: 'Failed to add generated image to article.',
         variant: 'destructive',
       });
     }
@@ -1079,532 +740,6 @@ export default function ArticleEditor() {
     };
   };
 
-  // Section enhancement function with updated logic per user requirements
-  const enhanceSection = async (
-    content: string,
-    action: 'reduce' | 'increase' | 'grammar' | 'rewrite' | 'tone' | 'custom',
-    sectionKey: string,
-    sectionTitle?: string,
-    toneOrCustomPrompt?: string
-  ): Promise<string | undefined> => {
-    if (!content.trim() && action !== 'increase') {
-      toast({ title: "Error", description: "No content to enhance", variant: "destructive" });
-      return;
-    }
-
-    // Calculate word count for reference
-    const wordCount = content.split(/\s+/).filter(w => w.trim()).length;
-    const targetReduceWords = Math.round(wordCount * 0.55); // 40-50% reduction = 50-60% remaining
-    const targetIncreaseWords = Math.round(wordCount * 1.45); // 40-50% increase
-
-    // Build article context for AI to understand the full picture
-    // Include which field is being edited so AI knows what NOT to repeat
-    const otherFields = {
-      headline: sectionKey !== 'headline' ? displayCurrentArticle?.Headline : null,
-      hook: sectionKey !== 'hook' ? displayCurrentArticle?.Hook : null,
-      content: sectionKey !== 'content' ? displayCurrentArticle?.Content?.substring(0, 800) : null,
-    };
-
-    const articleContext = `
-ARTICLE CONTEXT (for reference - do NOT include this in your response):
-- Client/Brand: ${displayCurrentArticle?.Client || 'Unknown'}
-- Headline: ${otherFields.headline || '[This is the field being edited]'}
-- Hook: ${otherFields.hook || '[This is the field being edited]'}
-- Content: ${otherFields.content || '[This is the field being edited]'}${(displayCurrentArticle?.Content?.length || 0) > 800 && sectionKey !== 'content' ? '...' : ''}
-
-CRITICAL RULES:
-1. AVOID REPETITION: Do NOT repeat phrases, ideas, or information already stated in other fields above
-2. Each field should add UNIQUE value - if the headline says something, don't repeat it in the hook
-3. Your output should COMPLEMENT the other fields, not duplicate them
-4. NEVER include hashtags (#) in your response - hashtags are handled in a separate field
----
-`;
-
-    const enhancementPrompts = {
-      reduce: `${articleContext}
-CONCISE REWRITE TASK: Rewrite the ${sectionTitle || 'section'} below to be more concise.
-Target approximately ${targetReduceWords} words (currently ${wordCount} words - aim for 40-50% reduction).
-DO NOT simply truncate or chop off sentences. Instead:
-- Rewrite the entire content with tighter, more economical phrasing
-- Preserve ALL key messages and important information
-- Use fewer words to convey the same meaning
-- If heavily reduced, prioritise the most important points
-- Maintain the original tone and style
-- Ensure it still fits naturally with the rest of the article
-
-${sectionTitle?.toUpperCase() || 'SECTION'} TO REWRITE:
-${content}
-
-Return only the rewritten ${sectionTitle?.toLowerCase() || 'content'}, no explanations.`,
-
-      increase: `${articleContext}
-EXPANSION TASK: Keep the existing ${sectionTitle || 'content'} EXACTLY as written, then append new sentences.
-Current word count: ${wordCount} words. Target: approximately ${targetIncreaseWords} words (40-50% increase).
-DO NOT modify, rephrase, or rewrite the original text in any way.
-Simply add new, relevant sentences at the end that:
-- Provide additional value, context, or supporting details
-- Flow naturally from the existing content
-- Maintain the same tone and style
-- Are consistent with the overall article theme and message
-
-ORIGINAL ${sectionTitle?.toUpperCase() || 'CONTENT'} (preserve exactly):
-${content}
-
-Return the original content followed by your new appended sentences.`,
-
-      grammar: `${articleContext}
-Correct any spelling, grammar, or punctuation errors in this ${sectionTitle || 'section'}. Improve sentence structure for clarity and flow. Do not change the content meaning or length significantly.
-
-${sectionTitle?.toUpperCase() || 'CONTENT'} TO CHECK:
-${content}
-
-Return only the corrected content.`,
-
-      rewrite: `${articleContext}
-COMPLETE REWRITE TASK with STRICT WORD COUNT REQUIREMENT:
-
-⚠️ CRITICAL: The original has ${wordCount} words. Your rewrite MUST be between ${Math.round(wordCount * 0.6)} and ${Math.round(wordCount * 1.4)} words.
-This is a HARD REQUIREMENT - not a suggestion. Count your words before responding.
-
-Instructions:
-- Rewrite using ENTIRELY fresh phrasing (different words, sentence structures, vocabulary)
-- PRESERVE the core message, key information, and overall meaning
-- ${wordCount <= 6 ? 'This is a short title/headline - maintain similar brevity and impact' : 'Maintain a similar tone and professional quality'}
-- Ensure it fits naturally with the article's headline, hook, and overall theme
-- DO NOT add new information or significantly expand the scope
-- DO NOT truncate important information to hit word count
-
-ORIGINAL ${sectionTitle?.toUpperCase() || 'CONTENT'} (${wordCount} words):
-${content}
-
-TARGET WORD COUNT: ${Math.round(wordCount * 0.6)}-${Math.round(wordCount * 1.4)} words (aim for approximately ${wordCount} words)
-
-Return only the rewritten content, no explanations or word counts.`,
-
-      tone: `${articleContext}
-TONE ADJUSTMENT TASK with WORD COUNT REQUIREMENT:
-
-⚠️ WORD COUNT: Original has ${wordCount} words. Your output MUST be between ${Math.round(wordCount * 0.6)} and ${Math.round(wordCount * 1.4)} words.
-
-Instructions:
-- Rewrite in a TONE_PLACEHOLDER tone
-- Adjust language style, word choice, and sentence structure to match the requested tone
-- PRESERVE the core message and key information
-- ${wordCount <= 6 ? 'This is a short title/headline - maintain similar brevity' : 'Maintain similar length and depth of content'}
-- Ensure it fits naturally with the overall article context
-
-ORIGINAL ${sectionTitle?.toUpperCase() || 'CONTENT'} (${wordCount} words):
-${content}
-
-TARGET: Approximately ${wordCount} words (±40% tolerance: ${Math.round(wordCount * 0.6)}-${Math.round(wordCount * 1.4)} words)
-
-Return only the rewritten content in the requested tone.`
-    };
-
-    // Store previous content for undo
-    setPreviousContent(prev => ({ ...prev, [sectionKey]: content }));
-    setProcessingSection(`${sectionKey}-${action}`);
-
-    try {
-      let prompt: string;
-
-      if (action === 'custom' && toneOrCustomPrompt) {
-        // Use the same articleContext for custom prompts (includes anti-repetition rules)
-        prompt = `${articleContext}
-USER INSTRUCTION: ${toneOrCustomPrompt}
-
-Current word count: ${wordCount} words. Unless your instruction specifies otherwise, try to maintain similar length (±40%).
-
-${sectionTitle?.toUpperCase() || 'SECTION'} TO ENHANCE:
-${content}
-
-Return only the enhanced ${sectionTitle?.toLowerCase() || 'content'}, no explanations.`;
-      } else if (action === 'tone' && toneOrCustomPrompt) {
-        prompt = enhancementPrompts.tone.replace('TONE_PLACEHOLDER', toneOrCustomPrompt);
-      } else {
-        prompt = enhancementPrompts[action as keyof typeof enhancementPrompts];
-      }
-
-      const requestBody = {
-        type: 'excerpt',
-        context: prompt,
-        contentType: 'informational'
-      };
-
-      console.log('🔧 Enhancement request:', {
-        sectionKey,
-        action,
-        originalLength: content.length,
-        originalWords: wordCount,
-      });
-
-      const response = await fetch('/api/ai/generate-blog-content', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
-      });
-
-      if (!response.ok) {
-        throw new Error('Enhancement failed');
-      }
-
-      const result = await response.json();
-
-      let enhancedContent: string | undefined;
-      if (result.content) {
-        enhancedContent = result.content.trim();
-      } else if (result.text) {
-        enhancedContent = result.text.trim();
-      }
-
-      if (!enhancedContent) {
-        throw new Error('No enhanced content received');
-      }
-
-      console.log('🔧 Enhancement result:', {
-        sectionKey,
-        action,
-        originalWords: wordCount,
-        enhancedWords: enhancedContent.split(/\s+/).filter(w => w.trim()).length,
-      });
-
-      // Show undo option
-      setShowUndo(prev => ({ ...prev, [sectionKey]: true }));
-
-      // Auto-hide undo after 10 seconds
-      setTimeout(() => {
-        setShowUndo(prev => ({ ...prev, [sectionKey]: false }));
-      }, 10000);
-
-      toast({
-        title: "Success",
-        description: `${sectionTitle || 'Section'} ${action === 'grammar' ? 'checked' : action + 'd'} successfully`,
-        duration: 2000
-      });
-
-      return enhancedContent;
-
-    } catch (error) {
-      console.error('Enhancement error:', error);
-      toast({
-        title: "Error",
-        description: `Failed to ${action} section`,
-        variant: "destructive"
-      });
-      return content;
-    } finally {
-      setProcessingSection(null);
-    }
-  };
-
-  // Hashtag-specific enhancement function
-  const enhanceHashtags = async (
-    content: string,
-    action: 'reduce' | 'increase' | 'rewrite' | 'custom',
-    customPrompt?: string
-  ): Promise<string | undefined> => {
-    const currentHashtags = content.split(/\s+/).filter(h => h.startsWith('#'));
-    const hashtagCount = currentHashtags.length;
-
-    // Track if we're doing full generation (should append client hashtag)
-    let isFullGeneration = false;
-
-    setPreviousContent(prev => ({ ...prev, hashtags: content }));
-    setProcessingSection(`hashtags-${action}`);
-
-    try {
-      let prompt: string;
-
-      if (action === 'custom' && customPrompt) {
-        prompt = `${customPrompt}
-
-Current hashtags: ${content}
-Article context:
-Headline: ${displayCurrentArticle?.Headline || ''}
-Hook: ${displayCurrentArticle?.Hook || ''}
-
-Return only the hashtags separated by spaces.`;
-      } else if (action === 'reduce' && hashtagCount > 1) {
-        prompt = `Remove exactly ONE hashtag from this list, keeping the ${hashtagCount - 1} most relevant ones.
-Current hashtags: ${content}
-
-Return only the remaining hashtags separated by spaces, no explanation.`;
-      } else if (action === 'increase') {
-        // If hashtags are empty, generate full set like rewrite
-        if (!content.trim()) {
-          // Treat empty + increase same as rewrite (generate 3 + client)
-          isFullGeneration = true;
-          prompt = `Generate exactly 3 social media hashtags for this article.
-
-ARTICLE:
-Headline: ${displayCurrentArticle?.Headline || ''}
-Hook: ${displayCurrentArticle?.Hook || ''}
-Content: ${displayCurrentArticle?.Content?.substring(0, 600) || ''}
-
-GENERATE 3 HASHTAGS:
-1. BROAD: Popular general hashtag (e.g. #Photography #Marketing #Business #Lifestyle)
-2. NICHE: Industry-specific hashtag (e.g. #ProductPhotography #BrandStrategy #ContentMarketing)
-3. TRENDING: Creative/viral hashtag (e.g. #BehindTheScenes #ContentIsKing #TransformationTuesday)
-
-FORMAT RULES:
-- Start each with # symbol
-- CamelCase for multi-word (e.g. #ProductPhotography NOT #Product #Photography)
-- Separate with single spaces
-- NO explanations, NO numbering, NO sentences
-- EXACTLY 3 hashtags
-
-OUTPUT EXACTLY LIKE THIS:
-#Broad #Niche #Trending`;
-        } else {
-          prompt = `Add exactly ONE new relevant hashtag to this list.
-Current hashtags: ${content}
-Article context:
-Headline: ${displayCurrentArticle?.Headline || ''}
-Hook: ${displayCurrentArticle?.Hook || ''}
-
-The new hashtag should be relevant to the article content.
-Return all hashtags (existing + new one) separated by spaces, no explanation.`;
-        }
-      } else if (action === 'rewrite') {
-        // We'll generate 3 hashtags from AI and append the client name ourselves
-        isFullGeneration = true;
-        prompt = `Generate exactly 3 social media hashtags for this article.
-
-ARTICLE:
-Headline: ${displayCurrentArticle?.Headline || ''}
-Hook: ${displayCurrentArticle?.Hook || ''}
-Content: ${displayCurrentArticle?.Content?.substring(0, 600) || ''}
-
-GENERATE 3 HASHTAGS:
-1. BROAD: Popular general hashtag (e.g. #Photography #Marketing #Business #Lifestyle)
-2. NICHE: Industry-specific hashtag (e.g. #ProductPhotography #BrandStrategy #ContentMarketing)
-3. TRENDING: Creative/viral hashtag (e.g. #BehindTheScenes #ContentIsKing #TransformationTuesday)
-
-FORMAT RULES:
-- Start each with # symbol
-- CamelCase for multi-word (e.g. #ProductPhotography NOT #Product #Photography)
-- Separate with single spaces
-- NO explanations, NO numbering, NO sentences
-- EXACTLY 3 hashtags
-
-OUTPUT EXACTLY LIKE THIS:
-#Broad #Niche #Trending`;
-      } else {
-        return content;
-      }
-
-      const requestBody = {
-        type: 'excerpt',
-        context: prompt,
-        contentType: 'informational'
-      };
-
-      console.log('🏷️ Sending hashtag request:', { action, hashtagCount, isFullGeneration });
-
-      const response = await fetch('/api/ai/generate-blog-content', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('🏷️ API error:', response.status, errorText);
-        throw new Error(`Hashtag enhancement failed: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log('🏷️ Full API response:', result);
-      let enhancedContent = (result.content || result.text || '').trim();
-
-      console.log('🏷️ Raw hashtag response:', enhancedContent);
-
-      // Clean up hashtag output - extract only valid hashtags
-      // Must start with # and contain letters/numbers (CamelCase supported)
-      const hashtagMatches = enhancedContent.match(/#[A-Za-z][A-Za-z0-9_]*/g);
-
-      if (hashtagMatches && hashtagMatches.length > 0) {
-        // Filter out very short hashtags (likely errors) and take unique ones
-        const uniqueHashtags = Array.from(new Set(hashtagMatches)) as string[];
-        let validHashtags = uniqueHashtags.filter(h => h.length >= 3 && h.length <= 50);
-
-        if (validHashtags.length > 0) {
-          // For full generation, limit to exactly 3 AI hashtags (we'll add client as 4th)
-          if (isFullGeneration && validHashtags.length > 3) {
-            console.log('🏷️ Limiting to 3 AI hashtags (was', validHashtags.length, ')');
-            validHashtags = validHashtags.slice(0, 3);
-          }
-
-          enhancedContent = validHashtags.join(' ');
-
-          // For full generation (rewrite OR increase-from-empty), append client name as hashtag
-          console.log('🏷️ Checking client:', {
-            action,
-            isFullGeneration,
-            hasArticle: !!displayCurrentArticle,
-            clientField: displayCurrentArticle?.Client
-          });
-
-          if (isFullGeneration && displayCurrentArticle?.Client) {
-            // Convert client name to CamelCase hashtag (remove spaces, special chars)
-            const clientName = displayCurrentArticle.Client.trim();
-            console.log('🏷️ Client name for hashtag:', clientName);
-
-            const clientHashtag = '#' + clientName
-              .replace(/[^a-zA-Z0-9\s]/g, '') // Remove special chars
-              .split(/\s+/) // Split by spaces
-              .filter((word: string) => word.length > 0) // Remove empty strings
-              .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // Capitalize each word
-              .join(''); // Join without spaces
-
-            console.log('🏷️ Generated client hashtag:', clientHashtag);
-
-            // Only add if valid and not already present
-            if (clientHashtag.length > 1 && !enhancedContent.toLowerCase().includes(clientHashtag.toLowerCase())) {
-              enhancedContent = `${enhancedContent} ${clientHashtag}`;
-              console.log('🏷️ Appended client hashtag, total now 4');
-            }
-          } else if (isFullGeneration) {
-            // No client available - proceed with just 3 AI hashtags (graceful degradation)
-            console.log('🏷️ No client name available - using 3 AI hashtags only');
-          }
-
-          console.log('🏷️ Final hashtags:', enhancedContent);
-        } else {
-          throw new Error('No valid hashtags found in response');
-        }
-      } else {
-        // No valid hashtags found - don't try to create fake ones
-        console.error('🏷️ No hashtags found in response:', enhancedContent);
-        throw new Error('AI did not return valid hashtags. Please try again.');
-      }
-
-      if (!enhancedContent || enhancedContent === '#') {
-        throw new Error('No valid hashtags received');
-      }
-
-      setShowUndo(prev => ({ ...prev, hashtags: true }));
-      setTimeout(() => {
-        setShowUndo(prev => ({ ...prev, hashtags: false }));
-      }, 10000);
-
-      toast({
-        title: "Success",
-        description: `Hashtags ${action === 'rewrite' ? 'regenerated' : action + 'd'} successfully`,
-        duration: 2000
-      });
-
-      return enhancedContent;
-
-    } catch (error) {
-      console.error('Hashtag enhancement error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      toast({
-        title: "Error",
-        description: errorMessage.includes('valid hashtags') ? errorMessage : `Failed to ${action} hashtags`,
-        variant: "destructive"
-      });
-      return content;
-    } finally {
-      setProcessingSection(null);
-    }
-  };
-
-  // Undo function
-  const undoEnhancement = (sectionKey: string, updateFunction: (content: string) => void) => {
-    const originalContent = previousContent[sectionKey];
-    if (originalContent !== undefined) {
-      updateFunction(originalContent);
-      setShowUndo(prev => ({ ...prev, [sectionKey]: false }));
-      setPreviousContent(prev => {
-        const newPrev = { ...prev };
-        delete newPrev[sectionKey];
-        return newPrev;
-      });
-      toast({ title: "Undone", description: "Restored to previous version" });
-    }
-  };
-
-  // Wrapper component that connects stable component to parent state
-  const SectionEnhancementTools = useCallback(({
-    content,
-    sectionKey,
-    sectionTitle,
-    onUpdate,
-    isHashtags = false
-  }: {
-    content: string;
-    sectionKey: string;
-    sectionTitle?: string;
-    onUpdate: (content: string) => void;
-    isHashtags?: boolean;
-  }) => {
-    const handleEnhance = async (action: 'reduce' | 'increase' | 'grammar' | 'rewrite') => {
-      try {
-        let enhanced: string | undefined;
-        if (isHashtags) {
-          enhanced = await enhanceHashtags(content, action as 'reduce' | 'increase' | 'rewrite');
-        } else {
-          enhanced = await enhanceSection(content, action, sectionKey, sectionTitle);
-        }
-        if (enhanced && enhanced !== content) {
-          onUpdate(enhanced);
-        }
-      } catch (error) {
-        console.error('Enhancement error:', error);
-      }
-    };
-
-    const handleToneChange = async (tone: string) => {
-      if (isHashtags) return;
-      try {
-        const enhanced = await enhanceSection(content, 'tone', sectionKey, sectionTitle, tone);
-        if (enhanced && enhanced !== content) {
-          onUpdate(enhanced);
-        }
-      } catch (error) {
-        console.error('Tone change error:', error);
-      }
-    };
-
-    const handleCustomPrompt = async (prompt: string) => {
-      try {
-        let enhanced: string | undefined;
-        if (isHashtags) {
-          enhanced = await enhanceHashtags(content, 'custom', prompt);
-        } else {
-          enhanced = await enhanceSection(content, 'custom', sectionKey, sectionTitle, prompt);
-        }
-        if (enhanced && enhanced !== content) {
-          onUpdate(enhanced);
-        }
-      } catch (error) {
-        console.error('Custom prompt error:', error);
-      }
-    };
-
-    const handleUndo = () => {
-      undoEnhancement(sectionKey, onUpdate);
-    };
-
-    return (
-      <SectionEnhancementToolsStable
-        content={content}
-        sectionKey={sectionKey}
-        sectionTitle={sectionTitle}
-        onUpdate={onUpdate}
-        isHashtags={isHashtags}
-        isReady={enhancementsReady}
-        processingSection={processingSection}
-        showUndo={showUndo[sectionKey] || false}
-        hasPreviousContent={!!previousContent[sectionKey]}
-        onEnhance={handleEnhance}
-        onToneChange={handleToneChange}
-        onCustomPrompt={handleCustomPrompt}
-        onUndo={handleUndo}
-      />
-    );
-  }, [enhancementsReady, processingSection, showUndo, previousContent, displayCurrentArticle]);
 
   // Loading state
   if (loading) {
@@ -1931,114 +1066,53 @@ OUTPUT EXACTLY LIKE THIS:
                   
                   {/* Headline */}
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="headline" className="text-slate-300">Headline</Label>
-                      <SectionEnhancementTools
-                        content={displayCurrentArticle.Headline || ''}
-                        sectionKey="headline"
-                        sectionTitle="Headline"
-                        onUpdate={(content) => handleFieldChange('Headline', content)}
-                      />
-                    </div>
-                    <div className="relative">
-                      <Input
-                        id="headline"
-                        value={displayCurrentArticle.Headline || ''}
-                        onChange={(e) => handleFieldChange('Headline', e.target.value)}
-                        placeholder="Enter headline..."
-                        disabled={!!searchQuery || processingSection?.startsWith('headline')}
-                      />
-                      <FieldOverlaySpinner
-                        processingSection={processingSection}
-                        sectionKey="headline"
-                        isVisible={processingSection?.startsWith('headline') || false}
-                      />
-                    </div>
+                    <Label htmlFor="headline" className="text-slate-300">Headline</Label>
+                    <Input
+                      id="headline"
+                      value={displayCurrentArticle.Headline || ''}
+                      onChange={(e) => handleFieldChange('Headline', e.target.value)}
+                      placeholder="Enter headline..."
+                      disabled={!!searchQuery}
+                    />
                   </div>
 
                   {/* Hook */}
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="hook" className="text-slate-300">Hook</Label>
-                      <SectionEnhancementTools
-                        content={displayCurrentArticle.Hook || ''}
-                        sectionKey="hook"
-                        sectionTitle="Hook"
-                        onUpdate={(content) => handleFieldChange('Hook', content)}
-                      />
-                    </div>
-                    <div className="relative">
-                      <Textarea
-                        id="hook"
-                        value={displayCurrentArticle.Hook || ''}
-                        onChange={(e) => handleFieldChange('Hook', e.target.value)}
-                        rows={3}
-                        placeholder="Enter hook..."
-                        disabled={!!searchQuery || processingSection?.startsWith('hook')}
-                      />
-                      <FieldOverlaySpinner
-                        processingSection={processingSection}
-                        sectionKey="hook"
-                        isVisible={processingSection?.startsWith('hook') || false}
-                      />
-                    </div>
+                    <Label htmlFor="hook" className="text-slate-300">Hook</Label>
+                    <Textarea
+                      id="hook"
+                      value={displayCurrentArticle.Hook || ''}
+                      onChange={(e) => handleFieldChange('Hook', e.target.value)}
+                      rows={3}
+                      placeholder="Enter hook..."
+                      disabled={!!searchQuery}
+                    />
                   </div>
 
                   {/* Content - Large */}
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="content" className="text-slate-300">Content</Label>
-                      <SectionEnhancementTools
-                        content={displayCurrentArticle.Content || ''}
-                        sectionKey="content"
-                        sectionTitle="Content"
-                        onUpdate={(content) => handleFieldChange('Content', content)}
-                      />
-                    </div>
-                    <div className="relative">
-                      <Textarea
-                        id="content"
-                        value={displayCurrentArticle.Content || ''}
-                        onChange={(e) => handleFieldChange('Content', e.target.value)}
-                        rows={18}
-                        placeholder="Enter content..."
-                        className="text-sm"
-                        disabled={!!searchQuery || processingSection?.startsWith('content')}
-                      />
-                      <FieldOverlaySpinner
-                        processingSection={processingSection}
-                        sectionKey="content"
-                        isVisible={processingSection?.startsWith('content') || false}
-                      />
-                    </div>
+                    <Label htmlFor="content" className="text-slate-300">Content</Label>
+                    <Textarea
+                      id="content"
+                      value={displayCurrentArticle.Content || ''}
+                      onChange={(e) => handleFieldChange('Content', e.target.value)}
+                      rows={18}
+                      placeholder="Enter content..."
+                      className="text-sm"
+                      disabled={!!searchQuery}
+                    />
                   </div>
 
                   {/* Hashtags */}
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="hashtags" className="text-slate-300">Hashtags</Label>
-                      <SectionEnhancementTools
-                        content={displayCurrentArticle.Hashtags || ''}
-                        sectionKey="hashtags"
-                        sectionTitle="Hashtags"
-                        onUpdate={(content) => handleFieldChange('Hashtags', content)}
-                        isHashtags={true}
-                      />
-                    </div>
-                    <div className="relative">
-                      <Input
-                        id="hashtags"
-                        value={displayCurrentArticle.Hashtags || ''}
-                        onChange={(e) => handleFieldChange('Hashtags', e.target.value)}
-                        placeholder="Enter hashtags..."
-                        disabled={!!searchQuery || processingSection?.startsWith('hashtags')}
-                      />
-                      <FieldOverlaySpinner
-                        processingSection={processingSection}
-                        sectionKey="hashtags"
-                        isVisible={processingSection?.startsWith('hashtags') || false}
-                      />
-                    </div>
+                    <Label htmlFor="hashtags" className="text-slate-300">Hashtags</Label>
+                    <Input
+                      id="hashtags"
+                      value={displayCurrentArticle.Hashtags || ''}
+                      onChange={(e) => handleFieldChange('Hashtags', e.target.value)}
+                      placeholder="Enter hashtags..."
+                      disabled={!!searchQuery}
+                    />
                   </div>
 
                   {/* Focus Angle */}
@@ -2197,26 +1271,15 @@ OUTPUT EXACTLY LIKE THIS:
                   <CardTitle className="text-lg text-orange-400">Image Controls</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* Split buttons: AI Generate and Unsplash */}
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={handleOpenAIGenerator}
-                      className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium"
-                      disabled={!displayCurrentArticle || isGeneratingImage}
-                    >
-                      <Sparkles className="h-4 w-4 mr-2" />
-                      {isGeneratingImage ? 'Generating...' : 'AI Generate'}
-                    </Button>
-                    <Button
-                      onClick={handleOpenUnsplash}
-                      variant="outline"
-                      className="flex-1 border-cyan-500 text-cyan-400 hover:bg-cyan-500/10 font-medium"
-                      disabled={!displayCurrentArticle}
-                    >
-                      <Search className="h-4 w-4 mr-2" />
-                      Unsplash
-                    </Button>
-                  </div>
+                  {/* AI Generate Image Button */}
+                  <Button
+                    onClick={handleOpenImageGenerator}
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium"
+                    disabled={!displayCurrentArticle || isGeneratingImage}
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    {isGeneratingImage ? 'Generating...' : 'AI Generate Image'}
+                  </Button>
 
                   {/* Image Upload Area */}
                   <div 
@@ -2312,21 +1375,11 @@ OUTPUT EXACTLY LIKE THIS:
         </div>
       </div>
 
-      {/* AI Image Generator Modal - Uses new modular AIImageGeneratorCore */}
-      <AIImageGeneratorModal
-        isOpen={isAIModalOpen}
-        onClose={handleCloseAIGenerator}
-        onImageGenerated={handleAIImageGenerated}
-        contextText={getArticleContext().content}
-        contextTitle={getArticleContext().headline}
-        contextSubtitle={getArticleContext().hook}
-      />
-
-      {/* Unsplash Image Search Modal */}
-      <UnsplashModal
-        isOpen={isUnsplashModalOpen}
-        onClose={handleCloseUnsplash}
-        onImageSelected={handleUnsplashSelected}
+      {/* AI Image Generator Modal */}
+      <ImageGeneratorModal
+        isOpen={isImageModalOpen}
+        onClose={handleCloseImageGenerator}
+        onImageGenerated={handleImageGenerated}
         articleContext={getArticleContext()}
       />
 

@@ -2,63 +2,63 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Static pages -->
   <url>
-    <loc>https://slyfoxstudios.co.za/</loc>
-    <lastmod>2026-01-15</lastmod>
+    <loc>https://slyfox.co.za/</loc>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://slyfoxstudios.co.za/about</loc>
-    <lastmod>2026-01-15</lastmod>
+    <loc>https://slyfox.co.za/about</loc>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://slyfoxstudios.co.za/contact</loc>
-    <lastmod>2026-01-15</lastmod>
+    <loc>https://slyfox.co.za/contact</loc>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://slyfoxstudios.co.za/photography</loc>
-    <lastmod>2026-01-15</lastmod>
+    <loc>https://slyfox.co.za/photography</loc>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://slyfoxstudios.co.za/stories</loc>
-    <lastmod>2026-01-15</lastmod>
+    <loc>https://slyfox.co.za/stories</loc>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
 
   <!-- Blog posts -->
   <url>
-    <loc>https://slyfoxstudios.co.za/stories/iphone-brands-cost-benefit-analysis</loc>
+    <loc>https://slyfox.co.za/stories/iphone-brands-cost-benefit-analysis</loc>
     <lastmod>2025-12-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://slyfoxstudios.co.za/stories/imagine,-market,-sell:-the-new-age-of-imagery</loc>
+    <loc>https://slyfox.co.za/stories/imagine,-market,-sell:-the-new-age-of-imagery</loc>
     <lastmod>2026-01-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://slyfoxstudios.co.za/stories/testslug</loc>
+    <loc>https://slyfox.co.za/stories/testslug</loc>
     <lastmod>2025-12-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://slyfoxstudios.co.za/stories/ai-posting:-automate-your-social-media-strategy</loc>
+    <loc>https://slyfox.co.za/stories/ai-posting:-automate-your-social-media-strategy</loc>
     <lastmod>2026-01-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://slyfoxstudios.co.za/stories/studio-portraits-pro-edit</loc>
+    <loc>https://slyfox.co.za/stories/studio-portraits-pro-edit</loc>
     <lastmod>2025-12-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

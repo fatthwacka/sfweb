@@ -824,7 +824,7 @@ Before implementing ANY new feature or page:
 
 **Troubleshooting:**
 1. Check browser console for reCAPTCHA errors
-2. Test API directly: `curl -X POST https://slyfoxstudios.co.za/api/contact`
+2. Test API directly: `curl -X POST https://slyfox.co.za/api/contact`
 3. Verify `.env` has valid `RECAPTCHA_SECRET_KEY` and Gmail SMTP credentials
 
 ---

@@ -11,7 +11,7 @@ async function seedData() {
     const hashedPassword = await bcrypt.hash("password123", 10);
     
     const [staffUser] = await db.insert(users).values({
-      email: "admin@slyfoxstudios.co.za",
+      email: "admin@slyfox.co.za",
       password: hashedPassword,
       role: "staff"
     }).returning();
@@ -259,7 +259,7 @@ async function seedData() {
     console.log("✓ Created sample images and set cover images");
     console.log("\n🎉 Database seeded successfully!");
     console.log("\nTest accounts:");
-    console.log("- Staff: admin@slyfoxstudios.co.za / password123");
+    console.log("- Staff: admin@slyfox.co.za / password123");
     console.log("- Client: client@example.com / password123");
     console.log("\nSample galleries created with different customization settings:");
     console.log("- Portrait session (masonry layout, white background)");

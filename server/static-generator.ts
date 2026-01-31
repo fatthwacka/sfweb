@@ -180,7 +180,7 @@ export class StaticBlogGenerator {
    * Generate complete page HTML with SEO meta tags and structured data
    */
   private generatePageData(post: BlogPostForSSR): StaticPageData {
-    const siteUrl = process.env.SITE_URL || 'https://slyfoxstudios.co.za';
+    const siteUrl = process.env.SITE_URL || 'https://slyfox.co.za';
     const canonicalUrl = `${siteUrl}/stories/${post.slug}`;
     
     const title = post.seoTitle || post.title;
@@ -261,7 +261,7 @@ export class StaticBlogGenerator {
     structuredData: any;
     post: BlogPostForSSR;
   }): string {
-    const siteUrl = process.env.SITE_URL || 'https://slyfoxstudios.co.za';
+    const siteUrl = process.env.SITE_URL || 'https://slyfox.co.za';
     const ogImage = post.coverImage 
       ? (post.coverImage.startsWith('http') ? post.coverImage : `${siteUrl}${post.coverImage}`)
       : `${siteUrl}/uploads/slyfox-og-default.jpg`;
@@ -416,7 +416,7 @@ export class StaticBlogGenerator {
         return;
       }
 
-      const siteUrl = process.env.SITE_URL || 'https://slyfoxstudios.co.za';
+      const siteUrl = process.env.SITE_URL || 'https://slyfox.co.za';
 
       const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

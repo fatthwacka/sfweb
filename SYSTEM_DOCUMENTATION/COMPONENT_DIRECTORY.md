@@ -188,7 +188,7 @@ client/src/components/
 ## 👤 Client Components (`/client/`)
 **Client portal specific components**
 
-- `client-gallery.tsx` - Client's private gallery view
+- `client-gallery.tsx` - Client's private gallery view with modal viewer, slideshow, swipe navigation, and pinch-to-zoom
 - `client-dashboard.tsx` - Client portal dashboard
 - `download-manager.tsx` - Bulk image downloads
 - `share-gallery.tsx` - Gallery sharing options

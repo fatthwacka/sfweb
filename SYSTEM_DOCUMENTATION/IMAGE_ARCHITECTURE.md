@@ -338,7 +338,7 @@ storagePath: "https://images.unsplash.com/photo-{id}"
 - `/photography/:category` - Category galleries (weddings, portraits, etc)
 
 **Components**:
-- `client-gallery.tsx` - Main gallery display with modal
+- `client-gallery.tsx` - Main gallery display with modal, swipe nav, slideshow, pinch-to-zoom
 - `client-portfolio.tsx` - Multi-shoot portfolio view
 - `gallery-renderer.tsx` - Reusable gallery rendering engine (supports all 8 layout modes)
 

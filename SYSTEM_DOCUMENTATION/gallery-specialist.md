@@ -49,14 +49,16 @@ I'm your specialist for all gallery and image management systems in the SlyFox S
 - **Download Management**: Client download history and limits
 - **Gallery Browsing**: Optimized viewing experience
 - **Mobile Accessibility**: Touch-friendly interfaces
+- **Pinch-to-Zoom**: Instagram-style zoom with bounce-back (react-zoom-pan-pinch)
 
 ## Technical Implementation
 
 ### Frontend Components
 - Gallery grid and layout components
-- Image viewer and lightbox functionality
+- Image viewer and lightbox functionality (react-zoom-pan-pinch for mobile pinch gestures)
 - Upload progress and batch processing UI
 - Drag-and-drop sequence management interfaces
+- Custom swipe navigation with visual feedback
 
 ### Backend Integration
 - Image metadata database operations

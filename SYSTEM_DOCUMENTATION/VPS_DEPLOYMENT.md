@@ -602,7 +602,7 @@ LEGACY TROUBLESHOOTING REFERENCE - Before hardcoded architecture
 **Symptoms**: Form button works for validation errors but silently fails on valid submissions.
 
 **Quick Diagnosis**:
-1. Test backend directly: `curl -X POST https://slyfoxstudios.co.za/api/contact -H "Content-Type: application/json" -d '{"name":"Test","email":"test@test.com","message":"test"}'`
+1. Test backend directly: `curl -X POST https://slyfox.co.za/api/contact -H "Content-Type: application/json" -d '{"name":"Test","email":"test@test.com","message":"test"}'`
 2. If backend works → reCAPTCHA is hanging (see fix below)
 3. If backend fails → check email service credentials in `.env`
 

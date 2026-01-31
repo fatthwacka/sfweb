@@ -13,6 +13,11 @@ VPS_USER="root"
 VPS_APP_DIR="/opt/sfweb"
 LOCAL_DIR="$(pwd)"
 
+# Load local environment variables (for Cloudflare credentials)
+if [ -f ".env" ]; then
+    export $(grep -v '^#' .env | xargs)
+fi
+
 echo "📋 Deployment Configuration:"
 echo "   VPS Host: $VPS_HOST"
 echo "   VPS Directory: $VPS_APP_DIR"
@@ -312,6 +317,29 @@ echo "===================================="
 
 run_on_vps "cd $VPS_APP_DIR && docker compose ps"
 run_on_vps "docker stats --no-stream --format 'table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}'"
+
+echo ""
+echo "☁️  Step 10: Purge Cloudflare Cache"
+echo "===================================="
+
+if [ -n "$CLOUDFLARE_ZONE_ID" ] && [ -n "$CLOUDFLARE_API_TOKEN" ]; then
+    echo "🔄 Purging Cloudflare CDN cache..."
+    PURGE_RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
+        -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+        -H "Content-Type: application/json" \
+        --data '{"purge_everything":true}')
+
+    if echo "$PURGE_RESPONSE" | grep -q '"success":true'; then
+        echo "✅ Cloudflare cache purged successfully"
+    else
+        echo "⚠️  Cloudflare cache purge may have failed:"
+        echo "$PURGE_RESPONSE"
+        echo "   (This is non-critical - site will still work, cache will expire naturally)"
+    fi
+else
+    echo "⚠️  Cloudflare credentials not found in .env"
+    echo "   Skipping cache purge - add CLOUDFLARE_ZONE_ID and CLOUDFLARE_API_TOKEN to .env"
+fi
 
 echo ""
 echo "🎉 Deployment Complete!"

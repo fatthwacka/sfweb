@@ -259,7 +259,7 @@ export function AuthButton({ buttonText = "Account", className }: AuthButtonProp
               Contact our support team to reset your password. Please include your email address and we'll help you regain access.
             </p>
             <div className="space-y-2 text-xs">
-              <p><strong className="text-salmon">Email:</strong> support@slyfoxstudios.co.za</p>
+              <p><strong className="text-salmon">Email:</strong> support@slyfox.co.za</p>
               <p><strong className="text-salmon">Phone:</strong> +27 31 123 4567</p>
               <p><strong className="text-salmon">WhatsApp:</strong> +27 82 987 6543</p>
             </div>

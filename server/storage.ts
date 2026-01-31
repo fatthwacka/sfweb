@@ -164,7 +164,7 @@ export class MemStorage implements IStorage {
     // Create test users
     const staffUser: User = {
       id: this.currentUserId++,
-      email: "admin@slyfoxstudios.co.za",
+      email: "admin@slyfox.co.za",
       password: "hashedpassword123", // In real app this would be hashed
       role: "staff",
       profileImage: null,

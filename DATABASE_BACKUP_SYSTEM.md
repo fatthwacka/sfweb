@@ -144,7 +144,7 @@ ssh ubuntu@168.231.86.89 "sudo cp ./site_config_YYYYMMDD_HHMMSS.json /opt/sfweb/
 ssh ubuntu@168.231.86.89 "cd /opt/sfweb && sudo docker-compose up -d"
 
 # 5. Verify configuration restored
-curl -s https://slyfoxstudios.co.za/api/site-config | jq .
+curl -s https://slyfox.co.za/api/site-config | jq .
 ```
 
 ### 2. Supabase Database Restore
@@ -205,7 +205,7 @@ rclone copy SlyfoxPro:APPS/Website/sfweb-backups/config/site_config_LATEST.json 
 cd /opt/sfweb && sudo docker-compose up -d
 
 # 5. Verify all functionality
-curl https://slyfoxstudios.co.za
+curl https://slyfox.co.za
 ```
 
 ## 📊 Backup Monitoring
