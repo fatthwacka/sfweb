@@ -679,8 +679,19 @@ ssh slyfox-vps "cd /opt/sfweb && chmod -R 644 public/images && find public -type
 
 # 🎯 DEPLOYMENT HISTORY
 
-**Last Successful Deployment**: 2026-01-13 (VEO Video Generator & Prompt Engine Enhancement)
+**Last Successful Deployment**: 2026-02-03 (Image Ingredients & Supabase Article Editor)
+
 **Features Deployed**:
+
+- Image Ingredients: Upload reference images (product PNGs) for AI scene placement
+- New Supabase-based Article Editor (replacing Airtable backend)
+- Cloud Storage Browser modal wrapper for embedding in other tools
+- Airtable to Supabase migration script for article content
+- Safer Cloudflare credential loading in deploy script (handles multi-line env values)
+- **First successful Cloudflare cache purge** via automated deployment script
+
+**Previous Deployment**: 2026-01-13 (VEO Video Generator & Prompt Engine Enhancement)
+**Previous Features**:
 - VEO Video Generator with image-aware prompt enhancement
 - Gemini multimodal integration for starting frame context
 - Fixed VEO duration parameter (videoDuration → durationSeconds)
