@@ -89,6 +89,7 @@ import DuplicateFinder from "@/pages/tools/duplicate-finder";
 import SmartOrganiser from "@/pages/tools/smart-organiser";
 import ProjectCleanup from "@/pages/tools/project-cleanup";
 import ArticleEditor from "@/pages/tools/article-editor";
+import ArticleEditorSupabase from "@/pages/tools/article-editor-supabase";
 import AIImageGenerator from "@/pages/tools/ai-image-generator";
 import VEOVideoGenerator from "@/pages/tools/veo-video-generator";
 import PromptEngine from "@/pages/tools/prompt-engine";
@@ -137,6 +138,7 @@ function Router() {
       <Route path="/tools/smart-organiser" component={SmartOrganiser} />
       <Route path="/tools/project-cleanup" component={ProjectCleanup} />
       <Route path="/tools/article-editor" component={ArticleEditor} />
+      <Route path="/tools/article-editor-supabase" component={ArticleEditorSupabase} />
       <Route path="/tools/ai-image-generator" component={AIImageGenerator} />
       <Route path="/tools/veo-video-generator" component={VEOVideoGenerator} />
       <Route path="/tools/prompt-engine" component={PromptEngine} />

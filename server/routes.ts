@@ -1572,6 +1572,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ImgBB Upload Proxy - Keeps API key server-side
+  app.post("/api/upload/imgbb", upload.single('image'), async (req, res) => {
+    try {
+      const imgbbKey = process.env.IMGBB_API_KEY;
+      if (!imgbbKey) {
+        return res.status(500).json({ success: false, error: "ImgBB API key not configured" });
+      }
+
+      // Handle multer file upload
+      if (!req.file) {
+        return res.status(400).json({ success: false, error: "No image provided" });
+      }
+
+      // Convert buffer to base64
+      const base64Data = req.file.buffer.toString('base64');
+
+      // Send to ImgBB using URLSearchParams (x-www-form-urlencoded)
+      const formData = new URLSearchParams();
+      formData.append('image', base64Data);
+
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        res.json({ success: true, url: data.data.url });
+      } else {
+        res.status(400).json({ success: false, error: data.error?.message || 'Upload failed' });
+      }
+    } catch (error: any) {
+      console.error("ImgBB upload error:", error);
+      res.status(500).json({ success: false, error: error.message || "Failed to upload image" });
+    }
+  });
+
   // Image endpoints
   app.post("/api/images", async (req, res) => {
     try {
@@ -6602,6 +6642,7 @@ Return ONLY the enhanced subtitle text. No explanations, quotes, or formatting.`
       res.json({
         success: true,
         imageUrl: result.imageUrl,
+        imageUrls: result.imageUrls, // All 4 versions: originalUrl, jpgUrl, compressedUrl, thumbnailUrl
         prompt: result.prompt,
         metadata: result.metadata,
         timestamp: new Date().toISOString(),
@@ -6964,9 +7005,9 @@ Your search term:`;
       const prefix = (req.query.prefix as string) || ''; // Optional folder prefix filter
       const cacheKey = prefix || '_all_';
 
-      // Return cached data if still valid AND has the new folderStats field
+      // Return cached data if still valid AND has all folder stats (including uploaded-images/)
       const cachedData = cloudStorageCaches[cacheKey];
-      if (cachedData && (now - cachedData.timestamp) < CACHE_DURATION && cachedData.data.folderStats) {
+      if (cachedData && (now - cachedData.timestamp) < CACHE_DURATION && cachedData.data.folderStats && cachedData.data.folderStats['uploaded-images/']) {
         console.log(`📁 Returning cached cloud storage files for prefix: "${prefix || 'all'}"`);
         return res.json({
           ...cachedData.data,
@@ -7082,10 +7123,11 @@ Your search term:`;
       let globalStats = stats;
       let folderStats: Record<string, { count: number; size: number }> = {
         'ai-images/': { count: 0, size: 0 },
-        'jpg-images/': { count: 0, size: 0 },
+        'compressed-images/': { count: 0, size: 0 },  // Full res JPG (no resize)
+        'compressed-2400/': { count: 0, size: 0 },    // 2400px max dimension JPG
         'thumbnails/': { count: 0, size: 0 },
         'ai-videos/': { count: 0, size: 0 },
-        'compressed-images/': { count: 0, size: 0 }  // Legacy folder
+        'uploaded-images/': { count: 0, size: 0 }     // User-uploaded images
       };
 
       // Get all files from bucket (unfiltered) to calculate global stats
@@ -7117,18 +7159,21 @@ Your search term:`;
         if (fileName.startsWith('ai-images/')) {
           folderStats['ai-images/'].count++;
           folderStats['ai-images/'].size += fileSize;
-        } else if (fileName.startsWith('jpg-images/')) {
-          folderStats['jpg-images/'].count++;
-          folderStats['jpg-images/'].size += fileSize;
+        } else if (fileName.startsWith('compressed-images/')) {
+          folderStats['compressed-images/'].count++;
+          folderStats['compressed-images/'].size += fileSize;
+        } else if (fileName.startsWith('compressed-2400/')) {
+          folderStats['compressed-2400/'].count++;
+          folderStats['compressed-2400/'].size += fileSize;
         } else if (fileName.startsWith('thumbnails/')) {
           folderStats['thumbnails/'].count++;
           folderStats['thumbnails/'].size += fileSize;
         } else if (fileName.startsWith('ai-videos/')) {
           folderStats['ai-videos/'].count++;
           folderStats['ai-videos/'].size += fileSize;
-        } else if (fileName.startsWith('compressed-images/')) {
-          folderStats['compressed-images/'].count++;
-          folderStats['compressed-images/'].size += fileSize;
+        } else if (fileName.startsWith('uploaded-images/')) {
+          folderStats['uploaded-images/'].count++;
+          folderStats['uploaded-images/'].size += fileSize;
         }
       }
 
@@ -7141,7 +7186,7 @@ Your search term:`;
       };
 
       console.log(`📊 Global stats: ${globalStats.totalFiles} files, ${globalStats.images} images, ${globalStats.videos} videos`);
-      console.log(`📁 Folder stats: ai-images=${folderStats['ai-images/'].count}, jpg-images=${folderStats['jpg-images/'].count}, thumbnails=${folderStats['thumbnails/'].count}, videos=${folderStats['ai-videos/'].count}`);
+      console.log(`📁 Folder stats: ai-images=${folderStats['ai-images/'].count}, compressed-images=${folderStats['compressed-images/'].count}, compressed-2400=${folderStats['compressed-2400/'].count}, thumbnails=${folderStats['thumbnails/'].count}, videos=${folderStats['ai-videos/'].count}, uploads=${folderStats['uploaded-images/'].count}`);
 
       const loadTime = Date.now() - startTime;
       console.log(`✅ Loaded ${allFiles.length} files from ${buckets.length} buckets in ${loadTime}ms`);
@@ -7309,10 +7354,10 @@ Your search term:`;
       // Invalidate cache for all prefixes to ensure fresh data
       delete cloudStorageCaches['_all_'];
       delete cloudStorageCaches['ai-images/'];
-      delete cloudStorageCaches['jpg-images/'];
+      delete cloudStorageCaches['compressed-images/'];
+      delete cloudStorageCaches['compressed-2400/'];
       delete cloudStorageCaches['thumbnails/'];
       delete cloudStorageCaches['ai-videos/'];
-      delete cloudStorageCaches['compressed-images/'];
 
       res.json({
         success: true,
@@ -7411,10 +7456,10 @@ Your search term:`;
       // Invalidate cache for all prefixes
       delete cloudStorageCaches['_all_'];
       delete cloudStorageCaches['ai-images/'];
-      delete cloudStorageCaches['jpg-images/'];
+      delete cloudStorageCaches['compressed-images/'];
+      delete cloudStorageCaches['compressed-2400/'];
       delete cloudStorageCaches['thumbnails/'];
       delete cloudStorageCaches['ai-videos/'];
-      delete cloudStorageCaches['compressed-images/'];
 
       res.json({
         success: true,
@@ -7440,6 +7485,83 @@ Your search term:`;
       res.status(500).json({
         success: false,
         error: 'Failed to upload processed images',
+        details: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  // POST /api/cloud-storage/upload-user-image - Upload user image (already compressed by client)
+  app.post('/api/cloud-storage/upload-user-image', async (req, res) => {
+    try {
+      const { imageBase64, filename } = req.body;
+
+      if (!imageBase64 || !filename) {
+        return res.status(400).json({
+          success: false,
+          error: 'Missing required fields: imageBase64, filename'
+        });
+      }
+
+      console.log(`📤 Uploading user image: ${filename}`);
+
+      const { Storage } = await import('@google-cloud/storage');
+      const storage = new Storage({
+        projectId: process.env.GOOGLE_PROJECT_ID,
+        credentials: {
+          type: 'service_account',
+          project_id: process.env.GOOGLE_PROJECT_ID,
+          private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
+          private_key: process.env.GOOGLE_PRIVATE_KEY,
+          client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+          client_id: process.env.GOOGLE_CLIENT_ID,
+        }
+      });
+
+      const bucketName = 'netfox-veo-generations';
+      const bucket = storage.bucket(bucketName);
+
+      // Generate unique filename with timestamp
+      const timestamp = Date.now();
+      const randomSuffix = Math.random().toString(36).substring(2, 8);
+      const baseName = filename.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9-_]/g, '-'); // Sanitise filename
+      const uniqueFilename = `${baseName}-${timestamp}-${randomSuffix}.jpg`;
+
+      // Upload to uploaded-images/ folder
+      const filePath = `uploaded-images/${uniqueFilename}`;
+      const imageBuffer = Buffer.from(imageBase64.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+      const file = bucket.file(filePath);
+
+      await file.save(imageBuffer, {
+        metadata: {
+          contentType: 'image/jpeg',
+          cacheControl: 'public, max-age=31536000',
+        }
+      });
+      await file.makePublic();
+
+      const publicUrl = `https://storage.googleapis.com/${bucketName}/${filePath}`;
+      console.log(`✅ Uploaded user image: ${filePath} (${(imageBuffer.length / 1024).toFixed(1)} KB)`);
+
+      // Invalidate cache
+      delete cloudStorageCaches['_all_'];
+      delete cloudStorageCaches['uploaded-images/'];
+
+      res.json({
+        success: true,
+        url: publicUrl,
+        path: filePath,
+        size: imageBuffer.length,
+        filename: uniqueFilename,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error: any) {
+      console.error('💥 Cloud Storage upload-user-image error:', error);
+
+      res.status(500).json({
+        success: false,
+        error: 'Failed to upload user image',
         details: error.message,
         timestamp: new Date().toISOString()
       });

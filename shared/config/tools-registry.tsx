@@ -69,8 +69,8 @@ export const TOOLS_REGISTRY: ToolDefinition[] = [
   },
   {
     slug: 'article-editor',
-    name: 'Article Editor',
-    description: 'Edit and publish articles with AI-assisted writing and image management',
+    name: 'Article Editor (Airtable)',
+    description: 'Legacy article editor using Airtable backend - will be deprecated',
     icon: '✏️',
     category: 'content',
     minTier: 'staff',
@@ -78,6 +78,20 @@ export const TOOLS_REGISTRY: ToolDefinition[] = [
     usesAI: false,
     usesLocalFiles: false,
     limits: {},
+    customAction: 'full-page', // Open in full page mode
+  },
+  {
+    slug: 'article-editor-supabase',
+    name: 'Article Editor (Supabase)',
+    description: 'Edit and publish articles using Supabase backend with AI-assisted writing and image management',
+    icon: '📝',
+    category: 'content',
+    minTier: 'staff',
+    requiresAuth: true,
+    usesAI: false,
+    usesLocalFiles: false,
+    limits: {},
+    badge: 'new',
     customAction: 'full-page', // Open in full page mode
   },
   {

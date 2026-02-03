@@ -65,8 +65,17 @@ export interface ImageIngredient {
   brandAssetMetadata?: BrandAssetMetadata;
 }
 
+// Multi-version URL structure for all generated image variants
+export interface ImageUrls {
+  originalUrl: string;      // Original PNG in ai-images/
+  jpgUrl: string;           // JPG full size (no resize) in compressed-images/
+  compressedUrl: string;    // JPG 2400px max dimension in compressed-2400/
+  thumbnailUrl: string;     // JPG 400px max dimension in thumbnails/
+}
+
 export interface ImageGenerationResult {
-  imageUrl: string;
+  imageUrl: string;         // Primary URL (original PNG for backwards compatibility)
+  imageUrls?: ImageUrls;    // All 4 versions (optional for backwards compatibility)
   prompt: string;
   metadata: {
     artStyle: string;
@@ -99,6 +108,14 @@ export interface AIImageGeneratorCoreProps {
   showSystemPrompt?: boolean;  // Show/hide system prompt panel (default: true in page, false in modal)
   showApiPreview?: boolean;    // Show/hide API preview panel (default: true in page, false in modal)
   showBackButton?: boolean;    // Show/hide back to tools button (default: true in page, false in modal)
+
+  // Modal URL selector props (for article editor modal integration)
+  pendingResult?: ImageGenerationResult | null;
+  selectedUrlType?: keyof ImageUrls;
+  onUrlTypeChange?: (type: keyof ImageUrls) => void;
+  onConfirmSelection?: () => void;
+  urlOptions?: { key: keyof ImageUrls; label: string; colour: string }[];
+  getCompactButtonStyle?: (key: keyof ImageUrls, colour: string) => string;
 
   // Custom styling
   className?: string;
@@ -224,6 +241,13 @@ export function AIImageGeneratorCore({
   showSystemPrompt = true,
   showApiPreview = true,
   showBackButton = true,
+  // Modal URL selector props
+  pendingResult,
+  selectedUrlType: externalSelectedUrlType,
+  onUrlTypeChange,
+  onConfirmSelection,
+  urlOptions: externalUrlOptions,
+  getCompactButtonStyle: externalGetCompactButtonStyle,
   className = '',
 }: AIImageGeneratorCoreProps) {
 
@@ -259,6 +283,8 @@ export function AIImageGeneratorCore({
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [generatedImageUrls, setGeneratedImageUrls] = useState<ImageUrls | null>(null);
+  const [selectedUrlType, setSelectedUrlType] = useState<keyof ImageUrls>('originalUrl');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [hasAnalyzed, setHasAnalyzed] = useState(false);
 
@@ -1269,10 +1295,17 @@ export function AIImageGeneratorCore({
         const data = await response.json();
         setGeneratedImage(data.imageUrl);
 
+        // Store all 4 URL versions if available
+        if (data.imageUrls) {
+          setGeneratedImageUrls(data.imageUrls);
+          setSelectedUrlType('originalUrl'); // Default to original PNG
+        }
+
         // If callback provided, call it with result
         if (onImageGenerated) {
           onImageGenerated({
             imageUrl: data.imageUrl,
+            imageUrls: data.imageUrls,
             prompt: prompt.trim(),
             metadata: {
               artStyle,
@@ -1291,7 +1324,9 @@ export function AIImageGeneratorCore({
 
         toast({
           title: 'Image Generated',
-          description: 'Your AI image has been created successfully.',
+          description: data.imageUrls
+            ? 'Your AI image is ready in 4 formats: PNG, JPG, 2400px, and thumbnail.'
+            : 'Your AI image has been created successfully.',
         });
       } else {
         throw new Error('Generation failed');
@@ -1310,10 +1345,19 @@ export function AIImageGeneratorCore({
   // ========== DOWNLOAD IMAGE ==========
 
   const downloadImage = async () => {
-    if (!generatedImage) return;
+    // Use the selected URL version if available, otherwise fall back to generatedImage
+    const activeSelectedUrlType = externalSelectedUrlType || selectedUrlType;
+    const downloadUrl = generatedImageUrls ? generatedImageUrls[activeSelectedUrlType] : generatedImage;
+    if (!downloadUrl) return;
+
+    // Determine file extension based on selected URL type
+    const extension = activeSelectedUrlType === 'originalUrl' ? 'png' : 'jpg';
+    const sizeLabel = activeSelectedUrlType === 'thumbnailUrl' ? '-thumb' :
+                      activeSelectedUrlType === 'compressedUrl' ? '-2400px' :
+                      activeSelectedUrlType === 'jpgUrl' ? '-full' : '';
 
     try {
-      const proxyUrl = `/api/download/image?url=${encodeURIComponent(generatedImage)}`;
+      const proxyUrl = `/api/download/image?url=${encodeURIComponent(downloadUrl)}`;
       const response = await fetch(proxyUrl);
 
       if (!response.ok) {
@@ -1325,7 +1369,7 @@ export function AIImageGeneratorCore({
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = url;
-      a.download = `ai-generated-${Date.now()}.png`;
+      a.download = `ai-generated${sizeLabel}-${Date.now()}.${extension}`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -1333,7 +1377,9 @@ export function AIImageGeneratorCore({
 
       toast({
         title: 'Download Started',
-        description: 'Your image download has begun.',
+        description: `Downloading ${selectedUrlType === 'originalUrl' ? 'original PNG' :
+                       selectedUrlType === 'jpgUrl' ? 'full-size JPG' :
+                       selectedUrlType === 'compressedUrl' ? '2400px JPG' : 'thumbnail'}.`,
       });
     } catch (error) {
       console.error('Download error:', error);
@@ -1789,11 +1835,11 @@ export function AIImageGeneratorCore({
         <div className="space-y-4">
           <h2 className="text-xl font-semibold text-salmon">Preview</h2>
 
-          <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4 min-h-[400px] flex items-center justify-center">
+          <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4 min-h-[400px] flex flex-col">
             {generatedImage ? (
-              <div className="relative w-full">
+              <div className="relative w-full flex-1">
                 <img
-                  src={generatedImage}
+                  src={generatedImageUrls ? generatedImageUrls[externalSelectedUrlType || selectedUrlType] : generatedImage}
                   alt="Generated"
                   className="w-full h-auto rounded-lg"
                 />
@@ -1807,9 +1853,95 @@ export function AIImageGeneratorCore({
                     <Download className="h-4 w-4" />
                   </Button>
                 </div>
+
+                {/* URL Version Selector - appears when 4 versions are available */}
+                {generatedImageUrls && (
+                  <div className="mt-4 p-3 bg-gray-800/90 rounded-lg border border-gray-600">
+                    <div className="text-xs text-gray-400 mb-2 text-center">Select Image Version</div>
+                    <div className="grid grid-cols-4 gap-2">
+                      <button
+                        onClick={() => {
+                          setSelectedUrlType('originalUrl');
+                          onUrlTypeChange?.('originalUrl');
+                        }}
+                        className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
+                          (externalSelectedUrlType || selectedUrlType) === 'originalUrl'
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
+                        title="Original PNG (full quality)"
+                      >
+                        <ImageIcon className="h-5 w-5 mb-1" />
+                        <span className="text-[10px] font-medium">PNG</span>
+                        <span className="text-[8px] opacity-70">Original</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedUrlType('jpgUrl');
+                          onUrlTypeChange?.('jpgUrl');
+                        }}
+                        className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
+                          (externalSelectedUrlType || selectedUrlType) === 'jpgUrl'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
+                        title="JPG full size (no resize)"
+                      >
+                        <ImageIcon className="h-5 w-5 mb-1" />
+                        <span className="text-[10px] font-medium">JPG</span>
+                        <span className="text-[8px] opacity-70">Full Size</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedUrlType('compressedUrl');
+                          onUrlTypeChange?.('compressedUrl');
+                        }}
+                        className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
+                          (externalSelectedUrlType || selectedUrlType) === 'compressedUrl'
+                            ? 'bg-green-600 text-white'
+                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
+                        title="Compressed JPG (2400px max)"
+                      >
+                        <ImageIcon className="h-5 w-5 mb-1" />
+                        <span className="text-[10px] font-medium">2400px</span>
+                        <span className="text-[8px] opacity-70">Compressed</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedUrlType('thumbnailUrl');
+                          onUrlTypeChange?.('thumbnailUrl');
+                        }}
+                        className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
+                          (externalSelectedUrlType || selectedUrlType) === 'thumbnailUrl'
+                            ? 'bg-amber-600 text-white'
+                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
+                        title="Thumbnail (400px max)"
+                      >
+                        <ImageIcon className="h-5 w-5 mb-1" />
+                        <span className="text-[10px] font-medium">Thumb</span>
+                        <span className="text-[8px] opacity-70">400px</span>
+                      </button>
+                    </div>
+                    <div className="mt-2 text-[10px] text-gray-500 text-center truncate">
+                      {generatedImageUrls[externalSelectedUrlType || selectedUrlType]}
+                    </div>
+
+                    {/* Modal mode: "Use This Image" button */}
+                    {onConfirmSelection && (
+                      <Button
+                        onClick={onConfirmSelection}
+                        className="w-full mt-3 bg-salmon hover:bg-salmon/80 text-white font-semibold"
+                      >
+                        Use This Image
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             ) : (
-              <div className="text-center text-gray-500">
+              <div className="text-center text-gray-500 flex-1 flex flex-col items-center justify-center">
                 <ImageIcon className="h-16 w-16 mx-auto mb-4 opacity-30" />
                 <p>Generated image will appear here</p>
               </div>

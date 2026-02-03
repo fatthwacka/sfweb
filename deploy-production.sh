@@ -13,9 +13,11 @@ VPS_USER="root"
 VPS_APP_DIR="/opt/sfweb"
 LOCAL_DIR="$(pwd)"
 
-# Load local environment variables (for Cloudflare credentials)
+# Load Cloudflare credentials from .env (safely - only simple key=value lines)
+# This avoids issues with multi-line values like private keys
 if [ -f ".env" ]; then
-    export $(grep -v '^#' .env | xargs)
+    export CLOUDFLARE_ZONE_ID=$(grep '^CLOUDFLARE_ZONE_ID=' .env | cut -d '=' -f2-)
+    export CLOUDFLARE_API_TOKEN=$(grep '^CLOUDFLARE_API_TOKEN=' .env | cut -d '=' -f2-)
 fi
 
 echo "📋 Deployment Configuration:"

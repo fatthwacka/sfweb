@@ -4,6 +4,7 @@
  */
 
 import { GoogleAuth } from 'google-auth-library';
+import sharp from 'sharp';
 
 // Brand asset metadata for intelligent prompt enhancement
 export interface BrandAssetMetadata {
@@ -63,8 +64,17 @@ export interface ImageGenerationRequest {
   referenceImage?: ReferenceImage;
 }
 
+// Multi-version URL structure for all generated image variants
+export interface ImageUrls {
+  originalUrl: string;      // Original PNG in ai-images/
+  jpgUrl: string;           // JPG full size (no resize) in compressed-images/
+  compressedUrl: string;    // JPG 2400px max dimension in compressed-2400/
+  thumbnailUrl: string;     // JPG 400px max dimension in thumbnails/
+}
+
 export interface ImageGenerationResult {
-  imageUrl: string;
+  imageUrl: string;         // Primary URL (original PNG for backwards compatibility)
+  imageUrls: ImageUrls;     // All 4 versions
   prompt: string;
   metadata: {
     artStyle: string;
@@ -160,15 +170,16 @@ export class VertexAIImageGenerator {
       console.log('🔑 Service Account configured:', !!this.serviceAccountKey);
       console.log('🏗️ Project ID:', this.projectId);
       console.log('📍 Location:', this.location);
-      
+
       // Call appropriate Vertex AI API based on model type
-      const imageUrl = await this.callVertexAI(enhancedPrompt, imageSpec, request.model, request);
+      const imageUrls = await this.callVertexAI(enhancedPrompt, imageSpec, request.model, request);
 
       console.log('✅ Image generated successfully with Vertex AI');
-      console.log('🔗 Generated image URL:', imageUrl);
+      console.log('🔗 Generated image URLs:', imageUrls);
 
       return {
-        imageUrl,
+        imageUrl: imageUrls.originalUrl,  // Primary URL for backwards compatibility
+        imageUrls,                         // All 4 versions
         prompt: enhancedPrompt,
         metadata: {
           artStyle: request.artStyle,
@@ -328,76 +339,151 @@ export class VertexAIImageGenerator {
     }
   }
 
-  private async uploadToCloudStorage(base64Data: string): Promise<string> {
+  /**
+   * Upload a single buffer to Cloud Storage and make it public
+   */
+  private async uploadBufferToStorage(
+    buffer: Buffer,
+    folder: string,
+    extension: 'png' | 'jpg',
+    baseFileName: string,
+    accessToken: string
+  ): Promise<string> {
     const bucketName = 'netfox-veo-generations';
-    const fileName = `ai-images/generated-${Date.now()}-${Math.random().toString(36).substring(2, 11)}.png`;
-    
+    const fileName = `${folder}/${baseFileName}.${extension}`;
+    const contentType = extension === 'png' ? 'image/png' : 'image/jpeg';
+
+    console.log(`📤 Uploading to: gs://${bucketName}/${fileName} (${(buffer.length / 1024).toFixed(1)} KB)`);
+
+    const uploadUrl = `https://storage.googleapis.com/upload/storage/v1/b/${bucketName}/o?uploadType=media&name=${encodeURIComponent(fileName)}`;
+
+    const response = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': contentType,
+        'Content-Length': buffer.length.toString(),
+      },
+      body: buffer,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Upload failed for ${fileName}: ${response.status} - ${errorText}`);
+    }
+
+    await response.json();
+
+    // Make publicly readable
+    const aclUrl = `https://storage.googleapis.com/storage/v1/b/${bucketName}/o/${encodeURIComponent(fileName)}/acl`;
+    const aclResponse = await fetch(aclUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ entity: 'allUsers', role: 'READER' }),
+    });
+
+    if (!aclResponse.ok) {
+      console.warn(`⚠️ Failed to make ${fileName} public`);
+    }
+
+    return `https://storage.googleapis.com/${bucketName}/${fileName}`;
+  }
+
+  /**
+   * Upload image to Cloud Storage in 4 versions:
+   * 1. Original PNG → ai-images/
+   * 2. JPG full size → compressed-images/
+   * 3. JPG 2400px max → compressed-2400/
+   * 4. Thumbnail 400px max → thumbnails/
+   */
+  private async uploadToCloudStorage(base64Data: string): Promise<ImageUrls> {
+    const baseFileName = `generated-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+
     try {
-      console.log(`📤 Uploading to Cloud Storage: gs://${bucketName}/${fileName}`);
-      
+      console.log('📦 Starting multi-version image processing with Sharp...');
+
       // Convert base64 to buffer
-      const imageBuffer = Buffer.from(base64Data, 'base64');
-      console.log(`📊 Image size: ${(imageBuffer.length / 1024 / 1024).toFixed(2)} MB`);
-      
-      // Get access token using our auth client
+      const originalBuffer = Buffer.from(base64Data, 'base64');
+      console.log(`📊 Original PNG size: ${(originalBuffer.length / 1024 / 1024).toFixed(2)} MB`);
+
+      // Get access token once for all uploads
       const authClient = await this.auth.getClient();
       const accessToken = await authClient.getAccessToken();
-      
-      // Upload to Cloud Storage using REST API
-      const uploadUrl = `https://storage.googleapis.com/upload/storage/v1/b/${bucketName}/o?uploadType=media&name=${encodeURIComponent(fileName)}`;
-      
-      const response = await fetch(uploadUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken.token}`,
-          'Content-Type': 'image/png',
-          'Content-Length': imageBuffer.length.toString(),
-        },
-        body: imageBuffer,
-      });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Cloud Storage upload failed: ${response.status} - ${errorText}`);
+      if (!accessToken.token) {
+        throw new Error('Failed to get access token for Cloud Storage');
       }
 
-      await response.json(); // Consume response body
+      // Process all versions in parallel using Sharp
+      console.log('🔄 Processing 4 image versions with Sharp...');
 
-      // Make the object publicly readable
-      const aclUrl = `https://storage.googleapis.com/storage/v1/b/${bucketName}/o/${encodeURIComponent(fileName)}/acl`;
-      const aclResponse = await fetch(aclUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken.token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          entity: 'allUsers',
-          role: 'READER'
-        }),
-      });
+      const [jpgFullBuffer, compressed2400Buffer, thumbnailBuffer] = await Promise.all([
+        // Version 2: JPG full size (no resize, quality 85)
+        sharp(originalBuffer)
+          .jpeg({ quality: 85, mozjpeg: true })
+          .toBuffer(),
 
-      if (!aclResponse.ok) {
-        console.warn('⚠️ Failed to make object public, but upload succeeded');
-      } else {
-        console.log('🔓 Object made publicly readable');
-      }
-      
-      // Generate public URL
-      const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
-      
-      console.log('✅ Cloud Storage upload successful');
-      console.log('🔗 Public URL:', publicUrl);
-      
-      return publicUrl;
-      
+        // Version 3: JPG 2400px max dimension (quality 80)
+        sharp(originalBuffer)
+          .resize(2400, 2400, {
+            fit: 'inside',
+            withoutEnlargement: true
+          })
+          .jpeg({ quality: 80, mozjpeg: true })
+          .toBuffer(),
+
+        // Version 4: Thumbnail 400px max dimension (quality 75)
+        sharp(originalBuffer)
+          .resize(400, 400, {
+            fit: 'inside',
+            withoutEnlargement: true
+          })
+          .jpeg({ quality: 75, mozjpeg: true })
+          .toBuffer(),
+      ]);
+
+      console.log(`📊 Processed sizes: JPG=${(jpgFullBuffer.length / 1024).toFixed(0)}KB, 2400px=${(compressed2400Buffer.length / 1024).toFixed(0)}KB, thumb=${(thumbnailBuffer.length / 1024).toFixed(0)}KB`);
+
+      // Upload all 4 versions in parallel
+      console.log('☁️ Uploading 4 versions to Cloud Storage...');
+
+      const [originalUrl, jpgUrl, compressedUrl, thumbnailUrl] = await Promise.all([
+        // Version 1: Original PNG
+        this.uploadBufferToStorage(originalBuffer, 'ai-images', 'png', baseFileName, accessToken.token),
+
+        // Version 2: JPG full size
+        this.uploadBufferToStorage(jpgFullBuffer, 'compressed-images', 'jpg', baseFileName, accessToken.token),
+
+        // Version 3: JPG 2400px max
+        this.uploadBufferToStorage(compressed2400Buffer, 'compressed-2400', 'jpg', baseFileName, accessToken.token),
+
+        // Version 4: Thumbnail
+        this.uploadBufferToStorage(thumbnailBuffer, 'thumbnails', 'jpg', baseFileName, accessToken.token),
+      ]);
+
+      console.log('✅ All 4 versions uploaded successfully:');
+      console.log('   📸 Original PNG:', originalUrl);
+      console.log('   🖼️ JPG Full:', jpgUrl);
+      console.log('   📐 2400px:', compressedUrl);
+      console.log('   🔍 Thumbnail:', thumbnailUrl);
+
+      return {
+        originalUrl,
+        jpgUrl,
+        compressedUrl,
+        thumbnailUrl,
+      };
+
     } catch (error: any) {
-      console.error('❌ Cloud Storage upload error:', error);
-      throw new Error(`Cloud Storage upload failed: ${error.message}`);
+      console.error('❌ Multi-version upload error:', error);
+      throw new Error(`Image processing/upload failed: ${error.message}`);
     }
   }
 
-  private async callVertexAI(prompt: string, imageSpec: any, model: string, originalRequest?: ImageGenerationRequest): Promise<string> {
+  private async callVertexAI(prompt: string, imageSpec: any, model: string, originalRequest?: ImageGenerationRequest): Promise<ImageUrls> {
     // Extract actual model name (handle frontend unique IDs)
     let actualModel = model;
     
@@ -424,7 +510,7 @@ export class VertexAIImageGenerator {
     }
   }
 
-  private async callImagenAPI(prompt: string, imageSpec: any, model: string, originalRequest?: ImageGenerationRequest): Promise<string> {
+  private async callImagenAPI(prompt: string, imageSpec: any, model: string, originalRequest?: ImageGenerationRequest): Promise<ImageUrls> {
     console.log('🔴 ENTERING IMAGEN API METHOD for model:', model);
 
     // IMPORTANT: Imagen 4.0 does NOT support reference images at all
@@ -491,11 +577,11 @@ export class VertexAIImageGenerator {
       }
 
       const base64Image = result.predictions[0].bytesBase64Encoded;
-      
-      // Upload the base64 image to Cloud Storage
-      const imageUrl = await this.uploadToCloudStorage(base64Image);
-      
-      return imageUrl;
+
+      // Upload the base64 image to Cloud Storage (creates all 4 versions)
+      const imageUrls = await this.uploadToCloudStorage(base64Image);
+
+      return imageUrls;
 
     } catch (error: any) {
       console.error('💥 Vertex AI generation error:', error);
@@ -503,7 +589,7 @@ export class VertexAIImageGenerator {
     }
   }
 
-  private async callGeminiAPI(prompt: string, imageSpec: any, model: string, originalRequest?: ImageGenerationRequest): Promise<string> {
+  private async callGeminiAPI(prompt: string, imageSpec: any, model: string, originalRequest?: ImageGenerationRequest): Promise<ImageUrls> {
     console.log('🟢 ENTERING GEMINI API METHOD for model:', model);
     // Gemini image generation requires 'global' location, not regional
     const geminiLocation = 'global';
@@ -733,11 +819,11 @@ export class VertexAIImageGenerator {
       if (!base64Image) {
         throw new Error('No base64 data in image part');
       }
-      
-      // Upload the base64 image to Cloud Storage
-      const imageUrl = await this.uploadToCloudStorage(base64Image);
-      
-      return imageUrl;
+
+      // Upload the base64 image to Cloud Storage (creates all 4 versions)
+      const imageUrls = await this.uploadToCloudStorage(base64Image);
+
+      return imageUrls;
 
     } catch (error: any) {
       console.error('💥 Gemini generation error:', error);

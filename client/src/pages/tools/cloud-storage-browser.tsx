@@ -1,11 +1,18 @@
 /**
  * Cloud Storage Browser - Browse and manage Google Cloud Storage files
  * Features:
- * - 4 folder tabs: Thumbnails (default), Full Res JPG, Full Res PNG, Videos
+ * - 5 folder tabs: Thumbnails, Full Res JPG, 2400px JPG, Full Res PNG, Videos
  * - Multi-select with checkbox UI
  * - Process Selected: converts PNG → JPG full-res + thumbnail
  * - Fast browsing via thumbnails, modal shows JPG full-res
  * - Download HD button for original PNG
+ *
+ * Folder structure:
+ * - thumbnails/         - 400px max dimension thumbnails (JPG)
+ * - compressed-images/  - Full resolution JPG conversion (no resize)
+ * - compressed-2400/    - 2400px max dimension JPG (web optimised)
+ * - ai-images/          - Original PNG from AI generation
+ * - ai-videos/          - VEO video files
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -50,7 +57,7 @@ interface FolderStats {
 type ViewMode = 'grid' | 'list';
 type SortBy = 'name' | 'size' | 'date' | 'type';
 type SortOrder = 'asc' | 'desc';
-type FolderType = 'thumbnails/' | 'jpg-images/' | 'ai-images/' | 'ai-videos/';
+type FolderType = 'thumbnails/' | 'compressed-images/' | 'compressed-2400/' | 'ai-images/' | 'ai-videos/' | 'uploaded-images/';
 
 // Video Thumbnail Component with optimized loading
 function VideoThumbnail({ file }: { file: CloudFile }) {
@@ -223,8 +230,10 @@ export default function CloudStorageBrowser() {
     const baseName = file.name.replace(/\.[^/.]+$/, ''); // Remove extension
     const bucket = file.bucket;
 
-    if (targetFolder === 'jpg-images/') {
-      return `https://storage.googleapis.com/${bucket}/jpg-images/${baseName}.jpg`;
+    if (targetFolder === 'compressed-images/') {
+      return `https://storage.googleapis.com/${bucket}/compressed-images/${baseName}.jpg`;
+    } else if (targetFolder === 'compressed-2400/') {
+      return `https://storage.googleapis.com/${bucket}/compressed-2400/${baseName}.jpg`;
     } else if (targetFolder === 'ai-images/') {
       // PNG files might have same name or .png extension
       return `https://storage.googleapis.com/${bucket}/ai-images/${baseName}.png`;
@@ -462,7 +471,7 @@ export default function CloudStorageBrowser() {
   const handleOpenFullRes = (file: CloudFile) => {
     // When viewing from thumbnails folder, open the JPG full-res version instead
     const urlToOpen = folderPrefix === 'thumbnails/' && file.type === 'image'
-      ? getCorrespondingUrl(file, 'jpg-images/')
+      ? getCorrespondingUrl(file, 'compressed-images/')
       : file.publicUrl;
     window.open(urlToOpen, '_blank');
   };
@@ -591,7 +600,7 @@ export default function CloudStorageBrowser() {
             <div className="flex flex-col gap-4">
               {/* Top Row: Folder Selector */}
               <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-                {/* 4-Tab Folder Selector */}
+                {/* 5-Tab Folder Selector */}
                 <div className="flex flex-wrap bg-gray-900/60 rounded-lg p-1 gap-1">
                   <button
                     onClick={() => setFolderPrefix('thumbnails/')}
@@ -604,14 +613,24 @@ export default function CloudStorageBrowser() {
                     🖼️ Thumbnails ({folderStats['thumbnails/']?.count || 0})
                   </button>
                   <button
-                    onClick={() => setFolderPrefix('jpg-images/')}
+                    onClick={() => setFolderPrefix('compressed-images/')}
                     className={`px-3 py-2 rounded-md font-medium transition-all text-sm ${
-                      folderPrefix === 'jpg-images/'
+                      folderPrefix === 'compressed-images/'
                         ? 'bg-salmon text-white shadow-lg'
                         : 'text-gray-300 hover:text-white hover:bg-white/10'
                     }`}
                   >
-                    📷 Full Res JPG ({folderStats['jpg-images/']?.count || 0})
+                    📷 Full Res JPG ({folderStats['compressed-images/']?.count || 0})
+                  </button>
+                  <button
+                    onClick={() => setFolderPrefix('compressed-2400/')}
+                    className={`px-3 py-2 rounded-md font-medium transition-all text-sm ${
+                      folderPrefix === 'compressed-2400/'
+                        ? 'bg-salmon text-white shadow-lg'
+                        : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    📐 2400px JPG ({folderStats['compressed-2400/']?.count || 0})
                   </button>
                   <button
                     onClick={() => setFolderPrefix('ai-images/')}
@@ -622,6 +641,16 @@ export default function CloudStorageBrowser() {
                     }`}
                   >
                     🎨 Full Res PNG ({folderStats['ai-images/']?.count || 0})
+                  </button>
+                  <button
+                    onClick={() => setFolderPrefix('uploaded-images/')}
+                    className={`px-3 py-2 rounded-md font-medium transition-all text-sm ${
+                      folderPrefix === 'uploaded-images/'
+                        ? 'bg-salmon text-white shadow-lg'
+                        : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    📤 Uploads ({folderStats['uploaded-images/']?.count || 0})
                   </button>
                   <button
                     onClick={() => setFolderPrefix('ai-videos/')}
@@ -1025,7 +1054,7 @@ export default function CloudStorageBrowser() {
                   <img
                     // When viewing from thumbnails folder, load the JPG full-res version
                     src={folderPrefix === 'thumbnails/'
-                      ? getCorrespondingUrl(selectedFile, 'jpg-images/')
+                      ? getCorrespondingUrl(selectedFile, 'compressed-images/')
                       : selectedFile.publicUrl
                     }
                     alt={selectedFile.name}
