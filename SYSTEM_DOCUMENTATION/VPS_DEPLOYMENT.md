@@ -631,14 +631,23 @@ ssh slyfox-vps "cd /opt/sfweb && chmod -R 644 public/images && find public -type
 
 # 🎯 DEPLOYMENT HISTORY
 
-**Last Successful Deployment**: 2025-12-29 (Supabase migration + VITE environment variables fix)
+**Last Successful Deployment**: 2026-02-04 (YouTube video integration + admin date fixes)
+
+**Features Deployed**:
+
+- YouTube video integration for video galleries
+- Admin shoot date display fixes (was showing hardcoded "01 Jan 2024")
+- Gallery tooltip enhancements with date info
+- New VIDEO_GALLERY_SYSTEM.md documentation
+
+**Previous Deployment**: 2025-12-29 (Supabase migration + VITE environment variables fix)
 **Critical Fixes Applied**:
 - VITE environment variables Docker build args implementation
-- Supabase authentication system migration (anon/service → publishable/secret keys)  
+- Supabase authentication system migration (anon/service → publishable/secret keys)
 - Docker build cache bypass methodology for environment variable changes
 - Production environment variable verification system
 
-**Previous Deployment**: 2025-09-08 (Multi-platform fix)
+**Earlier Deployment**: 2025-09-08 (Multi-platform fix)
 **Legacy Fixes**:
 - Docker multi-platform build compatibility
 - Production override enforcement
