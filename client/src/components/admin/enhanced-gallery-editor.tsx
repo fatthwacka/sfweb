@@ -71,6 +71,10 @@ interface GalleryVideo {
   duration?: number;
   width?: number;
   height?: number;
+  // YouTube integration fields
+  sourceType?: 'native' | 'youtube';
+  externalId?: string;
+  externalUrl?: string;
 }
 
 type MediaItem = GalleryImage | GalleryVideo;
@@ -1116,10 +1120,13 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
             {selectedCover && (() => {
               const orderedMedia = mediaType === 'video' ? videos : images;
               const coverMedia = orderedMedia.find(item => item.id === selectedCover);
-              const coverImageUrl = coverMedia?.storage_path ? 
-                (mediaType === 'video' ? 
-                  VideoUrl.forThumbnail(coverMedia as any) : 
-                  ImageUrl.forViewing(coverMedia.storage_path)
+              // For videos, use VideoUrl.forThumbnail which handles both native and YouTube
+              // For images, use ImageUrl.forViewing
+              // YouTube videos have empty storage_path but valid thumbnailPath
+              const coverImageUrl = coverMedia ?
+                (mediaType === 'video' ?
+                  VideoUrl.forThumbnail(coverMedia as any) :
+                  (coverMedia.storage_path ? ImageUrl.forViewing(coverMedia.storage_path) : null)
                 ) : null;
               
               return coverImageUrl ? (

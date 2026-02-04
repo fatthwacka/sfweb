@@ -24,6 +24,7 @@ import {
   Play,
   Pause,
   Package,
+  ExternalLink,
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
@@ -79,6 +80,10 @@ interface Video {
   height?: number;
   featuredVideo: boolean;
   classification: string;
+  // YouTube integration fields
+  sourceType?: 'native' | 'youtube';
+  externalId?: string;
+  externalUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -783,20 +788,34 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
 
   // Calculate bulk download size estimate
   const getBulkDownloadEstimate = () => {
-    const imageCount = mediaItems.length;
+    // Separate downloadable items from YouTube videos
+    const downloadableItems = mediaItems.filter(item => {
+      if (item.mediaType === 'video') {
+        return VideoUrl.supportsDownload(item as Video);
+      }
+      return true; // Images are always downloadable
+    });
+    const youtubeCount = mediaItems.filter(item =>
+      item.mediaType === 'video' && VideoUrl.isYouTube(item as Video)
+    ).length;
+
+    const downloadableCount = downloadableItems.length;
     // Calculate total size from database file sizes (default to 4MB if not available)
     // Add 50% safety margin for ZIP overhead and any missing metadata
-    const totalBytes = mediaItems.reduce((sum, img) => sum + (img.fileSize || 4000000), 0);
+    const totalBytes = downloadableItems.reduce((sum, img) => sum + (img.fileSize || 4000000), 0);
     const estimatedBytes = Math.round(totalBytes * 1.5);
     const estimatedMB = Math.round(estimatedBytes / (1024 * 1024));
     const estimatedGB = estimatedMB > 1000 ? (estimatedMB / 1000).toFixed(1) : null;
 
     return {
-      count: imageCount,
+      count: downloadableCount,
+      totalCount: mediaItems.length,
+      youtubeCount,
       sizeMB: estimatedMB,
       sizeGB: estimatedGB,
       sizeText: estimatedGB ? `${estimatedGB}GB` : `${estimatedMB}MB`,
-      isLargeAlbum: imageCount > 65
+      isLargeAlbum: downloadableCount > 65,
+      isYouTubeOnly: downloadableCount === 0 && youtubeCount > 0
     };
   };
 
@@ -1285,27 +1304,25 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                   : "Portfolio")}
               </h2>
               {/* Shoot info tooltip */}
-              {(shoot.location || shoot.description) && (
-                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-4 py-3 bg-black/90 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none max-w-lg z-50">
+              {(shoot.location || shoot.description || shoot.shoot_date) && (
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-5 py-3 bg-black/90 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none min-w-[280px] max-w-xl z-50">
                   <div className="flex flex-col gap-1.5">
-                    <div className="font-semibold">{shoot.customTitle || shoot.title}</div>
+                    <div className="font-semibold text-base">{shoot.customTitle || shoot.title}</div>
                     {shoot.location && <div className="text-gray-300">{shoot.location}</div>}
+                    {shoot.shoot_date && (
+                      <div className="text-gray-400">
+                        {new Date(shoot.shoot_date).toLocaleDateString('en-GB', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric'
+                        })}
+                      </div>
+                    )}
                     {shoot.description && <div className="text-gray-400 break-words">{shoot.description}</div>}
                   </div>
                 </div>
               )}
             </div>
-
-            {/* Shoot Date */}
-            {shoot.shootDate && (
-              <div className="font-barlow font-light text-sm text-white/80 uppercase tracking-widest">
-                {new Date(shoot.shootDate).toLocaleDateString('en-US', { 
-                  month: 'long', 
-                  day: 'numeric',
-                  year: 'numeric'
-                }).replace(',', 'TH,')}
-              </div>
-            )}
 
             {/* Client Portfolio Button */}
             {client && (
@@ -1443,20 +1460,32 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
       >
         {/* Video Background for Video Albums */}
         {coverVideo && shoot.media_type === 'video' ? (
-          <video
-            src={VideoUrl.forStreaming(coverVideo)}
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{
-              objectPosition: getCoverImageAlignment(),
-            }}
-            autoPlay
-            loop
-            muted
-            playsInline
-            poster={VideoUrl.forThumbnail(coverVideo)}
-          >
-            Your browser does not support the video tag.
-          </video>
+          // For YouTube videos, show thumbnail as static image (no autoplay iframe in hero)
+          VideoUrl.isYouTube(coverVideo) ? (
+            <div
+              className="absolute inset-0 w-full h-full bg-cover bg-center"
+              style={{
+                backgroundImage: `url(${VideoUrl.forThumbnail(coverVideo)})`,
+                backgroundPosition: getCoverImageAlignment(),
+              }}
+            />
+          ) : (
+            // Native video - show actual video with autoplay
+            <video
+              src={VideoUrl.forStreaming(coverVideo)}
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{
+                objectPosition: getCoverImageAlignment(),
+              }}
+              autoPlay
+              loop
+              muted
+              playsInline
+              poster={VideoUrl.forThumbnail(coverVideo)}
+            >
+              Your browser does not support the video tag.
+            </video>
+          )
         ) : coverImage ? (
           /* Image Background for Photo Albums */
           <div
@@ -1550,6 +1579,14 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                                 {Math.floor(item.duration / 60)}:{(item.duration % 60).toString().padStart(2, '0')}
                               </div>
                             )}
+                            {/* YouTube badge */}
+                            {VideoUrl.isYouTube(item as Video) && (
+                              <div className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                </svg>
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <img
@@ -1621,6 +1658,14 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                               {item.duration && (
                                 <div className="absolute bottom-1 right-1 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded text-[10px]">
                                   {Math.floor(item.duration / 60)}:{(item.duration % 60).toString().padStart(2, '0')}
+                                </div>
+                              )}
+                              {/* YouTube badge */}
+                              {VideoUrl.isYouTube(item as Video) && (
+                                <div className="absolute top-1 left-1 bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                                  <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                  </svg>
                                 </div>
                               )}
                             </div>
@@ -1797,22 +1842,43 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
               }}
             >
               {mediaItems[modalImageIndex]?.mediaType === 'video' ? (
-                <video
-                  src={VideoUrl.forStreaming(mediaItems[modalImageIndex] as Video)}
-                  className="max-w-full max-h-full w-auto h-auto object-contain select-none"
-                  style={{
-                    maxWidth: 'calc(100vw - 1rem)',
-                    maxHeight: 'calc(100vh - 4rem)',
-                    touchAction: 'none'
-                  }}
-                  controls
-                  autoPlay
-                  playsInline
-                  preload="metadata"
-                  poster={VideoUrl.forThumbnail(mediaItems[modalImageIndex] as Video)}
-                >
-                  Your browser does not support the video tag.
-                </video>
+                // Check if it's a YouTube video or native video
+                VideoUrl.isYouTube(mediaItems[modalImageIndex] as Video) ? (
+                  // YouTube video - render iframe that fills available space
+                  <div
+                    className="relative flex items-center justify-center"
+                    style={{
+                      width: 'min(100vw - 2rem, calc((100vh - 6rem) * 16 / 9))',
+                      height: 'min(100vh - 6rem, calc((100vw - 2rem) * 9 / 16))',
+                    }}
+                  >
+                    <iframe
+                      src={`${VideoUrl.forStreaming(mediaItems[modalImageIndex] as Video)}&autoplay=1`}
+                      className="absolute inset-0 w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                      allowFullScreen
+                      title={(mediaItems[modalImageIndex] as Video).filename}
+                    />
+                  </div>
+                ) : (
+                  // Native video - render video element
+                  <video
+                    src={VideoUrl.forStreaming(mediaItems[modalImageIndex] as Video)}
+                    className="max-w-full max-h-full w-auto h-auto object-contain select-none"
+                    style={{
+                      maxWidth: 'calc(100vw - 1rem)',
+                      maxHeight: 'calc(100vh - 4rem)',
+                      touchAction: 'none'
+                    }}
+                    controls
+                    autoPlay
+                    playsInline
+                    preload="metadata"
+                    poster={VideoUrl.forThumbnail(mediaItems[modalImageIndex] as Video)}
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                )
               ) : (
                 <TransformWrapper
                   key={modalImageIndex}
@@ -1918,17 +1984,36 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
               </button>
             </div>
             
-            {/* Download button */}
+            {/* Download button (native) or Open in YouTube button */}
             <span>•</span>
-            <button
-              onClick={() =>
-                downloadMedia(mediaItems[modalImageIndex])
-              }
-              className="p-2 rounded-full hover:bg-white/30 bg-white/20 transition-colors"
-              title="Download"
-            >
-              <Download className="w-4 h-4" />
-            </button>
+            {mediaItems[modalImageIndex]?.mediaType === 'video' &&
+             VideoUrl.isYouTube(mediaItems[modalImageIndex] as Video) ? (
+              // YouTube video - show "Open in YouTube" button
+              <button
+                onClick={() => {
+                  const youtubeUrl = VideoUrl.getYouTubeUrl(mediaItems[modalImageIndex] as Video);
+                  if (youtubeUrl) {
+                    window.open(youtubeUrl, '_blank', 'noopener,noreferrer');
+                  }
+                }}
+                className="p-2 rounded-full hover:bg-red-500/80 bg-red-500/60 transition-colors flex items-center gap-1"
+                title="Open in YouTube"
+              >
+                <ExternalLink className="w-4 h-4" />
+                <span className="text-xs hidden sm:inline">YouTube</span>
+              </button>
+            ) : (
+              // Native media - show download button
+              <button
+                onClick={() =>
+                  downloadMedia(mediaItems[modalImageIndex])
+                }
+                className="p-2 rounded-full hover:bg-white/30 bg-white/20 transition-colors"
+                title="Download"
+              >
+                <Download className="w-4 h-4" />
+              </button>
+            )}
             </div>
           </div>
 
@@ -1941,23 +2026,53 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
           <div className="bg-white rounded-lg p-6 max-w-md mx-4">
             <h3 className="text-xl font-semibold mb-4 text-gray-900">Download Entire Album</h3>
             <div className="space-y-3 mb-6">
-              <p className="text-gray-700">
-                You are about to download <strong>{getBulkDownloadEstimate().count} images</strong>
-              </p>
-              <p className="text-gray-600 text-sm">
-                Estimated size: <strong>{getBulkDownloadEstimate().sizeText}</strong>
-              </p>
-              {getBulkDownloadEstimate().isLargeAlbum ? (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
-                  <p className="text-yellow-800 text-sm">
-                    <strong>Large Album Notice:</strong> This album has more than 65 images. 
-                    Currently, only albums with 65 images or fewer can be downloaded at once.
+              {getBulkDownloadEstimate().isYouTubeOnly ? (
+                // YouTube-only album
+                <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <svg className="w-5 h-5 text-red-600" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    </svg>
+                    <p className="text-red-800 font-medium">YouTube Videos Cannot Be Downloaded</p>
+                  </div>
+                  <p className="text-red-700 text-sm">
+                    This album contains {getBulkDownloadEstimate().youtubeCount} YouTube video{getBulkDownloadEstimate().youtubeCount !== 1 ? 's' : ''}.
+                    YouTube videos must be viewed on YouTube and cannot be downloaded directly.
+                  </p>
+                  <p className="text-red-600 text-xs mt-2">
+                    Click on individual videos to open them in YouTube.
                   </p>
                 </div>
               ) : (
-                <p className="text-gray-500 text-xs">
-                  Files will be downloaded as a ZIP archive to your Downloads folder.
-                </p>
+                // Normal downloadable content
+                <>
+                  <p className="text-gray-700">
+                    You are about to download <strong>{getBulkDownloadEstimate().count} {shoot?.media_type === 'video' ? 'video' : 'image'}{getBulkDownloadEstimate().count !== 1 ? 's' : ''}</strong>
+                  </p>
+                  <p className="text-gray-600 text-sm">
+                    Estimated size: <strong>{getBulkDownloadEstimate().sizeText}</strong>
+                  </p>
+                  {getBulkDownloadEstimate().youtubeCount > 0 && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
+                      <p className="text-amber-800 text-sm">
+                        <strong>Note:</strong> {getBulkDownloadEstimate().youtubeCount} YouTube video{getBulkDownloadEstimate().youtubeCount !== 1 ? 's are' : ' is'} not included.
+                        YouTube videos must be viewed on YouTube.
+                      </p>
+                    </div>
+                  )}
+                  {getBulkDownloadEstimate().isLargeAlbum ? (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                      <p className="text-yellow-800 text-sm">
+                        <strong>Large Album Notice:</strong> This album has more than 65 items.
+                        Currently, only albums with 65 items or fewer can be downloaded at once.
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-xs">
+                      Files will be downloaded as a ZIP archive to your Downloads folder.
+                    </p>
+                  )}
+                </>
               )}
             </div>
             <div className="flex gap-3 justify-end">
@@ -1965,19 +2080,21 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                 onClick={() => setBulkDownloadModal(false)}
                 className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
               >
-                Cancel
+                {getBulkDownloadEstimate().isYouTubeOnly ? 'Close' : 'Cancel'}
               </button>
-              <button
-                onClick={executeBulkDownload}
-                disabled={getBulkDownloadEstimate().isLargeAlbum}
-                className={`px-6 py-2 rounded-md transition-colors ${
-                  getBulkDownloadEstimate().isLargeAlbum
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-salmon text-white hover:bg-salmon-muted'
-                }`}
-              >
-                {getBulkDownloadEstimate().isLargeAlbum ? 'Album Too Large' : 'Download Album'}
-              </button>
+              {!getBulkDownloadEstimate().isYouTubeOnly && (
+                <button
+                  onClick={executeBulkDownload}
+                  disabled={getBulkDownloadEstimate().isLargeAlbum || getBulkDownloadEstimate().count === 0}
+                  className={`px-6 py-2 rounded-md transition-colors ${
+                    getBulkDownloadEstimate().isLargeAlbum || getBulkDownloadEstimate().count === 0
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-salmon text-white hover:bg-salmon-muted'
+                  }`}
+                >
+                  {getBulkDownloadEstimate().isLargeAlbum ? 'Album Too Large' : 'Download Album'}
+                </button>
+              )}
             </div>
           </div>
         </div>

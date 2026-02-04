@@ -18,6 +18,9 @@ interface UnifiedCardProps {
       thumbnailPath: string;
       duration?: number;
       filename: string;
+      // YouTube integration fields
+      sourceType?: 'native' | 'youtube';
+      externalId?: string;
     };
     // Group-specific fields
     isGroup?: boolean;
@@ -82,21 +85,26 @@ export function UnifiedCard({ shoot }: UnifiedCardProps) {
   const displayDate = getDisplayDate();
   
   // Determine if video autoplay should be enabled
+  // Only native videos can autoplay on hover - YouTube videos show thumbnail only
   const shouldShowVideoOnHover = () => {
-    // For individual galleries: only if it's a video-only gallery
+    // Check if cover video is a native video (not YouTube)
+    const isNativeVideo = shoot.coverVideoInfo &&
+      (!shoot.coverVideoInfo.sourceType || shoot.coverVideoInfo.sourceType === 'native');
+
+    // For individual galleries: only if it's a video-only gallery with native cover video
     if (!shoot.isGroup) {
-      return shoot.mediaType === 'video' && shoot.coverVideoInfo;
+      return shoot.mediaType === 'video' && isNativeVideo;
     }
-    
-    // For groups: only if ALL galleries are video galleries (no mixed media)
+
+    // For groups: only if ALL galleries are video galleries (no mixed media) and cover is native
     if (shoot.isGroup && shoot.shoots) {
       const hasPhotoGalleries = shoot.shoots.some(s => s.mediaType === 'photo');
       const hasVideoGalleries = shoot.shoots.some(s => s.mediaType === 'video');
-      
-      // Only show video on hover if there are videos and NO photos (video-only project)
-      return hasVideoGalleries && !hasPhotoGalleries && shoot.coverVideoInfo;
+
+      // Only show video on hover if there are videos, NO photos, and native cover video
+      return hasVideoGalleries && !hasPhotoGalleries && isNativeVideo;
     }
-    
+
     return false;
   };
   

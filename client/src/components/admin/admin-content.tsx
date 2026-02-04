@@ -1660,12 +1660,12 @@ export function AdminContent({ userRole }: AdminContentProps) {
                                                     {'  |  '}{shoot.shootType.charAt(0).toUpperCase() + shoot.shootType.slice(1)}
                                                   </span>
                                                 )} */}
-                                                {true && ( // shoot.shootDate - field not in current schema
+                                                {shoot.shoot_date && (
                                                   <span className="text-xs">
-                                                    {'  '}({new Date('2024-01-01').toLocaleDateString('en-GB', { 
-                                                      day: '2-digit', 
-                                                      month: 'short', 
-                                                      year: 'numeric' 
+                                                    {'  '}({new Date(shoot.shoot_date).toLocaleDateString('en-GB', {
+                                                      day: '2-digit',
+                                                      month: 'short',
+                                                      year: 'numeric'
                                                     })})
                                                   </span>
                                                 )}
@@ -2010,10 +2010,14 @@ export function AdminContent({ userRole }: AdminContentProps) {
                               <div className="flex items-center gap-1">
                                 <Calendar className="w-4 h-4 icon-cyan" />
                                 {(() => {
+                                  if (!shoot.shoot_date) return 'No date';
                                   try {
-                                    // if (!shoot.shootDate) return 'No date'; - field not in current schema
-                                    const date = new Date('2024-01-01'); // shoot.shootDate - field not in current schema
-                                    return isNaN(date.getTime()) ? 'Invalid date' : date.toLocaleDateString();
+                                    const date = new Date(shoot.shoot_date);
+                                    return isNaN(date.getTime()) ? 'Invalid date' : date.toLocaleDateString('en-GB', {
+                                      day: '2-digit',
+                                      month: 'short',
+                                      year: 'numeric'
+                                    });
                                   } catch {
                                     return 'Invalid date';
                                   }
@@ -2706,10 +2710,14 @@ export function AdminContent({ userRole }: AdminContentProps) {
                           {galleryFilteredShoots.map(shoot => (
                             <SelectItem key={shoot.id} value={shoot.id.toString()}>
                               {shoot.title} ({(() => {
+                                if (!shoot.shoot_date) return 'No date';
                                 try {
-                                  // if (!shoot.shootDate) return 'No date'; - field not in current schema
-                                  const date = new Date('2024-01-01'); // shoot.shootDate - field not in current schema
-                                  return isNaN(date.getTime()) ? 'No date' : date.toLocaleDateString();
+                                  const date = new Date(shoot.shoot_date);
+                                  return isNaN(date.getTime()) ? 'No date' : date.toLocaleDateString('en-GB', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    year: 'numeric'
+                                  });
                                 } catch {
                                   return 'No date';
                                 }

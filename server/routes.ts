@@ -21,6 +21,7 @@ import aiBlogRouter from './routes/ai-blog';
 import contentManagementRouter from './routes/content-management/index.js';
 import promptEngineRouter from './routes/prompt-engine';
 import contentTypesRouter from './routes/content-types';
+import youtubeRouter from './routes/youtube';
 import { sendContactEmail, validateEmailConfig, sendAlbumReadyEmail } from './email-service';
 import { verifyRecaptcha } from './recaptcha-service';
 import { eq, and, sql } from 'drizzle-orm';
@@ -3748,6 +3749,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Content types management for prompt enhancement guidelines
   app.use('/api/content-types', contentTypesRouter);
+
+  // YouTube video integration routes
+  app.use('/api/youtube', youtubeRouter);
+  console.log('✅ YouTube router mounted');
 
   // AI prompt overrides for client-specific system prompts
   const aiPromptOverridesRouter = await import('./routes/ai-prompt-overrides');

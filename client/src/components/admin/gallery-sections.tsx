@@ -16,14 +16,14 @@ import { useAutoSave } from '@/hooks/use-auto-save';
 import { ConflictResolutionDialog } from '@/components/admin/conflict-resolution-dialog';
 import { VideoConflictResolutionDialog } from '@/components/admin/video-conflict-resolution-dialog';
 import type { ConflictInfo, ConflictResolution, VideoConflictInfo, VideoConflictResolution } from '@shared/schema';
-import { 
-  Camera, 
-  Settings, 
-  Upload, 
-  Palette, 
-  Save, 
-  User, 
-  Edit, 
+import {
+  Camera,
+  Settings,
+  Upload,
+  Palette,
+  Save,
+  User,
+  Edit,
   AlertTriangle,
   Plus,
   ChevronDown,
@@ -31,7 +31,9 @@ import {
   Calendar,
   Check,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  ExternalLink,
+  Youtube
 } from 'lucide-react';
 
 interface BasicInfoSectionProps {
@@ -551,8 +553,81 @@ export function AddImagesSection({ onUpload, isUploading, toast, shootId, mediaT
   const [videoConflictDialogOpen, setVideoConflictDialogOpen] = React.useState(false);
   const [pendingFiles, setPendingFiles] = React.useState<File[]>([]);
 
+  // YouTube video states
+  const [youtubeUrl, setYoutubeUrl] = React.useState('');
+  const [youtubeFetching, setYoutubeFetching] = React.useState(false);
+  const [youtubeVideoInfo, setYoutubeVideoInfo] = React.useState<{
+    videoId: string;
+    title: string;
+    authorName: string;
+    thumbnailUrl: string;
+    thumbnails: { maxres: string };
+  } | null>(null);
+  const [youtubeAdding, setYoutubeAdding] = React.useState(false);
+
+  const queryClient = useQueryClient();
+
   // Determine if this is a video album based on mediaType prop
   const isVideo = mediaType === 'video';
+
+  // Fetch YouTube video info
+  const fetchYoutubeInfo = async () => {
+    if (!youtubeUrl.trim()) {
+      toast({ title: 'Error', description: 'Please enter a YouTube URL', variant: 'destructive' });
+      return;
+    }
+
+    setYoutubeFetching(true);
+    try {
+      const response = await fetch(`/api/youtube/oembed?url=${encodeURIComponent(youtubeUrl)}`);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to fetch video info');
+      }
+      const data = await response.json();
+      setYoutubeVideoInfo(data);
+      toast({ title: 'Video Found', description: data.title });
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      setYoutubeVideoInfo(null);
+    } finally {
+      setYoutubeFetching(false);
+    }
+  };
+
+  // Add YouTube video to gallery
+  const addYoutubeVideo = async () => {
+    if (!youtubeVideoInfo) return;
+
+    setYoutubeAdding(true);
+    try {
+      const response = await fetch('/api/youtube/add-to-gallery', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          shootId,
+          youtubeUrl,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to add video');
+      }
+
+      toast({ title: 'Success', description: 'YouTube video added to gallery' });
+      setYoutubeUrl('');
+      setYoutubeVideoInfo(null);
+
+      // Invalidate queries to refresh the gallery
+      queryClient.invalidateQueries({ queryKey: ['shoot', shootId] });
+      queryClient.invalidateQueries({ queryKey: ['videos', shootId] });
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } finally {
+      setYoutubeAdding(false);
+    }
+  };
 
   // Status indicator for upload state
   const UploadStatusIndicator = () => {
@@ -866,9 +941,110 @@ export function AddImagesSection({ onUpload, isUploading, toast, shootId, mediaT
               : 'Supports: JPG, PNG, WEBP • Max 10MB per image • Up to 50 images per batch'}
           </p>
         </div>
+
+        {/* YouTube Video Addition - Only for video albums */}
+        {isVideo && (
+          <div className="mt-6 border-t border-border pt-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Youtube className="w-5 h-5 text-red-500" />
+              <h4 className="font-medium text-foreground">Add YouTube Video</h4>
+            </div>
+
+            <div className="space-y-4">
+              {/* YouTube URL Input */}
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Paste YouTube URL (e.g., https://youtube.com/watch?v=...)"
+                  value={youtubeUrl}
+                  onChange={(e) => setYoutubeUrl(e.target.value)}
+                  className="flex-1"
+                  disabled={youtubeFetching || youtubeAdding}
+                />
+                <Button
+                  onClick={fetchYoutubeInfo}
+                  disabled={youtubeFetching || !youtubeUrl.trim()}
+                  variant="outline"
+                  className="border-red-500/50 text-red-500 hover:bg-red-500/10"
+                >
+                  {youtubeFetching ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    'Fetch Info'
+                  )}
+                </Button>
+              </div>
+
+              {/* YouTube Video Preview */}
+              {youtubeVideoInfo && (
+                <div className="bg-background/80 border border-border rounded-lg p-4">
+                  <div className="flex gap-4">
+                    <div className="flex-shrink-0">
+                      <img
+                        src={youtubeVideoInfo.thumbnails.maxres || youtubeVideoInfo.thumbnailUrl}
+                        alt={youtubeVideoInfo.title}
+                        className="w-40 h-24 object-cover rounded"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h5 className="font-medium text-foreground truncate" title={youtubeVideoInfo.title}>
+                        {youtubeVideoInfo.title}
+                      </h5>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {youtubeVideoInfo.authorName}
+                      </p>
+                      <div className="flex items-center gap-2 mt-3">
+                        <Button
+                          onClick={addYoutubeVideo}
+                          disabled={youtubeAdding}
+                          size="sm"
+                          className="bg-red-500 hover:bg-red-600 text-white"
+                        >
+                          {youtubeAdding ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Adding...
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="w-4 h-4 mr-2" />
+                              Add to Gallery
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setYoutubeUrl('');
+                            setYoutubeVideoInfo(null);
+                          }}
+                          variant="ghost"
+                          size="sm"
+                        >
+                          Cancel
+                        </Button>
+                        <a
+                          href={`https://youtu.be/${youtubeVideoInfo.videoId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 ml-auto"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          Preview
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <p className="text-xs text-muted-foreground">
+                Add videos from YouTube by pasting the URL. The video will be embedded and won't count against your storage.
+              </p>
+            </div>
+          </div>
+        )}
         </CardContent>
       )}
-      
+
       {/* Conflict Resolution Dialog */}
       <ConflictResolutionDialog
         open={conflictDialogOpen}

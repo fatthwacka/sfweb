@@ -102,16 +102,20 @@ export const videos = pgTable("videos", {
   id: uuid("id").defaultRandom().primaryKey(),
   shootId: uuid("shoot_id").references(() => shoots.id).notNull(),
   filename: text("filename").notNull(),
-  storagePath: text("storage_path").notNull(), // Original full-resolution video
+  storagePath: text("storage_path").notNull(), // Original full-resolution video (empty string for YouTube)
   optimizedPath: text("optimized_path"), // Web-optimized 1080p version for streaming
-  thumbnailPath: text("thumbnail_path").notNull(), // 1200px JPEG thumbnail
-  fileSize: integer("file_size").notNull(),
+  thumbnailPath: text("thumbnail_path").notNull(), // 1200px JPEG thumbnail (or YouTube auto-thumbnail URL)
+  fileSize: integer("file_size").notNull(), // 0 for YouTube videos
   sequence: integer("sequence").default(0).notNull(),
   duration: integer("duration"), // video duration in seconds
   width: integer("width"), // video resolution width
   height: integer("height"), // video resolution height
   downloadCount: integer("download_count").default(0).notNull(),
   featuredVideo: boolean("featured_video").default(false).notNull(),
+  // YouTube integration fields
+  sourceType: text("source_type").default("native").notNull(), // 'native' | 'youtube'
+  externalId: text("external_id"), // YouTube video ID (e.g., 'dQw4w9WgXcQ')
+  externalUrl: text("external_url"), // Full YouTube URL for reference
   createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
 });
