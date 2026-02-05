@@ -1370,19 +1370,21 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                 </div>
               </div>
 
-              {/* Start Slideshow Button */}
-              <div className="relative group flex items-center justify-center">
-                <button
-                  onClick={() => startSlideshow(0)}
-                  className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 hover:scale-110 transition-all duration-300 p-2 rounded-full flex items-center justify-center"
-                  title="Start Slideshow"
-                >
-                  <Play className="w-5 h-5" />
-                </button>
-                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-black/90 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
-                  Start Slideshow
+              {/* Start Slideshow Button - only show for photo albums, not video albums */}
+              {shoot.media_type !== 'video' && (
+                <div className="relative group flex items-center justify-center">
+                  <button
+                    onClick={() => startSlideshow(0)}
+                    className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 hover:scale-110 transition-all duration-300 p-2 rounded-full flex items-center justify-center"
+                    title="Start Slideshow"
+                  >
+                    <Play className="w-5 h-5" />
+                  </button>
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-black/90 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
+                    Start Slideshow
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Download Album Icon */}
               <div className="relative group flex items-center justify-center">
@@ -1742,8 +1744,8 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
             left: 0,
             right: 0,
             bottom: 0,
-            width: '100vw',
-            height: '100vh',
+            width: '100dvw',
+            height: '100dvh', // Dynamic viewport - expands when URL bar hides
             overflow: 'visible'
           }}
           data-modal-index={modalImageIndex}
@@ -1767,37 +1769,39 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
             <X className="w-5 h-5" />
           </button>
 
-          {/* Slideshow controls (top left, below nav bar) */}
-          <div className="absolute left-4 flex items-center gap-2 z-[10000]" style={{ top: '100px' }}>
-            {slideshowActive ? (
-              <>
+          {/* Slideshow controls (top left, below nav bar) - only show for photo albums, not video albums */}
+          {shoot.media_type !== 'video' && (
+            <div className="absolute left-4 flex items-center gap-2 z-[10000]" style={{ top: '100px' }}>
+              {slideshowActive ? (
+                <>
+                  <button
+                    onClick={toggleSlideshowPause}
+                    className="text-white hover:text-gray-300 transition-colors bg-black/40 rounded-full p-2 backdrop-blur-sm"
+                    title={slideshowPaused ? "Resume Slideshow" : "Pause Slideshow"}
+                  >
+                    {slideshowPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
+                  </button>
+                  <span className="text-white/70 text-sm bg-black/40 rounded-full px-3 py-1 backdrop-blur-sm">
+                    {slideshowPaused ? 'Paused' : 'Playing'}
+                  </span>
+                </>
+              ) : (
                 <button
-                  onClick={toggleSlideshowPause}
+                  onClick={() => {
+                    setSlideshowActive(true);
+                    setSlideshowPaused(false);
+                  }}
                   className="text-white hover:text-gray-300 transition-colors bg-black/40 rounded-full p-2 backdrop-blur-sm"
-                  title={slideshowPaused ? "Resume Slideshow" : "Pause Slideshow"}
+                  title="Start Slideshow"
                 >
-                  {slideshowPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
+                  <Play className="w-5 h-5" />
                 </button>
-                <span className="text-white/70 text-sm bg-black/40 rounded-full px-3 py-1 backdrop-blur-sm">
-                  {slideshowPaused ? 'Paused' : 'Playing'}
-                </span>
-              </>
-            ) : (
-              <button
-                onClick={() => {
-                  setSlideshowActive(true);
-                  setSlideshowPaused(false);
-                }}
-                className="text-white hover:text-gray-300 transition-colors bg-black/40 rounded-full p-2 backdrop-blur-sm"
-                title="Start Slideshow"
-              >
-                <Play className="w-5 h-5" />
-              </button>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
-          {/* Slideshow progress bar */}
-          {slideshowActive && !slideshowPaused && (
+          {/* Slideshow progress bar - only show for photo albums */}
+          {shoot.media_type !== 'video' && slideshowActive && !slideshowPaused && (
             <div className="absolute top-0 left-0 right-0 h-1 bg-white/20 z-[10000]">
               <div
                 className="h-full bg-white/80"
@@ -1844,30 +1848,33 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
               {mediaItems[modalImageIndex]?.mediaType === 'video' ? (
                 // Check if it's a YouTube video or native video
                 VideoUrl.isYouTube(mediaItems[modalImageIndex] as Video) ? (
-                  // YouTube video - render iframe that fills available space
+                  // YouTube video - maximise screen usage with dynamic viewport
+                  // Uses 100dvh which expands when mobile URL bar hides
                   <div
-                    className="relative flex items-center justify-center"
+                    className="relative"
                     style={{
-                      width: 'min(100vw - 2rem, calc((100vh - 6rem) * 16 / 9))',
-                      height: 'min(100vh - 6rem, calc((100vw - 2rem) * 9 / 16))',
+                      aspectRatio: '16 / 9',
+                      width: 'min(100dvw, calc(100dvh * 16 / 9))',
+                      maxHeight: '100dvh',
                     }}
                   >
                     <iframe
                       src={`${VideoUrl.forStreaming(mediaItems[modalImageIndex] as Video)}&autoplay=1`}
                       className="absolute inset-0 w-full h-full"
+                      style={{ border: 'none' }}
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                       allowFullScreen
                       title={(mediaItems[modalImageIndex] as Video).filename}
                     />
                   </div>
                 ) : (
-                  // Native video - render video element
+                  // Native video - maximise screen usage with dynamic viewport
                   <video
                     src={VideoUrl.forStreaming(mediaItems[modalImageIndex] as Video)}
-                    className="max-w-full max-h-full w-auto h-auto object-contain select-none"
+                    className="w-auto h-auto object-contain select-none"
                     style={{
-                      maxWidth: 'calc(100vw - 1rem)',
-                      maxHeight: 'calc(100vh - 4rem)',
+                      maxWidth: '100dvw',
+                      maxHeight: '100dvh',
                       touchAction: 'none'
                     }}
                     controls
