@@ -679,9 +679,22 @@ ssh slyfox-vps "cd /opt/sfweb && chmod -R 644 public/images && find public -type
 
 # 🎯 DEPLOYMENT HISTORY
 
-**Last Successful Deployment**: 2026-02-03 (Image Ingredients & Supabase Article Editor)
+**Last Successful Deployment**: 2026-02-06 (Portfolio Page Performance Optimisation)
 
 **Features Deployed**:
+
+- Portfolio page batch query optimisation (eliminates N+1 query patterns)
+- Added `getByIds()` batch method for images (replaces getAll + filter)
+- Added `getByShootIds()` batch method for videos (single query vs N sequential)
+- Consolidated 3 redundant `getAll()` calls into single query at page load
+- Video upload limit increased to 1.2GB for large wedding videos
+- Upload progress bars for images and videos
+- Improved video quality (CRF 21 for medium quality)
+- Download button now shows "Download Full HD (xxx MB)" with dynamic filesize
+
+**Previous Deployment**: 2026-02-03 (Image Ingredients & Supabase Article Editor)
+
+**Previous Features**:
 
 - Image Ingredients: Upload reference images (product PNGs) for AI scene placement
 - New Supabase-based Article Editor (replacing Airtable backend)
