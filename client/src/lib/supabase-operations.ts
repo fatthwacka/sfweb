@@ -285,8 +285,21 @@ export const imageOperations = {
       .select('*')
       .eq('featured_image', true)
       .order('created_at', { ascending: false });
-    
+
     if (error) throw new Error(`Failed to fetch featured images: ${error.message}`);
+    return data || [];
+  },
+
+  // Batch fetch images by IDs - optimised for portfolio pages
+  getByIds: async (ids: string[]): Promise<Image[]> => {
+    if (ids.length === 0) return [];
+
+    const { data, error } = await supabase
+      .from('images')
+      .select('*')
+      .in('id', ids);
+
+    if (error) throw new Error(`Failed to fetch images by IDs: ${error.message}`);
     return data || [];
   },
 
@@ -467,6 +480,40 @@ export const videoOperations = {
     })) || [];
     
     console.log(`🎬 supabaseOperations.videos.getByShoot: Returning ${convertedData.length} videos with camelCase conversion`);
+    return convertedData;
+  },
+
+  // Batch fetch videos for multiple shoots - optimised for portfolio pages (single query vs N+1)
+  getByShootIds: async (shootIds: string[]): Promise<Video[]> => {
+    if (shootIds.length === 0) return [];
+
+    console.log(`🎬 supabaseOperations.videos.getByShootIds: Batch fetching videos for ${shootIds.length} shoots`);
+    const { data, error } = await supabase
+      .from('videos')
+      .select('*')
+      .in('shoot_id', shootIds)
+      .order('sequence', { ascending: true });
+
+    if (error) {
+      console.error(`🎬 supabaseOperations.videos.getByShootIds: Error:`, error);
+      throw new Error(`Failed to batch fetch videos: ${error.message}`);
+    }
+
+    // Convert snake_case fields to camelCase for TypeScript interface compatibility
+    const convertedData = data?.map((video: any) => ({
+      ...video,
+      shootId: video.shoot_id,
+      storagePath: video.storage_path,
+      optimizedPath: video.optimized_path,
+      thumbnailPath: video.thumbnail_path,
+      fileSize: video.file_size,
+      downloadCount: video.download_count,
+      featuredVideo: video.featured_video,
+      createdAt: video.created_at,
+      updatedAt: video.updated_at
+    })) || [];
+
+    console.log(`🎬 supabaseOperations.videos.getByShootIds: Returning ${convertedData.length} videos for ${shootIds.length} shoots`);
     return convertedData;
   },
 

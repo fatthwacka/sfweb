@@ -26,15 +26,20 @@ export function PortfolioGroup() {
     }
   }, [parameterValue, slug, groupName]);
 
-  // Single client-focused query - streamlined approach
+  // Single client-focused query - streamlined approach with optimised batch fetching
   const { data: clientResponse, isLoading, error } = useQuery({
     queryKey: ['portfolio-client', parameterValue],
     queryFn: async () => {
       console.log('🔍 PortfolioGroup: Finding client for parameter:', parameterValue);
-      
+
       let clientEmail: string;
       let clientName: string;
-      
+      let clientShoots: any[];
+
+      // OPTIMISATION: Fetch all shoots ONCE at the start (was called 3 times before)
+      const allShoots = await supabaseOperations.shoots.getAll();
+      console.log('✅ PortfolioGroup: Retrieved', allShoots.length, 'total shoots from Supabase (single query)');
+
       if (slug) {
         // CASE 1: /portfolio/:slug - Use API to get client by slug (avoids RLS issues)
         console.log('🔍 Portfolio route: Finding client via API for slug:', parameterValue);
@@ -43,86 +48,49 @@ export function PortfolioGroup() {
           console.log('❌ Client API returned status:', clientResponse.status);
           throw new Error('Client not found');
         }
-        
+
         const apiData = await clientResponse.json();
         const client = apiData.client;
         clientEmail = client.email;
         clientName = client.name;
         console.log('✅ Found client via API:', clientName, 'with email:', clientEmail);
-      } else {
-        // CASE 2: /project/:groupName - Find shoots by group_name (no clients table needed)
-        console.log('🔍 Project route: Finding shoots for group_name:', parameterValue);
-        
-        // Query all shoots to find ones with this group_name
-        const allShoots = await supabaseOperations.shoots.getAll();
-        console.log('✅ PortfolioGroup: Retrieved', allShoots.length, 'total shoots from Supabase');
-        
-        // Find shoots with this group_name (handle URL slug to title conversion)
-        const groupShoots = allShoots.filter(shoot => {
-          const shootGroupName = (shoot as any).group_name || (shoot as any).groupName;
-          if (!shootGroupName) return false;
-          
-          // Convert group name to URL slug for comparison (lowercase, spaces to hyphens)
-          const shootSlug = shootGroupName.toLowerCase().replace(/\s+/g, '-');
-          const isMatch = shootSlug === parameterValue && !(shoot as any).is_private;
-          
-          if (isMatch) {
-            console.log(`✅ Match found: "${shootGroupName}" -> "${shootSlug}" === "${parameterValue}"`);
-          }
-          
-          return isMatch;
-        });
-        
-        if (groupShoots.length === 0) {
-          console.log('❌ No public shoots found for group_name:', parameterValue);
-          throw new Error('Project not found');
-        }
-        
-        // Use actual group name as display name (convert from slug back to title)
-        clientEmail = 'project'; // Dummy value since we don't need it
-        if (groupShoots.length > 0) {
-          // Get the actual group name from the first matching shoot
-          const actualGroupName = (groupShoots[0] as any).group_name || (groupShoots[0] as any).groupName;
-          clientName = actualGroupName || parameterValue;
-        } else {
-          clientName = parameterValue;
-        }
-        console.log('🎯 Found', groupShoots.length, 'shoots for group_name:', parameterValue);
-        console.log('✅ Using actual group name as display name:', clientName);
-      }
-      
-      // STEP 2: Get the appropriate shoots based on route type
-      let clientShoots: any[];
-      
-      if (slug) {
-        // Portfolio route: Get all shoots for this client
-        const allShoots = await supabaseOperations.shoots.getAll();
-        console.log('✅ PortfolioGroup: Retrieved', allShoots.length, 'total shoots from Supabase');
-        
-        // Filter all shoots for this client (excluding private)
-        clientShoots = allShoots.filter(shoot => 
+
+        // Filter shoots for this client (excluding private)
+        clientShoots = allShoots.filter(shoot =>
           shoot.client_id === clientEmail && !(shoot as any).is_private
         );
-        
+
         if (clientShoots.length === 0) {
           console.log('❌ No public shoots found for client email:', clientEmail);
           throw new Error('No galleries found for client');
         }
-        
+
         console.log('🎯 Found', clientShoots.length, 'shoots for client:', clientEmail);
       } else {
-        // Project route: We already have the group shoots from the search above
-        const allShoots = await supabaseOperations.shoots.getAll();
+        // CASE 2: /project/:groupName - Find shoots by group_name
+        console.log('🔍 Project route: Finding shoots for group_name:', parameterValue);
+
+        // Find shoots with this group_name (handle URL slug to title conversion)
         clientShoots = allShoots.filter(shoot => {
           const shootGroupName = (shoot as any).group_name || (shoot as any).groupName;
           if (!shootGroupName) return false;
-          
+
           // Convert group name to URL slug for comparison (lowercase, spaces to hyphens)
           const shootSlug = shootGroupName.toLowerCase().replace(/\s+/g, '-');
           return shootSlug === parameterValue && !(shoot as any).is_private;
         });
-        
-        console.log('🎯 Project route: Using', clientShoots.length, 'shoots for group_name:', parameterValue);
+
+        if (clientShoots.length === 0) {
+          console.log('❌ No public shoots found for group_name:', parameterValue);
+          throw new Error('Project not found');
+        }
+
+        // Use actual group name as display name
+        clientEmail = 'project'; // Dummy value since we don't need it
+        const actualGroupName = (clientShoots[0] as any).group_name || (clientShoots[0] as any).groupName;
+        clientName = actualGroupName || parameterValue;
+        console.log('🎯 Found', clientShoots.length, 'shoots for group_name:', parameterValue);
+        console.log('✅ Using actual group name as display name:', clientName);
       }
       
       // SMART DISPLAY LOGIC - different behavior for portfolio vs project routes
@@ -191,40 +159,39 @@ export function PortfolioGroup() {
         individuals: portfolioItems.filter(item => !item.isGroup).length
       });
       
-      // COVER IMAGES & METADATA - fetch for all client shoots
+      // COVER IMAGES & METADATA - OPTIMISED: batch fetch by IDs (was fetching ALL images)
       const bannerImageIds = clientShoots
         .map(shoot => (shoot as any).banner_image_id)
         .filter(Boolean);
-      
+
       let bannerImages: any[] = [];
       if (bannerImageIds.length > 0) {
-        console.log('🖼️ PortfolioGroup: Fetching', bannerImageIds.length, 'banner images');
-        const allImages = await supabaseOperations.images.getAll();
-        bannerImages = allImages.filter(img => bannerImageIds.includes(img.id));
-        console.log('✅ PortfolioGroup: Retrieved', bannerImages.length, 'banner images');
+        console.log('🖼️ PortfolioGroup: Batch fetching', bannerImageIds.length, 'banner images by ID');
+        bannerImages = await supabaseOperations.images.getByIds(bannerImageIds);
+        console.log('✅ PortfolioGroup: Retrieved', bannerImages.length, 'banner images (direct lookup)');
       }
-      
-      // Fetch cover videos for video galleries
+
+      // COVER VIDEOS - OPTIMISED: single batch query (was N+1 sequential queries)
       const videoShoots = clientShoots.filter(shoot => (shoot as any).media_type === 'video');
-      
+
       let coverVideosMap: Record<string, any> = {};
       if (videoShoots.length > 0) {
-        console.log('🎥 PortfolioGroup: Fetching cover videos for', videoShoots.length, 'video galleries');
-        
-        // Fetch videos for each video shoot
+        console.log('🎥 PortfolioGroup: Batch fetching videos for', videoShoots.length, 'video galleries (single query)');
+
+        // Batch fetch all videos for all video shoots in one query
+        const videoShootIds = videoShoots.map(shoot => shoot.id);
+        const allVideos = await supabaseOperations.videos.getByShootIds(videoShootIds);
+
+        // Group videos by shoot and pick cover video for each
         for (const shoot of videoShoots) {
-          try {
-            const shootVideos = await supabaseOperations.videos.getByShoot(shoot.id);
-            if (shootVideos.length > 0) {
-              // Prioritize featured videos, otherwise take first video
-              const coverVideo = shootVideos.find(video => video.featured_video) || shootVideos[0];
-              coverVideosMap[shoot.id] = coverVideo;
-            }
-          } catch (error) {
-            console.warn(`Failed to fetch videos for shoot ${shoot.id}:`, error);
+          const shootVideos = allVideos.filter(video => video.shootId === shoot.id);
+          if (shootVideos.length > 0) {
+            // Prioritize featured videos, otherwise take first video
+            const coverVideo = shootVideos.find(video => video.featuredVideo) || shootVideos[0];
+            coverVideosMap[shoot.id] = coverVideo;
           }
         }
-        console.log('✅ PortfolioGroup: Retrieved cover videos for', Object.keys(coverVideosMap).length, 'video galleries');
+        console.log('✅ PortfolioGroup: Mapped cover videos for', Object.keys(coverVideosMap).length, 'video galleries');
       }
       
       // FINAL PORTFOLIO ITEMS - add cover images and metadata to portfolio items  
@@ -250,9 +217,9 @@ export function PortfolioGroup() {
             if (coverVideo) {
               coverVideoInfo = {
                 id: coverVideo.id,
-                storagePath: coverVideo.storage_path,
-                optimizedPath: (coverVideo as any).optimized_path,
-                thumbnailPath: (coverVideo as any).thumbnail_path,
+                storagePath: coverVideo.storagePath,
+                optimizedPath: coverVideo.optimizedPath,
+                thumbnailPath: coverVideo.thumbnailPath,
                 filename: coverVideo.filename
               };
             }
@@ -290,9 +257,9 @@ export function PortfolioGroup() {
             if (coverVideo) {
               coverVideoInfo = {
                 id: coverVideo.id,
-                storagePath: coverVideo.storage_path,
-                optimizedPath: (coverVideo as any).optimized_path,
-                thumbnailPath: (coverVideo as any).thumbnail_path,
+                storagePath: coverVideo.storagePath,
+                optimizedPath: coverVideo.optimizedPath,
+                thumbnailPath: coverVideo.thumbnailPath,
                 filename: coverVideo.filename
               };
             }
