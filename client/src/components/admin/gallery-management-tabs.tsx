@@ -61,6 +61,12 @@ interface GalleryManagementTabsProps {
   clientReassignDialogOpen: boolean;
   setClientReassignDialogOpen: (open: boolean) => void;
   isUploading: boolean;
+  uploadProgress?: {
+    stage: 'uploading' | 'processing' | 'complete' | null;
+    percent: number;
+    currentFile?: number;
+    totalFiles?: number;
+  };
   saveAppearanceMutation: any;
   toast: any;
   
@@ -101,6 +107,7 @@ export function GalleryManagementTabs({
   clientReassignDialogOpen,
   setClientReassignDialogOpen,
   isUploading,
+  uploadProgress,
   saveAppearanceMutation,
   toast,
   shoot,
@@ -182,6 +189,7 @@ export function GalleryManagementTabs({
             <AddImagesSection
               onUpload={onUploadImages}
               isUploading={isUploading}
+              uploadProgress={uploadProgress}
               toast={toast}
               shootId={shootId}
               mediaType={shoot?.media_type || 'photo'}

@@ -149,6 +149,14 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
   };
   
   const [clientReassignDialogOpen, setClientReassignDialogOpen] = useState(false);
+
+  // Upload progress tracking
+  const [uploadProgress, setUploadProgress] = useState<{
+    stage: 'uploading' | 'processing' | 'complete' | null;
+    percent: number;
+    currentFile?: number;
+    totalFiles?: number;
+  }>({ stage: null, percent: 0 });
   
   // Gallery appearance settings - clean absolute values only
   const [gallerySettings, setGallerySettings] = useState({
@@ -194,6 +202,9 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
         mediaType: currentMediaType
       });
 
+      // Reset progress
+      setUploadProgress({ stage: 'uploading', percent: 0, currentFile: 0, totalFiles: files.length });
+
       const uploadData = new FormData();
       uploadData.append('shootId', shootId);
 
@@ -230,6 +241,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
           });
         } catch (error) {
           console.error("❌ Failed to generate video thumbnails:", error);
+          setUploadProgress({ stage: null, percent: 0 });
           throw new Error('Failed to generate video thumbnails');
         }
       } else {
@@ -242,17 +254,57 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
 
       const endpoint = isVideo ? '/api/videos/upload' : '/api/images/upload';
       console.log(`🌐 Sending request to ${endpoint}`);
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        body: uploadData,
-      });
-      if (!response.ok) throw new Error('Upload failed');
 
-      const result = await response.json();
-      console.log("✅ Upload response received:", result);
-      return result;
+      // Use XMLHttpRequest for progress tracking
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable) {
+            const percentComplete = Math.round((event.loaded / event.total) * 100);
+            setUploadProgress(prev => ({
+              ...prev,
+              stage: 'uploading',
+              percent: percentComplete
+            }));
+          }
+        });
+
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            // Upload complete, now processing on server (especially for videos)
+            if (isVideo) {
+              setUploadProgress(prev => ({ ...prev, stage: 'processing', percent: 100 }));
+            }
+            try {
+              const result = JSON.parse(xhr.responseText);
+              console.log("✅ Upload response received:", result);
+              resolve(result);
+            } catch (e) {
+              reject(new Error('Invalid response from server'));
+            }
+          } else {
+            reject(new Error('Upload failed'));
+          }
+        });
+
+        xhr.addEventListener('error', () => {
+          reject(new Error('Upload failed'));
+        });
+
+        xhr.open('POST', endpoint);
+        xhr.send(uploadData);
+      });
     },
     onSuccess: (result) => {
+      // Mark as complete
+      setUploadProgress({ stage: 'complete', percent: 100 });
+
+      // Reset progress after a short delay
+      setTimeout(() => {
+        setUploadProgress({ stage: null, percent: 0 });
+      }, 2000);
+
       // Invalidate multiple query patterns to ensure UI updates
       queryClient.invalidateQueries({ queryKey: ['shoots'] });
       queryClient.invalidateQueries({ queryKey: ['shoots', shootId] });
@@ -260,32 +312,35 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       queryClient.invalidateQueries({ queryKey: ['videos', shootId] });
       queryClient.invalidateQueries({ queryKey: ['images'] });
       queryClient.invalidateQueries({ queryKey: ['videos'] });
-      
+
       // Handle new detailed response format
       const totalProcessed = result.totalProcessed || result.uploadedCount || 0;
-      
+
       if (totalProcessed > 0) {
-        toast({ 
-          title: "Upload Complete!", 
+        toast({
+          title: "Upload Complete!",
           description: result.message || `${totalProcessed} file(s) processed successfully`
         });
       } else {
-        toast({ 
-          title: "Upload Error", 
-          description: "No files were processed. Please check the file format.", 
-          variant: "destructive" 
+        toast({
+          title: "Upload Error",
+          description: "No files were processed. Please check the file format.",
+          variant: "destructive"
         });
       }
-      
+
       const fileInput = document.getElementById('imageUploadInput') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
     },
     onError: (error) => {
+      // Reset progress on error
+      setUploadProgress({ stage: null, percent: 0 });
+
       console.error("Upload error:", error);
-      toast({ 
-        title: "Error", 
-        description: "Failed to upload images. Please try again.", 
-        variant: "destructive" 
+      toast({
+        title: "Error",
+        description: "Failed to upload images. Please try again.",
+        variant: "destructive"
       });
     }
   });
@@ -1068,6 +1123,7 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
         clientReassignDialogOpen={clientReassignDialogOpen}
         setClientReassignDialogOpen={setClientReassignDialogOpen}
         isUploading={uploadImagesMutation.isPending}
+        uploadProgress={uploadProgress}
         saveAppearanceMutation={saveAppearanceMutation}
         toast={toast}
         shoot={shoot}

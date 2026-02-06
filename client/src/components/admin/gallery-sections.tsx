@@ -538,12 +538,18 @@ export function AdvancedSettingsSection({ editableShoot, setEditableShoot, shoot
 interface AddImagesSectionProps {
   onUpload: (files: File[], resolutions?: ConflictResolution[]) => void;
   isUploading: boolean;
+  uploadProgress?: {
+    stage: 'uploading' | 'processing' | 'complete' | null;
+    percent: number;
+    currentFile?: number;
+    totalFiles?: number;
+  };
   toast: any;
   shootId: string;
   mediaType?: 'photo' | 'video';
 }
 
-export function AddImagesSection({ onUpload, isUploading, toast, shootId, mediaType = 'photo' }: AddImagesSectionProps) {
+export function AddImagesSection({ onUpload, isUploading, uploadProgress, toast, shootId, mediaType = 'photo' }: AddImagesSectionProps) {
   const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
   const [isExpanded, setIsExpanded] = React.useState(true);
   const [isCheckingConflicts, setIsCheckingConflicts] = React.useState(false);
@@ -863,7 +869,39 @@ export function AddImagesSection({ onUpload, isUploading, toast, shootId, mediaT
       </CardHeader>
       {isExpanded && (
         <CardContent>
-        <div 
+        {/* Upload Progress Bar */}
+        {isUploading && uploadProgress?.stage && (
+          <div className="mb-6 p-4 rounded-lg bg-background/80 border border-salmon/30">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-foreground">
+                {uploadProgress.stage === 'uploading' && `Uploading ${isVideo ? 'videos' : 'images'}...`}
+                {uploadProgress.stage === 'processing' && `Processing ${isVideo ? 'videos' : 'images'} on server...`}
+                {uploadProgress.stage === 'complete' && 'Upload complete!'}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {uploadProgress.percent}%
+              </span>
+            </div>
+            <div className="h-3 bg-muted rounded-full overflow-hidden">
+              <div
+                className={`h-full transition-all duration-500 ease-out rounded-full ${
+                  uploadProgress.stage === 'complete'
+                    ? 'bg-green-500'
+                    : uploadProgress.stage === 'processing'
+                    ? 'bg-amber-500 animate-pulse'
+                    : 'bg-salmon'
+                }`}
+                style={{ width: `${uploadProgress.percent}%` }}
+              />
+            </div>
+            {isVideo && uploadProgress.stage === 'processing' && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Videos are being transcoded for optimal playback. This may take a few minutes for large files.
+              </p>
+            )}
+          </div>
+        )}
+        <div
           className="border-2 border-dashed border-salmon/30 rounded-lg p-8 text-center bg-background/50 transition-colors hover:border-salmon/50"
           onDragEnter={(e) => {
             e.preventDefault();
@@ -937,7 +975,7 @@ export function AddImagesSection({ onUpload, isUploading, toast, shootId, mediaT
           )}
           <p className="text-xs text-muted-foreground mt-2">
             {isVideo
-              ? 'Supports: MP4, MOV, AVI, WEBM • Max 500MB per video • Up to 20 videos per batch'
+              ? 'Supports: MP4, MOV, AVI, WEBM • Max 1.2GB per video • Up to 20 videos per batch'
               : 'Supports: JPG, PNG, WEBP • Max 10MB per image • Up to 50 images per batch'}
           </p>
         </div>

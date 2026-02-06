@@ -2016,7 +2016,20 @@ export default function ClientGallery({ shootId }: { shootId?: string }) {
                   downloadMedia(mediaItems[modalImageIndex])
                 }
                 className="p-2 rounded-full hover:bg-white/30 bg-white/20 transition-colors"
-                title="Download"
+                title={(() => {
+                  const item = mediaItems[modalImageIndex];
+                  const isVideo = item?.mediaType === 'video';
+                  const fileSize = item?.fileSize;
+                  const label = isVideo ? 'Download Full HD' : 'Download Full Resolution';
+                  if (fileSize && fileSize > 0) {
+                    const sizeMB = fileSize / (1024 * 1024);
+                    const sizeStr = sizeMB >= 1000
+                      ? `${(sizeMB / 1024).toFixed(1)} GB`
+                      : `${Math.round(sizeMB)} MB`;
+                    return `${label} (${sizeStr})`;
+                  }
+                  return label;
+                })()}
               >
                 <Download className="w-4 h-4" />
               </button>

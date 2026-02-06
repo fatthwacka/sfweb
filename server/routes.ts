@@ -20,6 +20,7 @@ import blogRouter from './routes/blog';
 import aiBlogRouter from './routes/ai-blog';
 import contentManagementRouter from './routes/content-management/index.js';
 import promptEngineRouter from './routes/prompt-engine';
+import socialContentRouter from './routes/social-content';
 import contentTypesRouter from './routes/content-types';
 import youtubeRouter from './routes/youtube';
 import { sendContactEmail, validateEmailConfig, sendAlbumReadyEmail } from './email-service';
@@ -2491,11 +2492,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Video upload endpoint with 500MB limit
+  // Video upload endpoint with 1.2GB limit for large wedding videos
   const videoUpload = multer({
     storage: multer.memoryStorage(),
     limits: {
-      fileSize: 500 * 1024 * 1024, // 500MB limit
+      fileSize: 1200 * 1024 * 1024, // 1.2GB limit for large wedding videos
     },
     fileFilter: (req, file, cb) => {
       if (file.mimetype.startsWith('video/')) {
@@ -3746,6 +3747,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Prompt engine for brand-aware AI prompt enhancement
   app.use('/api/prompt-engine', promptEngineRouter);
+
+  // Social content generator for platform-aware content generation
+  app.use('/api/social-content', socialContentRouter);
+  console.log('✅ Social content router mounted');
 
   // Content types management for prompt enhancement guidelines
   app.use('/api/content-types', contentTypesRouter);

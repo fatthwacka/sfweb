@@ -292,13 +292,14 @@ function calculateOptimizedDimensions(
 
 /**
  * Get CRF value based on quality setting
+ * Lower CRF = higher quality (scale 0-51)
  */
 function getQualityCRF(quality: string): string {
   switch (quality) {
     case 'high': return '18';    // High quality, larger file
-    case 'medium': return '23';  // Good balance (default)
-    case 'low': return '28';     // Smaller file, lower quality
-    default: return '23';
+    case 'medium': return '21';  // Good balance with better quality (was 23)
+    case 'low': return '26';     // Smaller file, acceptable quality (was 28)
+    default: return '21';
   }
 }
 
@@ -366,12 +367,12 @@ export function validateVideoForProcessing(
   buffer: Buffer,
   filename: string
 ): { valid: boolean; error?: string } {
-  // Check file size (max 1GB for processing)
-  const maxSize = 1024 * 1024 * 1024; // 1GB
+  // Check file size (max 1.2GB for processing - matches upload limit for large wedding videos)
+  const maxSize = 1200 * 1024 * 1024; // 1.2GB
   if (buffer.length > maxSize) {
     return {
       valid: false,
-      error: `Video file too large for processing: ${formatFileSize(buffer.length)}. Maximum: 1GB`
+      error: `Video file too large for processing: ${formatFileSize(buffer.length)}. Maximum: 1.2GB`
     };
   }
 
