@@ -4808,6 +4808,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ status: 'ok', timestamp: Date.now() });
   });
 
+  // Image proxy for cropping - allows any external image URL (for article editor crop feature)
+  // Returns base64 data URL to avoid canvas taint issues
+  app.get("/api/image-proxy", async (req, res) => {
+    try {
+      const { url } = req.query;
+
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({ error: 'Missing or invalid image URL parameter' });
+      }
+
+      // Basic URL validation
+      let urlObj: URL;
+      try {
+        urlObj = new URL(url);
+        if (!['http:', 'https:'].includes(urlObj.protocol)) {
+          return res.status(400).json({ error: 'Invalid URL protocol' });
+        }
+      } catch {
+        return res.status(400).json({ error: 'Invalid URL format' });
+      }
+
+      console.log('🖼️ Proxying image for crop:', url);
+
+      // Fetch the image
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; SlyFox/1.0; Image Proxy)',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+      }
+
+      // Get content type
+      const contentType = response.headers.get('content-type') || 'image/jpeg';
+
+      // Ensure it's an image
+      if (!contentType.startsWith('image/')) {
+        return res.status(400).json({ error: 'URL does not point to an image' });
+      }
+
+      // Get the image data as buffer
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      // Convert to base64 data URL
+      const base64 = buffer.toString('base64');
+      const dataUrl = `data:${contentType};base64,${base64}`;
+
+      res.json({
+        success: true,
+        dataUrl,
+        contentType,
+        size: buffer.length
+      });
+
+    } catch (error: any) {
+      console.error('❌ Image proxy error:', error);
+      res.status(500).json({ error: 'Failed to fetch image', details: error.message });
+    }
+  });
+
   // Image download proxy to bypass CORS issues
   app.get("/api/download/image", async (req, res) => {
     try {

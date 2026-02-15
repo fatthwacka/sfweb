@@ -288,8 +288,17 @@ netfox-veo-generations/
 - **Unified Menu Bar**: All controls in single consolidated bar
 
 ### **Backend Caching**
+
 - Per-prefix caching for folder filtering
 - Automatic cache invalidation on new uploads
+
+---
+
+## 📱 SOCIAL CONTENT GENERATOR
+
+**Feedback Analysis:** `./scripts/social-content-feedback-analysis.sh [all|issues|low|high]`
+
+📋 **Full documentation:** [`SYSTEM_DOCUMENTATION/SOCIAL_CONTENT_GENERATOR_HANDOFF.md`](./SYSTEM_DOCUMENTATION/SOCIAL_CONTENT_GENERATOR_HANDOFF.md)
 
 ---
 
@@ -525,7 +534,30 @@ This project uses Docker for development. Do NOT use `npm run dev` directly - it
 - `npm run build` - Build for production (Vite client + esbuild server bundle)
 - `npm run start` - Start production server (runs built application)
 - `npm run check` - Run TypeScript type checking
-- `npm run db:push` - Push database schema changes with Drizzle
+
+### Database Migrations
+
+**⚠️ IMPORTANT: DO NOT use `npm run db:push` - we use Supabase SQL Editor for migrations**
+
+All database schema changes are managed via SQL migration files:
+1. Create a numbered SQL file in `/migrations/` (e.g., `024_add_youtube_video_support.sql`)
+2. Run the SQL directly in **Supabase SQL Editor** (Dashboard → SQL Editor)
+3. The Drizzle schema in `shared/schema.ts` is for TypeScript types only
+
+```bash
+# Example migration workflow:
+# 1. Create migration file
+touch migrations/025_my_new_feature.sql
+
+# 2. Add SQL commands to the file
+# 3. Open Supabase Dashboard → SQL Editor
+# 4. Paste and run the migration SQL
+```
+
+**Database Access Patterns:**
+- **Frontend**: Uses `supabaseOperations` (Supabase JS client direct connection)
+- **Backend**: Uses Drizzle ORM for type-safe queries + Supabase client for auth/storage
+- **Schema**: Defined in `shared/schema.ts` using Drizzle's `pgTable` (for TypeScript types)
 
 ### Development Startup Checklist
 

@@ -394,7 +394,10 @@ router.put('/clients/:clientId/brand-profile', async (req, res) => {
       approved_examples: profileData.approved_examples || [],
       negative_examples: profileData.negative_examples || [],
       platform_rules: profileData.platform_rules || {},
-      
+
+      // Content focus options for Social Content Generator pill buttons
+      content_focus_options: profileData.content_focus_options || [],
+
       // Store industry_segment in notes field if provided (workaround - no industry_segment column)
       notes: profileData.industry_segment ? 
         `Industry: ${profileData.industry_segment}${profileData.notes ? '\n\n' + profileData.notes : ''}` : 

@@ -959,6 +959,56 @@
   .btn-service-bubble-glow {
     @apply absolute inset-0 rounded-full bg-gradient-to-r from-purple-500/30 to-indigo-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-lg -z-10;
   }
+
+  /* ============================================================================
+   * PILL BUTTON SYSTEM - Tools & Admin Interfaces
+   * ============================================================================
+   * Consistent pill-shaped toggle buttons for selectors (brand, platform, tone)
+   */
+
+  /* Base pill button */
+  .pill-btn {
+    @apply px-3 py-1.5 text-xs rounded-full transition-all duration-200 cursor-pointer select-none;
+    @apply border border-gray-600 bg-gray-800 text-gray-400;
+    @apply hover:text-gray-200 hover:border-gray-500;
+  }
+
+  /* Active/Selected state - pale grey gradient with dark text */
+  .pill-btn-active {
+    @apply border-gray-400 text-gray-900 font-medium;
+    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+
+  .pill-btn-active:hover {
+    @apply text-white;
+    background: linear-gradient(135deg, #c2410c 0%, #ea580c 50%, #c2410c 100%);
+    border-color: #ea580c;
+  }
+
+  /* Pill button with icon */
+  .pill-btn-icon {
+    @apply flex items-center gap-1.5;
+  }
+
+  /* Pill button sizes */
+  .pill-btn-sm {
+    @apply px-2 py-1 text-[10px];
+  }
+
+  .pill-btn-lg {
+    @apply px-4 py-2 text-sm;
+  }
+
+  /* Pill button container - for wrapping groups of pills */
+  .pill-btn-group {
+    @apply flex flex-wrap gap-1.5;
+  }
+
+  /* Compact pill group - tighter spacing */
+  .pill-btn-group-compact {
+    @apply flex flex-wrap gap-1;
+  }
 }
 
 /* Slideshow progress bar animation */

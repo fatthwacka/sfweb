@@ -307,6 +307,7 @@ export interface UpdateBrandProfileRequest {
   approved_examples?: string[];
   negative_examples?: string[];
   notes?: string;
+  content_focus_options?: string[];  // Categories for Social Content Generator pill buttons
 }
 
 // API Response wrappers

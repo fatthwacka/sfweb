@@ -105,6 +105,19 @@ export const TOOLS_REGISTRY: ToolDefinition[] = [
     usesAI: true,
     usesLocalFiles: false,
     limits: {},
+    // Uses standard page navigation
+  },
+  {
+    slug: 'social-content-generator',
+    name: 'Social Content Generator',
+    description: 'Platform-optimised social media content with structured sections: Hook, Body, CTA & Hashtags',
+    icon: '📱',
+    category: 'ai-powered',
+    minTier: 'staff',
+    requiresAuth: true,
+    usesAI: true,
+    usesLocalFiles: false,
+    limits: {},
     badge: 'new',
     // Uses standard page navigation
   },

@@ -31,6 +31,7 @@ This folder contains all technical documentation, guides, and specialist configu
 - [`IMAGE_ARCHITECTURE_QUICK_REFERENCE.md`](./IMAGE_ARCHITECTURE_QUICK_REFERENCE.md) - Quick image system reference
 - [`IMAGE_PREPROCESSING_IMPLEMENTATION.md`](./IMAGE_PREPROCESSING_IMPLEMENTATION.md) - Image preprocessing system
 - [`PORTFOLIO_GROUPING_ARCHITECTURE.md`](./PORTFOLIO_GROUPING_ARCHITECTURE.md) - Portfolio organization system
+- [`VIDEO_GALLERY_SYSTEM.md`](./VIDEO_GALLERY_SYSTEM.md) - Video galleries with native & YouTube support
 
 ### 📋 Planning & Development
 - [`PLANNED_UPGRADES.md`](./PLANNED_UPGRADES.md) - Future development roadmap
@@ -57,4 +58,4 @@ This file contains:
 
 ---
 
-*Last updated: December 2025*
+*Last updated: February 2026*

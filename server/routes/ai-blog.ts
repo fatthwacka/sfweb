@@ -262,7 +262,23 @@ Please provide only the enhanced content without any additional text or explanat
           break;
         case 'excerpt':
           // Check if context contains enhancement instructions (rather than just a topic)
-          if (context.includes('Content to enhance:') || context.includes('REWRITE TASK') || context.includes('Make this content')) {
+          // These keywords indicate the Article Editor is sending a custom enhancement prompt
+          const isEnhancementRequest =
+            context.includes('Content to enhance:') ||
+            context.includes('REWRITE TASK') ||
+            context.includes('Make this content') ||
+            context.includes('GRAMMAR') ||
+            context.includes('SPELLING') ||
+            context.includes('CONCISE REWRITE') ||
+            context.includes('EXPANSION TASK') ||
+            context.includes('TONE ADJUSTMENT') ||
+            context.includes('ARTICLE CONTEXT') ||
+            context.includes('GENERATE') ||
+            context.includes('hashtag') ||
+            context.includes('HASHTAG') ||
+            context.includes('#Broad #Niche');
+
+          if (isEnhancementRequest) {
             // Use the full context as-is for enhancements
             prompt = context;
             console.log('🔧 Using enhancement context directly');

@@ -432,8 +432,8 @@ docker volume inspect sfweb_config_data
 # Type checking
 npm run check
 
-# Database operations
-npm run db:push
+# Database migrations - run SQL directly in Supabase SQL Editor
+# See /migrations/ folder for SQL files
 
 # Access container shell
 docker exec -it sfweb-app sh
@@ -470,7 +470,7 @@ docker exec sfweb-app cat /app/server/data/site-config-overrides.json  # View sa
 
 # Database management
 docker exec -it sfweb-postgres psql -U postgres -d slyfox_studios
-npm run db:push            # Push schema changes (inside container)
+# Migrations: Run SQL files from /migrations/ in Supabase SQL Editor
 
 # Production deployment
 ./deploy-production.sh     # Full production deployment with SSH
@@ -536,7 +536,7 @@ npm run docker:dev
 # Reset database
 docker volume rm sfweb_postgres_data
 npm run docker:dev
-npm run db:push
+# Then run migrations from /migrations/ in Supabase SQL Editor
 ```
 
 ## 📋 Complete Setup Verification

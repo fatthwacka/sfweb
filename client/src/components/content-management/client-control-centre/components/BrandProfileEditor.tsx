@@ -8,6 +8,7 @@ interface BrandProfile {
   brand_description?: string;
   industry_segment?: string;
   products_services?: string;
+  content_focus_options?: string[];
   
   // AI enhancement fields
   business_niche?: string;
@@ -156,6 +157,7 @@ export default function BrandProfileEditor({
       negative_examples: brandProfile.negative_examples || [],
       content_themes: brandProfile.content_themes || [],
       secondary_colors: brandProfile.secondary_colors || [],
+      content_focus_options: brandProfile.content_focus_options || [],
       // Ensure voice_rules has default structure
       voice_rules: brandProfile.voice_rules || {
         tone: '',
@@ -320,6 +322,45 @@ export default function BrandProfileEditor({
                   rows={3}
                   placeholder="List your main products and services..."
                 />
+              </div>
+            </div>
+
+            {/* Content Focus Options */}
+            <div className="space-y-3 p-4 bg-gray-800 border border-gray-600 rounded-lg">
+              <div className={fieldClasses.sectionHeader}>
+                <div>
+                  <h3 className="text-lg font-semibold text-salmon">Content Focus Options</h3>
+                  <p className="text-xs text-gray-400 mt-1">Categories that appear as pill buttons in Social Content Generator</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => addArrayItem('content_focus_options')}
+                  className={fieldClasses.addButton}
+                >
+                  + Add Focus
+                </button>
+              </div>
+              <div className={fieldClasses.arrayContainer}>
+                {(formData.content_focus_options || []).map((option, index) => (
+                  <div key={index} className={fieldClasses.arrayRow}>
+                    <input
+                      value={option}
+                      onChange={(e) => handleArrayFieldChange('content_focus_options', index, e.target.value)}
+                      className={fieldClasses.input}
+                      placeholder="e.g., weddings, portraits, achievements, pain points"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeArrayItem('content_focus_options', index)}
+                      className={fieldClasses.deleteButton}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                {(formData.content_focus_options || []).length === 0 && (
+                  <p className="text-gray-500 text-sm italic">No content focus options defined. Add categories relevant to this brand's content.</p>
+                )}
               </div>
             </div>
 

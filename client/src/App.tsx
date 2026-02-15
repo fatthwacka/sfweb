@@ -93,6 +93,7 @@ import ArticleEditorSupabase from "@/pages/tools/article-editor-supabase";
 import AIImageGenerator from "@/pages/tools/ai-image-generator";
 import VEOVideoGenerator from "@/pages/tools/veo-video-generator";
 import PromptEngine from "@/pages/tools/prompt-engine";
+import SocialContentGenerator from "@/pages/tools/social-content-generator";
 import ContentTypesAdmin from "@/pages/tools/content-types-admin";
 import CloudStorageBrowser from "@/pages/tools/cloud-storage-browser";
 import BrandIntelligenceDashboardPage from "@/pages/brand-intelligence-dashboard";
@@ -142,6 +143,7 @@ function Router() {
       <Route path="/tools/ai-image-generator" component={AIImageGenerator} />
       <Route path="/tools/veo-video-generator" component={VEOVideoGenerator} />
       <Route path="/tools/prompt-engine" component={PromptEngine} />
+      <Route path="/tools/social-content-generator" component={SocialContentGenerator} />
       <Route path="/tools/content-types-admin" component={ContentTypesAdmin} />
       <Route path="/tools/cloud-storage-browser" component={CloudStorageBrowser} />
       <Route path="/tools/brand-intelligence-dashboard" component={BrandIntelligenceDashboardPage} />

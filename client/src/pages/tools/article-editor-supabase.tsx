@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback, memo } from 'react';
-import { ChevronLeft, ChevronRight, Upload, ArrowLeft, ArrowRight, Sparkles, Search, MinusCircle, PlusCircle, CheckCircle, RefreshCw, MessageSquare, Undo2, FolderOpen, Cloud } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Upload, ArrowLeft, ArrowRight, Sparkles, Search, MinusCircle, PlusCircle, CheckCircle, RefreshCw, MessageSquare, Undo2, FolderOpen, Cloud, Plus, Type, Crop, X } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client
@@ -422,11 +422,44 @@ export default function ArticleEditorSupabase() {
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [imageAttribution, setImageAttribution] = useState<{user: string; username: string; source: 'unsplash' | 'ai' | 'upload' | 'cloud'} | null>(null);
 
+  // Image Crop States
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [isCropping, setIsCropping] = useState(false);
+  const [selectedAspectRatio, setSelectedAspectRatio] = useState<string>('1:1');
+  const [cropOffset, setCropOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [proxiedImageData, setProxiedImageData] = useState<string | null>(null);
+  const [isLoadingProxy, setIsLoadingProxy] = useState(false);
+  const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);
+  const cropPreviewRef = useRef<HTMLDivElement>(null);
+  const isDraggingRef = useRef(false);
+  const dragStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
   // Enhancement system state
   const [processingSection, setProcessingSection] = useState<string | null>(null);
   const [previousContent, setPreviousContent] = useState<{[key: string]: string}>({});
   const [showUndo, setShowUndo] = useState<{[key: string]: boolean}>({});
   const [enhancementsReady, setEnhancementsReady] = useState(false);
+
+  // New article creation state
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
+  const [creatingArticle, setCreatingArticle] = useState(false);
+
+  // Case toggle state for headline: 'upper' | 'sentence' | 'capitalised'
+  const [headlineCaseMode, setHeadlineCaseMode] = useState<'upper' | 'sentence' | 'capitalised'>('sentence');
+
+  // English variant toggle - persisted to localStorage
+  const [useUSEnglish, setUseUSEnglish] = useState<boolean>(() => {
+    const saved = localStorage.getItem('articleEditor_useUSEnglish');
+    return saved === 'true';
+  });
+
+  // Persist English variant preference
+  const toggleEnglishVariant = () => {
+    const newValue = !useUSEnglish;
+    console.log('🔄 Toggle English variant:', { currentValue: useUSEnglish, newValue, willBe: newValue ? 'US English' : 'British English' });
+    setUseUSEnglish(newValue);
+    localStorage.setItem('articleEditor_useUSEnglish', String(newValue));
+  };
 
   // File input ref for upload button
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -479,9 +512,11 @@ export default function ArticleEditorSupabase() {
   const displayCurrentIndex = searchQuery.trim() 
     ? selectedSearchIndex
     : currentIndex;
-  const displayCurrentArticle = searchQuery.trim()
-    ? (displayArticles.length > selectedSearchIndex ? displayArticles[selectedSearchIndex] : null)
-    : currentArticle;
+  const displayCurrentArticle = isCreatingNew
+    ? currentArticle  // When creating new, always use currentArticle
+    : searchQuery.trim()
+      ? (displayArticles.length > selectedSearchIndex ? displayArticles[selectedSearchIndex] : null)
+      : currentArticle;
 
   // Reset search selection when query changes
   useEffect(() => {
@@ -1051,6 +1086,269 @@ export default function ArticleEditorSupabase() {
     fileInputRef.current?.click();
   };
 
+  // Image Crop Handlers
+  const handleOpenCropModal = () => {
+    if (!displayCurrentArticle?.image_url) {
+      toast({
+        title: 'No Image',
+        description: 'Please add an image first before cropping.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setIsCropModalOpen(true);
+  };
+
+  const handleCloseCropModal = () => {
+    setIsCropModalOpen(false);
+    setProxiedImageData(null);
+    setCropOffset({ x: 0, y: 0 });
+    setImageDimensions(null);
+  };
+
+  // Load image through proxy when crop modal opens
+  useEffect(() => {
+    if (isCropModalOpen && displayCurrentArticle?.image_url) {
+      const loadProxiedImage = async () => {
+        setIsLoadingProxy(true);
+        try {
+          const response = await fetch(`/api/image-proxy?url=${encodeURIComponent(displayCurrentArticle.image_url!)}`);
+          const data = await response.json();
+
+          if (data.success && data.dataUrl) {
+            setProxiedImageData(data.dataUrl);
+
+            // Get image dimensions
+            const img = new Image();
+            img.onload = () => {
+              setImageDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+            };
+            img.src = data.dataUrl;
+          } else {
+            throw new Error(data.error || 'Failed to load image');
+          }
+        } catch (error: any) {
+          console.error('Failed to proxy image:', error);
+          toast({
+            title: 'Image Load Error',
+            description: 'Could not load image for cropping. Try a different image.',
+            variant: 'destructive',
+          });
+        } finally {
+          setIsLoadingProxy(false);
+        }
+      };
+      loadProxiedImage();
+    }
+  }, [isCropModalOpen, displayCurrentArticle?.image_url]);
+
+  // Reset offset when aspect ratio changes
+  useEffect(() => {
+    setCropOffset({ x: 0, y: 0 });
+  }, [selectedAspectRatio]);
+
+  // Calculate crop frame dimensions for preview
+  const getCropFrameDimensions = () => {
+    if (!imageDimensions) return null;
+
+    const [widthRatio, heightRatio] = selectedAspectRatio.split(':').map(Number);
+    const targetRatio = widthRatio / heightRatio;
+    const imgRatio = imageDimensions.width / imageDimensions.height;
+
+    // Preview container is max 300px height
+    const previewMaxHeight = 250;
+    const previewMaxWidth = 400;
+
+    let displayWidth: number;
+    let displayHeight: number;
+
+    if (imageDimensions.height > imageDimensions.width) {
+      displayHeight = Math.min(previewMaxHeight, imageDimensions.height);
+      displayWidth = displayHeight * imgRatio;
+    } else {
+      displayWidth = Math.min(previewMaxWidth, imageDimensions.width);
+      displayHeight = displayWidth / imgRatio;
+      if (displayHeight > previewMaxHeight) {
+        displayHeight = previewMaxHeight;
+        displayWidth = displayHeight * imgRatio;
+      }
+    }
+
+    let frameWidth: number;
+    let frameHeight: number;
+
+    if (imgRatio > targetRatio) {
+      // Image is wider - frame takes full height, narrower width
+      frameHeight = displayHeight;
+      frameWidth = displayHeight * targetRatio;
+    } else {
+      // Image is taller - frame takes full width, shorter height
+      frameWidth = displayWidth;
+      frameHeight = displayWidth / targetRatio;
+    }
+
+    // Calculate max offset
+    const maxOffsetX = Math.max(0, (displayWidth - frameWidth) / 2);
+    const maxOffsetY = Math.max(0, (displayHeight - frameHeight) / 2);
+
+    return {
+      displayWidth,
+      displayHeight,
+      frameWidth,
+      frameHeight,
+      maxOffsetX,
+      maxOffsetY,
+    };
+  };
+
+  // Handle drag for repositioning crop area
+  const handleCropDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    isDraggingRef.current = true;
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    dragStartRef.current = { x: clientX - cropOffset.x, y: clientY - cropOffset.y };
+  };
+
+  const handleCropDragMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDraggingRef.current) return;
+
+    const dims = getCropFrameDimensions();
+    if (!dims) return;
+
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+    let newX = clientX - dragStartRef.current.x;
+    let newY = clientY - dragStartRef.current.y;
+
+    // Clamp to bounds
+    newX = Math.max(-dims.maxOffsetX, Math.min(dims.maxOffsetX, newX));
+    newY = Math.max(-dims.maxOffsetY, Math.min(dims.maxOffsetY, newY));
+
+    setCropOffset({ x: newX, y: newY });
+  };
+
+  const handleCropDragEnd = () => {
+    isDraggingRef.current = false;
+  };
+
+  const handleCropImage = async () => {
+    if (!proxiedImageData) return;
+
+    setIsCropping(true);
+
+    try {
+      // Parse aspect ratio
+      const [widthRatio, heightRatio] = selectedAspectRatio.split(':').map(Number);
+
+      // Create an image element to load the proxied image (no CORS issues)
+      const img = new Image();
+
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = proxiedImageData;
+      });
+
+      // Calculate crop dimensions with offset
+      const imgWidth = img.naturalWidth;
+      const imgHeight = img.naturalHeight;
+      const targetRatio = widthRatio / heightRatio;
+      const imgRatio = imgWidth / imgHeight;
+
+      let cropWidth: number;
+      let cropHeight: number;
+      let cropX: number;
+      let cropY: number;
+
+      if (imgRatio > targetRatio) {
+        // Image is wider than target - crop sides
+        cropHeight = imgHeight;
+        cropWidth = imgHeight * targetRatio;
+        cropX = (imgWidth - cropWidth) / 2;
+        cropY = 0;
+      } else {
+        // Image is taller than target - crop top/bottom
+        cropWidth = imgWidth;
+        cropHeight = imgWidth / targetRatio;
+        cropX = 0;
+        cropY = (imgHeight - cropHeight) / 2;
+      }
+
+      // Apply user offset (convert from preview scale to actual image scale)
+      const dims = getCropFrameDimensions();
+      if (dims && imageDimensions) {
+        const scaleX = imgWidth / dims.displayWidth;
+        const scaleY = imgHeight / dims.displayHeight;
+        cropX -= cropOffset.x * scaleX;
+        cropY -= cropOffset.y * scaleY;
+
+        // Clamp to image bounds
+        cropX = Math.max(0, Math.min(imgWidth - cropWidth, cropX));
+        cropY = Math.max(0, Math.min(imgHeight - cropHeight, cropY));
+      }
+
+      // Create canvas and draw cropped image
+      const canvas = document.createElement('canvas');
+      canvas.width = cropWidth;
+      canvas.height = cropHeight;
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) {
+        throw new Error('Could not get canvas context');
+      }
+
+      ctx.drawImage(img, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+
+      // Convert canvas to base64 data URL
+      const imageBase64 = canvas.toDataURL('image/jpeg', 0.9);
+
+      // Upload to Google Cloud Storage (uploaded-images folder - separate from AI-generated)
+      const filename = `cropped-${selectedAspectRatio.replace(':', 'x')}.jpg`;
+
+      const uploadResponse = await fetch('/api/cloud-storage/upload-user-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imageBase64,
+          filename,
+        }),
+      });
+
+      const uploadResult = await uploadResponse.json();
+
+      if (!uploadResponse.ok || !uploadResult.success) {
+        throw new Error(uploadResult.error || 'Upload failed');
+      }
+
+      const newImageUrl = uploadResult.url;
+
+      // Update article with new cropped image URL
+      handleFieldChange('image_url', newImageUrl);
+
+      // Clear attribution since it's a modified image
+      setImageAttribution(null);
+
+      toast({
+        title: 'Image Cropped',
+        description: `Image cropped to ${selectedAspectRatio}. Remember to save your changes.`,
+      });
+
+      handleCloseCropModal();
+    } catch (error: any) {
+      console.error('Error cropping image:', error);
+      toast({
+        title: 'Crop Failed',
+        description: error.message || 'Failed to crop image.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsCropping(false);
+    }
+  };
+
   // Handle file selection for cloud upload (compress and upload to Google Cloud Storage)
   const handleCloudUploadFileInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1202,6 +1500,11 @@ export default function ArticleEditorSupabase() {
       content: sectionKey !== 'content' ? displayCurrentArticle?.content?.substring(0, 800) : null,
     };
 
+    // English variant instruction
+    const englishInstruction = useUSEnglish
+      ? 'Use AMERICAN ENGLISH spelling (e.g., color, organize, center, traveling).'
+      : 'Use BRITISH ENGLISH spelling (e.g., colour, organise, centre, travelling).';
+
     const articleContext = `
 ARTICLE CONTEXT (for reference - do NOT include this in your response):
 - Client/Brand: ${displayCurrentArticle?.client || 'Unknown'}
@@ -1210,10 +1513,16 @@ ARTICLE CONTEXT (for reference - do NOT include this in your response):
 - Content: ${otherFields.content || '[This is the field being edited]'}${(displayCurrentArticle?.content?.length || 0) > 800 && sectionKey !== 'content' ? '...' : ''}
 
 CRITICAL RULES:
-1. AVOID REPETITION: Do NOT repeat phrases, ideas, or information already stated in other fields above
-2. Each field should add UNIQUE value - if the headline says something, don't repeat it in the hook
-3. Your output should COMPLEMENT the other fields, not duplicate them
-4. NEVER include hashtags (#) in your response - hashtags are handled in a separate field
+1. LANGUAGE: ${englishInstruction}
+2. PARAGRAPH FORMATTING:
+   - Add blank lines between paragraphs for visual breathing room
+   - Use natural 2-3 sentence paragraphs as the standard
+   - Reserve single-sentence paragraphs ONLY for the most impactful, punchy statements (use sparingly)
+   - Avoid walls of text - no more than 4 sentences per paragraph
+3. AVOID REPETITION: Do NOT repeat phrases, ideas, or information already stated in other fields above
+4. Each field should add UNIQUE value - if the headline says something, don't repeat it in the hook
+5. Your output should COMPLEMENT the other fields, not duplicate them
+6. NEVER include hashtags (#) in your response - hashtags are handled in a separate field
 ---
 `;
 
@@ -1228,11 +1537,13 @@ DO NOT simply truncate or chop off sentences. Instead:
 - If heavily reduced, prioritise the most important points
 - Maintain the original tone and style
 - Ensure it still fits naturally with the rest of the article
+- Use natural 2-3 sentence paragraphs with blank lines between them
+- Only use single-sentence paragraphs for the most impactful statements (sparingly)
 
 ${sectionTitle?.toUpperCase() || 'SECTION'} TO REWRITE:
 ${content}
 
-Return only the rewritten ${sectionTitle?.toLowerCase() || 'content'}, no explanations.`,
+Return only the rewritten ${sectionTitle?.toLowerCase() || 'content'} with good paragraph spacing, no explanations.`,
 
       increase: `${articleContext}
 EXPANSION TASK: Keep the existing ${sectionTitle || 'content'} EXACTLY as written, then append new sentences.
@@ -1243,19 +1554,40 @@ Simply add new, relevant sentences at the end that:
 - Flow naturally from the existing content
 - Maintain the same tone and style
 - Are consistent with the overall article theme and message
+- Use natural 2-3 sentence paragraphs with blank lines between them
+- Add paragraph breaks to the original if it lacks them
+- Only use single-sentence paragraphs for the most impactful statements (sparingly)
 
-ORIGINAL ${sectionTitle?.toUpperCase() || 'CONTENT'} (preserve exactly):
+ORIGINAL ${sectionTitle?.toUpperCase() || 'CONTENT'} (preserve exactly, but add paragraph spacing if needed):
 ${content}
 
-Return the original content followed by your new appended sentences.`,
+Return the content with good paragraph spacing plus your new appended sentences.`,
 
-      grammar: `${articleContext}
-Correct any spelling, grammar, or punctuation errors in this ${sectionTitle || 'section'}. Improve sentence structure for clarity and flow. Do not change the content meaning or length significantly.
+      grammar: `GRAMMAR & SPELLING CHECK - PRESERVE ORIGINAL CONTENT
+${englishInstruction}
 
-${sectionTitle?.toUpperCase() || 'CONTENT'} TO CHECK:
+⚠️ CRITICAL RULES:
+1. PRESERVE ALL original sentences and messaging - do NOT delete or summarise
+2. PRESERVE the original word count (currently ${wordCount} words) - output MUST be ${Math.round(wordCount * 0.9)}-${Math.round(wordCount * 1.05)} words
+3. Only make MINIMAL corrections:
+   - Fix spelling mistakes
+   - Fix grammar errors
+   - Fix punctuation issues
+   - Replace repeated words (appearing close together) with simple synonyms
+   - Tighten unnecessarily verbose phrases (e.g., "in order to" → "to")
+4. DO NOT rewrite sentences or change their meaning
+5. DO NOT change the tone, style, or voice
+6. Use the SIMPLEST language possible - prefer common words over complex ones
+7. PARAGRAPH FORMATTING:
+   - Add blank lines between paragraphs for visual breathing room
+   - Use natural 2-3 sentence paragraphs as the standard
+   - Only use single-sentence paragraphs for the most impactful statements (sparingly)
+   - Even if original has no spacing, ADD paragraph breaks
+
+ORIGINAL ${sectionTitle?.toUpperCase() || 'CONTENT'} (${wordCount} words - preserve this length):
 ${content}
 
-Return only the corrected content.`,
+Return the corrected content with paragraph spacing added. Every original sentence should still be present.`,
 
       rewrite: `${articleContext}
 COMPLETE REWRITE TASK with STRICT WORD COUNT REQUIREMENT:
@@ -1270,13 +1602,16 @@ Instructions:
 - Ensure it fits naturally with the article's headline, hook, and overall theme
 - DO NOT add new information or significantly expand the scope
 - DO NOT truncate important information to hit word count
+- Use natural 2-3 sentence paragraphs with blank lines between them
+- Only use single-sentence paragraphs for the most impactful statements (sparingly)
+- Break up walls of text for easy reading
 
 ORIGINAL ${sectionTitle?.toUpperCase() || 'CONTENT'} (${wordCount} words):
 ${content}
 
 TARGET WORD COUNT: ${Math.round(wordCount * 0.6)}-${Math.round(wordCount * 1.4)} words (aim for approximately ${wordCount} words)
 
-Return only the rewritten content, no explanations or word counts.`,
+Return only the rewritten content with good paragraph spacing, no explanations or word counts.`,
 
       tone: `${articleContext}
 TONE ADJUSTMENT TASK with WORD COUNT REQUIREMENT:
@@ -1289,13 +1624,16 @@ Instructions:
 - PRESERVE the core message and key information
 - ${wordCount <= 6 ? 'This is a short title/headline - maintain similar brevity' : 'Maintain similar length and depth of content'}
 - Ensure it fits naturally with the overall article context
+- Use natural 2-3 sentence paragraphs with blank lines between them
+- Only use single-sentence paragraphs for the most impactful statements (sparingly)
+- Break up walls of text for easy reading
 
 ORIGINAL ${sectionTitle?.toUpperCase() || 'CONTENT'} (${wordCount} words):
 ${content}
 
 TARGET: Approximately ${wordCount} words (±40% tolerance: ${Math.round(wordCount * 0.6)}-${Math.round(wordCount * 1.4)} words)
 
-Return only the rewritten content in the requested tone.`
+Return only the rewritten content in the requested tone with good paragraph spacing.`
     };
 
     // Store previous content for undo
@@ -1333,7 +1671,10 @@ Return only the enhanced ${sectionTitle?.toLowerCase() || 'content'}, no explana
         action,
         originalLength: content.length,
         originalWords: wordCount,
+        useUSEnglish: useUSEnglish,
+        englishInstruction: useUSEnglish ? 'US English' : 'British English',
       });
+      console.log('🔧 Prompt preview (first 500 chars):', prompt.substring(0, 500));
 
       const response = await fetch('/api/ai/generate-blog-content', {
         method: 'POST',
@@ -1406,6 +1747,11 @@ Return only the enhanced ${sectionTitle?.toLowerCase() || 'content'}, no explana
     // Track if we're doing full generation (should append client hashtag)
     let isFullGeneration = false;
 
+    // English variant instruction for hashtags
+    const hashtagEnglishNote = useUSEnglish
+      ? 'Use American English spelling in hashtags.'
+      : 'Use British English spelling in hashtags.';
+
     setPreviousContent(prev => ({ ...prev, hashtags: content }));
     setProcessingSection(`hashtags-${action}`);
 
@@ -1414,6 +1760,7 @@ Return only the enhanced ${sectionTitle?.toLowerCase() || 'content'}, no explana
 
       if (action === 'custom' && customPrompt) {
         prompt = `${customPrompt}
+${hashtagEnglishNote}
 
 Current hashtags: ${content}
 Article context:
@@ -1432,6 +1779,7 @@ Return only the remaining hashtags separated by spaces, no explanation.`;
           // Treat empty + increase same as rewrite (generate 3 + client)
           isFullGeneration = true;
           prompt = `Generate exactly 3 social media hashtags for this article.
+${hashtagEnglishNote}
 
 ARTICLE:
 Headline: ${displayCurrentArticle?.headline || ''}
@@ -1454,6 +1802,7 @@ OUTPUT EXACTLY LIKE THIS:
 #Broad #Niche #Trending`;
         } else {
           prompt = `Add exactly ONE new relevant hashtag to this list.
+${hashtagEnglishNote}
 Current hashtags: ${content}
 Article context:
 Headline: ${displayCurrentArticle?.headline || ''}
@@ -1466,6 +1815,7 @@ Return all hashtags (existing + new one) separated by spaces, no explanation.`;
         // We'll generate 3 hashtags from AI and append the client name ourselves
         isFullGeneration = true;
         prompt = `Generate exactly 3 social media hashtags for this article.
+${hashtagEnglishNote}
 
 ARTICLE:
 Headline: ${displayCurrentArticle?.headline || ''}
@@ -1622,6 +1972,183 @@ OUTPUT EXACTLY LIKE THIS:
     }
   };
 
+  // Case toggle function for headline
+  const toggleHeadlineCase = () => {
+    if (!displayCurrentArticle?.headline) return;
+
+    const headline = displayCurrentArticle.headline;
+    let newHeadline: string;
+    let newMode: 'upper' | 'sentence' | 'capitalised';
+
+    // Cycle through: sentence → upper → capitalised → sentence
+    if (headlineCaseMode === 'sentence') {
+      // Convert to ALL CAPS
+      newHeadline = headline.toUpperCase();
+      newMode = 'upper';
+    } else if (headlineCaseMode === 'upper') {
+      // Convert to Capitalised (Title Case)
+      newHeadline = headline
+        .toLowerCase()
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+      newMode = 'capitalised';
+    } else {
+      // Convert to Sentence case
+      newHeadline = headline.charAt(0).toUpperCase() + headline.slice(1).toLowerCase();
+      newMode = 'sentence';
+    }
+
+    handleFieldChange('headline', newHeadline);
+    setHeadlineCaseMode(newMode);
+
+    const modeLabels = {
+      upper: 'ALL CAPS',
+      sentence: 'Sentence case',
+      capitalised: 'Title Case'
+    };
+    toast({
+      title: "Case Changed",
+      description: `Headline converted to ${modeLabels[newMode]}`,
+      duration: 1500
+    });
+  };
+
+  // Create new article function
+  const handleCreateNewArticle = () => {
+    // Create a blank article template
+    const newArticle: SupabaseArticle = {
+      id: '', // Will be assigned by Supabase on insert
+      headline: '',
+      hook: '',
+      content: '',
+      status: 'Draft',
+      client: filters.client !== 'All' ? filters.client : '', // Pre-fill with current client filter if set
+      source_title: filters.sourceTitle !== 'All' ? filters.sourceTitle : '',
+      source_url: '',
+      focus_angle: '',
+      tone: '',
+      image_url: '',
+      image_placement: '',
+      image_attribution: '',
+      hashtags: '',
+      notes: '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    setCurrentArticle(newArticle);
+    setIsCreatingNew(true);
+    setIsModified(true);
+    setSearchQuery(''); // Clear search when creating new
+
+    toast({
+      title: "New Article",
+      description: "Fill in the fields and click Save to create a new article.",
+      duration: 3000
+    });
+  };
+
+  // Save new article to Supabase (INSERT instead of UPDATE)
+  const createNewArticle = async () => {
+    if (!currentArticle || !supabaseReady) return;
+
+    try {
+      setCreatingArticle(true);
+      setError(null);
+
+      // Get the next article number
+      const { data: maxData, error: maxError } = await supabase
+        .from('content_articles')
+        .select('article_number')
+        .order('article_number', { ascending: false })
+        .limit(1);
+
+      if (maxError) {
+        console.warn('Could not get max article number:', maxError);
+      }
+
+      const nextArticleNumber = maxData && maxData.length > 0 && maxData[0].article_number
+        ? maxData[0].article_number + 1
+        : 1;
+
+      // Prepare insert data - exclude id (Supabase generates it)
+      const insertData = {
+        article_number: nextArticleNumber,
+        headline: currentArticle.headline || '',
+        hook: currentArticle.hook || '',
+        content: currentArticle.content || '',
+        client: currentArticle.client || '',
+        status: 'Draft',
+        source_url: currentArticle.source_url || '',
+        source_title: currentArticle.source_title || '',
+        focus_angle: currentArticle.focus_angle || '',
+        tone: currentArticle.tone || '',
+        image_url: currentArticle.image_url || '',
+        image_placement: currentArticle.image_placement || '',
+        image_attribution: currentArticle.image_attribution || '',
+        hashtags: currentArticle.hashtags || '',
+        notes: currentArticle.notes || '',
+      };
+
+      console.log('Creating new article:', insertData);
+
+      const { data, error: insertError } = await supabase
+        .from('content_articles')
+        .insert(insertData)
+        .select()
+        .single();
+
+      if (insertError) {
+        throw new Error(`Failed to create article: ${insertError.message}`);
+      }
+
+      console.log('Article created successfully!', data);
+
+      // Update local state with the new article
+      const createdArticle = data as SupabaseArticle;
+
+      // Add to articles list and set as current
+      setArticles(prev => [createdArticle, ...prev]);
+      setAllArticles(prev => [createdArticle, ...prev]);
+      setCurrentArticle(createdArticle);
+      setCurrentIndex(0);
+      setIsCreatingNew(false);
+      setIsModified(false);
+
+      toast({
+        title: "Article Created",
+        description: `Article #${nextArticleNumber} has been created successfully.`,
+      });
+
+      // Refresh the filter options
+      fetchAllArticlesForOptions();
+
+    } catch (err: any) {
+      console.error('Create failed with error:', err);
+      setError(`Failed to create article: ${err.message}`);
+      toast({
+        title: "Error",
+        description: `Failed to create article: ${err.message}`,
+        variant: "destructive"
+      });
+    } finally {
+      setCreatingArticle(false);
+    }
+  };
+
+  // Cancel new article creation
+  const cancelNewArticle = () => {
+    setIsCreatingNew(false);
+    setIsModified(false);
+    // Restore the previous article if we have articles
+    if (articles.length > 0) {
+      setCurrentArticle({...articles[currentIndex]});
+    } else {
+      setCurrentArticle(null);
+    }
+  };
+
   // Wrapper component that connects stable component to parent state
   const SectionEnhancementTools = useCallback(({
     content,
@@ -1701,7 +2228,7 @@ OUTPUT EXACTLY LIKE THIS:
         onUndo={handleUndo}
       />
     );
-  }, [enhancementsReady, processingSection, showUndo, previousContent, displayCurrentArticle]);
+  }, [enhancementsReady, processingSection, showUndo, previousContent, displayCurrentArticle, useUSEnglish]);
 
   // Loading state
   if (loading) {
@@ -1769,56 +2296,106 @@ OUTPUT EXACTLY LIKE THIS:
         <Card className="bg-slate-800/50 border-slate-600 backdrop-blur-sm mb-6">
           <CardHeader>
             <div className="flex flex-col space-y-4">
-              {/* Top Row - Title and Navigation */}
+              {/* Top Row - Title, Navigation (middle), New Article (right) */}
               <div className="flex items-center justify-between">
-                <CardTitle className="text-2xl font-bold text-orange-400">Article Editor</CardTitle>
+                {/* Left: Title + Language Toggle */}
+                <div className="flex items-center gap-4">
+                  <CardTitle className="text-2xl font-bold text-orange-400">Article Editor</CardTitle>
+
+                  {/* British/US English Toggle */}
+                  <button
+                    onClick={toggleEnglishVariant}
+                    className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-700/50 hover:bg-slate-600/50 transition-colors border border-slate-600"
+                    title={useUSEnglish ? 'Using US English - click for British' : 'Using British English - click for US'}
+                  >
+                    <span className={`text-sm ${!useUSEnglish ? 'opacity-100' : 'opacity-40'}`}>🇬🇧</span>
+                    <div className={`w-8 h-4 rounded-full relative transition-colors ${useUSEnglish ? 'bg-blue-600' : 'bg-orange-500'}`}>
+                      <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${useUSEnglish ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                    </div>
+                    <span className={`text-sm ${useUSEnglish ? 'opacity-100' : 'opacity-40'}`}>🇺🇸</span>
+                  </button>
+                </div>
+
+                {/* Middle: Article info and Navigation */}
                 <div className="flex items-center space-x-4">
-                  <span className="text-sm text-slate-300">
-                    Article {displayCurrentArticle?.article_number || 'N/A'} | {displayCurrentIndex + 1} of {displayArticles.length}
-                    {searchQuery && ` (filtered)`}
-                  </span>
-                  
-                  {/* Jump to article section */}
-                  <div className="flex items-center space-x-2">
-                    <Label className="text-sm text-slate-300">Jump to:</Label>
-                    <Input
-                      type="number"
-                      value={jumpToNumber}
-                      onChange={(e) => setJumpToNumber(e.target.value)}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          handleJumpToArticle();
-                        }
-                      }}
-                      placeholder="#"
-                      className="w-16"
-                    />
+                  {!isCreatingNew && (
+                    <>
+                      <span className="text-sm text-slate-300">
+                        Article {displayCurrentArticle?.article_number || 'N/A'} | {displayCurrentIndex + 1} of {displayArticles.length}
+                        {searchQuery && ` (filtered)`}
+                      </span>
+
+                      {/* Jump to article section */}
+                      <div className="flex items-center space-x-2">
+                        <Label className="text-sm text-slate-300">Jump to:</Label>
+                        <Input
+                          type="number"
+                          value={jumpToNumber}
+                          onChange={(e) => setJumpToNumber(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              handleJumpToArticle();
+                            }
+                          }}
+                          placeholder="#"
+                          className="w-16"
+                        />
+                        <Button
+                          onClick={handleJumpToArticle}
+                          size="sm"
+                          className="bg-orange-600 hover:bg-orange-700"
+                        >
+                          Go
+                        </Button>
+                      </div>
+
+                      <div className="flex space-x-2">
+                        <Button
+                          onClick={searchQuery ? handleSearchPrev : handlePrev}
+                          disabled={searchQuery ? selectedSearchIndex === 0 : currentIndex === 0}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          onClick={searchQuery ? handleSearchNext : handleNext}
+                          disabled={searchQuery ? selectedSearchIndex === displayArticles.length - 1 : currentIndex === articles.length - 1}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </>
+                  )}
+
+                  {isCreatingNew && (
+                    <span className="text-sm text-green-400 font-medium">
+                      ✨ Creating New Article
+                    </span>
+                  )}
+                </div>
+
+                {/* Right: New Article Button */}
+                <div className="flex items-center space-x-2">
+                  {isCreatingNew ? (
                     <Button
-                      onClick={handleJumpToArticle}
-                      size="sm"
-                    >
-                      Go
-                    </Button>
-                  </div>
-                  
-                  <div className="flex space-x-2">
-                    <Button
-                      onClick={searchQuery ? handleSearchPrev : handlePrev}
-                      disabled={searchQuery ? selectedSearchIndex === 0 : currentIndex === 0}
+                      onClick={cancelNewArticle}
                       variant="outline"
-                      size="sm"
+                      className="border-slate-500 text-slate-300 hover:bg-slate-700"
                     >
-                      <ChevronLeft className="h-4 w-4" />
+                      Cancel
                     </Button>
+                  ) : (
                     <Button
-                      onClick={searchQuery ? handleSearchNext : handleNext}
-                      disabled={searchQuery ? selectedSearchIndex === displayArticles.length - 1 : currentIndex === articles.length - 1}
-                      variant="outline"
-                      size="sm"
+                      onClick={handleCreateNewArticle}
+                      className="bg-green-600 hover:bg-green-700 text-white"
                     >
-                      <ChevronRight className="h-4 w-4" />
+                      <Plus className="h-4 w-4 mr-2" />
+                      New Article
                     </Button>
-                  </div>
+                  )}
                 </div>
               </div>
 
@@ -2029,7 +2606,28 @@ OUTPUT EXACTLY LIKE THIS:
                   {/* Headline */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="headline" className="text-slate-300">Headline</Label>
+                      {/* Left side: Label + Case Toggle button */}
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="headline" className="text-slate-300">Headline</Label>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={toggleHeadlineCase}
+                          disabled={!displayCurrentArticle.headline || processingSection?.startsWith('headline')}
+                          className={`h-6 px-1.5 text-xs font-bold transition-colors ${
+                            displayCurrentArticle.headline
+                              ? 'text-slate-400 hover:text-orange-400 hover:bg-slate-700'
+                              : 'text-slate-600'
+                          }`}
+                          title={`Toggle case: ${headlineCaseMode === 'sentence' ? 'ALL CAPS' : headlineCaseMode === 'upper' ? 'Title Case' : 'Sentence case'}`}
+                        >
+                          <Type className="w-3.5 h-3.5 mr-0.5" />
+                          <span className="text-[10px]">
+                            {headlineCaseMode === 'sentence' ? 'Aa' : headlineCaseMode === 'upper' ? 'AA' : 'Aa'}
+                          </span>
+                        </Button>
+                      </div>
+                      {/* Right side: Enhancement tools */}
                       <SectionEnhancementTools
                         content={displayCurrentArticle.headline || ''}
                         sectionKey="headline"
@@ -2167,45 +2765,76 @@ OUTPUT EXACTLY LIKE THIS:
               {/* Action Buttons - Moved to left column for better space usage */}
               <Card className="bg-slate-800/50 border-slate-600 backdrop-blur-sm">
                 <CardContent className="p-6">
-                  <div className="flex flex-col space-y-4 lg:flex-row lg:justify-between lg:space-y-0">
-                    <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
-                      <Button 
-                        variant="destructive"
-                        disabled={deleting}
-                        className="w-full sm:w-auto"
-                      >
-                        {deleting ? 'DELETING...' : 'DELETE'}
-                      </Button>
-                      <Button 
+                  {isCreatingNew ? (
+                    // New Article Mode - simplified buttons
+                    <div className="flex flex-col space-y-4 lg:flex-row lg:justify-between lg:space-y-0">
+                      <Button
                         variant="outline"
-                        disabled={rejecting}
-                        className="border-orange-500 text-orange-600 hover:bg-orange-50 w-full sm:w-auto"
+                        onClick={cancelNewArticle}
+                        className="border-slate-500 text-slate-300 hover:bg-slate-700 w-full sm:w-auto"
                       >
-                        {rejecting ? 'REJECTING...' : 'REJECT'}
+                        Cancel
+                      </Button>
+                      <Button
+                        disabled={creatingArticle || !currentArticle?.headline}
+                        onClick={createNewArticle}
+                        className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
+                      >
+                        {creatingArticle ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                            Creating...
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Create Article
+                          </>
+                        )}
                       </Button>
                     </div>
-                    <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
-                      <Button 
-                        variant="outline"
-                        disabled={!isModified || saving || publishing || !!searchQuery}
-                        onClick={() => saveArticle('Edited')}
-                        className={`border-orange-500 text-orange-400 hover:bg-orange-500/10 w-full sm:w-auto ${
-                          saveSuccess ? 'bg-green-600 text-white border-green-600' : ''
-                        }`}
-                      >
-                        {saving ? 'SAVING...' : saveSuccess ? 'SAVED!' : 'SAVE CHANGES'}
-                      </Button>
-                      <Button 
-                        disabled={!isModified || saving || publishing || !!searchQuery}
-                        onClick={() => saveArticle('Published')}
-                        className={`bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto ${
-                          publishSuccess ? 'bg-green-600' : ''
-                        }`}
-                      >
-                        {publishing ? 'PUBLISHING...' : publishSuccess ? 'PUBLISHED!' : 'PUBLISH'}
-                      </Button>
+                  ) : (
+                    // Normal Edit Mode
+                    <div className="flex flex-col space-y-4 lg:flex-row lg:justify-between lg:space-y-0">
+                      <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                        <Button
+                          variant="destructive"
+                          disabled={deleting}
+                          className="w-full sm:w-auto"
+                        >
+                          {deleting ? 'DELETING...' : 'DELETE'}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          disabled={rejecting}
+                          className="border-orange-500 text-orange-600 hover:bg-orange-50 w-full sm:w-auto"
+                        >
+                          {rejecting ? 'REJECTING...' : 'REJECT'}
+                        </Button>
+                      </div>
+                      <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                        <Button
+                          variant="outline"
+                          disabled={!isModified || saving || publishing || !!searchQuery}
+                          onClick={() => saveArticle('Edited')}
+                          className={`border-orange-500 text-orange-400 hover:bg-orange-500/10 w-full sm:w-auto ${
+                            saveSuccess ? 'bg-green-600 text-white border-green-600' : ''
+                          }`}
+                        >
+                          {saving ? 'SAVING...' : saveSuccess ? 'SAVED!' : 'SAVE CHANGES'}
+                        </Button>
+                        <Button
+                          disabled={!isModified || saving || publishing || !!searchQuery}
+                          onClick={() => saveArticle('Published')}
+                          className={`bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto ${
+                            publishSuccess ? 'bg-green-600' : ''
+                          }`}
+                        >
+                          {publishing ? 'PUBLISHING...' : publishSuccess ? 'PUBLISHED!' : 'PUBLISH'}
+                        </Button>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -2294,33 +2923,65 @@ OUTPUT EXACTLY LIKE THIS:
                   <CardTitle className="text-lg text-orange-400">Image Controls</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* Image source buttons: AI Generate, Unsplash, Upload, Cloud Storage */}
-                  <div className="flex gap-2">
+                  {/* Image source buttons: AI Generate (full width), then 4 buttons with labels */}
+                  <div className="space-y-2">
+                    {/* AI Generate - Full width primary action */}
                     <Button
                       onClick={handleOpenAIGenerator}
-                      className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-medium border-0"
+                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-medium border-0 py-3"
                       disabled={!displayCurrentArticle || isGeneratingImage}
                     >
-                      <Sparkles className="h-4 w-4 mr-2" />
-                      {isGeneratingImage ? 'Generating...' : 'AI Generate'}
+                      <Sparkles className="h-5 w-5 mr-2" />
+                      {isGeneratingImage ? 'Generating...' : 'AI Generate Image'}
                     </Button>
-                    <Button
-                      onClick={handleOpenUnsplash}
-                      className="flex-1 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-400 hover:to-orange-400 text-white font-medium border-0"
-                      disabled={!displayCurrentArticle}
-                    >
-                      <Search className="h-4 w-4 mr-2" />
-                      Unsplash
-                    </Button>
-                    {/* Upload from device - icon button */}
-                    <Button
-                      onClick={handleTriggerFileUpload}
-                      className="px-3 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-400 hover:to-yellow-400 text-white border-0"
-                      disabled={!displayCurrentArticle || uploadingImage}
-                      title="Upload image"
-                    >
-                      <FolderOpen className="h-4 w-4" />
-                    </Button>
+
+                    {/* Secondary buttons - all equal width with labels */}
+                    <div className="grid grid-cols-4 gap-2">
+                      {/* Unsplash */}
+                      <Button
+                        onClick={handleOpenUnsplash}
+                        className="flex flex-col items-center gap-1 py-3 px-2 h-auto bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-400 hover:to-orange-400 text-white border-0"
+                        disabled={!displayCurrentArticle}
+                        title="Search Unsplash for free images"
+                      >
+                        <Search className="h-5 w-5" />
+                        <span className="text-xs font-medium">Unsplash</span>
+                      </Button>
+
+                      {/* Crop */}
+                      <Button
+                        onClick={handleOpenCropModal}
+                        className="flex flex-col items-center gap-1 py-3 px-2 h-auto bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white border-0"
+                        disabled={!displayCurrentArticle?.image_url || isCropping}
+                        title="Crop image to aspect ratio"
+                      >
+                        <Crop className="h-5 w-5" />
+                        <span className="text-xs font-medium">Crop</span>
+                      </Button>
+
+                      {/* Upload */}
+                      <Button
+                        onClick={handleTriggerFileUpload}
+                        className="flex flex-col items-center gap-1 py-3 px-2 h-auto bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-400 hover:to-yellow-400 text-white border-0"
+                        disabled={!displayCurrentArticle || uploadingImage}
+                        title="Upload image from device"
+                      >
+                        <FolderOpen className="h-5 w-5" />
+                        <span className="text-xs font-medium">Upload</span>
+                      </Button>
+
+                      {/* Cloud Storage */}
+                      <Button
+                        onClick={handleOpenCloudStorage}
+                        className="flex flex-col items-center gap-1 py-3 px-2 h-auto bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-400 hover:to-blue-400 text-white border-0"
+                        disabled={!displayCurrentArticle}
+                        title="Browse cloud storage"
+                      >
+                        <Cloud className="h-5 w-5" />
+                        <span className="text-xs font-medium">Cloud</span>
+                      </Button>
+                    </div>
+
                     {/* Hidden file input for cloud upload button */}
                     <input
                       ref={fileInputRef}
@@ -2329,15 +2990,6 @@ OUTPUT EXACTLY LIKE THIS:
                       accept="image/*"
                       onChange={handleCloudUploadFileInput}
                     />
-                    {/* Cloud Storage Browser - icon button */}
-                    <Button
-                      onClick={handleOpenCloudStorage}
-                      className="px-3 bg-sky-500 hover:bg-sky-400 text-white border-0"
-                      disabled={!displayCurrentArticle}
-                      title="Browse cloud storage"
-                    >
-                      <Cloud className="h-4 w-4" />
-                    </Button>
                   </div>
 
                   {/* Image Upload Area */}
@@ -2458,6 +3110,170 @@ OUTPUT EXACTLY LIKE THIS:
         onClose={handleCloseCloudStorage}
         onImageSelected={handleCloudStorageSelected}
       />
+
+      {/* Image Crop Modal */}
+      <Dialog open={isCropModalOpen} onOpenChange={(open) => !open && handleCloseCropModal()}>
+        <DialogContent className="bg-slate-800 border-slate-600 text-white max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-orange-400 flex items-center gap-2">
+              <Crop className="h-5 w-5" />
+              Crop Image
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              Select an aspect ratio and drag to reposition the crop area.
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Interactive crop preview with frame overlay */}
+          <div className="relative flex justify-center items-center bg-slate-900 rounded-lg p-4 min-h-[280px]">
+            {isLoadingProxy ? (
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-8 h-8 border-2 border-orange-400 border-t-transparent rounded-full animate-spin" />
+                <span className="text-slate-400 text-sm">Loading image...</span>
+              </div>
+            ) : proxiedImageData && imageDimensions ? (
+              (() => {
+                const dims = getCropFrameDimensions();
+                if (!dims) return null;
+
+                return (
+                  <div
+                    ref={cropPreviewRef}
+                    className="relative cursor-move select-none"
+                    style={{ width: dims.displayWidth, height: dims.displayHeight }}
+                    onMouseDown={handleCropDragStart}
+                    onMouseMove={handleCropDragMove}
+                    onMouseUp={handleCropDragEnd}
+                    onMouseLeave={handleCropDragEnd}
+                    onTouchStart={handleCropDragStart}
+                    onTouchMove={handleCropDragMove}
+                    onTouchEnd={handleCropDragEnd}
+                  >
+                    {/* Full image with darkened overlay */}
+                    <img
+                      src={proxiedImageData}
+                      alt="Crop preview"
+                      className="w-full h-full object-contain rounded"
+                      style={{ width: dims.displayWidth, height: dims.displayHeight }}
+                      draggable={false}
+                    />
+
+                    {/* Darkened overlay (outside crop area) */}
+                    <div
+                      className="absolute inset-0 bg-black/60 pointer-events-none"
+                      style={{
+                        clipPath: `polygon(
+                          0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%,
+                          ${50 + cropOffset.x / dims.displayWidth * 100 - dims.frameWidth / dims.displayWidth * 50}% ${50 + cropOffset.y / dims.displayHeight * 100 - dims.frameHeight / dims.displayHeight * 50}%,
+                          ${50 + cropOffset.x / dims.displayWidth * 100 - dims.frameWidth / dims.displayWidth * 50}% ${50 + cropOffset.y / dims.displayHeight * 100 + dims.frameHeight / dims.displayHeight * 50}%,
+                          ${50 + cropOffset.x / dims.displayWidth * 100 + dims.frameWidth / dims.displayWidth * 50}% ${50 + cropOffset.y / dims.displayHeight * 100 + dims.frameHeight / dims.displayHeight * 50}%,
+                          ${50 + cropOffset.x / dims.displayWidth * 100 + dims.frameWidth / dims.displayWidth * 50}% ${50 + cropOffset.y / dims.displayHeight * 100 - dims.frameHeight / dims.displayHeight * 50}%,
+                          ${50 + cropOffset.x / dims.displayWidth * 100 - dims.frameWidth / dims.displayWidth * 50}% ${50 + cropOffset.y / dims.displayHeight * 100 - dims.frameHeight / dims.displayHeight * 50}%
+                        )`,
+                      }}
+                    />
+
+                    {/* Crop frame border */}
+                    <div
+                      className="absolute border-2 border-orange-400 pointer-events-none"
+                      style={{
+                        width: dims.frameWidth,
+                        height: dims.frameHeight,
+                        left: `calc(50% - ${dims.frameWidth / 2}px + ${cropOffset.x}px)`,
+                        top: `calc(50% - ${dims.frameHeight / 2}px + ${cropOffset.y}px)`,
+                      }}
+                    >
+                      {/* Corner handles */}
+                      <div className="absolute -top-1 -left-1 w-3 h-3 bg-orange-400 rounded-sm" />
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-sm" />
+                      <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-orange-400 rounded-sm" />
+                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-orange-400 rounded-sm" />
+
+                      {/* Rule of thirds grid lines */}
+                      <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 opacity-30">
+                        <div className="border-r border-b border-white/50" />
+                        <div className="border-r border-b border-white/50" />
+                        <div className="border-b border-white/50" />
+                        <div className="border-r border-b border-white/50" />
+                        <div className="border-r border-b border-white/50" />
+                        <div className="border-b border-white/50" />
+                        <div className="border-r border-white/50" />
+                        <div className="border-r border-white/50" />
+                        <div />
+                      </div>
+                    </div>
+
+                    {/* Drag instruction */}
+                    {dims.maxOffsetX > 0 || dims.maxOffsetY > 0 ? (
+                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs text-white/70 bg-black/50 px-2 py-1 rounded">
+                        Drag to reposition
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })()
+            ) : (
+              <div className="text-slate-400 text-sm">No image loaded</div>
+            )}
+          </div>
+
+          {/* Aspect ratio buttons */}
+          <div className="space-y-3">
+            <Label className="text-slate-300">Select Aspect Ratio</Label>
+            <div className="grid grid-cols-5 gap-2">
+              {[
+                { ratio: '9:16', label: '9:16', desc: 'Story' },
+                { ratio: '4:5', label: '4:5', desc: 'Portrait' },
+                { ratio: '1:1', label: '1:1', desc: 'Square' },
+                { ratio: '2:3', label: '2:3', desc: 'Photo' },
+                { ratio: '16:9', label: '16:9', desc: 'Wide' },
+              ].map(({ ratio, label, desc }) => (
+                <button
+                  key={ratio}
+                  onClick={() => setSelectedAspectRatio(ratio)}
+                  className={`flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all ${
+                    selectedAspectRatio === ratio
+                      ? 'border-orange-500 bg-orange-500/20 text-orange-400'
+                      : 'border-slate-600 hover:border-slate-500 text-slate-300'
+                  }`}
+                >
+                  <span className="text-sm font-bold">{label}</span>
+                  <span className="text-xs opacity-70">{desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex gap-3 pt-2">
+            <Button
+              variant="outline"
+              onClick={handleCloseCropModal}
+              className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
+              disabled={isCropping}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCropImage}
+              className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white border-0"
+              disabled={isCropping || isLoadingProxy || !proxiedImageData}
+            >
+              {isCropping ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  Cropping...
+                </>
+              ) : (
+                <>
+                  <Crop className="h-4 w-4 mr-2" />
+                  Crop Image
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Toaster />
       <Footer />
