@@ -829,6 +829,26 @@
 }
 
 /* ------------------------------------
+ * ANIMATION PAGE (Videography) - Creative & Dynamic
+ * ------------------------------------ */
+[data-page="animation"] {
+  --page-font-display: 'Playfair Display', serif;
+  --page-font-heading: 'Lato', sans-serif;
+  --page-font-body: 'Lato', sans-serif;
+  --page-font-button: 'Lato', sans-serif;
+}
+
+/* ------------------------------------
+ * SOCIAL PAGE (Videography) - Modern & Trendy
+ * ------------------------------------ */
+[data-page="social"] {
+  --page-font-display: 'Corinthia', cursive;
+  --page-font-heading: 'Quicksand', sans-serif;
+  --page-font-body: 'Lato', sans-serif;
+  --page-font-button: 'Lato', sans-serif;
+}
+
+/* ------------------------------------
  * APPLY PAGE FONTS TO CONTENT SECTIONS
  * Excludes Navigation and Footer
  * ------------------------------------ */
@@ -854,17 +874,33 @@
 }
 
 /* ------------------------------------
- * H2 SIZE ENHANCEMENT FOR ALL PHOTOGRAPHY PAGES
- * Applies to all 6 photography category pages
+ * H2 SIZE ENHANCEMENT FOR ALL PHOTOGRAPHY & VIDEOGRAPHY PAGES
+ * Applies to all category pages
  * ------------------------------------ */
 [data-page="weddings"] [data-gradient-section] h2,
 [data-page="portraits"] [data-gradient-section] h2,
 [data-page="events"] [data-gradient-section] h2,
 [data-page="graduation"] [data-gradient-section] h2,
 [data-page="corporate"] [data-gradient-section] h2,
-[data-page="products"] [data-gradient-section] h2 {
+[data-page="products"] [data-gradient-section] h2,
+[data-page="animation"] [data-gradient-section] h2,
+[data-page="social"] [data-gradient-section] h2 {
   font-size: 3rem !important; /* 48px mobile */
-  margin-bottom: 0.25rem !important;
+  line-height: 1.2 !important; /* Prevent line overlap on multi-line titles */
+  margin-bottom: 1.5rem !important; /* Proper spacing below title */
+}
+
+/* H3 subheading spacing for category pages */
+[data-page="weddings"] [data-gradient-section] h3,
+[data-page="portraits"] [data-gradient-section] h3,
+[data-page="events"] [data-gradient-section] h3,
+[data-page="graduation"] [data-gradient-section] h3,
+[data-page="corporate"] [data-gradient-section] h3,
+[data-page="products"] [data-gradient-section] h3,
+[data-page="animation"] [data-gradient-section] h3,
+[data-page="social"] [data-gradient-section] h3 {
+  line-height: 1.6 !important; /* Comfortable reading line-height */
+  margin-bottom: 2rem !important; /* Space before feature list or content */
 }
 
 @media (min-width: 1024px) {
@@ -873,7 +909,9 @@
   [data-page="events"] [data-gradient-section] h2,
   [data-page="graduation"] [data-gradient-section] h2,
   [data-page="corporate"] [data-gradient-section] h2,
-  [data-page="products"] [data-gradient-section] h2 {
+  [data-page="products"] [data-gradient-section] h2,
+  [data-page="animation"] [data-gradient-section] h2,
+  [data-page="social"] [data-gradient-section] h2 {
     font-size: 4rem !important; /* 64px desktop */
   }
 }

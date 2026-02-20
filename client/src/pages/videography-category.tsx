@@ -4,10 +4,47 @@ import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { ArrowLeft, Video, Check, Play } from "lucide-react";
-import { YouTubeHero } from "@/components/common/youtube-hero";
+import { Check, Play } from "lucide-react";
 import { GradientBackground } from "@/components/common/gradient-background";
 import { trackPageView } from "@/lib/analytics";
+import { PortfolioGrid } from "@/components/portfolio/portfolio-grid";
+import { useQuery } from "@tanstack/react-query";
+
+interface Shoot {
+  id: string;
+  title: string;
+  description?: string;
+  mediaType: 'photo' | 'video';
+  customSlug?: string;
+  coverImageUrl?: string;
+  coverVideoInfo?: {
+    id: string;
+    storagePath: string;
+    optimizedPath?: string;
+    thumbnailPath: string;
+    duration?: number;
+    filename: string;
+  };
+  isGroup?: boolean;
+  groupName?: string;
+  shootCount?: number;
+  shoots?: Array<{
+    id: string;
+    title: string;
+    mediaType: 'photo' | 'video';
+    customSlug?: string;
+  }>;
+}
+
+// YouTube video IDs for each category hero
+const categoryVideoIds: Record<string, string> = {
+  weddings: "zeCDM1Ks6PY",
+  products: "QRmzNpUQJEY",
+  corporate: "mmVc2wQGIRo",
+  animation: "-MKtFeO_9pE",
+  events: "6CxWjitWk38",
+  social: "IzFrJDXjomo"
+};
 
 const categoryData: Record<string, {
   name: string;
@@ -35,7 +72,7 @@ const categoryData: Record<string, {
       "4K cinema cameras",
       "Professional audio recording",
       "Drone footage",
-      "Same-day highlight reel",
+      "Cinematic style",
       "Full ceremony coverage",
       "Reception highlights",
       "Couple interviews",
@@ -311,8 +348,21 @@ export default function VideographyCategory() {
 
   const data = categoryData[category];
 
+  // Fetch wedding-related albums for Recent Albums section (only for weddings)
+  const { data: recentAlbums = [], isLoading: albumsLoading } = useQuery<Shoot[]>({
+    queryKey: ['portfolio', 'cards', 'wedding-related', 'video'],
+    queryFn: async () => {
+      const response = await fetch('/api/portfolio/cards?shootTypes=wedding,engagement,maternity,newborn');
+      if (!response.ok) {
+        throw new Error('Failed to fetch albums');
+      }
+      return response.json();
+    },
+    enabled: category === "weddings" // Only fetch for weddings category
+  });
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div data-page={category} className="min-h-screen bg-background text-foreground">
       {/* SEO Meta Tags */}
       <title>{data.title} | SlyFox Studios</title>
       <meta name="description" content={data.description} />
@@ -320,26 +370,37 @@ export default function VideographyCategory() {
       
       <Navigation />
       
-      {/* Hero Section with YouTube Background */}
-      <YouTubeHero
-        videoId={
-          category === "corporate" ? "mmVc2wQGIRo" :
-          category === "products" ? "IzFrJDXjomo" :
-          category === "events" ? "txSF70Y6ZdA" :
-          category === "animation" ? "-MKtFeO_9pE" :
-          "ck_GbYnz8FY"
-        }
-        title={data.name}
-        subtitle={data.name === "Corporate Videography" ? "Professional excellence in frames" : 
-                 data.name === "Wedding Videography" ? "Love stories in motion" :
-                 data.name === "Event Videography" ? "Moments preserved forever" :
-                 data.name === "Product Videography" ? "Cinematic product showcase" :
-                 data.name === "Social Media Videos" ? "Content that captivates" :
-                 data.name === "Animation & Motion Graphics" ? "Ideas through animation" :
-                 "Creative storytelling through film"}
-        ctaText="Start Project"
-        ctaLink="/contact"
-      />
+      {/* Hero Section - Full width, min 40vh on mobile portrait, 16:9 on desktop */}
+      <section className="relative w-full min-h-[40vh] md:aspect-video overflow-hidden flex items-center justify-center pt-16">
+        {/* YouTube Video Background */}
+        <div className="absolute top-16 left-0 right-0 bottom-0 overflow-hidden">
+          {/* Placeholder cover image */}
+          <div
+            className="absolute inset-0 bg-cover bg-center z-10"
+            style={{
+              backgroundImage: `url('https://img.youtube.com/vi/${categoryVideoIds[category] || "zeCDM1Ks6PY"}/maxresdefault.jpg')`,
+            }}
+          />
+
+          {/* YouTube iframe - scales to cover full width on mobile */}
+          <div className="absolute inset-0 w-full h-full z-20">
+            <iframe
+              className="absolute top-1/2 left-1/2 w-[177.77vh] min-w-full h-[56.25vw] min-h-full -translate-x-1/2 -translate-y-1/2"
+              src={`https://www.youtube.com/embed/${categoryVideoIds[category] || "zeCDM1Ks6PY"}?autoplay=1&mute=1&loop=1&playlist=${categoryVideoIds[category] || "zeCDM1Ks6PY"}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&iv_load_policy=3&cc_load_policy=0&start=1`}
+              title={`${data.name} Hero Video`}
+              frameBorder="0"
+              allow="autoplay; encrypted-media"
+              allowFullScreen
+              style={{
+                pointerEvents: 'none',
+              }}
+            />
+          </div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        </div>
+      </section>
 
       {/* About Section */}
       <GradientBackground section="videography-category-services" className="py-20">
@@ -363,15 +424,29 @@ export default function VideographyCategory() {
               </div>
             </div>
             
-            <div className="relative">
-              <img 
-                src={data.gallery[0]}
-                alt={`${data.name} example`}
-                className="w-full rounded-2xl shadow-2xl"
-              />
-              <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-50 rounded-2xl opacity-0 hover:opacity-100 transition-opacity duration-300 cursor-pointer">
-                <Play className="w-16 h-16 text-gold" />
-              </div>
+            <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl">
+              {category === "weddings" ? (
+                <video
+                  className="absolute inset-0 w-full h-full object-cover"
+                  src="https://dwkjfuhykdjtzvrzdnrr.supabase.co/storage/v1/object/public/gallery-videos/f7ec3a26-de83-4b18-bdc7-57e7b2947380/1770361510170-Keagan___Amber_Wedding.mp4-optimized.mp4"
+                  controls
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                >
+                  Your browser does not support the video tag.
+                </video>
+              ) : (
+                <iframe
+                  className="absolute inset-0 w-full h-full"
+                  src={`https://www.youtube.com/embed/${categoryVideoIds[category] || "zeCDM1Ks6PY"}?autoplay=0&mute=1&loop=1&playlist=${categoryVideoIds[category] || "zeCDM1Ks6PY"}&controls=1&showinfo=0&rel=0&modestbranding=1&playsinline=1`}
+                  title={`${data.name} showcase video`}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              )}
             </div>
           </div>
         </div>
@@ -425,72 +500,112 @@ export default function VideographyCategory() {
         </div>
       </GradientBackground>
 
-      {/* Showreel Section */}
-      <GradientBackground section="videography-category-recent-work" className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6">
-              Recent Work
-            </h2>
-            <h3 className="text-xl">
-              Browse our latest {data.name.toLowerCase()} projects
-            </h3>
-          </div>
+      {/* Recent Albums Section - For weddings, show portfolio albums */}
+      {category === "weddings" ? (
+        <GradientBackground section="videography-wedding-albums" className="py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl lg:text-5xl mb-2">
+                Recent Albums
+              </h2>
+              <h3 className="text-xl">
+                A selection of wedding, engagement, maternity and newborn galleries
+              </h3>
+            </div>
 
-          {["corporate", "products", "events", "animation"].includes(category) ? (
-            // YouTube video grid for video categories
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
-              {(() => {
-                const videoIds = {
-                  corporate: ["mmVc2wQGIRo", "-IHPZ3PUqOY", "KeNRQttTOJQ", "bZc_GE1sHEM"],
-                  products: ["IzFrJDXjomo", "o1ahvUh3c4c", "x-7BV2TZx44", "cpoh98lomEo"],
-                  events: ["2MCHCdn9-uc", "txSF70Y6ZdA", "-MKtFeO_9pE", "d835io7PYSc"],
-                  animation: ["-MKtFeO_9pE", "cTEK6fY0oVQ", "2jWAidv1Cak", "-MKtFeO_9pE"]
-                };
-                return videoIds[category].map((videoId, index) => (
-                  <div key={index} className="group">
-                    <div className="relative aspect-video rounded-xl overflow-hidden shadow-2xl">
-                      <iframe
-                        src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&loop=1&playlist=${videoId}&fs=1&cc_load_policy=0&iv_load_policy=3&showinfo=0`}
-                        title={`${data.name} Video ${index + 1}`}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowFullScreen
-                        className="w-full h-full border-0"
+            {albumsLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 max-w-7xl mx-auto">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div key={index} className="aspect-square bg-gray-800/50 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : recentAlbums.length > 0 ? (
+              <PortfolioGrid portfolioItems={recentAlbums.slice(0, 6)} />
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">No albums available yet</p>
+              </div>
+            )}
+
+            {recentAlbums.length > 6 && (
+              <div className="text-center mt-12">
+                <Link href="/portfolio">
+                  <Button className="btn-salmon">
+                    View All Galleries
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
+        </GradientBackground>
+      ) : (
+        /* Recent Work Section - For other categories */
+        <GradientBackground section="videography-category-recent-work" className="py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl lg:text-5xl mb-6">
+                Sample Work
+              </h2>
+              <h3 className="text-xl">
+                A selection of {data.name.toLowerCase()} videos
+              </h3>
+            </div>
+
+            {["corporate", "products", "events", "animation"].includes(category) ? (
+              // YouTube video grid for video categories
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+                {(() => {
+                  const videoIds: Record<string, string[]> = {
+                    corporate: ["mmVc2wQGIRo", "-IHPZ3PUqOY", "KeNRQttTOJQ", "bZc_GE1sHEM"],
+                    products: ["IzFrJDXjomo", "o1ahvUh3c4c", "x-7BV2TZx44", "cpoh98lomEo"],
+                    events: ["2MCHCdn9-uc", "txSF70Y6ZdA", "-MKtFeO_9pE", "d835io7PYSc"],
+                    animation: ["-MKtFeO_9pE", "cTEK6fY0oVQ", "2jWAidv1Cak", "-MKtFeO_9pE"]
+                  };
+                  return (videoIds[category] || []).map((videoId, index) => (
+                    <div key={index} className="group">
+                      <div className="relative aspect-video rounded-xl overflow-hidden shadow-2xl">
+                        <iframe
+                          src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&loop=1&playlist=${videoId}&fs=1&cc_load_policy=0&iv_load_policy=3&showinfo=0`}
+                          title={`${data.name} Video ${index + 1}`}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                          className="w-full h-full border-0"
+                        />
+                      </div>
+                    </div>
+                  ));
+                })()}
+              </div>
+            ) : (
+              // Original image gallery for social category
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {data.gallery.map((image, index) => (
+                  <div key={index} className="group cursor-pointer">
+                    <div className="relative overflow-hidden rounded-xl image-hover-effect">
+                      <img
+                        src={image}
+                        alt={`${data.name} example ${index + 1}`}
+                        className="w-full h-80 object-cover"
                       />
+                      <div className="absolute inset-0 bg-white bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <Play className="w-12 h-12 text-gold" />
+                      </div>
                     </div>
                   </div>
-                ));
-              })()}
-            </div>
-          ) : (
-            // Original image gallery for other categories (weddings, social)
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {data.gallery.map((image, index) => (
-                <div key={index} className="group cursor-pointer">
-                  <div className="relative overflow-hidden rounded-xl image-hover-effect">
-                    <img 
-                      src={image}
-                      alt={`${data.name} example ${index + 1}`}
-                      className="w-full h-80 object-cover"
-                    />
-                    <div className="absolute inset-0 bg-white bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                      <Play className="w-12 h-12 text-gold" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
 
-          <div className="text-center mt-12">
-            <Link href="/contact">
-              <Button className="btn-cyan">
-                Start Your Project
-              </Button>
-            </Link>
+            <div className="text-center mt-12">
+              <Link href="/contact">
+                <Button className="btn-cyan">
+                  Start Your Project
+                </Button>
+              </Link>
+            </div>
           </div>
-        </div>
-      </GradientBackground>
+        </GradientBackground>
+      )}
 
       <Footer />
     </div>

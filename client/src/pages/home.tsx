@@ -6,6 +6,7 @@ import { ChevronDown } from "lucide-react";
 import { HomepageServicesOverview } from "@/components/sections/homepage-services-overview";
 import { AboutApproach } from "@/components/sections/about-approach";
 import { HomepageCTA } from "@/components/sections/homepage-cta";
+import { HomepageFinalCTA } from "@/components/sections/homepage-final-cta";
 import { Testimonials } from "@/components/sections/testimonials";
 
 export default function Home() {
@@ -24,7 +25,7 @@ export default function Home() {
           <div
             className="absolute inset-0 bg-cover bg-center z-10"
             style={{
-              backgroundImage: `url('https://img.youtube.com/vi/m0bYSSHSvRg/maxresdefault.jpg')`,
+              backgroundImage: `url('https://img.youtube.com/vi/FksYmP4Pc5g/maxresdefault.jpg')`,
             }}
           >
             <div className="absolute inset-0 hero-gradient"></div>
@@ -34,7 +35,7 @@ export default function Home() {
           <div className="absolute inset-0 w-full h-full z-20">
             <iframe
               className="absolute top-1/2 left-1/2 w-[177.77vh] min-w-full h-[56.25vw] min-h-full -translate-x-1/2 -translate-y-1/2"
-              src="https://www.youtube.com/embed/m0bYSSHSvRg?autoplay=1&mute=1&loop=1&playlist=m0bYSSHSvRg&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&iv_load_policy=3&cc_load_policy=0&start=1"
+              src="https://www.youtube.com/embed/FksYmP4Pc5g?autoplay=1&mute=1&loop=1&playlist=FksYmP4Pc5g&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&iv_load_policy=3&cc_load_policy=0&start=1"
               title="Hero Video Background"
               frameBorder="0"
               allow="autoplay; encrypted-media"
@@ -56,6 +57,7 @@ export default function Home() {
 
       <HomepageCTA />
       <Testimonials />
+      <HomepageFinalCTA />
       <Footer />
     </div>
   );

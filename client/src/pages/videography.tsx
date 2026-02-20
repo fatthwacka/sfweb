@@ -2,8 +2,7 @@ import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Video, ArrowRight } from "lucide-react";
-import { YouTubeHero } from "@/components/common/youtube-hero";
+import { Video } from "lucide-react";
 import { GradientBackground } from "@/components/common/gradient-background";
 import { CategoryNavigation } from "@/components/common/category-navigation";
 
@@ -56,14 +55,40 @@ export default function Videography() {
       
       <Navigation />
       
-      {/* Hero Section with YouTube Background */}
-      <YouTubeHero
-        videoId="0KMY9L849Hg"
-        title="Videography"
-        subtitle="Motion that tells your story"
-        ctaText="Start Project"
-        ctaLink="/contact"
-      />
+      {/* Hero Section - Full width, min 40vh on mobile portrait, 16:9 on desktop */}
+      <section className="relative w-full min-h-[40vh] md:aspect-video overflow-hidden flex items-center justify-center pt-16">
+        {/* YouTube Video Background */}
+        <div className="absolute top-16 left-0 right-0 bottom-0 overflow-hidden">
+          {/* Placeholder cover image */}
+          <div
+            className="absolute inset-0 bg-cover bg-center z-10"
+            style={{
+              backgroundImage: `url('https://img.youtube.com/vi/zeCDM1Ks6PY/maxresdefault.jpg')`,
+            }}
+          >
+            <div className="absolute inset-0 hero-gradient"></div>
+          </div>
+
+          {/* YouTube iframe - scales to cover full width on mobile */}
+          <div className="absolute inset-0 w-full h-full z-20">
+            <iframe
+              className="absolute top-1/2 left-1/2 w-[177.77vh] min-w-full h-[56.25vw] min-h-full -translate-x-1/2 -translate-y-1/2"
+              src="https://www.youtube.com/embed/zeCDM1Ks6PY?autoplay=1&mute=1&loop=1&playlist=zeCDM1Ks6PY&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&iv_load_policy=3&cc_load_policy=0&start=1"
+              title="Videography Hero Video"
+              frameBorder="0"
+              allow="autoplay; encrypted-media"
+              allowFullScreen
+              style={{
+                pointerEvents: 'none',
+              }}
+            />
+            <div className="absolute inset-0 hero-gradient z-30"></div>
+          </div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        </div>
+      </section>
 
       {/* Videography Categories */}
       <GradientBackground section="videography-landing-services" className="py-20">
@@ -112,55 +137,6 @@ export default function Videography() {
                   </div>
                 </div>
               </Link>
-            ))}
-          </div>
-        </div>
-      </GradientBackground>
-
-      {/* Process Section */}
-      <GradientBackground section="videography-landing-portfolio" className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6">
-              Our Video <span>Process</span>
-            </h2>
-            <h3 className="text-xl max-w-3xl mx-auto">
-              From concept to delivery, we ensure every video project exceeds expectations.
-            </h3>
-          </div>
-
-          <div className="grid md:grid-cols-4 gap-8">
-            {[
-              {
-                step: "01",
-                title: "Consultation",
-                description: "We discuss your vision, goals, and requirements to create the perfect video strategy."
-              },
-              {
-                step: "02", 
-                title: "Pre-Production",
-                description: "Planning, scripting, storyboarding, and scheduling to ensure smooth production."
-              },
-              {
-                step: "03",
-                title: "Production", 
-                description: "Professional filming with cinema-quality equipment and experienced crew."
-              },
-              {
-                step: "04",
-                title: "Post-Production",
-                description: "Expert editing, color grading, audio mixing, and final delivery in your preferred format."
-              }
-            ].map((item, index) => (
-              <div key={index} className="text-center">
-                <div className="inline-block mb-6">
-                  <div className="text-6xl font-bold">
-                    {item.step}
-                  </div>
-                </div>
-                <h3 className="text-xl mb-4">{item.title}</h3>
-                <p className="text-muted-foreground">{item.description}</p>
-              </div>
             ))}
           </div>
         </div>

@@ -63,8 +63,8 @@ export async function processVideo(
     originalFilename,
     maxWidth = 1920, // 1080p max width
     quality = 'medium',
-    videoBitrate = '2000k',
-    audioBitrate = '128k'
+    videoBitrate = '6000k',  // Increased from 2000k for much better quality
+    audioBitrate = '192k'    // Increased from 128k for better audio
   } = options;
 
   console.log(`🎬 Starting video processing for ${originalFilename}`);
@@ -192,8 +192,10 @@ async function transcodeVideo(
     let ffmpegCommand = ffmpeg(inputPath)
       .outputOptions([
         '-c:v libx264',           // H.264 codec for maximum compatibility
-        '-preset fast',           // Good balance of speed and compression
+        '-preset slow',           // Slower preset = better quality at same bitrate
         `-crf ${getQualityCRF(quality)}`, // Constant Rate Factor for quality
+        '-profile:v high',        // High profile for better quality
+        '-level 4.1',             // Level 4.1 for 1080p compatibility
         '-c:a aac',               // AAC audio codec
         '-movflags +faststart',   // Web-optimized MP4 structure
         '-pix_fmt yuv420p',       // Ensure compatibility
@@ -293,13 +295,14 @@ function calculateOptimizedDimensions(
 /**
  * Get CRF value based on quality setting
  * Lower CRF = higher quality (scale 0-51)
+ * Updated Feb 2026: Improved quality across all tiers
  */
 function getQualityCRF(quality: string): string {
   switch (quality) {
-    case 'high': return '18';    // High quality, larger file
-    case 'medium': return '21';  // Good balance with better quality (was 23)
-    case 'low': return '26';     // Smaller file, acceptable quality (was 28)
-    default: return '21';
+    case 'high': return '16';    // Near-lossless quality (was 18)
+    case 'medium': return '18';  // High quality, good balance (was 21)
+    case 'low': return '22';     // Good quality, smaller file (was 26)
+    default: return '18';
   }
 }
 

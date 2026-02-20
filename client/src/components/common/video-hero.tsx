@@ -18,7 +18,7 @@ interface VideoHeroProps {
 }
 
 export function VideoHero({ 
-  videoUrl = "https://www.youtube.com/embed/0KMY9L849Hg",
+  videoUrl = "https://youtu.be/1U12u0K-EJc",
   title, 
   subtitle, 
   primaryAction, 

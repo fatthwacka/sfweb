@@ -1,4 +1,5 @@
 import { GradientBackground } from "@/components/common/gradient-background";
+import { Link } from "wouter";
 
 export function AboutApproach() {
   return (
@@ -9,23 +10,27 @@ export function AboutApproach() {
           <div className="space-y-8">
             <div>
               <h2 className="text-4xl font-light text-salmon mb-6 leading-tight">
-                Our Approach
+                Pro Studio based in Umhlanga, Durban
               </h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-gradient-to-br from-slate-800/30 to-gray-900/50 rounded-lg p-6 border border-slate-700/40">
-                  <h3 className="text-cyan text-lg font-semibold mb-3">Emotive Power</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    We combine the emotive power of professional photography and video production with the precision and efficiency of modern AI automation.
-                  </p>
-                </div>
-                
-                <div className="bg-gradient-to-br from-slate-800/30 to-gray-900/50 rounded-lg p-6 border border-slate-700/40">
-                  <h3 className="text-salmon text-lg font-semibold mb-3">Complete Solutions</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    We don't just capture your story through the lens of our studio, we build web apps, AI automations and intelligent tools, that ensures your business runs as beautifully as it looks.
-                  </p>
-                </div>
+                <Link href="/photography/corporate">
+                  <div className="bg-gradient-to-br from-slate-800/30 to-gray-900/50 rounded-lg p-6 border border-slate-700/40 h-full">
+                    <h3 className="text-cyan text-lg font-semibold mb-3">Corporate</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      Brand and product photography, corporate intro videos, team building coverage, events and festivals.
+                    </p>
+                  </div>
+                </Link>
+
+                <Link href="/photography/portraits">
+                  <div className="bg-gradient-to-br from-slate-800/30 to-gray-900/50 rounded-lg p-6 border border-slate-700/40 h-full">
+                    <h3 className="text-salmon text-lg font-semibold mb-3">Personal</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      Portraits, headshots, couple shoots, maternity and newborn sessions, family photography.
+                    </p>
+                  </div>
+                </Link>
               </div>
             </div>
           </div>
@@ -34,7 +39,7 @@ export function AboutApproach() {
           <div className="relative">
             <div className="aspect-[4/3] overflow-hidden rounded-xl">
               <img
-                src="/uploads/slyfox-pro-studio-lighting.jpg"
+                src="/uploads/DSC06200_1765116892722.jpg"
                 alt="Professional studio setup with advanced lighting and equipment"
                 className="w-full h-full object-cover"
               />

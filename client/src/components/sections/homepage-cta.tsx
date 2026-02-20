@@ -46,19 +46,14 @@ export function HomepageCTA() {
   return (
     <GradientBackground section="contact" className="py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* CTA Section */}
+        {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl mb-6 text-salmon font-light">
-            Ready to Start Your Project?
+            Where to Next?
           </h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Let's discuss your vision and create something extraordinary together.
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Explore our services in more detail
           </p>
-          <Link href="/contact">
-            <Button size="lg" className="btn-salmon text-lg px-8 py-3">
-              Get Started
-            </Button>
-          </Link>
         </div>
 
         {/* Service Cards */}
