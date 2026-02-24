@@ -1,8 +1,5 @@
 import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
-import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
-import { ChevronDown } from "lucide-react";
 import { HomepageServicesOverview } from "@/components/sections/homepage-services-overview";
 import { AboutApproach } from "@/components/sections/about-approach";
 import { HomepageCTA } from "@/components/sections/homepage-cta";
@@ -17,11 +14,9 @@ export default function Home() {
 
       <Navigation />
 
-      {/* Hero Section - Full width, min 40vh on mobile portrait, 16:9 on desktop */}
+      {/* Hero Video Section - DISABLED (moved to videography page)
       <section className="relative w-full min-h-[40vh] md:aspect-video overflow-hidden flex items-center justify-center pt-16">
-        {/* YouTube Video Background */}
         <div className="absolute top-16 left-0 right-0 bottom-0 overflow-hidden">
-          {/* Placeholder cover image */}
           <div
             className="absolute inset-0 bg-cover bg-center z-10"
             style={{
@@ -30,8 +25,6 @@ export default function Home() {
           >
             <div className="absolute inset-0 hero-gradient"></div>
           </div>
-
-          {/* YouTube iframe - scales to cover full width on mobile */}
           <div className="absolute inset-0 w-full h-full z-20">
             <iframe
               className="absolute top-1/2 left-1/2 w-[177.77vh] min-w-full h-[56.25vw] min-h-full -translate-x-1/2 -translate-y-1/2"
@@ -47,10 +40,10 @@ export default function Home() {
             <div className="absolute inset-0 hero-gradient z-30"></div>
           </div>
         </div>
-
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         </div>
       </section>
+      */}
 
       <HomepageServicesOverview />
       <AboutApproach />

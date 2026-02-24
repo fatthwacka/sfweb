@@ -63,7 +63,7 @@ export default function Videography() {
           <div
             className="absolute inset-0 bg-cover bg-center z-10"
             style={{
-              backgroundImage: `url('https://img.youtube.com/vi/zeCDM1Ks6PY/maxresdefault.jpg')`,
+              backgroundImage: `url('https://img.youtube.com/vi/FksYmP4Pc5g/maxresdefault.jpg')`,
             }}
           >
             <div className="absolute inset-0 hero-gradient"></div>
@@ -73,7 +73,7 @@ export default function Videography() {
           <div className="absolute inset-0 w-full h-full z-20">
             <iframe
               className="absolute top-1/2 left-1/2 w-[177.77vh] min-w-full h-[56.25vw] min-h-full -translate-x-1/2 -translate-y-1/2"
-              src="https://www.youtube.com/embed/zeCDM1Ks6PY?autoplay=1&mute=1&loop=1&playlist=zeCDM1Ks6PY&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&iv_load_policy=3&cc_load_policy=0&start=1"
+              src="https://www.youtube.com/embed/FksYmP4Pc5g?autoplay=1&mute=1&loop=1&playlist=FksYmP4Pc5g&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&iv_load_policy=3&cc_load_policy=0&start=1"
               title="Videography Hero Video"
               frameBorder="0"
               allow="autoplay; encrypted-media"

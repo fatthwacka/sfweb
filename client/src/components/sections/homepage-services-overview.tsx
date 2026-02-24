@@ -56,7 +56,7 @@ export function HomepageServicesOverview() {
   };
 
   return (
-    <GradientBackground section="services" className="pt-12 pb-20" id="services">
+    <GradientBackground section="services" className="pt-24 pb-32" id="services">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           {/* Service Bubbles with connector lines to tree */}
@@ -68,11 +68,14 @@ export function HomepageServicesOverview() {
           <h1 className="mb-4 leading-tight text-5xl md:text-6xl lg:text-7xl">
             Analog Intelligence
           </h1>
-          <p className="text-lg text-muted-foreground mb-12 max-w-4xl mx-auto">
-            We provide professional studio photography & videography, web apps, and AI business automation tools.
+          <p className="text-lg text-muted-foreground mb-4 max-w-4xl mx-auto">
+            Photography, Videography, AI Automation, Mischief in Motion.
           </p>
-          
-          {/* New content in stylish cards */}
+          <p className="text-base text-muted-foreground mb-12 max-w-3xl mx-auto font-medium">
+            Built for brands that move with purpose.
+          </p>
+
+          {/* Service cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-12">
             <Link href="/tools">
               <div
@@ -95,7 +98,7 @@ export function HomepageServicesOverview() {
                 </div>
                 <h3 className="text-salmon text-lg font-semibold mb-4">AI Automation</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  We build custom AI solutions for businesses to automate time-consuming tasks.
+                  Custom AI solutions for businesses to automate time-consuming tasks.
                 </p>
               </div>
             </Link>
@@ -121,7 +124,7 @@ export function HomepageServicesOverview() {
                 </div>
                 <h3 className="text-cyan text-lg font-semibold mb-4">Web & Apps</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  We build websites, web apps, ecommerce sites, mobile apps and bespoke tech solutions.
+                  Websites, web apps, ecommerce sites, mobile apps and bespoke tech solutions.
                 </p>
               </div>
             </Link>
@@ -147,7 +150,7 @@ export function HomepageServicesOverview() {
                 </div>
                 <h3 className="text-salmon text-lg font-semibold mb-4">Pro Image Studio</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  We provide professional photography and videography for personal and corporate clients.
+                  Professional photography and videography for personal and corporate clients.
                 </p>
               </div>
             </Link>

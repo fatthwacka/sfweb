@@ -44,12 +44,12 @@ export function HomepageCTA() {
   ];
 
   return (
-    <GradientBackground section="contact" className="py-16">
+    <GradientBackground section="contact" className="py-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl mb-6 text-salmon font-light">
-            Where to Next?
+            Services
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Explore our services in more detail

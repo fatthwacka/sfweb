@@ -119,7 +119,7 @@ export function EnhancedHeroSlider({ scrollTarget = '#services' }: EnhancedHeroS
 
   if (isLoading || totalSlides === 0) {
     return (
-      <GradientBackground section="hero" className="relative h-screen flex items-center justify-center">
+      <GradientBackground section="hero" className="relative h-[80vh] flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-salmon"></div>
       </GradientBackground>
     );
@@ -128,7 +128,7 @@ export function EnhancedHeroSlider({ scrollTarget = '#services' }: EnhancedHeroS
   const currentSlideData = slides[currentSlide];
 
   return (
-    <GradientBackground section="hero" className="relative h-screen flex items-center justify-center overflow-hidden">
+    <GradientBackground section="hero" className="relative h-[80vh] flex items-center justify-center overflow-hidden">
       <section 
         ref={containerRef}
         className="relative w-full h-full flex items-center justify-center overflow-hidden"

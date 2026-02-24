@@ -551,12 +551,29 @@ export default function VideographyCategory() {
               </h3>
             </div>
 
-            {["corporate", "products", "events", "animation"].includes(category) ? (
-              // YouTube video grid for video categories
+            {category === "social" ? (
+              // Vertical YouTube Shorts grid for social media category
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
+                {["y4uhQUrcutU", "dzBW3zMjpoE", "jXzN-U6Q8FM", "iQHBp4hDNv0"].map((videoId, index) => (
+                  <div key={index} className="group">
+                    <div className="relative aspect-[9/16] rounded-xl overflow-hidden shadow-2xl">
+                      <iframe
+                        src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&loop=1&playlist=${videoId}&fs=1&cc_load_policy=0&iv_load_policy=3&showinfo=0`}
+                        title={`${data.name} Video ${index + 1}`}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                        className="w-full h-full border-0"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              // YouTube video grid for other video categories
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
                 {(() => {
                   const videoIds: Record<string, string[]> = {
-                    corporate: ["mmVc2wQGIRo", "-IHPZ3PUqOY", "KeNRQttTOJQ", "bZc_GE1sHEM"],
+                    corporate: ["mmVc2wQGIRo", "-IHPZ3PUqOY", "QRmzNpUQJEY", "cpoh98lomEo", "KeNRQttTOJQ", "bZc_GE1sHEM"],
                     products: ["IzFrJDXjomo", "o1ahvUh3c4c", "x-7BV2TZx44", "cpoh98lomEo"],
                     events: ["2MCHCdn9-uc", "txSF70Y6ZdA", "-MKtFeO_9pE", "d835io7PYSc"],
                     animation: ["-MKtFeO_9pE", "cTEK6fY0oVQ", "2jWAidv1Cak", "-MKtFeO_9pE"]
@@ -575,24 +592,6 @@ export default function VideographyCategory() {
                     </div>
                   ));
                 })()}
-              </div>
-            ) : (
-              // Original image gallery for social category
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {data.gallery.map((image, index) => (
-                  <div key={index} className="group cursor-pointer">
-                    <div className="relative overflow-hidden rounded-xl image-hover-effect">
-                      <img
-                        src={image}
-                        alt={`${data.name} example ${index + 1}`}
-                        className="w-full h-80 object-cover"
-                      />
-                      <div className="absolute inset-0 bg-white bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                        <Play className="w-12 h-12 text-gold" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
               </div>
             )}
 

@@ -77,7 +77,7 @@ export function Testimonials() {
   );
 
   return (
-    <GradientBackground section="testimonials" className="py-20 overflow-hidden">
+    <GradientBackground section="testimonials" className="py-32 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="cyan text-4xl lg:text-5xl mb-6">
