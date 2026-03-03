@@ -77,12 +77,12 @@ export function HomepageServicesOverview() {
 
           {/* Service cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-12">
-            <Link href="/tools">
+            <Link href="/photography">
               <div
                 className="rounded-xl p-6 text-center h-full"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(15, 15, 25, 0.9) 0%, rgba(40, 20, 40, 0.6) 50%, rgba(10, 10, 15, 0.95) 100%)',
-                  border: '1px solid rgba(236, 72, 153, 0.3)'
+                  background: 'linear-gradient(135deg, rgba(15, 15, 25, 0.9) 0%, rgba(20, 20, 40, 0.6) 50%, rgba(10, 10, 15, 0.95) 100%)',
+                  border: '1px solid rgba(59, 130, 246, 0.3)'
                 }}
               >
                 <div className="flex justify-center mb-4">
@@ -90,15 +90,15 @@ export function HomepageServicesOverview() {
                     className="w-16 h-16 rounded-full flex items-center justify-center"
                     style={{
                       background: 'rgba(0, 0, 0, 0.3)',
-                      boxShadow: '0 0 20px rgba(236, 72, 153, 0.4), inset 0 0 20px rgba(236, 72, 153, 0.1)'
+                      boxShadow: '0 0 20px rgba(59, 130, 246, 0.4), inset 0 0 20px rgba(59, 130, 246, 0.1)'
                     }}
                   >
-                    <Bot className="w-8 h-8" style={{ color: '#ec4899' }} />
+                    <Camera className="w-8 h-8" style={{ color: '#3b82f6' }} />
                   </div>
                 </div>
-                <h3 className="text-salmon text-lg font-semibold mb-4">AI Automation</h3>
+                <h3 className="text-salmon text-lg font-semibold mb-4">Pro Image Studio</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Custom AI solutions for businesses to automate time-consuming tasks.
+                  Professional photography and videography for personal and corporate clients.
                 </p>
               </div>
             </Link>
@@ -129,12 +129,12 @@ export function HomepageServicesOverview() {
               </div>
             </Link>
 
-            <Link href="/photography">
+            <Link href="/web-apps">
               <div
                 className="rounded-xl p-6 text-center h-full"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(15, 15, 25, 0.9) 0%, rgba(20, 20, 40, 0.6) 50%, rgba(10, 10, 15, 0.95) 100%)',
-                  border: '1px solid rgba(59, 130, 246, 0.3)'
+                  background: 'linear-gradient(135deg, rgba(15, 15, 25, 0.9) 0%, rgba(40, 20, 40, 0.6) 50%, rgba(10, 10, 15, 0.95) 100%)',
+                  border: '1px solid rgba(236, 72, 153, 0.3)'
                 }}
               >
                 <div className="flex justify-center mb-4">
@@ -142,15 +142,15 @@ export function HomepageServicesOverview() {
                     className="w-16 h-16 rounded-full flex items-center justify-center"
                     style={{
                       background: 'rgba(0, 0, 0, 0.3)',
-                      boxShadow: '0 0 20px rgba(59, 130, 246, 0.4), inset 0 0 20px rgba(59, 130, 246, 0.1)'
+                      boxShadow: '0 0 20px rgba(236, 72, 153, 0.4), inset 0 0 20px rgba(236, 72, 153, 0.1)'
                     }}
                   >
-                    <Camera className="w-8 h-8" style={{ color: '#3b82f6' }} />
+                    <Bot className="w-8 h-8" style={{ color: '#ec4899' }} />
                   </div>
                 </div>
-                <h3 className="text-salmon text-lg font-semibold mb-4">Pro Image Studio</h3>
+                <h3 className="text-salmon text-lg font-semibold mb-4">AI Automation</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Professional photography and videography for personal and corporate clients.
+                  Custom AI solutions for businesses to automate time-consuming tasks.
                 </p>
               </div>
             </Link>
