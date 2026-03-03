@@ -2,10 +2,10 @@ import { Link } from "wouter";
 
 const services = [
   { name: "Portfolio", href: "/portfolio" },
-  { name: "Photo & Video", href: "/photography" },
-  { name: "Web & Apps", href: "/web-apps" },
+  { name: "Photography", href: "/photography" },
+  { name: "Videography", href: "/videography" },
   { name: "Social Media", href: "/social-media" },
-  { name: "Case Studies", href: "/stories" },
+  { name: "Web & Apps", href: "/web-apps" },
 ];
 
 const companyLinks = [

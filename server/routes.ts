@@ -39,6 +39,26 @@ import {
 import { dropboxService } from './services/dropbox-service';
 import { z } from "zod";
 
+// Portfolio cards cache (5-minute TTL for performance)
+interface PortfolioCache {
+  data: any[] | null;
+  lastUpdated: number;
+  ttl: number;
+}
+
+const portfolioCache: PortfolioCache = {
+  data: null,
+  lastUpdated: 0,
+  ttl: 5 * 60 * 1000 // 5 minutes
+};
+
+// Export for use in mutation endpoints
+export function invalidatePortfolioCache() {
+  portfolioCache.data = null;
+  portfolioCache.lastUpdated = 0;
+  console.log('🔄 Portfolio cache invalidated');
+}
+
 // Configure multer for file uploads
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -952,10 +972,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Optimized portfolio endpoint - only fetches essential cover image data
   // Optional query param: ?shootTypes=wedding,engagement,maternity,newborn (comma-separated)
+  // Optional query param: ?bundled=false to skip grouping logic
   app.get("/api/portfolio/cards", async (req, res) => {
     try {
-      // Filter by shootTypes at database level if query param provided
       const shootTypesParam = req.query.shootTypes as string | undefined;
+      const skipBundling = req.query.bundled === 'false';
+
+      // Check cache (only for default requests without filters)
+      const now = Date.now();
+      const cacheValid = !shootTypesParam && !skipBundling &&
+        portfolioCache.data &&
+        (now - portfolioCache.lastUpdated) < portfolioCache.ttl;
+
+      if (cacheValid) {
+        console.log('📦 Serving portfolio cards from cache');
+        return res.json(portfolioCache.data);
+      }
+
+      // Filter by shootTypes at database level if query param provided
       let publicShoots;
 
       if (shootTypesParam) {
@@ -1011,11 +1045,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Batch fetch all cover media in parallel (single query each, not N queries!)
       const bannerImageIds = photoShootsWithBanner.map(s => s.bannerImageId!).filter(Boolean);
-      const [coverVideosMap, bannerImageMap, fallbackImagesMap] = await Promise.all([
+      const [coverVideosMap, bannerImageMap, fallbackCoverMap] = await Promise.all([
         videoShootIds.length > 0 ? storage.getCoverVideosForShoots(videoShootIds) : Promise.resolve(new Map()),
         bannerImageIds.length > 0 ? storage.getImagesByIds(bannerImageIds) : Promise.resolve(new Map()),
         photoShootsWithoutBanner.length > 0
-          ? storage.getImagesForShoots(photoShootsWithoutBanner.map(s => s.id))
+          ? storage.getCoverImagesForShoots(photoShootsWithoutBanner.map(s => s.id))
           : Promise.resolve(new Map())
       ]);
 
@@ -1046,8 +1080,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           if (!coverImage) {
-            const images = fallbackImagesMap.get(shoot.id) || [];
-            coverImage = images.find(img => img.featuredImage === true) || images[0];
+            // Use optimised cover image (already first/featured from getCoverImagesForShoots)
+            coverImage = fallbackCoverMap.get(shoot.id) || null;
           }
 
           if (coverImage && coverImage.storagePath) {
@@ -1063,9 +1097,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           coverVideoInfo
         };
       });
-      
+
+      // Skip bundling if requested (returns individual cards only)
+      if (skipBundling) {
+        return res.json(portfolioCards);
+      }
+
       // Group shoots by groupName for portfolio bundling (same logic as before)
-      const portfolioItems = [];
+      const portfolioItems: any[] = [];
       const groupedShoots = new Map();
       
       // Group processing logic remains the same...
@@ -1121,6 +1160,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Note: Randomization is now handled on frontend for better UX
       // (different order on each page load, not just server restart)
+
+      // Store in cache (only for default requests without filters)
+      if (!shootTypesParam && !skipBundling) {
+        portfolioCache.data = portfolioItems;
+        portfolioCache.lastUpdated = Date.now();
+        console.log('💾 Portfolio cards cached');
+      }
+
       res.json(portfolioItems);
     } catch (error) {
       console.error("Fetch portfolio cards error:", error);
@@ -1338,6 +1385,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Validated data:', data);
       
       const shoot = await storage.createShoot(data);
+      invalidatePortfolioCache(); // Invalidate cache when shoot created
       res.json(shoot);
     } catch (error) {
       console.error("Create shoot error:", error);
@@ -1396,7 +1444,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(404).json({ message: "Shoot not found" });
         }
       }
-      
+
+      invalidatePortfolioCache(); // Invalidate cache when shoot updated
       res.json(shoot);
     } catch (error) {
       console.error("Update shoot error:", error);
@@ -1417,6 +1466,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (success) {
         console.log('✅ Delete successful, sending success response');
+        invalidatePortfolioCache(); // Invalidate cache when shoot deleted
         res.json({ message: "Shoot deleted successfully", shootId });
       } else {
         console.log('❌ Delete failed (returned false)');
@@ -1566,7 +1616,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
       }
-      
+
+      invalidatePortfolioCache(); // Invalidate cache when shoot customisation updated
       res.json(shoot);
     } catch (error) {
       console.error("Update customization error:", error);
@@ -3850,9 +3901,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: 'Video not found or does not belong to this shoot' });
       }
       
-      res.json({ 
+      invalidatePortfolioCache(); // Invalidate cache when cover video changed
+      res.json({
         message: 'Cover video set successfully',
-        coverVideo: updatedVideo 
+        coverVideo: updatedVideo
       });
     } catch (error) {
       console.error('Error setting cover video:', error);

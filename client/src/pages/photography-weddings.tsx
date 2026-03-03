@@ -140,10 +140,10 @@ export default function PhotographyWeddings() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl mb-2">
-              Recent Weddings
+              Wedding Images
             </h2>
             <h3 className="text-xl ">
-              See our latest wedding photography work
+              Wedding, Engagement and Maternity photography
             </h3>
           </div>
 

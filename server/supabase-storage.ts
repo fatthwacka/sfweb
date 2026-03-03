@@ -330,8 +330,42 @@ export class SupabaseStorage implements IStorage {
     }
     
     console.log(`[BATCH_INFO] Retrieved ${totalFound} images for ${shootIds.length} shoots`);
-    
+
     return imagesByShoot;
+  }
+
+  // Optimised method: fetch only the first/featured image per shoot (for portfolio cards)
+  async getCoverImagesForShoots(shootIds: string[]): Promise<Map<string, Image | null>> {
+    if (shootIds.length === 0) {
+      return new Map();
+    }
+
+    // Fetch all images for these shoots in a single query
+    const allImages = await db.select().from(images)
+      .where(inArray(images.shootId, shootIds))
+      .orderBy(images.shootId, images.uploadOrder);
+
+    // Initialise map with null for all shoots
+    const coverMap = new Map<string, Image | null>();
+    for (const shootId of shootIds) {
+      coverMap.set(shootId, null);
+    }
+
+    // Select first/featured image per shoot (featured takes priority)
+    for (const image of allImages) {
+      const existing = coverMap.get(image.shootId);
+      if (!existing) {
+        // First image for this shoot
+        coverMap.set(image.shootId, image);
+      } else if (image.featuredImage && !existing.featuredImage) {
+        // Replace with featured image if current isn't featured
+        coverMap.set(image.shootId, image);
+      }
+    }
+
+    console.log(`[BATCH_INFO] Retrieved cover images for ${shootIds.length} shoots`);
+
+    return coverMap;
   }
 
   async createImage(insertImage: InsertImage): Promise<Image> {

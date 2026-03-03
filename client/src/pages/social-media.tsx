@@ -208,62 +208,6 @@ export default function SocialMedia() {
         </div>
       </GradientBackground>
 
-      {/* Process Section */}
-      <GradientBackground section="social-media-process" className="py-20 relative overflow-hidden">
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl mb-6 text-social-media-process-primary">
-              Our Process
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              A proven approach to social media success
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-cyan/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-cyan">1</span>
-              </div>
-              <h3 className="mb-2 text-social-media-process-primary">Discovery</h3>
-              <p className="text-muted-foreground text-sm">
-                We learn about your brand, goals, and target audience
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-salmon/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-salmon">2</span>
-              </div>
-              <h3 className="mb-2 text-social-media-process-primary">Strategy</h3>
-              <p className="text-muted-foreground text-sm">
-                Develop a custom social media strategy aligned with your objectives
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-cyan/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-cyan">3</span>
-              </div>
-              <h3 className="mb-2 text-social-media-process-primary">Creation</h3>
-              <p className="text-muted-foreground text-sm">
-                Produce high-quality content that captures your brand essence
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-salmon/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-salmon">4</span>
-              </div>
-              <h3 className="mb-2 text-social-media-process-primary">Growth</h3>
-              <p className="text-muted-foreground text-sm">
-                Monitor, analyze, and optimize for continuous improvement
-              </p>
-            </div>
-          </div>
-        </div>
-      </GradientBackground>
-
       {/* CTA Section */}
       <GradientBackground section="social-media-cta" className="py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

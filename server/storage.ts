@@ -65,6 +65,7 @@ export interface IStorage {
   getImage(id: string): Promise<Image | undefined>;
   getImagesByShoot(shootId: string): Promise<Image[]>;
   getImagesForShoots(shootIds: string[]): Promise<Map<string, Image[]>>; // Optimized batch method
+  getCoverImagesForShoots(shootIds: string[]): Promise<Map<string, Image | null>>; // Fetch only first/featured image per shoot
   getImagesByIds(ids: string[]): Promise<Map<string, Image>>; // Batch fetch images by IDs
   getFeaturedImages(): Promise<Image[]>;
   getFeaturedClassifications(): Promise<string[]>;

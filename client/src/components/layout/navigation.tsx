@@ -55,15 +55,15 @@ const NavigationComponent = memo(function Navigation() {
                 ? "text-orange-200"
                 : "text-blue-100 hover:text-cyan-bright"
             )}>
-              Photo & Video
+              Photography
             </Link>
-            <Link href="/web-apps" className={cn(
+            <Link href="/videography" className={cn(
               "transition-colors duration-300 font-barlow font-light",
-              location === '/web-apps'
+              location.startsWith('/videography')
                 ? "text-orange-200"
                 : "text-blue-100 hover:text-cyan-bright"
             )}>
-              Web & Apps
+              Videography
             </Link>
             <Link href="/social-media" className={cn(
               "transition-colors duration-300 font-barlow font-light",
@@ -73,13 +73,13 @@ const NavigationComponent = memo(function Navigation() {
             )}>
               Social Media
             </Link>
-            <Link href="/stories" className={cn(
+            <Link href="/web-apps" className={cn(
               "transition-colors duration-300 font-barlow font-light",
-              location.startsWith('/stories')
+              location === '/web-apps'
                 ? "text-orange-200"
                 : "text-blue-100 hover:text-cyan-bright"
             )}>
-              Stories
+              Web & Apps
             </Link>
             <Link href="/contact" className={cn(
               "transition-colors duration-300 font-barlow font-light",
@@ -121,14 +121,14 @@ const NavigationComponent = memo(function Navigation() {
                 className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Photo & Video
+                Photography
               </Link>
               <Link
-                href="/web-apps"
+                href="/videography"
                 className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Web & Apps
+                Videography
               </Link>
               <Link
                 href="/social-media"
@@ -138,11 +138,11 @@ const NavigationComponent = memo(function Navigation() {
                 Social Media
               </Link>
               <Link
-                href="/stories"
+                href="/web-apps"
                 className="block py-2 text-lg font-quicksand font-light text-slate-200 hover:text-white transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Stories
+                Web & Apps
               </Link>
               <Link
                 href="/contact"
