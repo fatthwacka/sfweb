@@ -9,11 +9,11 @@ const PHOTOGRAPHY_CATEGORIES = [
     subtitle: 'Headshots & portraits', 
     image: '/images/services/portrait-photography.jpg' 
   },
-  { 
-    name: 'weddings', 
-    title: 'Weddings', 
-    subtitle: 'Capturing your special day', 
-    image: '/images/services/wedding-photography.jpg' 
+  {
+    name: 'weddings',
+    title: 'Weddings',
+    subtitle: 'Capturing your special day',
+    image: '/uploads/DSC00233b.jpg'
   },
   { 
     name: 'products', 
