@@ -10,6 +10,12 @@ services:
       target: runner
       platforms:
         - linux/amd64  # Single platform for VPS compatibility (replaces multi-platform from base)
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
+        VITE_RECAPTCHA_SITE_KEY: ${VITE_RECAPTCHA_SITE_KEY}
+        VITE_GA_MEASUREMENT_ID: ${VITE_GA_MEASUREMENT_ID}
+        VITE_UPLOAD_URL: ${VITE_UPLOAD_URL:-}
     environment:
       NODE_ENV: production
     volumes: 
