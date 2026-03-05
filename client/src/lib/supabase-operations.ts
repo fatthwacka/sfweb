@@ -554,15 +554,22 @@ export const videoOperations = {
   },
 
   // Upload videos via Express API (hybrid approach)
+  // Uses upload subdomain to bypass Cloudflare's 100MB limit for large videos
   upload: async (files: File[], shootId: string): Promise<any> => {
     const formData = new FormData();
     formData.append('shootId', shootId);
-    
+
     files.forEach((file) => {
       formData.append('videos', file);
     });
 
-    const response = await fetch('/api/videos/upload', {
+    // Use upload subdomain for videos to bypass Cloudflare's 100MB limit
+    // Auto-detect localhost for local development (use relative paths)
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const uploadBaseUrl = !isLocalhost ? (import.meta.env.VITE_UPLOAD_URL || '') : '';
+    const endpoint = `${uploadBaseUrl}/api/videos/upload`;
+
+    const response = await fetch(endpoint, {
       method: 'POST',
       body: formData,
     });

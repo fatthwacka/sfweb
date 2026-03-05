@@ -2543,11 +2543,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Video upload endpoint with 1.2GB limit for large wedding videos
+  // Video upload endpoint with 1.5GB limit for large wedding videos
   const videoUpload = multer({
     storage: multer.memoryStorage(),
     limits: {
-      fileSize: 1200 * 1024 * 1024, // 1.2GB limit for large wedding videos
+      fileSize: 1500 * 1024 * 1024, // 1.5GB limit for large wedding videos
     },
     fileFilter: (req, file, cb) => {
       if (file.mimetype.startsWith('video/')) {

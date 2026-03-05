@@ -47,6 +47,31 @@ const serveStatic = (app: express.Express) => {
 app.use(express.json({ limit: '10mb' })); // Increased for base64 image uploads
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
+// CORS for upload subdomain - allows slyfox.co.za to upload to upload.slyfox.co.za
+// This bypasses Cloudflare's 100MB upload limit for large video files
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    'https://slyfox.co.za',
+    'https://www.slyfox.co.za',
+    'http://localhost:3000',  // Development
+  ];
+
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+
+  // Handle preflight OPTIONS requests
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;

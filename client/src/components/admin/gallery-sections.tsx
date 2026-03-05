@@ -975,7 +975,7 @@ export function AddImagesSection({ onUpload, isUploading, uploadProgress, toast,
           )}
           <p className="text-xs text-muted-foreground mt-2">
             {isVideo
-              ? 'Supports: MP4, MOV, AVI, WEBM • Max 1.2GB per video • Up to 20 videos per batch'
+              ? 'Supports: MP4, MOV, AVI, WEBM • Max 1.5GB per video • Up to 20 videos per batch'
               : 'Supports: JPG, PNG, WEBP • Max 10MB per image • Up to 50 images per batch'}
           </p>
         </div>

@@ -370,12 +370,12 @@ export function validateVideoForProcessing(
   buffer: Buffer,
   filename: string
 ): { valid: boolean; error?: string } {
-  // Check file size (max 1.2GB for processing - matches upload limit for large wedding videos)
-  const maxSize = 1200 * 1024 * 1024; // 1.2GB
+  // Check file size (max 1.5GB for processing - matches upload limit for large wedding videos)
+  const maxSize = 1500 * 1024 * 1024; // 1.5GB
   if (buffer.length > maxSize) {
     return {
       valid: false,
-      error: `Video file too large for processing: ${formatFileSize(buffer.length)}. Maximum: 1.2GB`
+      error: `Video file too large for processing: ${formatFileSize(buffer.length)}. Maximum: 1.5GB`
     };
   }
 

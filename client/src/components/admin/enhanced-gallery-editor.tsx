@@ -252,8 +252,12 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
         });
       }
 
-      const endpoint = isVideo ? '/api/videos/upload' : '/api/images/upload';
-      console.log(`🌐 Sending request to ${endpoint}`);
+      // Use upload subdomain for videos to bypass Cloudflare's 100MB limit
+      // Auto-detect localhost for local development (use relative paths)
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const uploadBaseUrl = isVideo && !isLocalhost ? (import.meta.env.VITE_UPLOAD_URL || '') : '';
+      const endpoint = isVideo ? `${uploadBaseUrl}/api/videos/upload` : '/api/images/upload';
+      console.log(`🌐 Sending request to ${endpoint}${isLocalhost ? ' (localhost)' : uploadBaseUrl ? ' (via upload subdomain)' : ''}`);
 
       // Use XMLHttpRequest for progress tracking
       return new Promise((resolve, reject) => {

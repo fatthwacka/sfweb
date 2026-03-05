@@ -24,20 +24,31 @@ services:
       # Traefik configuration for production domain routing
       - "traefik.enable=true"
       - "traefik.docker.network=root_default"
-      
+
       # HTTP to HTTPS redirect (supports both www and non-www)
       - "traefik.http.routers.slyfox-http.rule=Host(`slyfox.co.za`) || Host(`www.slyfox.co.za`)"
       - "traefik.http.routers.slyfox-http.entrypoints=web"
       - "traefik.http.routers.slyfox-http.middlewares=slyfox-redirect"
       - "traefik.http.middlewares.slyfox-redirect.redirectscheme.scheme=https"
       - "traefik.http.middlewares.slyfox-redirect.redirectscheme.permanent=true"
-      
+
       # HTTPS configuration (supports both www and non-www)
       - "traefik.http.routers.slyfox-https.rule=Host(`slyfox.co.za`) || Host(`www.slyfox.co.za`)"
       - "traefik.http.routers.slyfox-https.entrypoints=websecure"
       - "traefik.http.routers.slyfox-https.tls=true"
       - "traefik.http.routers.slyfox-https.tls.certresolver=mytlschallenge"
-      
+
+      # Upload subdomain - bypasses Cloudflare for large file uploads (>100MB)
+      # DNS: upload.slyfox.co.za → 168.231.86.89 (DNS only, grey cloud - NOT proxied)
+      - "traefik.http.routers.slyfox-upload-http.rule=Host(`upload.slyfox.co.za`)"
+      - "traefik.http.routers.slyfox-upload-http.entrypoints=web"
+      - "traefik.http.routers.slyfox-upload-http.middlewares=slyfox-redirect"
+      - "traefik.http.routers.slyfox-upload-https.rule=Host(`upload.slyfox.co.za`)"
+      - "traefik.http.routers.slyfox-upload-https.entrypoints=websecure"
+      - "traefik.http.routers.slyfox-upload-https.tls=true"
+      - "traefik.http.routers.slyfox-upload-https.tls.certresolver=mytlschallenge"
+      - "traefik.http.routers.slyfox-upload-https.service=slyfox"
+
       # Service configuration
       - "traefik.http.services.slyfox.loadbalancer.server.port=5000"
 
