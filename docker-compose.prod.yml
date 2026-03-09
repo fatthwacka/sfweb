@@ -18,9 +18,10 @@ services:
         VITE_UPLOAD_URL: ${VITE_UPLOAD_URL:-}
     environment:
       NODE_ENV: production
-    volumes: 
+    volumes:
       # Production uses minimal volume mounts
       - config_data:/app/server/data  # Persistent configuration only
+      - /opt/static:/opt/static:ro    # Standalone static pages (CV, PDFs)
     command: npm start
     profiles: []  # Remove dev profile restriction
     networks:
