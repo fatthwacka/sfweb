@@ -121,6 +121,13 @@ app.use((req, res, next) => {
     throw err;
   });
 
+  // Serve standalone static pages from /opt/static (e.g., CV, portfolio PDFs)
+  // These are completely independent of the React app - no CSS inheritance
+  const staticPagesPath = "/opt/static";
+  if (fs.existsSync(staticPagesPath)) {
+    app.use("/p", express.static(staticPagesPath));
+  }
+
   // In production: serve public directory first, then built client files
   app.use(express.static(path.resolve(import.meta.dirname, "..", "public")));
   serveStatic(app);
