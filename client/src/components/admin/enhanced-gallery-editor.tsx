@@ -156,6 +156,8 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     percent: number;
     currentFile?: number;
     totalFiles?: number;
+    currentFilename?: string;
+    completedFiles?: string[];
   }>({ stage: null, percent: 0 });
   
   // Gallery appearance settings - clean absolute values only
@@ -190,6 +192,76 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
     onError: () => toast({ title: "Error", description: "Failed to save advanced settings", variant: "destructive" })
   });
 
+  // Helper: batch upload for videos (keeps existing XHR behaviour for large files)
+  const uploadVideosBatch = async (files: File[], resolutions: any[], shootId: string) => {
+    setUploadProgress({ stage: 'uploading', percent: 0, currentFile: 0, totalFiles: files.length, currentFilename: 'Preparing videos...', completedFiles: [] });
+
+    const uploadData = new FormData();
+    uploadData.append('shootId', shootId);
+
+    if (resolutions.length > 0) {
+      uploadData.append('resolutions', JSON.stringify(resolutions));
+    }
+
+    console.log("🎬 Generating video thumbnails...");
+    try {
+      const thumbnails = await generateVideoThumbnails(files);
+      console.log(`✅ Generated ${thumbnails.length} thumbnails`);
+
+      files.forEach((file, index) => {
+        uploadData.append('videos', file);
+        const thumbnail = thumbnails[index];
+        if (thumbnail) {
+          uploadData.append(`thumbnail_${index}`, thumbnail.thumbnailDataUrl);
+          uploadData.append(`duration_${index}`, thumbnail.metadata.duration.toString());
+          uploadData.append(`width_${index}`, thumbnail.metadata.width.toString());
+          uploadData.append(`height_${index}`, thumbnail.metadata.height.toString());
+        }
+      });
+    } catch (error) {
+      console.error("❌ Failed to generate video thumbnails:", error);
+      setUploadProgress({ stage: null, percent: 0 });
+      throw new Error('Failed to generate video thumbnails');
+    }
+
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const uploadBaseUrl = !isLocalhost ? (import.meta.env.VITE_UPLOAD_URL || '') : '';
+    const endpoint = `${uploadBaseUrl}/api/videos/upload`;
+
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(prev => ({
+            ...prev,
+            stage: 'uploading',
+            percent: Math.round(percentComplete * 0.5), // Upload is first 50%
+            currentFilename: `Transferring ${files.length} video${files.length === 1 ? '' : 's'}...`
+          }));
+        }
+      });
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          setUploadProgress(prev => ({ ...prev, stage: 'processing', percent: 75, currentFilename: 'Processing videos on server...' }));
+          try {
+            resolve(JSON.parse(xhr.responseText));
+          } catch (e) {
+            reject(new Error('Invalid response from server'));
+          }
+        } else {
+          reject(new Error('Upload failed'));
+        }
+      });
+
+      xhr.addEventListener('error', () => reject(new Error('Upload failed')));
+      xhr.open('POST', endpoint);
+      xhr.send(uploadData);
+    });
+  };
+
   const uploadImagesMutation = useMutation({
     mutationFn: async ({ files, resolutions }: { files: File[]; resolutions?: any[] }) => {
       const currentMediaType = shoot?.media_type || 'photo';
@@ -202,105 +274,118 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
         mediaType: currentMediaType
       });
 
-      // Reset progress
-      setUploadProgress({ stage: 'uploading', percent: 0, currentFile: 0, totalFiles: files.length });
-
-      const uploadData = new FormData();
-      uploadData.append('shootId', shootId);
-
-      // Add conflict resolutions if provided (both images and videos)
-      if (resolutions && resolutions.length > 0) {
-        console.log(`📋 Adding ${isVideo ? 'video' : 'image'} resolutions to FormData:`, JSON.stringify(resolutions));
-        uploadData.append('resolutions', JSON.stringify(resolutions));
-      } else {
-        console.log("ℹ️ No resolutions provided - standard upload");
+      // For videos, use batch upload (videos need thumbnail generation + large file handling)
+      if (isVideo) {
+        return await uploadVideosBatch(files, resolutions || [], shootId);
       }
 
-      // Generate thumbnails for videos before uploading
-      if (isVideo) {
-        console.log("🎬 Generating video thumbnails...");
-        try {
-          const thumbnails = await generateVideoThumbnails(files);
-          console.log(`✅ Generated ${thumbnails.length} thumbnails`);
+      // For images, upload one-by-one for accurate per-file progress
+      const totalFiles = files.length;
+      const completedFiles: string[] = [];
+      const allResults = { success: true, uploaded: { count: 0, images: [] as any[] }, replaced: { count: 0, images: [] as any[] }, skipped: { count: 0, filenames: [] as string[] } };
 
-          // Add videos and their thumbnails to FormData
-          files.forEach((file, index) => {
-            console.log(`📎 Adding video ${index + 1}: ${file.name} (index: ${index})`);
+      setUploadProgress({ stage: 'uploading', percent: 0, currentFile: 0, totalFiles, currentFilename: files[0]?.name, completedFiles: [] });
 
-            uploadData.append('videos', file);
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileResolution = resolutions?.filter(r => r.filename === file.name) || [];
 
-            // Add thumbnail and metadata using index-based keys
-            const thumbnail = thumbnails[index];
-            if (thumbnail) {
-              uploadData.append(`thumbnail_${index}`, thumbnail.thumbnailDataUrl);
-              uploadData.append(`duration_${index}`, thumbnail.metadata.duration.toString());
-              uploadData.append(`width_${index}`, thumbnail.metadata.width.toString());
-              uploadData.append(`height_${index}`, thumbnail.metadata.height.toString());
-              console.log(`  📸 Thumbnail: ${thumbnail.metadata.width}x${thumbnail.metadata.height}, ${thumbnail.metadata.duration}s`);
+        setUploadProgress({
+          stage: 'uploading',
+          percent: Math.round((i / totalFiles) * 100),
+          currentFile: i + 1,
+          totalFiles,
+          currentFilename: file.name,
+          completedFiles: [...completedFiles]
+        });
+
+        console.log(`📎 Uploading file ${i + 1}/${totalFiles}: ${file.name}`);
+
+        const uploadData = new FormData();
+        uploadData.append('shootId', shootId);
+        uploadData.append('images', file);
+
+        if (fileResolution.length > 0) {
+          uploadData.append('resolutions', JSON.stringify(fileResolution));
+        }
+
+        // Upload single file with XHR for per-file transfer progress
+        const result = await new Promise<any>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+
+          xhr.upload.addEventListener('progress', (event) => {
+            if (event.lengthComputable) {
+              const filePercent = Math.round((event.loaded / event.total) * 100);
+              // Overall progress: completed files + current file's transfer progress
+              const overallPercent = Math.round(((i + filePercent / 100) / totalFiles) * 100);
+              setUploadProgress(prev => ({
+                ...prev,
+                stage: 'uploading',
+                percent: overallPercent,
+                currentFile: i + 1,
+                currentFilename: file.name
+              }));
             }
           });
-        } catch (error) {
-          console.error("❌ Failed to generate video thumbnails:", error);
-          setUploadProgress({ stage: null, percent: 0 });
-          throw new Error('Failed to generate video thumbnails');
+
+          xhr.addEventListener('load', () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                resolve(JSON.parse(xhr.responseText));
+              } catch (e) {
+                reject(new Error('Invalid response from server'));
+              }
+            } else {
+              try {
+                const errorData = JSON.parse(xhr.responseText);
+                reject(new Error(errorData.message || `Upload failed for ${file.name}`));
+              } catch {
+                reject(new Error(`Upload failed for ${file.name} (${xhr.status})`));
+              }
+            }
+          });
+
+          xhr.addEventListener('error', () => {
+            reject(new Error(`Upload failed for ${file.name}`));
+          });
+
+          xhr.open('POST', '/api/images/upload');
+          xhr.send(uploadData);
+        });
+
+        // Merge per-file result into aggregate
+        if (result.uploaded) {
+          allResults.uploaded.count += result.uploaded.count || 0;
+          allResults.uploaded.images.push(...(result.uploaded.images || []));
         }
-      } else {
-        // Add images (no thumbnail generation needed)
-        files.forEach((file, index) => {
-          console.log(`📎 Adding file ${index + 1}: ${file.name}`);
-          uploadData.append('images', file);
+        if (result.replaced) {
+          allResults.replaced.count += result.replaced.count || 0;
+          allResults.replaced.images.push(...(result.replaced.images || []));
+        }
+        if (result.skipped) {
+          allResults.skipped.count += result.skipped.count || 0;
+          allResults.skipped.filenames.push(...(result.skipped.filenames || []));
+        }
+
+        completedFiles.push(file.name);
+        console.log(`✅ ${file.name} complete (${i + 1}/${totalFiles})`);
+
+        // Update progress to show file completed
+        setUploadProgress({
+          stage: 'uploading',
+          percent: Math.round(((i + 1) / totalFiles) * 100),
+          currentFile: i + 1,
+          totalFiles,
+          currentFilename: i + 1 < totalFiles ? files[i + 1].name : file.name,
+          completedFiles: [...completedFiles]
         });
       }
 
-      // Use upload subdomain for videos to bypass Cloudflare's 100MB limit
-      // Auto-detect localhost for local development (use relative paths)
-      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      const uploadBaseUrl = isVideo && !isLocalhost ? (import.meta.env.VITE_UPLOAD_URL || '') : '';
-      const endpoint = isVideo ? `${uploadBaseUrl}/api/videos/upload` : '/api/images/upload';
-      console.log(`🌐 Sending request to ${endpoint}${isLocalhost ? ' (localhost)' : uploadBaseUrl ? ' (via upload subdomain)' : ''}`);
-
-      // Use XMLHttpRequest for progress tracking
-      return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-
-        xhr.upload.addEventListener('progress', (event) => {
-          if (event.lengthComputable) {
-            const percentComplete = Math.round((event.loaded / event.total) * 100);
-            setUploadProgress(prev => ({
-              ...prev,
-              stage: 'uploading',
-              percent: percentComplete
-            }));
-          }
-        });
-
-        xhr.addEventListener('load', () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            // Upload complete, now processing on server (especially for videos)
-            if (isVideo) {
-              setUploadProgress(prev => ({ ...prev, stage: 'processing', percent: 100 }));
-            }
-            try {
-              const result = JSON.parse(xhr.responseText);
-              console.log("✅ Upload response received:", result);
-              resolve(result);
-            } catch (e) {
-              reject(new Error('Invalid response from server'));
-            }
-          } else {
-            reject(new Error('Upload failed'));
-          }
-        });
-
-        xhr.addEventListener('error', () => {
-          reject(new Error('Upload failed'));
-        });
-
-        xhr.open('POST', endpoint);
-        xhr.send(uploadData);
-      });
+      allResults.success = true;
+      return allResults;
     },
-    onSuccess: (result) => {
+    onSuccess: (rawResult) => {
+      const result = rawResult as any;
       // Mark as complete
       setUploadProgress({ stage: 'complete', percent: 100 });
 
@@ -317,13 +402,20 @@ export function EnhancedGalleryEditor({ shootId }: EnhancedGalleryEditorProps) {
       queryClient.invalidateQueries({ queryKey: ['images'] });
       queryClient.invalidateQueries({ queryKey: ['videos'] });
 
-      // Handle new detailed response format
-      const totalProcessed = result.totalProcessed || result.uploadedCount || 0;
+      // Handle detailed response format (per-file or batch)
+      const totalProcessed = result.totalProcessed || result.uploadedCount ||
+        ((result.uploaded?.count || 0) + (result.replaced?.count || 0));
+      const skippedCount = result.skipped?.count || 0;
 
       if (totalProcessed > 0) {
+        const parts: string[] = [];
+        if (result.uploaded?.count) parts.push(`${result.uploaded.count} uploaded`);
+        if (result.replaced?.count) parts.push(`${result.replaced.count} replaced`);
+        if (skippedCount) parts.push(`${skippedCount} skipped`);
+
         toast({
           title: "Upload Complete!",
-          description: result.message || `${totalProcessed} file(s) processed successfully`
+          description: parts.length > 0 ? parts.join(', ') : result.message || `${totalProcessed} file(s) processed successfully`
         });
       } else {
         toast({

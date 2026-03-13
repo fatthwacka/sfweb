@@ -14,6 +14,8 @@ interface VideoConflictResolutionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   conflicts: VideoConflictInfo[];
+  safeFileCount?: number;
+  totalFileCount?: number;
   onResolve: (resolutions: VideoConflictResolution[]) => void;
   onCancel: () => void;
 }
@@ -53,6 +55,8 @@ const formatDate = (dateString: string) => {
 };
 
 export function VideoConflictResolutionDialog({
+  safeFileCount = 0,
+  totalFileCount = 0,
   open,
   onOpenChange,
   conflicts,
@@ -106,6 +110,8 @@ export function VideoConflictResolutionDialog({
   };
 
   const allSkipped = Object.values(decisions).every(d => d.action === 'skip');
+  const hasSafeFiles = safeFileCount > 0;
+  const nothingToUpload = allSkipped && !hasSafeFiles;
   const replaceCount = Object.values(decisions).filter(d => d.action === 'replace').length;
   const skipCount = Object.values(decisions).filter(d => d.action === 'skip').length;
   const addNewCount = Object.values(decisions).filter(d => d.action === 'add_new').length;
@@ -119,8 +125,11 @@ export function VideoConflictResolutionDialog({
             Video Filename Conflicts Detected
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            {conflicts.length} video file{conflicts.length === 1 ? '' : 's'} match existing videos in this gallery. 
-            Choose how to handle each conflict.
+            {conflicts.length} video file{conflicts.length === 1 ? '' : 's'} match{conflicts.length === 1 ? 'es' : ''} existing videos in this gallery.
+            {safeFileCount > 0 && (
+              <span className="text-green-400"> {safeFileCount} file{safeFileCount === 1 ? '' : 's'} ha{safeFileCount === 1 ? 's' : 've'} no conflicts and will be uploaded.</span>
+            )}
+            {' '}Choose how to handle each conflict below.
           </DialogDescription>
         </DialogHeader>
 
@@ -290,6 +299,7 @@ export function VideoConflictResolutionDialog({
         <div className="flex items-center justify-between pt-4 border-t border-border">
           <div className="text-sm text-muted-foreground">
             Summary: {replaceCount} replace, {skipCount} skip, {addNewCount} add new
+            {hasSafeFiles && <span className="text-green-400"> + {safeFileCount} safe</span>}
           </div>
           <div className="flex gap-3">
             <Button
@@ -301,10 +311,14 @@ export function VideoConflictResolutionDialog({
             </Button>
             <Button
               onClick={handleConfirm}
-              disabled={allSkipped}
+              disabled={nothingToUpload}
               className="bg-salmon text-white hover:bg-salmon-muted"
             >
-              {allSkipped ? 'Nothing to Upload' : 'Confirm & Upload Videos'}
+              {nothingToUpload
+                ? 'Nothing to Upload'
+                : allSkipped && hasSafeFiles
+                ? `Skip Conflicts & Upload ${safeFileCount} File${safeFileCount === 1 ? '' : 's'}`
+                : 'Confirm & Upload Videos'}
             </Button>
           </div>
         </div>

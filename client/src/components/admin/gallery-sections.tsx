@@ -543,6 +543,8 @@ interface AddImagesSectionProps {
     percent: number;
     currentFile?: number;
     totalFiles?: number;
+    currentFilename?: string;
+    completedFiles?: string[];
   };
   toast: any;
   shootId: string;
@@ -554,7 +556,9 @@ export function AddImagesSection({ onUpload, isUploading, uploadProgress, toast,
   const [isExpanded, setIsExpanded] = React.useState(true);
   const [isCheckingConflicts, setIsCheckingConflicts] = React.useState(false);
   const [conflicts, setConflicts] = React.useState<ConflictInfo[]>([]);
+  const [safeFileCount, setSafeFileCount] = React.useState(0);
   const [videoConflicts, setVideoConflicts] = React.useState<VideoConflictInfo[]>([]);
+  const [videoSafeFileCount, setVideoSafeFileCount] = React.useState(0);
   const [conflictDialogOpen, setConflictDialogOpen] = React.useState(false);
   const [videoConflictDialogOpen, setVideoConflictDialogOpen] = React.useState(false);
   const [pendingFiles, setPendingFiles] = React.useState<File[]>([]);
@@ -719,6 +723,7 @@ export function AddImagesSection({ onUpload, isUploading, uploadProgress, toast,
         if (foundConflicts.length > 0) {
           // Show video conflict resolution dialog
           setVideoConflicts(foundConflicts);
+          setVideoSafeFileCount(safe.length);
           setPendingFiles(selectedFiles);
           setVideoConflictDialogOpen(true);
         } else {
@@ -733,6 +738,7 @@ export function AddImagesSection({ onUpload, isUploading, uploadProgress, toast,
         if (foundConflicts.length > 0) {
           // Show conflict resolution dialog
           setConflicts(foundConflicts);
+          setSafeFileCount(safe.length);
           setPendingFiles(selectedFiles);
           setConflictDialogOpen(true);
         } else {
@@ -874,9 +880,13 @@ export function AddImagesSection({ onUpload, isUploading, uploadProgress, toast,
           <div className="mb-6 p-4 rounded-lg bg-background/80 border border-salmon/30">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-foreground">
-                {uploadProgress.stage === 'uploading' && `Uploading ${isVideo ? 'videos' : 'images'}...`}
-                {uploadProgress.stage === 'processing' && `Processing ${isVideo ? 'videos' : 'images'} on server...`}
-                {uploadProgress.stage === 'complete' && 'Upload complete!'}
+                {uploadProgress.stage === 'uploading' && uploadProgress.currentFile && uploadProgress.totalFiles
+                  ? `Uploading ${uploadProgress.currentFile} of ${uploadProgress.totalFiles} ${isVideo ? 'videos' : 'images'}...`
+                  : uploadProgress.stage === 'uploading'
+                  ? `Uploading ${isVideo ? 'videos' : 'images'}...`
+                  : uploadProgress.stage === 'processing'
+                  ? `Processing ${isVideo ? 'videos' : 'images'} on server...`
+                  : 'Upload complete!'}
               </span>
               <span className="text-sm text-muted-foreground">
                 {uploadProgress.percent}%
@@ -884,7 +894,7 @@ export function AddImagesSection({ onUpload, isUploading, uploadProgress, toast,
             </div>
             <div className="h-3 bg-muted rounded-full overflow-hidden">
               <div
-                className={`h-full transition-all duration-500 ease-out rounded-full ${
+                className={`h-full transition-all duration-300 ease-out rounded-full ${
                   uploadProgress.stage === 'complete'
                     ? 'bg-green-500'
                     : uploadProgress.stage === 'processing'
@@ -894,8 +904,18 @@ export function AddImagesSection({ onUpload, isUploading, uploadProgress, toast,
                 style={{ width: `${uploadProgress.percent}%` }}
               />
             </div>
+            {uploadProgress.currentFilename && uploadProgress.stage !== 'complete' && (
+              <p className="text-xs text-muted-foreground mt-2 truncate">
+                {uploadProgress.stage === 'uploading' ? '📎' : '⚙️'} {uploadProgress.currentFilename}
+              </p>
+            )}
+            {uploadProgress.completedFiles && uploadProgress.completedFiles.length > 0 && uploadProgress.stage === 'uploading' && (
+              <p className="text-xs text-green-400/70 mt-1">
+                ✓ {uploadProgress.completedFiles.length} file{uploadProgress.completedFiles.length === 1 ? '' : 's'} completed
+              </p>
+            )}
             {isVideo && uploadProgress.stage === 'processing' && (
-              <p className="text-xs text-muted-foreground mt-2">
+              <p className="text-xs text-muted-foreground mt-1">
                 Videos are being transcoded for optimal playback. This may take a few minutes for large files.
               </p>
             )}
@@ -976,7 +996,7 @@ export function AddImagesSection({ onUpload, isUploading, uploadProgress, toast,
           <p className="text-xs text-muted-foreground mt-2">
             {isVideo
               ? 'Supports: MP4, MOV, AVI, WEBM • Max 1.5GB per video • Up to 20 videos per batch'
-              : 'Supports: JPG, PNG, WEBP • Max 10MB per image • Up to 50 images per batch'}
+              : 'Supports: JPG, PNG, WEBP • Max 20MB per image • Up to 50 images per batch'}
           </p>
         </div>
 
@@ -1088,6 +1108,8 @@ export function AddImagesSection({ onUpload, isUploading, uploadProgress, toast,
         open={conflictDialogOpen}
         onOpenChange={setConflictDialogOpen}
         conflicts={conflicts}
+        safeFileCount={safeFileCount}
+        totalFileCount={pendingFiles.length}
         onResolve={handleConflictResolution}
         onCancel={handleConflictCancel}
       />
@@ -1097,6 +1119,8 @@ export function AddImagesSection({ onUpload, isUploading, uploadProgress, toast,
         open={videoConflictDialogOpen}
         onOpenChange={setVideoConflictDialogOpen}
         conflicts={videoConflicts}
+        safeFileCount={videoSafeFileCount}
+        totalFileCount={pendingFiles.length}
         onResolve={handleVideoConflictResolution}
         onCancel={handleVideoConflictCancel}
       />

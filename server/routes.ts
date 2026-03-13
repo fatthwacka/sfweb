@@ -1954,7 +1954,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Image upload endpoint with Supabase storage + pre-processing
-  // Supports up to 50 images per batch upload (10MB each max)
+  // Supports up to 50 images per batch upload (20MB each max)
   // Processes each image into 3 versions: original, optimized, thumbnail
   app.post("/api/images/upload", upload.array('images', 50), async (req, res) => {
     console.log("🚀 PRE-PROCESSING UPLOAD ENDPOINT - PROCESSING 3 VERSIONS PER IMAGE!");

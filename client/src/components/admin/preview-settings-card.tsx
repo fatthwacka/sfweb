@@ -619,7 +619,7 @@ Gallery Preview Selection
           <ImageUploadZone 
             shootId={shootId} 
             onUploadComplete={handleUploadComplete}
-            maxFileSize={10}
+            maxFileSize={20}
           />
 
           {/* Preview Images Grid */}

@@ -43,7 +43,7 @@ interface ImageUploadZoneProps {
 export function ImageUploadZone({ 
   shootId, 
   onUploadComplete,
-  maxFileSize = 10,
+  maxFileSize = 20,
   acceptedFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
   enableOptimization = true,
   maxImageWidth = 1920,
