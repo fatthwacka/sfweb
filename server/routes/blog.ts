@@ -19,7 +19,7 @@ const router = Router();
 // Get all blog posts with filtering
 router.get('/posts', async (req, res) => {
   try {
-    const { status, category, search, limit = '20', offset = '0' } = req.query;
+    const { status, category, search, limit = '20', offset = '0', client_id } = req.query;
     
     let query = db
       .select({
@@ -43,6 +43,7 @@ router.get('/posts', async (req, res) => {
         seoDescription: blogPosts.seoDescription,
         featuredSection: blogPosts.featuredSection,
         variableContent: blogPosts.variableContent,
+        clientId: blogPosts.clientId,
         // Author information
         authorName: profiles.fullName,
         authorEmail: profiles.email,
@@ -65,6 +66,10 @@ router.get('/posts', async (req, res) => {
     
     if (search) {
       conditions.push(ilike(blogPosts.title, `%${search}%`));
+    }
+
+    if (client_id) {
+      conditions.push(eq(blogPosts.clientId, client_id as string));
     }
 
     if (conditions.length > 0) {

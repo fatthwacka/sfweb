@@ -71,7 +71,8 @@ export class StaticBlogGenerator {
           created_at,
           status,
           category_id,
-          author_id
+          author_id,
+          client_id
         `)
         .eq('id', postId)
         .single();
@@ -128,13 +129,31 @@ export class StaticBlogGenerator {
         categoryColor
       };
 
+      // Resolve client subdirectory if client_id is present
+      let clientSlug: string | null = null;
+      if (postData.client_id) {
+        const { data: clientData } = await supabaseAdmin
+          .from('content_clients')
+          .select('slug, name')
+          .eq('id', postData.client_id)
+          .single();
+        if (clientData) {
+          clientSlug = clientData.slug || clientData.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || null;
+        }
+      }
+
       // Generate static page data
       const pageData = this.generatePageData(post as BlogPostForSSR);
-      
-      // Write static HTML file
+
+      // Write static HTML file (client subdirectory if applicable)
+      let targetDir = this.storiesDir;
+      if (clientSlug) {
+        targetDir = path.join(this.storiesDir, clientSlug);
+        await fs.mkdir(targetDir, { recursive: true });
+      }
       const fileName = `${post.slug}.html`;
-      const filePath = path.join(this.storiesDir, fileName);
-      
+      const filePath = path.join(targetDir, fileName);
+
       await fs.writeFile(filePath, pageData.html, 'utf8');
       console.log(`Static file generated: ${filePath}`);
 

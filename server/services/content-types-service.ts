@@ -4,6 +4,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import WebSocket from 'ws';
 
 export interface ContentType {
   id: string;
@@ -21,7 +22,12 @@ export interface ContentType {
 export class ContentTypesService {
   private supabase = createClient(
     process.env.VITE_SUPABASE_URL!,
-    process.env.SUPABASE_SECRET_KEY!
+    process.env.SUPABASE_SECRET_KEY!,
+    {
+      realtime: {
+        transport: WebSocket  // Required for Node.js 20 (no native WebSocket)
+      }
+    }
   );
   
   private cache = new Map<string, ContentType>();

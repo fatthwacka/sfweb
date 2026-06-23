@@ -1,10 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
+import WebSocket from 'ws';
 
 if (!process.env.VITE_SUPABASE_URL || !process.env.SUPABASE_SECRET_KEY) {
   throw new Error("Missing Supabase environment variables");
 }
 
 // Create Supabase admin client for server-side operations
+// Note: Node.js 20 requires explicit WebSocket transport for Supabase Realtime
 export const supabaseAdmin = createClient(
   process.env.VITE_SUPABASE_URL,
   process.env.SUPABASE_SECRET_KEY,
@@ -12,6 +14,9 @@ export const supabaseAdmin = createClient(
     auth: {
       autoRefreshToken: false,
       persistSession: false
+    },
+    realtime: {
+      transport: WebSocket
     }
   }
 );

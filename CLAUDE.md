@@ -605,7 +605,38 @@ Before any development work:
 
 ---
 
-## 📝 BLOG SYSTEM ARCHITECTURE (NEW - DECEMBER 2025)
+## 📰 BLOG CONTENT STUDIO (NEW - APRIL 2026)
+
+**⚠️ ACTIVE DEVELOPMENT: Multi-client blog pipeline with input sources, editor, and output connectors**
+
+### **Quick Reference**
+- **Tool Page**: `/tools/blog-content-studio`
+- **Status**: Phase 1A complete, Phase 1B (pipeline executor) next
+- **Components**: `client/src/components/blog-studio/` (8 files)
+- **Backend**: `server/routes/content-studio/` + `server/services/connectors/`
+- **Migrations**: 040-043 (all run in Supabase)
+
+### **Three-Stage Pipeline**
+```
+[Input Sources] ──► [Blog Editor] ──► [Output Destinations]
+RSS, Google News,    AI generation,    Supabase + Static HTML,
+Competitor Blogs,    Section enhance,  WordPress REST API,
+Manual URLs,         Image gen,        (Webflow, Ghost, etc. planned)
+Research Agent (*)   SEO metadata
+```
+
+### **Key Architecture**
+- **Client scoping**: All data partitioned by `client_id` from Brand Intelligence API
+- **WordPress connector**: Full REST API (publish, update, categories, tags, media, Yoast SEO)
+- **Credential encryption**: AES-256-CBC, never sent to frontend
+- **Anti-repetition**: 4-layer system (URL hash, topic fingerprint, cooldown, trigram match)
+- **Scheduling**: VPS cron → `POST /api/content-studio/pipeline/run` (no in-process scheduler)
+
+**📋 Full documentation:** [`SYSTEM_DOCUMENTATION/BLOG_CONTENT_STUDIO.md`](./SYSTEM_DOCUMENTATION/BLOG_CONTENT_STUDIO.md)
+
+---
+
+## 📝 BLOG SYSTEM ARCHITECTURE (DECEMBER 2025)
 
 ### **Core Components**
 

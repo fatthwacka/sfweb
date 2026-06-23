@@ -1,0 +1,335 @@
+/* ============================================================================
+ * Blog Content Studio - Tabbed pipeline layout
+ * ============================================================================ */
+
+/* Unified task bar - blue-grey tint to stand out from purple page */
+.blog-studio-taskbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.625rem 1rem;
+  margin-bottom: 1.25rem;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 41, 59, 0.88) 50%, rgba(51, 65, 85, 0.85) 100%);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  border-radius: 0.75rem;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(148, 163, 184, 0.08);
+  flex-wrap: wrap;
+}
+
+/* Client selector inside taskbar */
+.blog-studio-taskbar .blog-studio-client-select {
+  width: 13rem;
+  height: 2.25rem;
+  background: rgba(15, 23, 42, 0.6) !important;
+  border-color: rgba(100, 116, 139, 0.4) !important;
+  color: #e2e8f0 !important;
+  font-size: 0.875rem !important;
+}
+
+/* Tab buttons */
+.blog-studio-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #94a3b8;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.blog-studio-tab:hover {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+  border-color: rgba(74, 222, 128, 0.3);
+}
+
+/* Inactive tabs: cyan tint */
+.blog-studio-tab:not(.active) {
+  color: #67e8f9;
+  border-color: rgba(103, 232, 249, 0.25);
+  background: rgba(103, 232, 249, 0.06);
+}
+
+/* Active tab: orange */
+.blog-studio-tab.active {
+  color: #fb923c;
+  border-color: rgba(251, 146, 60, 0.5);
+  background: rgba(251, 146, 60, 0.12);
+  box-shadow: 0 1px 4px rgba(251, 146, 60, 0.2);
+}
+
+.blog-studio-tab-count {
+  font-size: 0.6875rem;
+  padding: 0.125rem 0.4rem;
+  border-radius: 0.25rem;
+  background: rgba(100, 116, 139, 0.3);
+  color: #cbd5e1;
+}
+
+/* AI Generate button in taskbar */
+.blog-studio-ai-btn {
+  background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%) !important;
+  border: 1px solid rgba(124, 58, 237, 0.4) !important;
+  color: white !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+  padding: 0.5rem 1rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.blog-studio-ai-btn:hover {
+  background: linear-gradient(135deg, #6d28d9 0%, #2563eb 100%) !important;
+  box-shadow: 0 0 14px rgba(124, 58, 237, 0.35) !important;
+}
+
+/* Editor action bar */
+.blog-studio-editor-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1.25rem;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.88) 0%, rgba(30, 41, 59, 0.84) 50%, rgba(51, 65, 85, 0.80) 100%);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  border-radius: 0.75rem;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  flex-wrap: wrap;
+}
+
+/* Output actions grouped container */
+.blog-studio-output-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.375rem;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 0.5rem;
+  border: 1px solid rgba(100, 116, 139, 0.2);
+}
+
+/* Compact bar buttons (ghost style) */
+.blog-studio-bar-btn {
+  height: 2rem !important;
+  padding: 0 0.75rem !important;
+  font-size: 0.8125rem !important;
+  font-weight: 500 !important;
+  background: rgba(100, 116, 139, 0.15) !important;
+  border: 1px solid rgba(100, 116, 139, 0.3) !important;
+  color: #e2e8f0 !important;
+  border-radius: 0.375rem !important;
+  white-space: nowrap;
+}
+
+.blog-studio-bar-btn:hover {
+  background: rgba(100, 116, 139, 0.3) !important;
+  color: #f8fafc !important;
+}
+
+/* Save Draft button */
+.blog-studio-bar-btn-save {
+  height: 2rem !important;
+  padding: 0 0.75rem !important;
+  font-size: 0.8125rem !important;
+  font-weight: 500 !important;
+  background: rgba(75, 85, 99, 0.6) !important;
+  border: 1px solid rgba(107, 114, 128, 0.4) !important;
+  color: #e2e8f0 !important;
+  border-radius: 0.375rem !important;
+  white-space: nowrap;
+}
+
+.blog-studio-bar-btn-save:hover {
+  background: rgba(75, 85, 99, 0.8) !important;
+}
+
+/* Publish button (green) */
+.blog-studio-bar-btn-publish {
+  height: 2rem !important;
+  padding: 0 0.75rem !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  background: rgba(22, 163, 74, 0.8) !important;
+  border: 1px solid rgba(34, 197, 94, 0.4) !important;
+  color: white !important;
+  border-radius: 0.375rem !important;
+  white-space: nowrap;
+}
+
+.blog-studio-bar-btn-publish:hover {
+  background: rgba(22, 163, 74, 1) !important;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.3) !important;
+}
+
+/* Search input in editor bar */
+.blog-studio-search-input {
+  height: 2rem;
+  width: 12rem;
+  padding: 0 0.5rem 0 2rem;
+  font-size: 0.8125rem;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  border-radius: 0.375rem;
+  color: #e2e8f0;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.blog-studio-search-input::placeholder {
+  color: #64748b;
+}
+
+.blog-studio-search-input:focus {
+  border-color: rgba(103, 232, 249, 0.4);
+}
+
+/* Tab content area */
+.blog-studio-content {
+  min-height: 70vh;
+}
+
+.blog-studio-tab-panel {
+  animation: blogStudioFadeIn 0.2s ease;
+}
+
+@keyframes blogStudioFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Source and destination cards */
+.blog-studio-source-card,
+.blog-studio-destination-card {
+  padding: 0.625rem;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: background 0.2s ease;
+}
+
+.blog-studio-source-card:hover,
+.blog-studio-destination-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.blog-studio-destination-card.built-in {
+  border-color: rgba(34, 197, 94, 0.2);
+  background: rgba(34, 197, 94, 0.03);
+}
+
+/* Add form styling */
+.blog-studio-add-form {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Research Agent teaser */
+.blog-studio-research-teaser {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: rgba(103, 232, 249, 0.03);
+  border: 1px dashed rgba(103, 232, 249, 0.15);
+}
+
+/* Image controls button row */
+.blog-studio-image-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.blog-studio-image-controls .image-btn-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.375rem;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .blog-studio-taskbar {
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  .blog-studio-tab {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .blog-studio-editor-bar {
+    gap: 0.5rem;
+    padding: 0.375rem 0.5rem;
+  }
+
+  .blog-studio-search-input {
+    width: 8rem;
+  }
+
+  .blog-studio-output-actions {
+    gap: 0.25rem;
+    padding: 0.125rem 0.25rem;
+  }
+}
+
+/* Legacy pipeline bar - keep for backward compat */
+.blog-studio-pipeline-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 0.75rem;
+}
+
+.blog-studio-pipeline-stage {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.blog-studio-pipeline-stage:hover {
+  color: #e5e7eb;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.blog-studio-pipeline-stage.active {
+  color: #e5e7eb;
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.blog-studio-pipeline-stage.editor {
+  color: #67e8f9;
+  border-color: rgba(103, 232, 249, 0.2);
+  background: rgba(103, 232, 249, 0.05);
+  cursor: default;
+}
+
+.blog-studio-pipeline-count {
+  font-size: 0.625rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: #9ca3af;
+}

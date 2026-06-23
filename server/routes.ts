@@ -23,6 +23,9 @@ import promptEngineRouter from './routes/prompt-engine';
 import socialContentRouter from './routes/social-content';
 import contentTypesRouter from './routes/content-types';
 import youtubeRouter from './routes/youtube';
+import contentStudioOutputRouter from './routes/content-studio/output-destinations';
+import contentStudioInputRouter from './routes/content-studio/input-sources';
+import contentStudioPipelineRouter from './routes/content-studio/pipeline';
 import { sendContactEmail, validateEmailConfig, sendAlbumReadyEmail } from './email-service';
 import { verifyRecaptcha } from './recaptcha-service';
 import { eq, and, sql } from 'drizzle-orm';
@@ -3806,6 +3809,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Content types management for prompt enhancement guidelines
   app.use('/api/content-types', contentTypesRouter);
 
+  // Blog Content Studio - output destinations and input sources
+  app.use('/api/content-studio', contentStudioOutputRouter);
+  app.use('/api/content-studio', contentStudioInputRouter);
+  app.use('/api/content-studio', contentStudioPipelineRouter);
+  console.log('✅ Content Studio routes mounted');
+
   // YouTube video integration routes
   app.use('/api/youtube', youtubeRouter);
   console.log('✅ YouTube router mounted');
@@ -6615,87 +6624,61 @@ Return ONLY the enhanced subtitle text. No explanations, quotes, or formatting.`
       enhancedPrompt += `. Avoid: ${negativePrompts.join(', ')}`;
 
       // Determine API type
-      const isGemini = model?.includes('gemini');
 
       // Build the preview payload structure
       let previewPayload: any;
 
-      if (isGemini) {
-        // Gemini API format
-        const parts: any[] = [];
+      // Gemini API format (all models now use generateContent)
+      const parts: any[] = [];
 
-        // Add image ingredients if present
-        if (imageIngredients && imageIngredients.length > 0) {
-          for (const ingredient of imageIngredients) {
-            parts.push({
-              inlineData: {
-                mimeType: ingredient.mimeType,
-                data: `[BASE64_DATA_${ingredient.slotId.toUpperCase()}_${ingredient.base64?.length || 0}_BYTES]`
-              }
-            });
-          }
-          const refs = imageIngredients.map((i: any) => `[${i.slotId}]`).join(', ');
-          parts.push({ text: `Reference images provided: ${refs}\n\n${enhancedPrompt}` });
-        } else if (referenceImage) {
+      // Add image ingredients if present
+      if (imageIngredients && imageIngredients.length > 0) {
+        for (const ingredient of imageIngredients) {
           parts.push({
             inlineData: {
-              mimeType: referenceImage.mimeType,
-              data: `[BASE64_DATA_REFERENCE_${referenceImage.bytesBase64Encoded?.length || 0}_BYTES]`
+              mimeType: ingredient.mimeType,
+              data: `[BASE64_DATA_${ingredient.slotId.toUpperCase()}_${ingredient.base64?.length || 0}_BYTES]`
             }
           });
-          const subjectContext = referenceImage.subjectDescription
-            ? `Using the provided ${referenceImage.subjectType} image (${referenceImage.subjectDescription}), `
-            : `Using the provided ${referenceImage.subjectType} image, `;
-          parts.push({ text: subjectContext + enhancedPrompt });
-        } else {
-          parts.push({ text: enhancedPrompt });
         }
+        const refs = imageIngredients.map((i: any) => `[${i.slotId}]`).join(', ');
+        parts.push({ text: `Reference images provided: ${refs}\n\n${enhancedPrompt}` });
+      } else if (referenceImage) {
+        parts.push({
+          inlineData: {
+            mimeType: referenceImage.mimeType,
+            data: `[BASE64_DATA_REFERENCE_${referenceImage.bytesBase64Encoded?.length || 0}_BYTES]`
+          }
+        });
+        const subjectContext = referenceImage.subjectDescription
+          ? `Using the provided ${referenceImage.subjectType} image (${referenceImage.subjectDescription}), `
+          : `Using the provided ${referenceImage.subjectType} image, `;
+        parts.push({ text: subjectContext + enhancedPrompt });
+      } else {
+        parts.push({ text: enhancedPrompt });
+      }
 
-        previewPayload = {
-          apiType: 'Gemini (Nano Banana)',
-          endpoint: `https://aiplatform.googleapis.com/v1/projects/[PROJECT_ID]/locations/global/publishers/google/models/${model}:generateContent`,
-          requestBody: {
-            contents: [{ role: 'user', parts }],
-            generationConfig: {
-              responseModalities: ['TEXT', 'IMAGE'],
-              imageConfig: {
-                aspectRatio: aspectRatio || '1:1',
-                imageSize: resolution || '2K'
-              }
+      previewPayload = {
+        apiType: 'Gemini',
+        endpoint: `https://aiplatform.googleapis.com/v1/projects/[PROJECT_ID]/locations/global/publishers/google/models/${model}:generateContent`,
+        requestBody: {
+          contents: [{ role: 'user', parts }],
+          generationConfig: {
+            responseModalities: ['TEXT', 'IMAGE'],
+            imageConfig: {
+              aspectRatio: aspectRatio || '1:1',
+              imageSize: resolution || '2K'
             }
           }
-        };
-      } else {
-        // Imagen API format
-        const ratioMap: Record<string, string> = {
-          '1:1': '1:1', '9:16': '9:16', '3:4': '3:4', '4:5': '4:5',
-          '2:3': '2:3', '3:2': '3:2', '4:3': '4:3', '16:9': '16:9',
-        };
-
-        previewPayload = {
-          apiType: 'Imagen 4.0',
-          endpoint: `https://[LOCATION]-aiplatform.googleapis.com/v1/projects/[PROJECT_ID]/locations/[LOCATION]/publishers/google/models/${model || 'imagen-4.0-ultra-generate-001'}:predict`,
-          requestBody: {
-            instances: [{ prompt: enhancedPrompt }],
-            parameters: {
-              sampleCount: 1,
-              aspectRatio: ratioMap[aspectRatio || '1:1'] || '1:1',
-              safetyFilterLevel: "block_some",
-              personGeneration: "allow_adult"
-            }
-          },
-          note: imageIngredients?.length > 0
-            ? '⚠️ Imagen 4.0 does NOT support reference images - they will be ignored. Use Nano Banana for reference image support.'
-            : undefined
-        };
-      }
+        }
+      };
 
       res.json({
         success: true,
         preview: previewPayload,
         enhancedPrompt,
         settings: {
-          model: model || 'imagen-4.0-ultra-generate-001',
+          model: model || 'gemini-3.1-flash-image-preview',
           artStyle: artStyle || 'photorealistic',
           imageStyle: imageStyle || 'professional',
           resolution: resolution || '1024',
@@ -6756,7 +6739,7 @@ Return ONLY the enhanced subtitle text. No explanations, quotes, or formatting.`
         imageStyle: imageStyle || 'hero',
         resolution: cleanResolution,
         aspectRatio: aspectRatio || '1:1',
-        model: model || 'imagen-4.0-generate-001',
+        model: model || 'gemini-3.1-flash-image-preview',
         articleContext,
         imageIngredients, // NEW: Multiple image ingredients
         referenceImage, // Legacy: Single reference image (backwards compatibility)

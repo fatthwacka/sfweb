@@ -96,6 +96,8 @@ import PromptEngine from "@/pages/tools/prompt-engine";
 import SocialContentGenerator from "@/pages/tools/social-content-generator";
 import ContentTypesAdmin from "@/pages/tools/content-types-admin";
 import CloudStorageBrowser from "@/pages/tools/cloud-storage-browser";
+import QuoteGenerator from "@/pages/tools/quote-generator";
+import BlogContentStudio from "@/pages/tools/blog-content-studio";
 import BrandIntelligenceDashboardPage from "@/pages/brand-intelligence-dashboard";
 import ClientControlCentrePage from "@/pages/client-control-centre";
 // Removed old demo MyGallery - clients use /client-portal
@@ -146,6 +148,8 @@ function Router() {
       <Route path="/tools/social-content-generator" component={SocialContentGenerator} />
       <Route path="/tools/content-types-admin" component={ContentTypesAdmin} />
       <Route path="/tools/cloud-storage-browser" component={CloudStorageBrowser} />
+      <Route path="/tools/quote-generator" component={QuoteGenerator} />
+      <Route path="/tools/blog-content-studio" component={BlogContentStudio} />
       <Route path="/tools/brand-intelligence-dashboard" component={BrandIntelligenceDashboardPage} />
       <Route path="/tools/brand-intelligence/client/:clientId">
         {(params) => <ClientControlCentrePage params={params} />}

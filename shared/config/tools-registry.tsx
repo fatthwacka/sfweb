@@ -216,6 +216,38 @@ export const TOOLS_REGISTRY: ToolDefinition[] = [
   },
 
 
+  // === CONTENT STUDIO ===
+  {
+    slug: 'blog-content-studio',
+    name: 'Blog Content Studio',
+    description: 'Multi-client blog pipeline with AI writing, research inputs, and multi-platform publishing',
+    icon: '📰',
+    category: 'content',
+    minTier: 'staff',
+    requiresAuth: true,
+    usesAI: true,
+    usesLocalFiles: false,
+    limits: {},
+    badge: 'new',
+    // Uses standard page navigation
+  },
+
+  // === BUSINESS TOOLS (staff only) ===
+  {
+    slug: 'quote-generator',
+    name: 'Quote Generator',
+    description: 'Generate professional photography and videography quotes with customisable packages and options',
+    icon: '💰',
+    category: 'automation',
+    minTier: 'staff',
+    requiresAuth: true,
+    usesAI: false,
+    usesLocalFiles: false,
+    limits: {},
+    badge: 'new',
+    // Full page mode for staff, modal with client view when embedded elsewhere
+  },
+
   // === AUTOMATION (staff only) ===
   {
     slug: 'brand-intelligence-dashboard',

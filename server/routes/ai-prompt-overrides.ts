@@ -5,13 +5,15 @@
 
 import { Router } from 'express';
 import { createClient } from '@supabase/supabase-js';
+import WebSocket from 'ws';
 
 const router = Router();
 
-// Supabase admin client
+// Supabase admin client (WebSocket transport for Node.js 20)
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL!,
-  process.env.SUPABASE_SECRET_KEY!
+  process.env.SUPABASE_SECRET_KEY!,
+  { realtime: { transport: WebSocket } }
 );
 
 // Valid prompt components

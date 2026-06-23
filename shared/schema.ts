@@ -512,6 +512,10 @@ export const blogPosts = pgTable("blog_posts", {
   categoryId: uuid("category_id").references(() => blogCategories.id),
   aiGenerated: boolean("ai_generated").default(false).notNull(), // Track AI-assisted content
   aiPrompt: text("ai_prompt"), // Store original prompt for reference
+  clientId: uuid("client_id"), // Content Studio: client ownership for multi-tenant separation
+  publishTracking: jsonb("publish_tracking").default({}), // Maps destination_id -> external_id for update tracking
+  topicFingerprint: text("topic_fingerprint"), // Short normalised topic phrase for dedup
+  topicKeywords: text("topic_keywords").array(), // Key phrases for similarity matching
   createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
 });
@@ -565,6 +569,92 @@ export const aiPrompts = pgTable("ai_prompts", {
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
+});
+
+// Content Studio: Output destinations per client
+export const clientOutputDestinations = pgTable("client_output_destinations", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  clientId: uuid("client_id").notNull(),
+  destinationType: text("destination_type").notNull(), // 'supabase_static', 'wordpress', 'webflow', etc.
+  displayName: text("display_name").notNull(),
+  credentialsEncrypted: text("credentials_encrypted"), // AES-256-CBC encrypted JSON
+  config: jsonb("config").default({}),
+  isActive: boolean("is_active").default(false),
+  lastPublishedAt: timestamp("last_published_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
+});
+
+// Content Studio: Input sources per client (for Research Agent)
+export const clientInputSources = pgTable("client_input_sources", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  clientId: uuid("client_id").notNull(),
+  sourceType: text("source_type").notNull(), // 'rss', 'google_news', 'manual_url', 'competitor_blog'
+  displayName: text("display_name").notNull(),
+  config: jsonb("config").default({}),
+  cronSchedule: text("cron_schedule"),
+  fetchIntervalMinutes: integer("fetch_interval_minutes").default(1440),
+  isActive: boolean("is_active").default(false),
+  lastFetchedAt: timestamp("last_fetched_at", { withTimezone: true }),
+  errorCount: integer("error_count").default(0),
+  lastError: text("last_error"),
+  priority: integer("priority").default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`now()`),
+});
+
+// Content Studio: Ingested articles — raw content holding tank
+export const ingestedArticles = pgTable("ingested_articles", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  clientId: uuid("client_id").notNull(),
+  sourceId: uuid("source_id"),
+  externalUrl: text("external_url"),
+  urlHash: text("url_hash").notNull(),
+  title: text("title").notNull(),
+  summary: text("summary"),
+  topicFingerprint: text("topic_fingerprint"),
+  topicKeywords: text("topic_keywords").array(),
+  rawContent: text("raw_content"),
+  sourcePublishedAt: timestamp("source_published_at", { withTimezone: true }),
+  status: text("status").default("new").notNull(), // 'new', 'screened', 'approved', 'rejected', 'used', 'expired'
+  rejectionReason: text("rejection_reason"),
+  similarityScore: text("similarity_score"), // numeric stored as text for Drizzle compatibility
+  matchedPostId: uuid("matched_post_id"),
+  relevanceScore: text("relevance_score"),
+  freshnessScore: text("freshness_score"),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+});
+
+// Content Studio: Topic cooldowns — temporal dedup registry
+export const topicCooldowns = pgTable("topic_cooldowns", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  clientId: uuid("client_id").notNull(),
+  topicFingerprint: text("topic_fingerprint").notNull(),
+  topicLabel: text("topic_label").notNull(),
+  lastPublishedAt: timestamp("last_published_at", { withTimezone: true }).notNull(),
+  blogPostId: uuid("blog_post_id"),
+  postSequenceNumber: integer("post_sequence_number").default(0).notNull(),
+  cooldownDays: integer("cooldown_days").default(30),
+  cooldownPosts: integer("cooldown_posts").default(5),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`),
+});
+
+// Content Studio: Pipeline runs — execution log
+export const pipelineRuns = pgTable("pipeline_runs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  clientId: uuid("client_id").notNull(),
+  runType: text("run_type").default("research").notNull(), // 'research', 'production'
+  startedAt: timestamp("started_at", { withTimezone: true }).default(sql`now()`).notNull(),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+  itemsDiscovered: integer("items_discovered").default(0),
+  itemsScreenedOut: integer("items_screened_out").default(0),
+  itemsApproved: integer("items_approved").default(0),
+  articlesGenerated: integer("articles_generated").default(0),
+  status: text("status").default("running").notNull(), // 'running', 'completed', 'no_fresh_content', 'error'
+  errorMessage: text("error_message"),
+  durationMs: integer("duration_ms"),
+  metadata: jsonb("metadata").default({}),
 });
 
 // Insert schemas for new tables
@@ -686,16 +776,75 @@ export const BLOG_POST_STATUS = ['draft', 'published', 'scheduled'] as const;
 export type BlogPostStatus = typeof BLOG_POST_STATUS[number];
 
 export const BLOG_CATEGORIES = [
-  'wedding-stories',
-  'portrait-sessions', 
-  'corporate-events',
-  'behind-the-scenes',
-  'photography-tips',
+  'thought-leadership',
+  'industry-insights',
+  'how-to-guides',
   'case-studies',
-  'client-features',
-  'venue-spotlights'
+  'pain-points',
+  'tips-best-practices',
+  'news-updates',
+  'inspirational',
+  'behind-the-scenes',
+  'faqs-myths',
 ] as const;
 export type BlogCategoryType = typeof BLOG_CATEGORIES[number];
+
+// Content Studio types
+export type ClientOutputDestination = typeof clientOutputDestinations.$inferSelect;
+export type ClientInputSource = typeof clientInputSources.$inferSelect;
+export type IngestedArticle = typeof ingestedArticles.$inferSelect;
+export type TopicCooldown = typeof topicCooldowns.$inferSelect;
+export type PipelineRun = typeof pipelineRuns.$inferSelect;
+
+// Pipeline configuration (stored as jsonb on content_clients)
+export interface PipelineConfig {
+  research: {
+    frequency: 'hourly' | '4h' | '8h' | 'daily' | 'weekly';
+    activeHours?: { start: number; end: number };
+    activeDays?: number[];
+    maxItemsPerRun: number;
+    topicCooldownDays: number;
+    topicCooldownPosts: number;
+  };
+  production: {
+    mode: 'manual' | 'scheduled' | 'autopilot';
+    schedule?: string;
+    articlesPerRun: number;
+    autoPublishStatus: 'draft' | 'published';
+    minSourcesRequired: number;
+    skipIfInsufficient: boolean;
+  };
+  quality: {
+    minRelevanceScore: number;
+    requireHumanReview: boolean;
+    notifyOnDraft: boolean;
+  };
+}
+
+// Input source type-specific config interfaces
+export interface RssSourceConfig {
+  url: string;
+  maxItems?: number;
+  filterKeywords?: string[];
+  excludeKeywords?: string[];
+}
+
+export interface GoogleNewsSourceConfig {
+  query: string;
+  language?: string;
+  region?: string;
+  excludeDomains?: string[];
+}
+
+export interface ManualUrlSourceConfig {
+  urls: string[];
+}
+
+export interface CompetitorBlogSourceConfig {
+  url: string;
+  selector?: string;
+  maxItems?: number;
+}
 
 // Selection status constants
 export const SELECTION_STATUS = ['none', 'favorite', 'like', 'dislike'] as const;
