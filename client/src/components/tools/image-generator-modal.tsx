@@ -127,9 +127,9 @@ const IMAGE_STYLES = [
   { value: 'modern', label: 'Modern', description: 'Contemporary aesthetic' }
 ];
 
-// 2x3 Model Grid: Nano Banana | Imagen (Best → Budget)
+// Model Grid: Nano Pro (Premium) → Flash Image (Budget), ordered by cost
 const VERTEX_MODELS = [
-  // Column 1: Nano Banana (Premium) - Gemini models with K-scale resolution
+  // Nano Pro (Gemini 3 Pro) - Premium tier at different resolutions
   {
     value: 'gemini-3-pro-image-preview-4k',
     actualModel: 'gemini-3-pro-image-preview',
@@ -140,12 +140,12 @@ const VERTEX_MODELS = [
     resolutions: ['4K'],
     nativeResolutionFormat: 'k-scale',
     position: { row: 0, col: 0 },
-    default: false // Premium option
+    default: false
   },
   {
     value: 'gemini-3-pro-image-preview-2k',
     actualModel: 'gemini-3-pro-image-preview',
-    label: 'Nano Mid',
+    label: 'Nano Pro',
     description: 'Standard AI ($0.134)',
     category: 'nano-banana',
     aspectRatios: ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'],
@@ -156,7 +156,7 @@ const VERTEX_MODELS = [
   {
     value: 'gemini-3-pro-image-preview-1k',
     actualModel: 'gemini-3-pro-image-preview',
-    label: 'Nano Fast',
+    label: 'Nano Pro',
     description: 'Budget AI ($0.134)',
     category: 'nano-banana',
     aspectRatios: ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'],
@@ -165,37 +165,29 @@ const VERTEX_MODELS = [
     position: { row: 2, col: 0 }
   },
 
-  // Column 2: Imagen (Standard) - Pixel resolution
+  // Flash Image (Gemini 3.1 Flash) - Budget tier
   {
-    value: 'imagen-4.0-ultra-generate-001',
-    label: 'Imagen Ultra',
-    description: 'Highest quality (~$0.04)',
-    category: 'imagen',
-    aspectRatios: ['1:1', '3:4', '4:3', '9:16', '16:9'],
-    resolutions: ['2048px'],
-    nativeResolutionFormat: 'pixel',
+    value: 'gemini-3.1-flash-image-preview-2k',
+    actualModel: 'gemini-3.1-flash-image-preview',
+    label: 'Flash Image',
+    description: 'Budget Gemini (~$0.10)',
+    category: 'flash-image',
+    aspectRatios: ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9'],
+    resolutions: ['2K'],
+    nativeResolutionFormat: 'k-scale',
     position: { row: 0, col: 1 },
-    default: true // Default to best quality
+    default: true
   },
   {
-    value: 'imagen-4.0-generate-001',
-    label: 'Imagen Standard',
-    description: 'Mid-range quality (~$0.04)',
-    category: 'imagen',
-    aspectRatios: ['1:1', '3:4', '4:3', '9:16', '16:9'],
-    resolutions: ['1536px'],
-    nativeResolutionFormat: 'pixel',
+    value: 'gemini-3.1-flash-image-preview-1k',
+    actualModel: 'gemini-3.1-flash-image-preview',
+    label: 'Flash Image',
+    description: 'Cheapest option (~$0.07)',
+    category: 'flash-image',
+    aspectRatios: ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9'],
+    resolutions: ['1K'],
+    nativeResolutionFormat: 'k-scale',
     position: { row: 1, col: 1 }
-  },
-  {
-    value: 'imagen-4.0-fast-generate-001',
-    label: 'Imagen Fast',
-    description: 'Budget option (~$0.039)',
-    category: 'imagen',
-    aspectRatios: ['1:1', '3:4', '4:3', '9:16', '16:9'],
-    resolutions: ['1024px'],
-    nativeResolutionFormat: 'pixel',
-    position: { row: 2, col: 1 }
   }
 ];
 
@@ -362,11 +354,8 @@ export function ImageGeneratorModal({
   useEffect(() => {
     const modelConfig = getModelConfig(model);
 
-    // For Imagen models, always set to optimal resolution for that tier
-    // For other models, only update if current resolution is not available
-    if (modelConfig.category === 'imagen') {
-      setResolution(modelConfig.resolutions[0]);
-    } else if (!modelConfig.resolutions.includes(resolution)) {
+    // Update resolution if current one is not available for selected model
+    if (!modelConfig.resolutions.includes(resolution)) {
       setResolution(modelConfig.resolutions[0]);
     }
 
@@ -1356,8 +1345,8 @@ export function ImageGeneratorModal({
                           </TooltipTrigger>
                           <TooltipContent className="max-w-xs">
                             <div className="space-y-1 text-xs">
-                              <p><strong>Nano Banana:</strong> Advanced AI with K-scale resolutions (1K, 2K, 4K)</p>
-                              <p><strong>Imagen:</strong> Professional models with px resolutions</p>
+                              <p><strong>Nano Banana:</strong> Premium Gemini Pro with K-scale resolutions (1K, 2K, 4K)</p>
+                              <p><strong>Flash Image:</strong> Budget Gemini 3.1 Flash (1K, 2K)</p>
                               <p>Top row: Best quality, Bottom row: Budget options</p>
                             </div>
                           </TooltipContent>
@@ -1369,7 +1358,7 @@ export function ImageGeneratorModal({
                     <div className="grid grid-cols-2 gap-2">
                       {/* Column Headers */}
                       <div className="text-center text-xs font-semibold text-purple-700">🍌 Nano Banana</div>
-                      <div className="text-center text-xs font-semibold text-blue-700">🎨 Imagen</div>
+                      <div className="text-center text-xs font-semibold text-blue-700">⚡ Flash Image</div>
 
                       {/* Model Grid */}
                       {Array.from({ length: 3 }, (_, row) => (

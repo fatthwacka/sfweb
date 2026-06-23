@@ -125,11 +125,11 @@ export interface AIImageGeneratorCoreProps {
 // CONSTANTS
 // ============================================================================
 
-// AI Model configurations - Nano Banana (Gemini) and Imagen families
-const VERTEX_MODELS = [
+// AI Model configurations - Nano Banana (Gemini Pro) and Flash Image families
+// Ordered premium-to-budget: Nano Pro 4K → Nano Pro 2K → Flash Image 2K → Flash Image 1K
+export const VERTEX_MODELS = [
   {
     value: 'gemini-3-pro-image-preview-4k',
-    position: { row: 0, col: 0 },
     label: 'Nano Pro',
     description: 'Best multimodal AI ($0.24)',
     category: 'nano-banana',
@@ -142,22 +142,8 @@ const VERTEX_MODELS = [
     default: true,
   },
   {
-    value: 'imagen-4.0-ultra-generate-001',
-    position: { row: 0, col: 1 },
-    label: 'Imagen Ultra',
-    description: 'Highest quality (~$0.04)',
-    category: 'imagen',
-    aspectRatios: ['1:1', '3:4', '4:3', '9:16', '16:9'],
-    resolutions: ['2048px', '1536px', '1024px'],
-    nativeResolution: '2048px',
-    nativeResolutionFormat: 'px',
-    maxIngredients: 0,
-    supportsReferenceImages: false,
-  },
-  {
     value: 'gemini-3-pro-image-preview-2k',
-    position: { row: 1, col: 0 },
-    label: 'Nano Mid',
+    label: 'Nano Pro',
     description: 'Standard AI ($0.134)',
     category: 'nano-banana',
     aspectRatios: ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'],
@@ -168,18 +154,28 @@ const VERTEX_MODELS = [
     supportsReferenceImages: true,
   },
   {
-    value: 'coming-soon',
-    position: { row: 1, col: 1 },
-    label: 'Coming Soon',
-    description: 'Future model slot',
-    category: 'placeholder',
-    aspectRatios: ['1:1'],
-    resolutions: ['1024px'],
-    nativeResolution: '1024px',
-    nativeResolutionFormat: 'px',
-    maxIngredients: 0,
-    supportsReferenceImages: false,
-    disabled: true,
+    value: 'gemini-3.1-flash-image-preview-2k',
+    label: 'Flash Image',
+    description: 'Budget Gemini (~$0.10)',
+    category: 'flash-image',
+    aspectRatios: ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9'],
+    resolutions: ['2K'],
+    nativeResolution: '2K',
+    nativeResolutionFormat: 'k-scale',
+    maxIngredients: 6,
+    supportsReferenceImages: true,
+  },
+  {
+    value: 'gemini-3.1-flash-image-preview-1k',
+    label: 'Flash Image',
+    description: 'Cheapest option (~$0.07)',
+    category: 'flash-image',
+    aspectRatios: ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9'],
+    resolutions: ['1K'],
+    nativeResolution: '1K',
+    nativeResolutionFormat: 'k-scale',
+    maxIngredients: 6,
+    supportsReferenceImages: true,
   },
 ];
 
@@ -221,7 +217,7 @@ const getModelConfig = (modelValue: string) => {
   return VERTEX_MODELS.find(m => m.value === modelValue) || VERTEX_MODELS[0];
 };
 
-const getDefaultModel = () => {
+export const getDefaultModel = () => {
   return VERTEX_MODELS.find(m => m.default) || VERTEX_MODELS[0];
 };
 
@@ -261,8 +257,6 @@ export function AIImageGeneratorCore({
     scene: null,
   });
 
-  // For Imagen models: which of the "selectable" slots are active
-  const [imagenActiveSlots, setImagenActiveSlots] = useState<Set<string>>(new Set(['model', 'scene']));
 
   // File input refs for each slot
   const ingredientRefs = {
@@ -538,46 +532,12 @@ export function AIImageGeneratorCore({
 
   // ========== HELPER FUNCTIONS ==========
 
-  // Check if current model is Imagen (no reference image support)
-  const isImagenModel = () => getModelConfig(model).category === 'imagen';
-
   // Check if current model supports reference images
   const supportsReferenceImages = () => getModelConfig(model).supportsReferenceImages !== false;
 
-  // Check if a slot is active for the current model
-  const isSlotActive = (slotId: IngredientSlotId): boolean => {
-    const slot = INGREDIENT_SLOTS.find(s => s.id === slotId);
-    if (!slot) return false;
-
-    if (slot.group === 'always') return true;
-    if (!isImagenModel()) return true;
-    return imagenActiveSlots.has(slotId);
-  };
-
-  // Toggle a selectable slot for Imagen
-  const toggleImagenSlot = (slotId: IngredientSlotId) => {
-    const slot = INGREDIENT_SLOTS.find(s => s.id === slotId);
-    if (!slot || slot.group !== 'selectable') return;
-
-    const newActive = new Set(imagenActiveSlots);
-    if (newActive.has(slotId)) return;
-
-    newActive.add(slotId);
-    const activeArray = Array.from(imagenActiveSlots);
-    if (activeArray.length >= 2) {
-      newActive.delete(activeArray[0]);
-    }
-
-    const deactivatedSlot = activeArray[0] as IngredientSlotId;
-    if (ingredients[deactivatedSlot]) {
-      setIngredients(prev => ({ ...prev, [deactivatedSlot]: null }));
-      toast({
-        title: 'Slot Swapped',
-        description: `${INGREDIENT_SLOTS.find(s => s.id === deactivatedSlot)?.label} deactivated. Image cleared.`,
-      });
-    }
-
-    setImagenActiveSlots(newActive);
+  // Check if a slot is active for the current model (all Gemini models support all slots)
+  const isSlotActive = (_slotId: IngredientSlotId): boolean => {
+    return true;
   };
 
   // File to base64 converter
@@ -1478,27 +1438,14 @@ export function AIImageGeneratorCore({
               <div className="px-3 pb-3">
                 <div className="grid grid-cols-4 gap-2">
                   {VERTEX_MODELS.map((modelOption) => {
-                    if (!modelOption.position) return null;
-                    const { col } = modelOption.position;
-                    const isDisabled = modelOption.disabled;
-
-                    if (isDisabled) {
-                      return (
-                        <div
-                          key={modelOption.value}
-                          className="opacity-40 cursor-not-allowed bg-gray-800/50 border border-gray-600/50 rounded p-2 text-center"
-                        >
-                          <div className="text-gray-500 text-xs">{modelOption.label}</div>
-                        </div>
-                      );
-                    }
+                    const isNanoBanana = modelOption.category === 'nano-banana';
 
                     return (
                       <label
                         key={modelOption.value}
                         className={`cursor-pointer rounded p-2 border text-center transition-colors ${
                           model === modelOption.value
-                            ? col === 0
+                            ? isNanoBanana
                               ? 'border-purple-500 bg-purple-900/30'
                               : 'border-blue-500 bg-blue-900/30'
                             : 'border-gray-600 hover:border-gray-500 bg-gray-800/50'

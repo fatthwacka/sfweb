@@ -484,109 +484,24 @@ export class VertexAIImageGenerator {
   }
 
   private async callVertexAI(prompt: string, imageSpec: any, model: string, originalRequest?: ImageGenerationRequest): Promise<ImageUrls> {
-    // Extract actual model name (handle frontend unique IDs)
+    // Extract actual model name (handle frontend unique IDs with resolution suffixes)
     let actualModel = model;
-    
-    // Map frontend unique IDs to actual model names
+
+    // Map frontend unique IDs to actual Gemini model names
     if (model.startsWith('gemini-3-pro-image-preview-')) {
       actualModel = 'gemini-3-pro-image-preview';
-    } else if (model.startsWith('imagen-4.0-')) {
-      // Keep imagen models as-is since they're already correct
-      actualModel = model;
+    } else if (model.startsWith('gemini-3.1-flash-image-preview-')) {
+      actualModel = 'gemini-3.1-flash-image-preview';
     }
-    
-    console.log('🔍 Model routing check:', { 
-      frontendModel: model, 
-      actualModel, 
-      isGemini: actualModel.includes('gemini') 
+
+    console.log('🔍 Model routing check:', {
+      frontendModel: model,
+      actualModel
     });
-    
-    if (actualModel.includes('gemini')) {
-      console.log('📡 Routing to Gemini API for model:', actualModel);
-      return await this.callGeminiAPI(prompt, imageSpec, actualModel, originalRequest);
-    } else {
-      console.log('📡 Routing to Imagen API for model:', actualModel);
-      return await this.callImagenAPI(prompt, imageSpec, actualModel, originalRequest);
-    }
-  }
 
-  private async callImagenAPI(prompt: string, imageSpec: any, model: string, originalRequest?: ImageGenerationRequest): Promise<ImageUrls> {
-    console.log('🔴 ENTERING IMAGEN API METHOD for model:', model);
-
-    // IMPORTANT: Imagen 4.0 does NOT support reference images at all
-    // It's text-to-image only. Reference images are handled by Gemini models (Nano Banana)
-    // See: https://docs.cloud.google.com/vertex-ai/generative-ai/docs/models/imagen/4-0-ultra-generate-001
-    const hasReferenceImages = originalRequest?.imageIngredients && originalRequest.imageIngredients.length > 0;
-    if (hasReferenceImages) {
-      console.log('⚠️ Warning: Reference images provided but Imagen 4.0 does not support them');
-      console.log('   Images will be ignored. Use Nano Banana (Gemini) models for reference image support.');
-    }
-
-    const endpoint = `https://${this.location}-aiplatform.googleapis.com/v1/projects/${this.projectId}/locations/${this.location}/publishers/google/models/${model}:predict`;
-
-    console.log('🌐 Vertex AI endpoint:', endpoint);
-    console.log('🤖 Using model:', model);
-    console.log('🔄 Getting access token...');
-
-    const accessToken = await this.getAccessToken();
-    console.log('🔑 Access token length:', accessToken.length);
-
-    // Imagen 4.0 is text-to-image only - build simple request
-    // Reference images are NOT supported by Imagen 4.0 models
-    const requestBody: any = {
-      instances: [{
-        prompt: prompt
-      }],
-      parameters: {
-        sampleCount: 1,
-        aspectRatio: this.convertAspectRatio(imageSpec.aspectRatio),
-        safetyFilterLevel: "block_some",
-        personGeneration: "allow_adult"
-      }
-    };
-
-    console.log('📋 Request body:', JSON.stringify(requestBody, null, 2));
-    console.log('📡 Making API call to Vertex AI...');
-
-    try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestBody)
-      });
-
-      console.log('📈 Vertex AI response status:', response.status);
-      console.log('📋 Vertex AI response headers:', Object.fromEntries(response.headers.entries()));
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Vertex AI API error:', response.status, errorText);
-        throw new Error(`Vertex AI API error: ${response.status} - ${errorText}`);
-      }
-
-      const result = await response.json();
-      console.log('📝 Vertex AI response keys:', Object.keys(result));
-      console.log('📝 Full Vertex AI response:', JSON.stringify(result, null, 2));
-
-      // Extract the generated image
-      if (!result.predictions || !result.predictions[0] || !result.predictions[0].bytesBase64Encoded) {
-        throw new Error('No image data in Vertex AI response');
-      }
-
-      const base64Image = result.predictions[0].bytesBase64Encoded;
-
-      // Upload the base64 image to Cloud Storage (creates all 4 versions)
-      const imageUrls = await this.uploadToCloudStorage(base64Image);
-
-      return imageUrls;
-
-    } catch (error: any) {
-      console.error('💥 Vertex AI generation error:', error);
-      throw error;
-    }
+    // All models now use the Gemini generateContent API
+    console.log('📡 Routing to Gemini API for model:', actualModel);
+    return await this.callGeminiAPI(prompt, imageSpec, actualModel, originalRequest);
   }
 
   private async callGeminiAPI(prompt: string, imageSpec: any, model: string, originalRequest?: ImageGenerationRequest): Promise<ImageUrls> {
@@ -771,7 +686,7 @@ export class VertexAIImageGenerator {
         responseModalities: ['TEXT', 'IMAGE'], // Must include both!
         imageConfig: {
           aspectRatio: imageSpec.aspectRatio,
-          imageSize: originalRequest?.resolution || imageSpec.resolution // Use original K-scale string (1K, 2K, 4K)
+          imageSize: imageSpec.imageSize // Computed WxH pixels (e.g. '1024x1024') from getImageSize()
         }
       }
     };
