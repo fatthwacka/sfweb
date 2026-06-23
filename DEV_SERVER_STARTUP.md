@@ -35,7 +35,7 @@ docker-compose --profile dev up adminer -d
 
 ```
 Phase 1: Docker Build (2-3 minutes on first run)
-├─ Loading base image (node:20-alpine)
+├─ Loading base image (node:22-alpine)
 ├─ Installing system dependencies
 ├─ npm install (600 packages) ← LONGEST STEP
 ├─ Copying application files
@@ -147,6 +147,34 @@ ls -la server/data/site-config-overrides.json
 - Config file exists with your customizations
 
 ## ⚠️ Common Startup Issues & Solutions
+
+### App container crash-loops: "Node.js 20 detected without native WebSocket support" (Jun 2026)
+```
+Error: Node.js 20 detected without native WebSocket support.
+  at new RealtimeClient ... at new SupabaseClient ... at createClient
+```
+**Cause**: current `@supabase/supabase-js` (`realtime-js`) requires native WebSocket (Node 22+),
+which throws at EVERY `createClient()`. **Fix**: `Dockerfile` base must be `node:22-alpine`
+(not 20). If you see this, confirm `grep 'FROM node:' Dockerfile` shows `node:22-alpine`, then
+rebuild.
+
+### App container crash-loops: "Cannot find package 'X'" / ERR_MODULE_NOT_FOUND (Jun 2026)
+```
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'rss-parser' ...
+```
+**Cause**: `docker-compose.yml` mounts `/app/node_modules` as an **anonymous volume** that Docker
+only populates ONCE (on first container creation). After new dependencies are added to
+`package.json`, a plain `docker-compose up --build` does NOT refresh this volume — it keeps
+shadowing the rebuilt image with stale modules.
+**Fix**: remove the stale anonymous `node_modules` volume, then rebuild (do NOT remove
+`postgres_data`):
+```bash
+docker compose down
+# find the app's node_modules anonymous volume:
+docker inspect sfweb-app --format '{{range .Mounts}}{{if eq .Destination "/app/node_modules"}}{{.Name}}{{end}}{{end}}'
+docker volume rm <that-volume-id>
+docker compose up --build -d
+```
 
 ### Docker Desktop Not Running
 ```
@@ -271,7 +299,7 @@ sfweb/.npm-cache/                           # NPM cache (excluded from Dropbox)
 ### Prerequisites (All Platforms)
 
 1. **Docker Desktop** - Install and ensure it's running
-2. **Node.js 20+** - For npm commands
+2. **Node.js 22+** - For npm commands (Node 22 required since Jun 2026 — see Supabase WebSocket note in Common Startup Issues)
 3. **Dropbox** - Ensure project folder is synced
 4. **Windsurf IDE** (optional) - Will need reconfiguration on new devices
 

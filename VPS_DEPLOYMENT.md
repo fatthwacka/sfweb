@@ -4,6 +4,61 @@
 
 ---
 
+# 🚨 CRITICAL LESSONS - JUNE 2026
+
+## Deploys use rsync, NOT git pull — VPS git HEAD is MEANINGLESS (23 Jun 2026)
+
+**Do not judge "what is deployed" by the VPS's `git log`.** `deploy-production.sh` (and the
+manual process) **rsync the local working tree** over `/opt/sfweb` — `.git` is excluded and never
+updated. The VPS `/opt/sfweb/.git` HEAD can be many months/commits behind while the *actual
+deployed code* is current.
+
+**To check what code is really live, inspect the built bundle, not git:**
+```bash
+ssh slyfox-vps "docker exec sfweb-app ls -la dist/public/assets/index-*.js"
+# bundle filename hash + mtime = the real deployed build
+```
+In Jun 2026 the VPS git HEAD looked "117 commits behind" but the deployed bundle was only hours old.
+
+## Dev and Production share ONE Supabase project (23 Jun 2026)
+
+Both `.env` files point to the same Supabase project (`dwkjfuhykdjtzvrzdnrr`):
+same `DATABASE_URL` and `VITE_SUPABASE_URL`. Consequences:
+- **Migrations applied during dev are ALREADY live in production.** There is no separate
+  "run migrations on prod" step — the DB is shared and never "behind" the code.
+- A feature that works in dev but not prod is almost always a **code-deploy gap or
+  infrastructure issue**, NOT a database issue.
+- ⚠️ Any destructive migration affects production immediately, even while "just developing."
+
+## Node 20 → 22 base image (23 Jun 2026)
+
+`Dockerfile` base bumped `node:20-alpine` → `node:22-alpine` (cascades to all stages incl.
+`runner`). **Required**: current `@supabase/supabase-js` (`realtime-js`) throws on Node < 22
+("Node.js 20 detected without native WebSocket support") at every `createClient()`, so the app
+cannot boot on Node 20. Production now runs Node 22. See `DEV_SERVER_STARTUP.md`.
+
+## ALWAYS tag the running image before rebuild = instant rollback (23 Jun 2026)
+
+Before `up -d --build`, tag the currently-running image so you can revert without a rebuild:
+```bash
+ssh slyfox-vps "IMGID=\$(docker inspect sfweb-app --format '{{.Image}}'); \
+  docker tag \$IMGID sfweb-app:rollback-\$(date +%Y%m%d-%H%M%S)"
+# Rollback (≈30s, no rebuild):
+ssh slyfox-vps "cd /opt/sfweb && docker tag sfweb-app:rollback-<ts> sfweb-app:latest && \
+  docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --force-recreate"
+```
+
+## Large video uploads require the `upload.slyfox.co.za` DNS record (23 Jun 2026)
+
+The admin video-upload feature sends large files to `https://upload.slyfox.co.za` (grey-cloud
+subdomain) to bypass Cloudflare's 100 MB proxy limit. Traefik is configured for it in
+`docker-compose.prod.yml`, **but the Cloudflare DNS A record must exist**
+(`upload` → `168.231.86.89`, **DNS-only / grey cloud**). If missing (NXDOMAIN), prod video uploads
+fail while dev (localhost, relative path) works. See
+[`SYSTEM_DOCUMENTATION/VIDEO_UPLOAD_DEBUG_HANDOFF.md`](./SYSTEM_DOCUMENTATION/VIDEO_UPLOAD_DEBUG_HANDOFF.md).
+
+---
+
 # 🚨 CRITICAL LESSONS - DECEMBER 2025
 
 ## Docker Multi-Platform Build Crisis (08 Sep 2025)
@@ -679,7 +734,20 @@ ssh slyfox-vps "cd /opt/sfweb && chmod -R 644 public/images && find public -type
 
 # 🎯 DEPLOYMENT HISTORY
 
-**Last Successful Deployment**: 2026-02-06 (Portfolio Page Performance Optimisation)
+**Last Successful Deployment**: 2026-06-23 (Blog Content Studio + Quote Generator + Node 22 + AI image refactor)
+
+**Features / Changes Deployed:**
+- Node 22 base image (required for current @supabase/supabase-js — see Critical Lessons)
+- Blog Content Studio (Phase 1B, WIP) and Quote Generator tools (behind /tools + /admin)
+- AI image generator core + Vertex service refactor
+- Deployed via manual traced process (rsync to temp → swap preserving .env/.git → prod-override
+  build → chmod fix → Cloudflare purge). Rollback image: `sfweb-app:rollback-20260623-143254`.
+- Verified green: live 200, admin 200, bundle `index-B3qsA4oM.js`, VITE vars embedded, Node 22.
+- ⚠️ KNOWN ISSUE post-deploy: production video uploads still fail — root cause is the missing
+  `upload.slyfox.co.za` DNS record (NOT a code/deploy problem). See
+  [`SYSTEM_DOCUMENTATION/VIDEO_UPLOAD_DEBUG_HANDOFF.md`](./SYSTEM_DOCUMENTATION/VIDEO_UPLOAD_DEBUG_HANDOFF.md).
+
+**Previous Deployment**: 2026-02-06 (Portfolio Page Performance Optimisation)
 
 **Features Deployed**:
 

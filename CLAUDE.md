@@ -524,6 +524,19 @@ POST /api/prompt-engine/enhance
 
 This project uses Docker for development. Do NOT use `npm run dev` directly - it will fail.
 
+**⚠️ Node 22 required (Jun 2026):** The Docker base image is `node:22-alpine`. Current
+`@supabase/supabase-js` (`realtime-js`) crashes on Node 20 ("native WebSocket" error) at every
+`createClient()`. If the app container crash-loops on startup, see
+[`DEV_SERVER_STARTUP.md`](./DEV_SERVER_STARTUP.md) → Common Startup Issues (Node 22 + the stale
+`node_modules` anonymous-volume gotcha).
+
+**⚠️ Deploys use rsync, not git; dev & prod share ONE Supabase project.** The VPS `git log` does
+NOT reflect what is deployed (check the built bundle instead). Migrations run during dev are
+already live in prod (shared DB `dwkjfuhykdjtzvrzdnrr`). See
+[`VPS_DEPLOYMENT.md`](./VPS_DEPLOYMENT.md) → Critical Lessons (Jun 2026). Known open issue:
+production video uploads fail due to a missing `upload.slyfox.co.za` DNS record — see
+[`SYSTEM_DOCUMENTATION/VIDEO_UPLOAD_DEBUG_HANDOFF.md`](./SYSTEM_DOCUMENTATION/VIDEO_UPLOAD_DEBUG_HANDOFF.md).
+
 ### Quick Start Commands
 
 **Primary Development (REQUIRED):**
