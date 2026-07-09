@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+#
+# Tracked pre-commit hook.
+#
+# Lives in .githooks/ (committed) rather than .git/hooks/ (never committed), and
+# is activated by `core.hooksPath`. A hook that exists only in the clone where
+# someone remembered to install it protects nobody else.
+#
+# Run once per clone, or use `npm run hooks:install`:
+#     git config core.hooksPath .githooks
+
+set -euo pipefail
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+SCANNER="$REPO_ROOT/scripts/scan-secrets.sh"
+
+# Fail closed. If the scanner is missing or not executable, block the commit.
+# Do NOT wrap this in `if [ -x ... ]; then ... fi` and let the else branch pass:
+# that is exactly the bug that left sfweb unprotected for months.
+if [ ! -x "$SCANNER" ]; then
+  printf '\033[0;31m✖ scripts/scan-secrets.sh is missing or not executable.\033[0m\n' >&2
+  printf '  The secret scanner must run before every commit. Blocking.\n' >&2
+  printf '  Fix:  chmod +x scripts/scan-secrets.sh\n' >&2
+  exit 1
+fi
+
+"$SCANNER" --staged

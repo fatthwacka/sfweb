@@ -68,7 +68,7 @@ blog_media          -- Image galleries for posts
 ### Required Configuration
 ```env
 # Gemini AI Configuration
-GEMINI_API_KEY=AIzaSyBpLvhom8XYj5y5QgEt4C9tnevg6P4XAeU
+GEMINI_API_KEY=<redacted: rotate and store in .env, never in docs>
 
 # Existing Supabase Configuration (already set)
 DATABASE_URL=postgresql://...
