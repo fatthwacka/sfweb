@@ -99,6 +99,8 @@ All server storage access goes through `server/media/media-store.ts` (never call
 directly); `server/media/supabase-compat.ts` is a temporary shim for `server/routes.ts`. Supabase
 still provides the database and auth until Phase 2 — **on the Free plan since 2026-08-21** (VPS cron keeps it alive daily and takes a nightly `pg_dump`; the four old sfweb buckets are empty). Full status, runbook and tooling:
 [`SYSTEM_DOCUMENTATION/SUPABASE_OFFBOARDING.md`](./SYSTEM_DOCUMENTATION/SUPABASE_OFFBOARDING.md).
+**NEXT UP — Phase 2 (API layer + JWT middleware + Drizzle, then DB → VPS Postgres):** the approved plan is
+[`SYSTEM_DOCUMENTATION/SUPABASE_OFFBOARDING_PLAN.md`](./SYSTEM_DOCUMENTATION/SUPABASE_OFFBOARDING_PLAN.md) — read it before starting Phase 2 work.
 
 ---
 

@@ -1,6 +1,6 @@
 # Supabase Offboarding — status, architecture and runbook
 
-**Started:** 2026-08-21 · **Plan:** `~/.claude/plans/wise-wondering-dragonfly.md` (approved) · **Owner:** Dax
+**Started:** 2026-08-21 · **Plan:** [`SUPABASE_OFFBOARDING_PLAN.md`](./SUPABASE_OFFBOARDING_PLAN.md) (approved; repo copy of `~/.claude/plans/wise-wondering-dragonfly.md`) · **Owner:** Dax
 
 ## Why
 Slyfox photography is paused; ~20 GB of gallery media was the only thing keeping the shared Supabase
@@ -110,8 +110,8 @@ the repo (scp) before deploying so the manifest is not lost.
 - [x] Four sfweb buckets emptied 2026-08-21 (`05-empty-supabase-buckets.ts --yes`); storage 2.8 MB, DB 39 MB
 - [x] Dashboard → Billing → Pro → Free done 2026-08-21 (after deleting an unused Netfox Free project to free a per-user slot). Watch `/var/log/sfweb/supabase-keepalive.log` for 200s; if the project ever shows as paused, restore it in the dashboard.
 
-## Phase 2 pointers
-See the plan file: `server/middleware/auth.ts` (jose + JWKS), `client/src/lib/api.ts`, keep
+## Phase 2 pointers (NEXT SESSION)
+Start from [`SUPABASE_OFFBOARDING_PLAN.md`](./SUPABASE_OFFBOARDING_PLAN.md) → sections *Phase 2a* and *Phase 2b*; checklist of remaining call sites in `SUPABASE_AUDIT.md` (`node scripts/supabase-audit.ts`). Summary: `server/middleware/auth.ts` (jose + JWKS), `client/src/lib/api.ts`, keep
 `supabase-operations.ts` signatures but call `/api/*`, convert 179 server supabase-js calls to Drizzle
 (use `drizzle-introspected/schema.ts` for the ~16 missing tables), Postgres 17 container,
 `scripts/db/dump-supabase.sh` / `restore-vps.sh` with the `scripts/db/sfweb-tables.txt` allowlist.
