@@ -91,6 +91,17 @@ Available in root directory:
 
 ---
 
+## ☁️ MEDIA STORAGE = GOOGLE CLOUD STORAGE (AUGUST 2026 — SUPABASE OFFBOARDING)
+
+**Gallery images, gallery videos, preview images and brand assets live in the GCS bucket `sfweb-media`
+(public URLs `https://storage.googleapis.com/sfweb-media/<bucket>/<key>`), NOT in Supabase Storage.**
+All server storage access goes through `server/media/media-store.ts` (never call `supabase.storage`
+directly); `server/media/supabase-compat.ts` is a temporary shim for `server/routes.ts`. Supabase
+still provides the database and auth until Phase 2 — **on the Free plan since 2026-08-21** (VPS cron keeps it alive daily and takes a nightly `pg_dump`; the four old sfweb buckets are empty). Full status, runbook and tooling:
+[`SYSTEM_DOCUMENTATION/SUPABASE_OFFBOARDING.md`](./SYSTEM_DOCUMENTATION/SUPABASE_OFFBOARDING.md).
+
+---
+
 ## 🎨 VERTEX AI IMAGE GENERATION (UPDATED - JANUARY 2026)
 
 **⚠️ FULLY OPERATIONAL: Real AI image generation using Google Vertex AI Imagen 3.0**

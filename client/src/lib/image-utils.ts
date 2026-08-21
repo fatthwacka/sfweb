@@ -22,14 +22,29 @@ export interface ImageTransformOptions {
  *
  * Example: 1699564800_abc123.jpg -> 1699564800_abc123_optimized.jpg
  */
+/**
+ * Media served from the gallery store (Google Cloud Storage bucket, or the legacy Supabase
+ * Storage URLs that still appear in un-migrated rows / cached pages). Only these URLs have the
+ * pre-processed `_optimized` / `_thumbnail` variants next to the original.
+ *
+ * The GCS base is baked in at build time from VITE_MEDIA_BASE_URL (default: the sfweb-media bucket).
+ */
+const MEDIA_BASE_URL = (import.meta.env.VITE_MEDIA_BASE_URL as string | undefined)?.replace(/\/$/, '') || 'https://storage.googleapis.com/sfweb-media';
+const LEGACY_SUPABASE_PREFIX = '/storage/v1/object/public/';
+
+export function isManagedMediaUrl(url: string | null | undefined): boolean {
+  if (!url) return false;
+  return url.startsWith(MEDIA_BASE_URL + '/') || (url.includes('supabase.co') && url.includes(LEGACY_SUPABASE_PREFIX));
+}
+
 export function getVersionedImageUrl(
   originalUrl: string,
   version: 'original' | 'optimized' | 'thumbnail'
 ): string {
   if (!originalUrl) return originalUrl;
 
-  // If not a Supabase URL, return as-is
-  if (!originalUrl.includes('supabase') || !originalUrl.includes('/storage/v1/object/public/')) {
+  // Only managed media (gallery store) has pre-processed variants; return other URLs as-is
+  if (!isManagedMediaUrl(originalUrl)) {
     return originalUrl;
   }
 

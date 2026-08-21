@@ -3,7 +3,7 @@
  * Handles video transcoding for web optimization and thumbnail generation
  */
 
-import { createReadStream, createWriteStream, unlinkSync, existsSync } from 'fs';
+import { createReadStream, createWriteStream, unlinkSync, existsSync, statSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
@@ -27,7 +27,10 @@ async function loadFfmpeg() {
 }
 
 export interface VideoProcessingOptions {
-  inputBuffer: Buffer;
+  /** Video bytes in memory (legacy). Prefer `inputPath` for large files. */
+  inputBuffer?: Buffer;
+  /** Path to the uploaded file on disk (multer diskStorage). The file is NOT deleted by processVideo. */
+  inputPath?: string;
   originalFilename: string;
   maxWidth?: number;
   quality?: string;
@@ -60,6 +63,7 @@ export async function processVideo(
 
   const {
     inputBuffer,
+    inputPath: providedInputPath,
     originalFilename,
     maxWidth = 1920, // 1080p max width
     quality = 'medium',
@@ -68,24 +72,30 @@ export async function processVideo(
   } = options;
 
   console.log(`🎬 Starting video processing for ${originalFilename}`);
-  console.log(`📊 Original size: ${formatFileSize(inputBuffer.length)}`);
+  if (!inputBuffer && !providedInputPath) throw new Error('processVideo: inputBuffer or inputPath is required');
+  const originalSize = inputBuffer ? inputBuffer.length : statSync(providedInputPath!).size;
+  console.log(`📊 Original size: ${formatFileSize(originalSize)}`);
 
   // Create temporary files
   const tempId = randomBytes(8).toString('hex');
   const tempDir = tmpdir();
-  const inputPath = join(tempDir, `input_${tempId}.mp4`);
+  // When a path is provided we read it in place (no copy); otherwise spill the buffer to a temp file.
+  const inputPath = providedInputPath || join(tempDir, `input_${tempId}.mp4`);
+  const ownsInput = !providedInputPath;
   const outputPath = join(tempDir, `output_${tempId}.mp4`);
   const thumbnailPath = join(tempDir, `thumb_${tempId}.jpg`);
 
   try {
-    // Write input buffer to temp file
-    const inputStream = createWriteStream(inputPath);
-    inputStream.write(inputBuffer);
-    inputStream.end();
-    await new Promise((resolve, reject) => {
-      inputStream.on('finish', resolve);
-      inputStream.on('error', reject);
-    });
+    // Write input buffer to temp file (only when we were handed a buffer)
+    if (inputBuffer) {
+      const inputStream = createWriteStream(inputPath);
+      inputStream.write(inputBuffer);
+      inputStream.end();
+      await new Promise((resolve, reject) => {
+        inputStream.on('finish', resolve);
+        inputStream.on('error', reject);
+      });
+    }
 
     // Get video metadata first
     const metadata = await getVideoMetadata(inputPath);
@@ -107,18 +117,18 @@ export async function processVideo(
     ]);
 
     console.log(`✅ Video processing complete:`);
-    console.log(`   📄 Original: ${formatFileSize(inputBuffer.length)}`);
+    console.log(`   📄 Original: ${formatFileSize(originalSize)}`);
     console.log(`   🎬 Optimized: ${formatFileSize(optimizedBuffer.length)}`);
     console.log(`   📸 Thumbnail: ${formatFileSize(thumbnailBuffer.length)}`);
 
-    const compressionRatio = ((inputBuffer.length - optimizedBuffer.length) / inputBuffer.length) * 100;
+    const compressionRatio = ((originalSize - optimizedBuffer.length) / originalSize) * 100;
     console.log(`   💾 Compression: ${compressionRatio.toFixed(1)}% reduction`);
 
     return {
       optimizedBuffer,
       thumbnailBuffer,
       metadata: {
-        originalSize: inputBuffer.length,
+        originalSize,
         optimizedSize: optimizedBuffer.length,
         thumbnailSize: thumbnailBuffer.length,
         duration: metadata.duration,
@@ -130,7 +140,7 @@ export async function processVideo(
 
   } finally {
     // Clean up temporary files
-    [inputPath, outputPath, thumbnailPath].forEach(path => {
+    [...(ownsInput ? [inputPath] : []), outputPath, thumbnailPath].forEach(path => {
       if (existsSync(path)) {
         try {
           unlinkSync(path);
@@ -367,15 +377,16 @@ export function shouldTranscodeVideo(
  * Validate video processing requirements
  */
 export function validateVideoForProcessing(
-  buffer: Buffer,
+  bufferOrSize: Buffer | number,
   filename: string
 ): { valid: boolean; error?: string } {
+  const size = typeof bufferOrSize === 'number' ? bufferOrSize : bufferOrSize.length;
   // Check file size (max 1.5GB for processing - matches upload limit for large wedding videos)
   const maxSize = 1500 * 1024 * 1024; // 1.5GB
-  if (buffer.length > maxSize) {
+  if (size > maxSize) {
     return {
       valid: false,
-      error: `Video file too large for processing: ${formatFileSize(buffer.length)}. Maximum: 1.5GB`
+      error: `Video file too large for processing: ${formatFileSize(size)}. Maximum: 1.5GB`
     };
   }
 

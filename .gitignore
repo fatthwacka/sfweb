@@ -23,3 +23,6 @@ docker-compose.override.yml
 config/secrets.json
 .mcp.json
 
+
+# Supabase offboarding working files (manifests, generated SQL)
+scripts/migrate-storage/out/

@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ACA Auto · 2026 Systems Overhaul &amp; Growth Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0E0D0B;
+    --bg-elev: #16140F;
+    --bg-card: #1B1814;
+    --line: rgba(212, 162, 76, 0.18);
+    --line-soft: rgba(245, 241, 232, 0.08);
+    --text: #F5F1E8;
+    --text-mute: #A8A096;
+    --text-dim: #6B6459;
+    --accent: #D4A24C;
+    --accent-soft: rgba(212, 162, 76, 0.12);
+    --accent-deep: #B8862F;
+    --danger: #C25450;
+    --ok: #7E9E6E;
+    --info: #6F8FA8;
+    --serif: 'Fraunces', Georgia, serif;
+    --sans: 'Geist', system-ui, sans-serif;
+    --mono: 'Geist Mono', 'JetBrains Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-weight: 400;
+    line-height: 1.65;
+    font-size: 15px;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(212, 162, 76, 0.08), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 100% 100%, rgba(212, 162, 76, 0.04), transparent 60%);
+    min-height: 100vh;
+  }
+
+  .grain {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.4;
+    mix-blend-mode: overlay;
+    z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 80px 48px 120px;
+    position: relative;
+    z-index: 2;
+  }
+
+  header.masthead {
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 56px 0 64px;
+    margin-bottom: 80px;
+    position: relative;
+  }
+  header.masthead::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: 0;
+    width: 80px;
+    height: 3px;
+    background: var(--accent);
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--accent);
+    margin-bottom: 28px;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(48px, 7vw, 88px);
+    line-height: 0.95;
+    letter-spacing: -0.025em;
+    margin-bottom: 20px;
+    font-variation-settings: "opsz" 144;
+  }
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+    font-variation-settings: "opsz" 144;
+  }
+
+  .brand-block {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    margin: 32px 0 40px;
+  }
+  .client-logo {
+    flex-shrink: 0;
+    position: relative;
+  }
+  .client-logo img {
+    max-height: 84px;
+    width: auto;
+    max-width: 240px;
+    display: block;
+  }
+  .client-logo .logo-fallback {
+    display: none;
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 40px;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .client-logo.no-image img { display: none; }
+  .client-logo.no-image .logo-fallback { display: block; }
+  .brand-divider {
+    width: 1px;
+    align-self: stretch;
+    background: var(--line);
+    flex-shrink: 0;
+    min-height: 64px;
+  }
+  .brand-block h1 {
+    margin: 0;
+    font-size: clamp(34px, 5vw, 56px);
+    line-height: 1.02;
+  }
+  .lede {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 300;
+    color: var(--text-mute);
+    max-width: 720px;
+    line-height: 1.45;
+    margin-bottom: 40px;
+    font-style: italic;
+  }
+  .meta {
+    display: flex;
+    gap: 56px;
+    flex-wrap: wrap;
+    font-family: var(--mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    padding-top: 24px;
+    border-top: 1px solid var(--line-soft);
+  }
+  .meta div span {
+    display: block;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-top: 6px;
+  }
+
+  section { margin-bottom: 96px; scroll-margin-top: 40px; }
+  .section-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    margin-bottom: 14px;
+    display: block;
+  }
+  h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 42px;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 28px;
+    font-variation-settings: "opsz" 100;
+  }
+  h3 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 22px;
+    margin: 32px 0 14px;
+    color: var(--text);
+    font-variation-settings: "opsz" 60;
+  }
+  h4 {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin: 20px 0 10px;
+    font-weight: 500;
+  }
+  p { margin-bottom: 16px; max-width: 760px; }
+  p strong { color: var(--text); font-weight: 600; }
+
+  .diagram {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 32px;
+    margin: 28px 0 12px;
+    overflow-x: auto;
+  }
+  .diagram svg { display: block; width: 100%; height: auto; max-width: 100%; }
+  .caption {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 32px;
+    padding-left: 16px;
+    border-left: 2px solid var(--accent);
+  }
+
+  table.components {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 14px;
+  }
+  table.components th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--accent);
+    font-weight: 500;
+  }
+  table.components td {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: top;
+  }
+  table.components tr:hover td { background: rgba(212, 162, 76, 0.03); }
+  table.components td:first-child {
+    font-family: var(--serif);
+    font-size: 17px;
+    color: var(--text);
+    font-weight: 500;
+    width: 24%;
+  }
+  table.components td:nth-child(2) {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-mute);
+    width: 18%;
+  }
+  table.components td:nth-child(3) { color: var(--text-mute); }
+  .pill {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 2px;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-left: 8px;
+  }
+  .pill.saas { background: rgba(111, 143, 168, 0.15); color: var(--info); border: 1px solid rgba(111, 143, 168, 0.3); }
+  .pill.custom { background: var(--accent-soft); color: var(--accent); border: 1px solid rgba(212, 162, 76, 0.3); }
+  .pill.legacy { background: rgba(194, 84, 80, 0.1); color: var(--danger); border: 1px solid rgba(194, 84, 80, 0.25); }
+  .pill.external { background: rgba(126, 158, 110, 0.1); color: var(--ok); border: 1px solid rgba(126, 158, 110, 0.25); }
+
+  .flow-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+    margin-top: 28px;
+  }
+  .flow {
+    background: var(--bg-card);
+    border: 1px solid var(--line-soft);
+    border-left: 2px solid var(--accent);
+    padding: 28px 32px;
+    border-radius: 2px;
+  }
+  .flow h3 {
+    margin-top: 0;
+    color: var(--accent);
+    font-style: italic;
+  }
+  ol.steps { list-style: none; counter-reset: step; margin-top: 14px; }
+  ol.steps li {
+    counter-increment: step;
+    padding: 10px 0 10px 44px;
+    position: relative;
+    border-bottom: 1px dashed var(--line-soft);
+    color: var(--text-mute);
+    font-size: 14px;
+  }
+  ol.steps li:last-child { border-bottom: none; }
+  ol.steps li::before {
+    content: counter(step, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    top: 14px;
+    letter-spacing: 0.05em;
+  }
+  ol.steps li strong { color: var(--text); }
+
+  .phases {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    margin-top: 28px;
+  }
+  .phase {
+    border: 1px solid var(--line);
+    padding: 32px;
+    background: linear-gradient(180deg, rgba(212, 162, 76, 0.04), transparent);
+    position: relative;
+  }
+  .phase .badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .phase h3 { margin-top: 0; font-size: 26px; }
+  .phase ul { list-style: none; margin-top: 18px; }
+  .phase ul li {
+    padding: 8px 0 8px 22px;
+    position: relative;
+    border-bottom: 1px solid var(--line-soft);
+    font-size: 14px;
+    color: var(--text-mute);
+  }
+  .phase ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+  }
+  .phase ul li:last-child { border-bottom: none; }
+
+  .pillars {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 28px 0;
+  }
+  .pillar {
+    border: 1px solid var(--line);
+    padding: 24px;
+    background: var(--bg-card);
+    position: relative;
+  }
+  .pillar .num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    margin-bottom: 8px;
+  }
+  .pillar.primary { border-color: var(--accent); background: linear-gradient(180deg, rgba(212, 162, 76, 0.08), var(--bg-card)); }
+  .pillar h4 {
+    font-family: var(--serif);
+    font-size: 19px;
+    color: var(--text);
+    margin: 0 0 10px;
+    text-transform: none;
+    letter-spacing: 0;
+    font-style: italic;
+    font-weight: 500;
+  }
+  .pillar p {
+    font-size: 13px;
+    color: var(--text-mute);
+    margin: 0;
+    max-width: none;
+  }
+  .pillar .weight {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line-soft);
+    letter-spacing: 0.15em;
+  }
+
+  .principles {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin: 24px 0 32px;
+  }
+  .principle {
+    border: 1px solid var(--line);
+    padding: 26px 28px;
+    background: var(--bg-card);
+    position: relative;
+  }
+  .principle .num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.22em;
+    margin-bottom: 12px;
+  }
+  .principle h4 {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 22px;
+    color: var(--text);
+    margin: 0 0 10px;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 500;
+    font-variation-settings: "opsz" 60;
+  }
+  .principle p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-mute);
+    max-width: none;
+    line-height: 1.55;
+  }
+
+  .timeline {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 24px 0;
+    font-size: 13px;
+  }
+  .tl-phase {
+    padding: 18px 16px;
+    background: var(--bg-elev);
+    border-top: 2px solid var(--accent);
+  }
+  .tl-phase .when {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .tl-phase .what {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--text);
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+  .tl-phase ul {
+    list-style: none;
+    font-size: 12px;
+    color: var(--text-mute);
+  }
+  .tl-phase ul li { padding: 3px 0; }
+
+  .cadence {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin: 20px 0;
+  }
+  .cadence-item {
+    padding: 14px 18px;
+    background: var(--bg-card);
+    border-left: 2px solid var(--accent);
+    font-size: 13px;
+  }
+  .cadence-item strong {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .cadence-item span { color: var(--text-mute); }
+
+  .stack-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 14px;
+  }
+  .stack-table th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--accent);
+    font-weight: 500;
+  }
+  .stack-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line-soft);
+    color: var(--text-mute);
+  }
+  .stack-table td:first-child {
+    font-family: var(--serif);
+    color: var(--text);
+    font-weight: 500;
+    width: 25%;
+  }
+  .stack-table td:nth-child(2) { font-family: var(--mono); font-size: 12px; width: 15%; }
+
+  .pointer {
+    margin: 32px 0 0;
+    padding: 20px 24px;
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    font-size: 14px;
+    color: var(--text-mute);
+  }
+  .pointer strong { color: var(--accent); font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+
+  ul.assumptions {
+    list-style: none;
+    margin-top: 20px;
+    counter-reset: assumption;
+  }
+  ul.assumptions li {
+    counter-increment: assumption;
+    padding: 16px 0 16px 60px;
+    position: relative;
+    border-bottom: 1px solid var(--line-soft);
+    color: var(--text-mute);
+    max-width: 820px;
+  }
+  ul.assumptions li::before {
+    content: 'Q.' counter(assumption, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    top: 18px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+  ul.assumptions li strong {
+    display: block;
+    color: var(--text);
+    font-family: var(--serif);
+    font-size: 17px;
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+
+  footer {
+    margin-top: 80px;
+    padding-top: 40px;
+    border-top: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  @media (max-width: 768px) {
+    .wrap { padding: 40px 20px 60px; }
+    .meta { gap: 28px; }
+    .phases, .pillars, .cadence, .principles { grid-template-columns: 1fr; }
+    .brand-block { flex-direction: column; align-items: flex-start; gap: 20px; }
+    .brand-divider { display: none; }
+    .brand-block h1 { font-size: 36px; }
+    .timeline { grid-template-columns: 1fr 1fr; }
+    table.components td:first-child { width: 100%; }
+    table.components { display: block; }
+    table.components thead { display: none; }
+    table.components tbody, table.components tr { display: block; }
+    table.components td { display: block; padding: 8px 0; border: none; }
+    table.components tr { padding: 16px 0; border-bottom: 1px solid var(--line-soft); }
+  }
+
+  @media print {
+    body { background: white; color: black; }
+    .grain { display: none; }
+    .diagram { background: white; border: 1px solid #ccc; }
+    a { color: black; text-decoration: none; }
+  }
+
+  .layer-bg { fill: var(--bg-card); stroke: var(--line); stroke-width: 1; }
+  .layer-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    fill: var(--accent);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .sub-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    fill: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .node-box { fill: var(--bg-elev); stroke: var(--line); stroke-width: 1; rx: 2; }
+  .node-box.custom { stroke: var(--accent); stroke-width: 1.5; fill: rgba(212, 162, 76, 0.06); }
+  .node-box.legacy { stroke: var(--danger); stroke-width: 1; stroke-dasharray: 4 3; fill: rgba(194, 84, 80, 0.04); }
+  .node-box.external { stroke: var(--ok); stroke-width: 1; fill: rgba(126, 158, 110, 0.04); }
+  .node-title {
+    font-family: 'Geist', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    fill: var(--text);
+  }
+  .node-sub {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    fill: var(--text-mute);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .arrow { stroke: var(--accent); stroke-width: 1.2; fill: none; }
+  .arrow-soft { stroke: var(--text-dim); stroke-width: 1; fill: none; stroke-dasharray: 3 3; }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Project Driveline · Architecture · v0.6 · Internal Draft</div>
+    <div class="brand-block">
+      <div class="client-logo">
+        <img src="ACA_auto_Logo2x.png" alt="ACA AUTO" onerror="this.parentElement.classList.add('no-image');">
+        <span class="logo-fallback">ACA AUTO</span>
+      </div>
+      <div class="brand-divider"></div>
+      <h1>2026 Systems <em>Overhaul</em><br>&amp; Growth Engine.</h1>
+    </div>
+    <p class="lede">A wholesale-first automotive parts platform with a direct-to-consumer wing, built on Cin7 Core, Shopify, and a custom intelligence layer that stitches the pieces together.</p>
+    <div class="meta">
+      <div>Client<span>ACA Auto</span></div>
+      <div>Author<span>Dax Tucker</span></div>
+      <div>Date<span>09 May 2026</span></div>
+      <div>Status<span>Draft for review</span></div>
+    </div>
+  </header>
+
+  <section id="overview">
+    <span class="section-num">§ 01 · Overview</span>
+    <h2>The lay of the land.</h2>
+    <p>ACA Auto is an established automotive parts importer carrying roughly R24M of stock across 600 SKUs, currently running 95% wholesale through email, WhatsApp, phone, and fax. Their incumbent system is a legacy database (vintage uncertain, but some clunky old pre-DOS contraption) that remains queryable via standard SQL. They want to modernise without ripping out everything overnight, add a direct-to-consumer wing alongside their existing wholesale operation, and most importantly grow new B2B trade clients beyond their existing customer base.</p>
+    <p>This document sets out a pragmatic three-layer architecture: a customer-facing layer (Shopify for D2C, Cin7's B2B portal for wholesale, an AI-assisted chat experience across both), a custom intelligence layer (the bits that make this platform smarter than the competition), and a core systems layer (Cin7 Core for inventory and order management, Xero for accounting, and a read-only bridge to the legacy database during transition).</p>
+    <p>Everything bespoke is owned by ACA Auto. Everything SaaS is chosen for replaceability. The legacy database is treated as a guest, not a tenant.</p>
+  </section>
+
+  <section id="vision">
+    <span class="section-num">§ 02 · Vision &amp; Automation</span>
+    <h2>Automation as much as possible.</h2>
+    <p>The architecture targets automation across as much of the operation as practical. Some workflows are entirely automatable: order capture and processing, price resolution, stock synchronisation, invoicing, dispatch documentation, supplier data ingestion, content generation, and routine customer enquiries. Some workflows require human judgement and stay manual by design: pricing strategy, supplier negotiations, exception handling, complex customer escalations, and product range and brand decisions. The split between the two is the substance of this architecture.</p>
+    <p>ACA Auto's current operation runs orders through email, WhatsApp, phone, and fax, all of which require manual re-entry into the legacy system. Pricing queries are answered from sales staff knowledge of customer agreements. Replenishment decisions follow informal patterns rather than forecasted demand. Supplier catalogues are added manually as new ranges arrive. The architecture replaces these manual touchpoints with automated capture and processing wherever the workflow is rule-based or pattern-based.</p>
+
+    <h3>Four principles that shape the architecture</h3>
+    <p><strong>Streamline and scale.</strong> Operations that scale linearly with order volume are automated. As ACA Auto grows, order processing, price lookups, dispatch documentation, and supplier data work do not require headcount growth in proportion. The same team can handle several times the current throughput.</p>
+    <p><strong>Reduce manual drain.</strong> Tedious daily tasks shift from humans to systems. Order entry, pricing lookups, reorder timing decisions, supplier catalogue ingestion, and routine customer queries are handled by software. Staff time moves to relationship management, strategic decisions, and exception handling.</p>
+    <p><strong>Reliability and precision.</strong> Where rules are well-defined, software executes them more consistently than humans. Stock counts don't drift through data entry errors, prices don't get mistyped, customer pricing tiers stay accurate, and replenishment follows consistent logic.</p>
+    <p><strong>Buy commodity, build advantage.</strong> External services handle commodity infrastructure: Cin7 Core for inventory, Xero for accounting, Shopify for D2C, payment gateways, courier aggregation. Custom development handles only the parts that differentiate ACA Auto from competitors: tiered pricing, the AI assistant and knowledge base, semantic upsell, and supplier data ingestion. The build budget is concentrated where it earns the most.</p>
+
+    <h3>What this looks like for the people using it</h3>
+    <p>The result is an inversion of how the business runs today. Currently, people do the routine work and the system records what they did. After the build, the system does the routine work and people do the judgement work: approving AI-drafted supplier imports rather than typing them in, reviewing forecasted purchase orders rather than calculating them, responding to escalated chat conversations rather than answering routine fitment questions.</p>
+    <p>For wholesale buyers, ordering happens via the B2B portal or WhatsApp, with tier-aware pricing visible directly. Out-of-hours queries are handled by the AI assistant. For the sales team, routine queries are deflected automatically, leaving more time for new account development and relationship management. For the owner and 2IC, the analytics dashboard provides a single view of operations and marketing performance, drawing from Cin7, Shopify, Xero, and the marketing stack rather than requiring assembly from each system separately.</p>
+  </section>
+
+  <section id="layers">
+    <span class="section-num">§ 03 · System Layers</span>
+    <h2>How the whole thing hangs together.</h2>
+    <p>Four layers, top to bottom: where customers touch it, where the intelligence lives, where the records of truth sit, and the external services that make it all useful. The marketing stack sits within the external layer, distinguished but not detached.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 1100 920" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+            <polygon points="0 0, 8 4, 0 8" fill="#D4A24C"/>
+          </marker>
+          <marker id="arrowhead-soft" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+            <polygon points="0 0, 8 4, 0 8" fill="#6B6459"/>
+          </marker>
+        </defs>
+
+        <rect class="layer-bg" x="20" y="40" width="1060" height="130" rx="2"/>
+        <text class="layer-label" x="40" y="68">L1 · Customer Layer</text>
+
+        <rect class="node-box external" x="50" y="85" width="220" height="68" rx="2"/>
+        <text class="node-title" x="160" y="115" text-anchor="middle">Shopify Storefront</text>
+        <text class="node-sub" x="160" y="135" text-anchor="middle">D2C · Public</text>
+
+        <rect class="node-box external" x="290" y="85" width="220" height="68" rx="2"/>
+        <text class="node-title" x="400" y="115" text-anchor="middle">Cin7 B2B Portal</text>
+        <text class="node-sub" x="400" y="135" text-anchor="middle">Wholesale · Authenticated</text>
+
+        <rect class="node-box custom" x="530" y="85" width="220" height="68" rx="2"/>
+        <text class="node-title" x="640" y="115" text-anchor="middle">Chat · WhatsApp + Web</text>
+        <text class="node-sub" x="640" y="135" text-anchor="middle">AI Assistant interface</text>
+
+        <rect class="node-box custom" x="770" y="85" width="260" height="68" rx="2"/>
+        <text class="node-title" x="900" y="115" text-anchor="middle">Market Capture Forms</text>
+        <text class="node-sub" x="900" y="135" text-anchor="middle">Custom · Embedded</text>
+
+        <rect class="layer-bg" x="20" y="200" width="1060" height="240" rx="2"/>
+        <text class="layer-label" x="40" y="228">L2 · Custom Intelligence Layer</text>
+
+        <rect class="node-box custom" x="50" y="250" width="240" height="60" rx="2"/>
+        <text class="node-title" x="170" y="278" text-anchor="middle">Tiered Pricing Engine</text>
+        <text class="node-sub" x="170" y="296" text-anchor="middle">Customer-tier resolver</text>
+
+        <rect class="node-box custom" x="310" y="250" width="240" height="60" rx="2"/>
+        <text class="node-title" x="430" y="278" text-anchor="middle">Semantic Upsell</text>
+        <text class="node-sub" x="430" y="296" text-anchor="middle">AI · Recommendations</text>
+
+        <rect class="node-box custom" x="570" y="250" width="240" height="60" rx="2"/>
+        <text class="node-title" x="690" y="278" text-anchor="middle">Replenishment Forecast</text>
+        <text class="node-sub" x="690" y="296" text-anchor="middle">Lead-time aware</text>
+
+        <rect class="node-box custom" x="830" y="250" width="200" height="60" rx="2"/>
+        <text class="node-title" x="930" y="278" text-anchor="middle">Supplier Ingestion</text>
+        <text class="node-sub" x="930" y="296" text-anchor="middle">Image/data pipeline</text>
+
+        <rect class="node-box custom" x="50" y="325" width="240" height="60" rx="2"/>
+        <text class="node-title" x="170" y="353" text-anchor="middle">Analytics &amp; Dashboard</text>
+        <text class="node-sub" x="170" y="371" text-anchor="middle">Operational + Marketing</text>
+
+        <rect class="node-box custom" x="310" y="325" width="240" height="60" rx="2"/>
+        <text class="node-title" x="430" y="353" text-anchor="middle">AI Assistant &amp; KB</text>
+        <text class="node-sub" x="430" y="371" text-anchor="middle">RAG · pgvector · Claude</text>
+
+        <rect class="node-box custom" x="570" y="325" width="240" height="60" rx="2"/>
+        <text class="node-title" x="690" y="353" text-anchor="middle">Content Automation</text>
+        <text class="node-sub" x="690" y="371" text-anchor="middle">AI-drafted · Shopify push</text>
+
+        <rect class="node-box custom" x="830" y="325" width="200" height="60" rx="2"/>
+        <text class="node-title" x="930" y="353" text-anchor="middle">Integration Bus</text>
+        <text class="node-sub" x="930" y="371" text-anchor="middle">Webhooks · Queue</text>
+
+        <rect class="node-box custom" x="50" y="400" width="980" height="32" rx="2"/>
+        <text class="node-title" x="540" y="421" text-anchor="middle">Newsletter Manager · Thin layer over Resend API</text>
+
+        <rect class="layer-bg" x="20" y="470" width="1060" height="160" rx="2"/>
+        <text class="layer-label" x="40" y="498">L3 · Core Systems</text>
+
+        <rect class="node-box" x="100" y="520" width="240" height="86" rx="2"/>
+        <text class="node-title" x="220" y="550" text-anchor="middle">Cin7 Core</text>
+        <text class="node-sub" x="220" y="568" text-anchor="middle">Inventory · Orders · MRP</text>
+        <text class="node-sub" x="220" y="584" text-anchor="middle">B2B Portal · Pricing tiers</text>
+
+        <rect class="node-box" x="430" y="520" width="240" height="86" rx="2"/>
+        <text class="node-title" x="550" y="550" text-anchor="middle">Xero</text>
+        <text class="node-sub" x="550" y="568" text-anchor="middle">Accounting · Invoicing</text>
+        <text class="node-sub" x="550" y="584" text-anchor="middle">VAT · Reconciliation</text>
+
+        <rect class="node-box legacy" x="760" y="520" width="240" height="86" rx="2"/>
+        <text class="node-title" x="880" y="550" text-anchor="middle">Legacy SQL Database</text>
+        <text class="node-sub" x="880" y="568" text-anchor="middle">Read-only bridge</text>
+        <text class="node-sub" x="880" y="584" text-anchor="middle">Sunset on cutover</text>
+
+        <rect class="layer-bg" x="20" y="660" width="1060" height="240" rx="2"/>
+        <text class="layer-label" x="40" y="686">L4 · External Services</text>
+
+        <text class="sub-label" x="40" y="710">Operations</text>
+        <rect class="node-box external" x="50" y="722" width="190" height="56" rx="2"/>
+        <text class="node-title" x="145" y="745" text-anchor="middle">Bob Go</text>
+        <text class="node-sub" x="145" y="762" text-anchor="middle">Courier aggregator</text>
+
+        <rect class="node-box external" x="256" y="722" width="190" height="56" rx="2"/>
+        <text class="node-title" x="351" y="745" text-anchor="middle">PayFast / Yoco</text>
+        <text class="node-sub" x="351" y="762" text-anchor="middle">Payment gateway</text>
+
+        <rect class="node-box external" x="462" y="722" width="190" height="56" rx="2"/>
+        <text class="node-title" x="557" y="745" text-anchor="middle">Anthropic API</text>
+        <text class="node-sub" x="557" y="762" text-anchor="middle">Claude · AI inference</text>
+
+        <rect class="node-box external" x="668" y="722" width="190" height="56" rx="2"/>
+        <text class="node-title" x="763" y="745" text-anchor="middle">China Suppliers</text>
+        <text class="node-sub" x="763" y="762" text-anchor="middle">Catalogues · Imagery</text>
+
+        <rect class="node-box external" x="874" y="722" width="190" height="56" rx="2"/>
+        <text class="node-title" x="969" y="745" text-anchor="middle">Postmark + Clickatell</text>
+        <text class="node-sub" x="969" y="762" text-anchor="middle">Email · WhatsApp · SMS</text>
+
+        <text class="sub-label" x="40" y="808">Marketing Stack</text>
+        <rect class="node-box external" x="50" y="820" width="240" height="56" rx="2"/>
+        <text class="node-title" x="170" y="843" text-anchor="middle">Analytics</text>
+        <text class="node-sub" x="170" y="860" text-anchor="middle">GA4 · GSC · Clarity</text>
+
+        <rect class="node-box external" x="306" y="820" width="240" height="56" rx="2"/>
+        <text class="node-title" x="426" y="843" text-anchor="middle">Email Marketing</text>
+        <text class="node-sub" x="426" y="860" text-anchor="middle">Resend · Custom layer</text>
+
+        <rect class="node-box external" x="562" y="820" width="240" height="56" rx="2"/>
+        <text class="node-title" x="682" y="843" text-anchor="middle">Ads &amp; Reviews</text>
+        <text class="node-sub" x="682" y="860" text-anchor="middle">Google · Meta · Judge.me</text>
+
+        <rect class="node-box external" x="818" y="820" width="246" height="56" rx="2"/>
+        <text class="node-title" x="941" y="843" text-anchor="middle">Pipedrive CRM</text>
+        <text class="node-sub" x="941" y="860" text-anchor="middle">B2B sales pipeline</text>
+
+        <path class="arrow" d="M 160 153 L 160 250" marker-end="url(#arrowhead)"/>
+        <path class="arrow" d="M 400 153 L 400 250" marker-end="url(#arrowhead)"/>
+        <path class="arrow" d="M 640 153 L 430 325" marker-end="url(#arrowhead)"/>
+        <path class="arrow" d="M 900 153 L 900 200" marker-end="url(#arrowhead)"/>
+
+        <path class="arrow" d="M 220 432 L 220 520" marker-end="url(#arrowhead)"/>
+        <path class="arrow" d="M 550 432 L 550 520" marker-end="url(#arrowhead)"/>
+        <path class="arrow-soft" d="M 880 432 L 880 520" marker-end="url(#arrowhead-soft)"/>
+
+        <path class="arrow" d="M 340 563 L 430 563" marker-end="url(#arrowhead)"/>
+
+        <path class="arrow" d="M 220 606 L 145 722" marker-end="url(#arrowhead)"/>
+        <path class="arrow" d="M 220 606 L 351 722" marker-end="url(#arrowhead)"/>
+        <path class="arrow" d="M 690 310 L 557 722" marker-end="url(#arrowhead)"/>
+        <path class="arrow" d="M 930 310 L 763 722" marker-end="url(#arrowhead)"/>
+        <path class="arrow" d="M 550 606 L 969 722" marker-end="url(#arrowhead-soft)"/>
+      </svg>
+    </div>
+    <div class="caption">Fig. 01 · Four-layer system architecture. Amber-bordered components are bespoke. Dashed red is legacy, sunset on cutover. Green is third-party services, sub-grouped into operational and marketing tiers.</div>
+  </section>
+
+  <section id="components">
+    <span class="section-num">§ 04 · Component Inventory</span>
+    <h2>Every moving part, accounted for.</h2>
+    <p>What sits where, what ACA Auto owns, what's rented, and what's politely tolerated until we can show it the door.</p>
+
+    <table class="components">
+      <thead>
+        <tr><th>Component</th><th>Layer / Type</th><th>Role</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Shopify Storefront <span class="pill saas">SaaS</span></td>
+          <td>L1 · D2C</td>
+          <td>Public-facing consumer storefront. Product catalogue, search, cart, checkout. South African payment gateways via app. Theme custom-built for brand consistency.</td>
+        </tr>
+        <tr>
+          <td>Cin7 B2B Portal <span class="pill saas">SaaS</span></td>
+          <td>L1 · Wholesale</td>
+          <td>Authenticated wholesale ordering for trade customers. Per-customer price lists. Order history. Native to Cin7 Core, so inventory and pricing are always live.</td>
+        </tr>
+        <tr>
+          <td>Chat Widget &amp; WhatsApp <span class="pill custom">Bespoke</span></td>
+          <td>L1 · Conversational</td>
+          <td>Web chat widget embedded in Shopify and B2B portal. Same backend powers WhatsApp via Clickatell. Unified conversation state across both channels: a chat started on the storefront can continue on WhatsApp later without losing context.</td>
+        </tr>
+        <tr>
+          <td>Market Capture Forms <span class="pill custom">Bespoke</span></td>
+          <td>L1 · Embedded</td>
+          <td>Feedback forms, competition entries, missing-product requests. Embedded into Shopify and B2B portal. Data flows into the analytics layer for product range and content decisions.</td>
+        </tr>
+        <tr>
+          <td>Tiered Pricing Engine <span class="pill custom">Bespoke</span></td>
+          <td>L2 · Service</td>
+          <td>Resolves price for any (SKU, customer, quantity) combination. Pre-populates the price table from MOQ, shipping cost, typical sales prices, and historical order quantities. Single source of pricing truth across all channels.</td>
+        </tr>
+        <tr>
+          <td>Semantic Upsell Engine <span class="pill custom">Bespoke</span></td>
+          <td>L2 · Service</td>
+          <td>Cross-sell and complementary-part recommendations. Beyond keyword matching: uses Claude API to understand functional relationships between parts. Surfaces in product pages and post-add-to-cart.</td>
+        </tr>
+        <tr>
+          <td>Replenishment Forecast <span class="pill custom">Bespoke</span></td>
+          <td>L2 · Service</td>
+          <td>Predictive reorder timing aware of supplier lead times from China (typically 6-12 weeks). Flags fast movers approaching stock-out and slow movers eligible for clearance pricing.</td>
+        </tr>
+        <tr>
+          <td>Supplier Ingestion Pipeline <span class="pill custom">Bespoke</span></td>
+          <td>L2 · Service</td>
+          <td>Ingests product data, images, and specifications from Chinese suppliers. Mix of API where available, scraping where needed, AI normalisation throughout. Reduces manual SKU onboarding from hours to minutes.</td>
+        </tr>
+        <tr>
+          <td>AI Assistant &amp; Knowledge Base <span class="pill custom">Bespoke</span></td>
+          <td>L2 · Service</td>
+          <td>RAG-powered chatbot with deep knowledge of all 600 SKUs. Knowledge base lives in pgvector. Tier-aware: authenticated B2B users get their actual pricing in chat, consumers get RRP. Handoff to human via the admin dashboard when needed.</td>
+        </tr>
+        <tr>
+          <td>Content Automation Pipeline <span class="pill custom">Bespoke</span></td>
+          <td>L2 · Service</td>
+          <td>Structured input (product brief, technical detail, fitment data) generates draft article via Claude. Human reviews in admin dashboard. On approval, Shopify Admin API publishes article with proper schema markup. Powers the 80% AI-generated content stream.</td>
+        </tr>
+        <tr>
+          <td>Analytics &amp; Dashboard <span class="pill custom">Bespoke</span></td>
+          <td>L2 · UI + Service</td>
+          <td>Operational and marketing dashboard for owner and 2IC. Movement velocity, margin by SKU and customer, forecasting visibility, market data summaries, marketing performance by channel. Replaces Cin7's notoriously rigid native reporting.</td>
+        </tr>
+        <tr>
+          <td>Newsletter Manager <span class="pill custom">Bespoke</span></td>
+          <td>L2 · Service</td>
+          <td>Thin custom layer over Resend API for marketing newsletters and broadcast campaigns. Segments draw from existing customer data. Replaces the need for Klaviyo or Mailchimp at scale appropriate to a wholesale-led business.</td>
+        </tr>
+        <tr>
+          <td>Integration Bus <span class="pill custom">Bespoke</span></td>
+          <td>L2 · Infrastructure</td>
+          <td>Webhook router, message queue, retry logic. The plumbing that keeps Cin7, Shopify, Xero, and the bespoke services in sync without losing events.</td>
+        </tr>
+        <tr>
+          <td>Cin7 Core <span class="pill saas">SaaS</span></td>
+          <td>L3 · Core</td>
+          <td>Inventory management, order management, purchase orders, MRP, B2B portal hosting. The system of record for stock and orders.</td>
+        </tr>
+        <tr>
+          <td>Xero <span class="pill saas">SaaS</span></td>
+          <td>L3 · Core</td>
+          <td>Accounting, invoicing, VAT, bank reconciliation. Synced bi-directionally with Cin7 Core via native integration.</td>
+        </tr>
+        <tr>
+          <td>Legacy SQL Database <span class="pill legacy">Legacy</span></td>
+          <td>L3 · Bridge</td>
+          <td>Existing system, read-only access via SQL. Used for historical sales data extraction and during transition. Decommissioned at cutover. Treated as a guest, not a citizen.</td>
+        </tr>
+        <tr>
+          <td>Bob Go <span class="pill external">3rd party</span></td>
+          <td>L4 · Logistics</td>
+          <td>Courier aggregation for D2C parcels. Compares The Courier Guy, Aramex, RAM, Fastway etc. Single integration, multi-courier rate shopping. B2B palette freight handled directly with logistics partners outside Bob Go.</td>
+        </tr>
+        <tr>
+          <td>PayFast / Yoco <span class="pill external">3rd party</span></td>
+          <td>L4 · Payment</td>
+          <td>South African payment processing. Yoco for low-fee card processing. PayFast for broader SA payment methods including SnapScan, Instant EFT, Mobicred.</td>
+        </tr>
+        <tr>
+          <td>Anthropic API <span class="pill external">3rd party</span></td>
+          <td>L4 · AI</td>
+          <td>Claude inference for the AI assistant, semantic upsell, supplier data normalisation, content generation, customer feedback summarisation.</td>
+        </tr>
+        <tr>
+          <td>Postmark + Clickatell <span class="pill external">3rd party</span></td>
+          <td>L4 · Comms</td>
+          <td>Postmark for transactional email (order confirmations, dispatch notifications). Clickatell for SMS (OTP, delivery updates) and WhatsApp Business API gateway. SA-based vendor for the messaging side.</td>
+        </tr>
+        <tr>
+          <td>Analytics Stack <span class="pill external">3rd party</span></td>
+          <td>L4 · Marketing</td>
+          <td>GA4, Google Search Console, Bing Webmaster Tools, Google Tag Manager, Microsoft Clarity. All free. Feed our analytics layer for unified reporting in the admin dashboard.</td>
+        </tr>
+        <tr>
+          <td>Email Marketing Stack <span class="pill external">3rd party</span></td>
+          <td>L4 · Marketing</td>
+          <td>Resend handles SMTP and deliverability. Our newsletter manager (L2) provides segmentation, scheduling, and template management. Total cost a small fraction of Klaviyo or Mailchimp at equivalent volume.</td>
+        </tr>
+        <tr>
+          <td>Ads &amp; Reviews <span class="pill external">3rd party</span></td>
+          <td>L4 · Marketing</td>
+          <td>Google Ads, Meta Ads, LinkedIn Ads (added month 4-6). Google Merchant Center for Shopping feed. Judge.me for product reviews including Google Shopping star-rating sync. Google Business Profile and Hello Peter for reputation.</td>
+        </tr>
+        <tr>
+          <td>Pipedrive CRM <span class="pill external">3rd party</span></td>
+          <td>L4 · Marketing</td>
+          <td>B2B sales pipeline for new customer acquisition. Contact management, deal tracking, email sequences, mobile apps. Integrates with email and calendar. LinkedIn Sales Navigator added month 4-6 for outbound prospecting.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="flows">
+    <span class="section-num">§ 05 · Key Data Flows</span>
+    <h2>How the dominoes fall.</h2>
+    <p>Six end-to-end scenarios that exercise the architecture. If these read sensibly, the rest of the edge cases follow the same patterns.</p>
+
+    <div class="flow-grid">
+
+      <div class="flow">
+        <h3>Flow A · Wholesale order via B2B portal</h3>
+        <ol class="steps">
+          <li>Trade customer logs into <strong>Cin7 B2B Portal</strong> with their credentials.</li>
+          <li>Browse catalogue. <strong>Tiered Pricing Engine</strong> resolves price for this customer at each quantity break.</li>
+          <li>At checkout, <strong>Semantic Upsell Engine</strong> surfaces complementary parts they haven't ordered before.</li>
+          <li>Order submitted. <strong>Cin7 Core</strong> reserves stock, creates the sales order.</li>
+          <li><strong>Integration Bus</strong> fires webhook. <strong>Xero</strong> receives an invoice via native sync.</li>
+          <li>Email confirmation via <strong>Postmark</strong>. Pick list goes to warehouse.</li>
+          <li>Dispatch triggers <strong>Bob Go</strong> waybill creation for parcel; freight orders go to logistics partner directly.</li>
+        </ol>
+      </div>
+
+      <div class="flow">
+        <h3>Flow B · Consumer order via Shopify</h3>
+        <ol class="steps">
+          <li>Consumer browses <strong>Shopify Storefront</strong>. Inventory and pricing pulled from <strong>Cin7 Core</strong> via native connector.</li>
+          <li>Product page shows <strong>Semantic Upsell</strong> recommendations. Pricing shown is consumer single-unit price (RRP including VAT).</li>
+          <li>Checkout completes via <strong>PayFast</strong> or <strong>Yoco</strong>.</li>
+          <li>Order syncs into <strong>Cin7 Core</strong>. Stock reserved.</li>
+          <li>Same dispatch and accounting flow as Flow A from this point.</li>
+        </ol>
+      </div>
+
+      <div class="flow">
+        <h3>Flow C · Replenishment trigger</h3>
+        <ol class="steps">
+          <li><strong>Replenishment Forecast</strong> runs daily, reading current stock levels from <strong>Cin7 Core</strong>.</li>
+          <li>For each SKU, projects depletion against rolling sales velocity and known supplier lead time (default 8 weeks for China).</li>
+          <li>SKUs forecast to stock out before next viable replenishment arrival are flagged.</li>
+          <li>Suggestions appear on the <strong>Analytics Dashboard</strong> for the owner / 2IC to review.</li>
+          <li>Approved purchase orders raised in <strong>Cin7 Core</strong>. Supplier notified via email.</li>
+        </ol>
+      </div>
+
+      <div class="flow">
+        <h3>Flow D · New product onboarding from supplier</h3>
+        <ol class="steps">
+          <li>Supplier sends new product catalogue (PDF, spreadsheet, scraped page, or API where available).</li>
+          <li><strong>Supplier Ingestion Pipeline</strong> parses, normalises, and structures the data using <strong>Claude API</strong>.</li>
+          <li>Images downloaded, deduplicated, optimised, and stored. Descriptions rewritten for retail context.</li>
+          <li>Draft SKUs presented in the <strong>Analytics Dashboard</strong> for human approval.</li>
+          <li>On approval, products created in <strong>Cin7 Core</strong>, propagated to <strong>Shopify</strong> and the <strong>B2B Portal</strong>. Knowledge base updated in <strong>AI Assistant &amp; KB</strong>.</li>
+        </ol>
+      </div>
+
+      <div class="flow">
+        <h3>Flow E · Legacy data bridge during transition</h3>
+        <ol class="steps">
+          <li>Read-only nightly job connects to <strong>Legacy SQL Database</strong>.</li>
+          <li>Pulls completed sales transactions, customer records, and historical pricing from the last 24 hours.</li>
+          <li><strong>Integration Bus</strong> reconciles records against <strong>Cin7 Core</strong>.</li>
+          <li>Discrepancies surface on the dashboard for manual review.</li>
+          <li>At cutover (week 10-13), legacy system marked read-only permanently and bridge sunset.</li>
+        </ol>
+      </div>
+
+      <div class="flow">
+        <h3>Flow F · Customer query via WhatsApp or web chat</h3>
+        <ol class="steps">
+          <li>Customer messages via <strong>WhatsApp</strong> (routed through <strong>Clickatell</strong>) or the embedded web <strong>Chat Widget</strong>.</li>
+          <li><strong>AI Assistant</strong> identifies the customer if possible (B2B portal session, Shopify customer ID, or known WhatsApp number) and loads relevant context.</li>
+          <li>RAG pipeline retrieves relevant chunks from the <strong>Knowledge Base</strong> in pgvector: product specs, fitment, alternatives, stock status.</li>
+          <li>For authenticated B2B users, <strong>Tiered Pricing Engine</strong> supplies their actual pricing tier into the response context.</li>
+          <li>Claude generates a grounded response. Reply sent back via the same channel the customer used.</li>
+          <li>If the bot is uncertain or the customer asks for a human, conversation hands off to the <strong>Admin Dashboard</strong>. Staff continues the same thread.</li>
+          <li>Conversation logged for review and ongoing knowledge base improvement.</li>
+        </ol>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="legacy">
+    <span class="section-num">§ 06 · Legacy Migration Approach</span>
+    <h2>The old dog gets a quiet retirement.</h2>
+    <p>The legacy system stays in place during the build phase and the early weeks of operation. We don't try to migrate everything in one go because that's how good projects become bad projects. The bridge described in Flow E lets both systems coexist while the team builds confidence.</p>
+
+    <h3>Three phases of legacy retirement</h3>
+    <p><strong>Phase 1 · Coexistence (weeks 1-10).</strong> Legacy remains the system of record. Cin7 Core mirrors stock and customers. Daily reconciliation catches drift. Sales staff continue to enter orders in legacy; nightly bridge keeps Cin7 in sync.</p>
+    <p><strong>Phase 2 · Cutover (weeks 10-13).</strong> Cin7 Core becomes the system of record. Legacy demoted to read-only reference for historical lookups. New orders no longer entered into legacy. Shopify and B2B portal go live.</p>
+    <p><strong>Phase 3 · Sunset (month 5+).</strong> One-time data export from legacy archived as historical record. Legacy database snapshotted, server retired. Reporting against historical data moves to the analytics dashboard, fed by the archive.</p>
+
+    <h3>What we extract from legacy before sunset</h3>
+    <p>Historical sales data (minimum 24 months) for the replenishment forecast model. Customer master records with pricing history. Supplier records and historical lead times. Product master data as a sanity check against Cin7 imports.</p>
+  </section>
+
+  <section id="phasing">
+    <span class="section-num">§ 07 · Build Phasing</span>
+    <h2>What ships when.</h2>
+    <p>The lean budget means we phase the cleverness rather than cramming everything into v1. The goal of v1 is to get ACA Auto off fax and onto a proper system. The goal of v2 is the AI-driven competitive advantage.</p>
+
+    <div class="phases">
+      <div class="phase">
+        <span class="badge">Phase v1 · Months 1-3</span>
+        <h3>Get them off the fax machine</h3>
+        <ul>
+          <li>Cin7 Core setup, SKU import, customer import</li>
+          <li>Tiered pricing engine (rule-based first pass)</li>
+          <li>Cin7 B2B Portal configuration and branding</li>
+          <li>Shopify storefront build with Cin7 connector</li>
+          <li>Xero integration and reconciliation</li>
+          <li>Bob Go and PayFast/Yoco integration</li>
+          <li>Postmark transactional email setup</li>
+          <li>Integration bus for cross-system events</li>
+          <li>Legacy bridge (read-only, daily sync)</li>
+          <li>Basic analytics dashboard (movers, margin, stock)</li>
+          <li>Newsletter manager thin layer over Resend</li>
+          <li>Cutover and 4-week stabilisation</li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <span class="badge">Phase v2 · Months 4-6</span>
+        <h3>The clever bits</h3>
+        <ul>
+          <li>AI Assistant and Knowledge Base build</li>
+          <li>WhatsApp Business API via Clickatell</li>
+          <li>Web chat widget on Shopify and B2B portal</li>
+          <li>Semantic upsell engine (Claude-powered)</li>
+          <li>Supplier data ingestion pipeline</li>
+          <li>Predictive replenishment with lead-time modelling</li>
+          <li>Content automation pipeline (AI drafts to Shopify)</li>
+          <li>Market capture forms and competition flows</li>
+          <li>Customer migration incentive programmes</li>
+          <li>Advanced dashboard: ABC analysis, margin attribution, marketing performance</li>
+          <li>Tiered pricing engine, ML-assisted second pass</li>
+          <li>Legacy sunset and archive</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="marketing">
+    <span class="section-num">§ 08 · Ongoing Marketing</span>
+    <h2>Once the system runs, the marketing starts.</h2>
+    <p>Once Phase v2 is delivered and the platform is stable, marketing becomes the engine that converts the operational investment into revenue. Three pillars run in parallel, each with different audience, channel mix, and weighting. This section is the summary; the standalone marketing brief carries the full plan, content production pipeline, AEO methodology, and KPI framework.</p>
+
+    <h3>The three marketing pillars</h3>
+    <div class="pillars">
+      <div class="pillar primary">
+        <div class="num">Pillar 01 · Primary</div>
+        <h4>New B2B client acquisition</h4>
+        <p>The headline pillar. Independent workshops, fitment centres, 4x4 specialists, commercial vehicle workshops, dealerships needing aftermarket supply. The B2B portal is the lead magnet; SEO, trade publications, LinkedIn, and direct outbound feed the pipeline.</p>
+        <div class="weight">Weight ≈ 50%</div>
+      </div>
+      <div class="pillar">
+        <div class="num">Pillar 02 · Operational</div>
+        <h4>Existing B2B migration</h4>
+        <p>Move existing trade customers off fax, phone, and WhatsApp onto the portal. Personalised account-rep outreach, walkthrough videos, incentive schemes, and competitions. Highest-leverage activity in months 1-3, then steady-state retention.</p>
+        <div class="weight">Weight ≈ 30%</div>
+      </div>
+      <div class="pillar">
+        <div class="num">Pillar 03 · Opportunistic</div>
+        <h4>D2C consumer wing</h4>
+        <p>Realistic stab at the consumer market through Shopify. ACA Auto knows Takealot and Amazon outgun them on marketing budget; the play is technical authority, niche-fitment SEO, and AEO. Profitable supplement rather than headline channel.</p>
+        <div class="weight">Weight ≈ 20%</div>
+      </div>
+    </div>
+
+    <h3>12-month phased timeline at a glance</h3>
+    <div class="timeline">
+      <div class="tl-phase">
+        <div class="when">Months 1-3</div>
+        <div class="what">Launch &amp; migration</div>
+        <ul>
+          <li>Existing customer migration push</li>
+          <li>Trade press launch announcement</li>
+          <li>Initial paid ads</li>
+          <li>SEO foundation, 600 product pages</li>
+          <li>Reviews collection live</li>
+        </ul>
+      </div>
+      <div class="tl-phase">
+        <div class="when">Months 4-6</div>
+        <div class="what">Content engine</div>
+        <ul>
+          <li>4-6 blog posts per month, 80% AI-generated</li>
+          <li>YouTube channel launches</li>
+          <li>First mechanic partnerships</li>
+          <li>LinkedIn Sales Navigator activated</li>
+          <li>Ahrefs added for SEO research</li>
+        </ul>
+      </div>
+      <div class="tl-phase">
+        <div class="when">Months 7-9</div>
+        <div class="what">Scale &amp; AEO push</div>
+        <ul>
+          <li>Structured Q&amp;A content, FAQ schema</li>
+          <li>AI bot traffic measurement live</li>
+          <li>Competitor comparison content</li>
+          <li>Customer case studies</li>
+          <li>Trade publication syndication</li>
+        </ul>
+      </div>
+      <div class="tl-phase">
+        <div class="when">Months 10-12</div>
+        <div class="what">Mature &amp; expand</div>
+        <ul>
+          <li>Range gap analysis from market data</li>
+          <li>Loyalty programme launch</li>
+          <li>Annual customer feedback cycle</li>
+          <li>Year-two plan written from data</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Monthly steady-state cadence</h3>
+    <div class="cadence">
+      <div class="cadence-item"><strong>Content</strong><span>4-6 blog posts published, 2-4 YouTube videos produced, one major pillar page refresh, content audited on rotation.</span></div>
+      <div class="cadence-item"><strong>Email &amp; SMS</strong><span>Weekly D2C newsletter, monthly trade newsletter, automated cart and post-purchase flows, win-back campaigns at 60 and 90 days.</span></div>
+      <div class="cadence-item"><strong>Paid ads</strong><span>Daily Google Ads monitoring, weekly optimisation, monthly budget rebalance. Meta and LinkedIn on similar cycles.</span></div>
+      <div class="cadence-item"><strong>SEO &amp; AEO</strong><span>Monthly Search Console review, technical SEO audit, AI bot traffic analysis, llms.txt and robots.txt review, quarterly competitor SERP analysis.</span></div>
+      <div class="cadence-item"><strong>Reviews &amp; reputation</strong><span>Weekly review request emails, daily monitoring of Google Reviews and Hello Peter, owner responds to critical reviews within 48 hours.</span></div>
+      <div class="cadence-item"><strong>Reporting</strong><span>Monthly performance pack to owner and 2IC: revenue by channel, top content, ad spend and ROAS, CAC and LTV, AI-citation tracker.</span></div>
+    </div>
+
+    <h3>Marketing technology summary</h3>
+    <table class="stack-table">
+      <thead>
+        <tr><th>Tool</th><th>Cost</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>GA4 + GSC + Bing Webmaster + Clarity</td><td>Free</td><td>Web analytics, search performance, session recording</td></tr>
+        <tr><td>Resend + custom newsletter layer</td><td>~R350/mo</td><td>Transactional and broadcast email</td></tr>
+        <tr><td>Pipedrive CRM</td><td>R250-600/user/mo</td><td>B2B sales pipeline and outbound sequences</td></tr>
+        <tr><td>LinkedIn Sales Navigator (m4-6+)</td><td>~R1,500/seat/mo</td><td>B2B prospecting tooling</td></tr>
+        <tr><td>Ahrefs (m4-6+)</td><td>R2,400-4,200/mo</td><td>SEO research, keyword tracking, competitor analysis</td></tr>
+        <tr><td>Judge.me</td><td>R250/mo</td><td>Product reviews with Google Shopping sync</td></tr>
+        <tr><td>Google + Meta + LinkedIn Ads</td><td>Variable</td><td>Paid acquisition, suggested R15-30k/mo combined</td></tr>
+        <tr><td>Google Business Profile + Hello Peter</td><td>Free</td><td>Local SEO and SA-specific reputation</td></tr>
+      </tbody>
+    </table>
+
+    <div class="pointer">
+      <strong>See also</strong>
+      Full marketing plan with content pipeline detail, AEO methodology, KPI framework, budget allocation, and team requirements is in the standalone marketing brief: <em>Project Driveline · Marketing Architecture</em>.
+    </div>
+  </section>
+
+  <section id="questions">
+    <span class="section-num">§ 09 · Open Questions &amp; Assumptions</span>
+    <h2>The bits we still need to nail down.</h2>
+    <p>Honest list of things still up in the air. Each one has an assumption made in this document, but the assumption deserves verification before contract.</p>
+
+    <ul class="assumptions">
+      <li>
+        <strong>What is the legacy system, exactly?</strong>
+        Currently assumed to be a SQL-queryable database of unspecified vintage. Need vendor name, version, schema access, and read-credential availability before sizing the bridge.
+      </li>
+      <li>
+        <strong>Pricing visibility for D2C consumers.</strong>
+        Open: do we show the tiered pricing table publicly (transparent, but unconventional), or use a "Login as Dealer" flow (cleaner but adds friction)? Architecture supports both. Decision affects Shopify theme work, not the underlying systems.
+      </li>
+      <li>
+        <strong>Supplier API availability.</strong>
+        Currently assumed: minimal. Pipeline designed for PDF, spreadsheet, and scrape-based ingestion. If any suppliers do offer APIs, integration becomes lighter, not heavier.
+      </li>
+      <li>
+        <strong>Geographic exclusivity automation.</strong>
+        Currently a manual decision. v2 candidate to model territory rules and auto-flag conflicts when onboarding new wholesalers. Not in v1 scope.
+      </li>
+      <li>
+        <strong>Existing customer migration incentives.</strong>
+        Competitions and benefits proposed but not designed. Affects v2 scope and the marketing brief.
+      </li>
+      <li>
+        <strong>B2B freight partner.</strong>
+        Bob Go covers D2C parcels. ACA Auto's existing palette freight relationship for B2B deliveries needs identifying so we can integrate the dispatch workflow into Cin7's outbound process.
+      </li>
+      <li>
+        <strong>WhatsApp Business verification.</strong>
+        Required before launching the chat assistant on WhatsApp. Meta verification process takes 2-4 weeks. ACA Auto needs to nominate a WhatsApp Business owner and provide business verification documents during v2.
+      </li>
+    </ul>
+  </section>
+
+  <footer>
+    <div>Project Driveline · Architecture v0.6</div>
+    <div>09 May 2026</div>
+    <div>Internal draft · Not for distribution</div>
+    <div><a href="https://slyfox.co.za" style="color: var(--text-dim); text-decoration: none;">Slyfox homepage</a></div>
+  </footer>
+
+</div>
+</body>
+</html>

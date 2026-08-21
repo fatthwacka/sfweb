@@ -428,7 +428,7 @@ export default function VideographyCategory() {
               {category === "weddings" ? (
                 <video
                   className="absolute inset-0 w-full h-full object-cover"
-                  src="https://dwkjfuhykdjtzvrzdnrr.supabase.co/storage/v1/object/public/gallery-videos/f7ec3a26-de83-4b18-bdc7-57e7b2947380/1770361510170-Keagan___Amber_Wedding.mp4-optimized.mp4"
+                  src="https://storage.googleapis.com/sfweb-media/gallery-videos/f7ec3a26-de83-4b18-bdc7-57e7b2947380/1770361510170-Keagan___Amber_Wedding.mp4-optimized.mp4"
                   controls
                   muted
                   loop

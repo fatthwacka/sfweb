@@ -21,6 +21,7 @@ import {
 } from "@shared/schema";
 import { eq, and, desc, sql, not, isNotNull, asc, inArray } from "drizzle-orm";
 import type { IStorage } from "./storage";
+import { mediaStore } from "./media/media-store";
 
 export class SupabaseStorage implements IStorage {
   
@@ -438,98 +439,30 @@ export class SupabaseStorage implements IStorage {
 
   async deleteImage(id: string): Promise<boolean> {
     try {
-      console.log(`🔍 deleteImage: Looking for image with ID: ${id}`);
-      
-      // First get the image to extract storage path for deletion
       const image = await this.getImage(id);
-      console.log(`🔍 deleteImage: Found image:`, image ? 'YES' : 'NO');
-      
       if (!image) {
-        console.log(`❌ deleteImage: Image ${id} not found in database, returning false`);
+        console.log(`❌ deleteImage: Image ${id} not found in database`);
         return false;
       }
 
-      // Initialize Supabase client for storage operations
-      const { createClient } = await import('@supabase/supabase-js');
-      const supabase = createClient(
-        process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-      );
-
-      // Extract storage path from public URL
-      let storagePath: string | null = null;
-      if (image.storagePath) {
-        // Extract path from public URL format
-        const urlParts = image.storagePath.split('/storage/v1/object/public/gallery-images/');
-        if (urlParts.length > 1) {
-          storagePath = urlParts[1];
-        }
-      }
-
       // Delete from database first
-      console.log(`🗄️ deleteImage: Attempting database deletion for ${id}`);
-      const result = await db.delete(images).where(eq(images.id, id));
-      // For Drizzle/Supabase: the delete operation returns an object, check if it's truthy
-      const deletedFromDb = result && Object.keys(result).length >= 0; // Always true if delete succeeds
-      console.log(`🗄️ deleteImage: Database deletion completed - assuming SUCCESS (Drizzle delete doesn't provide count)`);
-      console.log(`🗄️ deleteImage: Delete result object:`, result);
+      await db.delete(images).where(eq(images.id, id));
 
-      // If database deletion successful and we have storage path, delete all 3 versions from Supabase storage
-      if (deletedFromDb && storagePath) {
-        // Generate paths for all 3 versions
-        // Original: {base}.{ext} (no suffix)
-        // Optimized: {base}_optimized.{ext}
-        // Thumbnail: {base}_thumbnail.{ext}
-        const versions = [
-          storagePath, // Original (no modification)
-          storagePath.replace(/\.([^.]+)$/, '_optimized.$1'), // Add _optimized
-          storagePath.replace(/\.([^.]+)$/, '_thumbnail.$1'), // Add _thumbnail
-        ];
-
-        console.log(`🗂️ deleteImage: Deleting all 3 versions from storage:`, versions);
-        const { data: deleteData, error: storageError } = await supabase.storage
-          .from('gallery-images')
-          .remove(versions);
-
-        if (storageError) {
-          console.error('❌ Supabase storage deletion error:', storageError);
-          console.error('Storage error details:', {
-            message: storageError.message,
-            statusCode: storageError.statusCode,
-            error: storageError.error,
-            details: storageError.details
-          });
-          // Continue even if storage deletion fails - database record is already deleted
+      // Then delete all 3 stored versions (original, _optimized, _thumbnail) from the media store.
+      // parseMediaUrl understands both new (GCS) and legacy Supabase URLs.
+      const ref = mediaStore.parseMediaUrl(image.storagePath, 'gallery-images');
+      if (ref) {
+        const versions = mediaStore.imageVariantKeys(ref.key);
+        const result = await mediaStore.remove(ref.bucket, versions);
+        if (result.failed.length) {
+          console.error(`❌ deleteImage: storage deletion failed for ${id}:`, result.failed);
         } else {
-          console.log(`✅ deleteImage: Supabase API returned success`);
-          console.log('Delete response data:', deleteData);
-          
-          // Verify deletion by checking if files still exist (same as video deletion)
-          for (const version of versions) {
-            const { data: checkData, error: checkError } = await supabase.storage
-              .from('gallery-images')
-              .list(version.split('/')[0], {
-                limit: 100,
-                offset: 0,
-                search: version.split('/').pop()
-              });
-            
-            if (!checkError && checkData) {
-              const fileStillExists = checkData.some(file => version.endsWith(file.name));
-              if (fileStillExists) {
-                console.error(`❌ VERIFICATION FAILED: Image file still exists after deletion: ${version}`);
-              } else {
-                console.log(`✅ VERIFIED: Image file successfully deleted: ${version}`);
-              }
-            }
-          }
+          console.log(`🗂️ deleteImage: removed ${result.removed.length} object(s) for ${id}${result.missing.length ? ` (${result.missing.length} already missing)` : ''}`);
         }
-      } else if (deletedFromDb && !storagePath) {
-        console.log(`⚠️ deleteImage: Database deleted but no storage path found`);
+      } else {
+        console.log(`⚠️ deleteImage: database row deleted but storage path not recognised: ${image.storagePath}`);
       }
-
-      console.log(`🏁 deleteImage: Final result for ${id}:`, deletedFromDb ? 'SUCCESS' : 'FAILED');
-      return deletedFromDb;
+      return true;
     } catch (error) {
       console.error('Delete image error:', error);
       return false;
@@ -690,109 +623,22 @@ export class SupabaseStorage implements IStorage {
 
   async deleteVideo(id: string): Promise<boolean> {
     try {
-      console.log(`🔍 deleteVideo: Looking for video with ID: ${id}`);
-
-      // First get the video to extract storage paths for deletion
       const video = await this.getVideo(id);
-      console.log(`🔍 deleteVideo: Found video:`, video ? 'YES' : 'NO');
-
       if (!video) {
-        console.log(`❌ deleteVideo: Video ${id} not found in database, returning false`);
         return false;
       }
 
-      // Initialize Supabase client for storage operations
-      const { createClient } = await import('@supabase/supabase-js');
-      const supabase = createClient(
-        process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-      );
-
-      // Extract storage paths from public URLs
-      let videoStoragePath: string | null = null;
-      let optimizedStoragePath: string | null = null;
-      let thumbnailStoragePath: string | null = null;
-
-      if (video.storagePath) {
-        const urlParts = video.storagePath.split('/storage/v1/object/public/gallery-videos/');
-        if (urlParts.length > 1) {
-          videoStoragePath = urlParts[1];
-        }
-      }
-
-      if (video.optimizedPath) {
-        const urlParts = video.optimizedPath.split('/storage/v1/object/public/gallery-videos/');
-        if (urlParts.length > 1) {
-          optimizedStoragePath = urlParts[1];
-        }
-      }
-
-      if (video.thumbnailPath) {
-        const urlParts = video.thumbnailPath.split('/storage/v1/object/public/gallery-videos/');
-        if (urlParts.length > 1) {
-          thumbnailStoragePath = urlParts[1];
-        }
-      }
-
       // Delete from database first
-      console.log(`🗄️ deleteVideo: Attempting database deletion for ${id}`);
-      const result = await db.delete(videos).where(eq(videos.id, id));
-      const deletedFromDb = result && Object.keys(result).length >= 0;
-      console.log(`🗄️ deleteVideo: Database deletion completed - assuming SUCCESS`);
+      await db.delete(videos).where(eq(videos.id, id));
 
-      // If database deletion successful and we have storage paths, delete from Supabase storage
-      if (deletedFromDb) {
-        const pathsToDelete: string[] = [];
-        if (videoStoragePath) pathsToDelete.push(videoStoragePath);
-        if (optimizedStoragePath) pathsToDelete.push(optimizedStoragePath);
-        if (thumbnailStoragePath) pathsToDelete.push(thumbnailStoragePath);
-
-        if (pathsToDelete.length > 0) {
-          console.log(`🗂️ deleteVideo: Deleting ${pathsToDelete.length} files from storage:`, pathsToDelete);
-          const { data: deleteData, error: storageError } = await supabase.storage
-            .from('gallery-videos')
-            .remove(pathsToDelete);
-
-          if (storageError) {
-            console.error('❌ Supabase storage deletion error:', storageError);
-            console.error('Storage error details:', {
-              message: storageError.message,
-              statusCode: storageError.statusCode,
-              error: storageError.error,
-              details: storageError.details
-            });
-            // Continue even if storage deletion fails - database record is already deleted
-          } else {
-            console.log(`✅ deleteVideo: Supabase API returned success`);
-            console.log('Delete response data:', deleteData);
-            
-            // Verify deletion by checking if files still exist
-            for (const path of pathsToDelete) {
-              const { data: checkData, error: checkError } = await supabase.storage
-                .from('gallery-videos')
-                .list(path.split('/')[0], {
-                  limit: 100,
-                  offset: 0,
-                  search: path.split('/').pop()
-                });
-              
-              if (!checkError && checkData) {
-                const fileStillExists = checkData.some(file => path.endsWith(file.name));
-                if (fileStillExists) {
-                  console.error(`❌ VERIFICATION FAILED: File still exists after deletion: ${path}`);
-                } else {
-                  console.log(`✅ VERIFIED: File successfully deleted: ${path}`);
-                }
-              }
-            }
-          }
-        } else {
-          console.log(`⚠️ deleteVideo: Database deleted but no storage paths found`);
-        }
+      // Then remove original / optimized / thumbnail objects (YouTube rows have no stored objects).
+      const result = await mediaStore.removeUrls([video.storagePath, video.optimizedPath, video.thumbnailPath], 'gallery-videos');
+      if (result.failed.length) {
+        console.error(`❌ deleteVideo: storage deletion failed for ${id}:`, result.failed);
+      } else {
+        console.log(`🗂️ deleteVideo: removed ${result.removed.length} object(s) for ${id}${result.missing.length ? ` (${result.missing.length} already missing)` : ''}`);
       }
-
-      console.log(`🏁 deleteVideo: Final result for ${id}:`, deletedFromDb ? 'SUCCESS' : 'FAILED');
-      return deletedFromDb;
+      return true;
     } catch (error) {
       console.error('Delete video error:', error);
       return false;

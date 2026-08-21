@@ -37,6 +37,7 @@ services:
         VITE_RECAPTCHA_SITE_KEY: ${VITE_RECAPTCHA_SITE_KEY}
         VITE_GA_MEASUREMENT_ID: ${VITE_GA_MEASUREMENT_ID}
         VITE_UPLOAD_URL: ${VITE_UPLOAD_URL:-}
+        VITE_MEDIA_BASE_URL: ${VITE_MEDIA_BASE_URL:-}
     container_name: sfweb-app
     environment:
       NODE_ENV: development
@@ -53,6 +54,11 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD}
       VITE_GA_MEASUREMENT_ID: ${VITE_GA_MEASUREMENT_ID}
       VITE_UPLOAD_URL: ${VITE_UPLOAD_URL:-}
+      VITE_MEDIA_BASE_URL: ${VITE_MEDIA_BASE_URL:-}
+      # Media store (Google Cloud Storage) — gallery images/videos, previews, brand assets
+      GCS_MEDIA_BUCKET: ${GCS_MEDIA_BUCKET:-sfweb-media}
+      GCS_ARCHIVE_BUCKET: ${GCS_ARCHIVE_BUCKET:-sfweb-media-archive}
+      MEDIA_PUBLIC_BASE: ${MEDIA_PUBLIC_BASE:-}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GOOGLE_VERTEX_API_KEY: ${GOOGLE_VERTEX_API_KEY}
       GOOGLE_PROJECT_ID: ${GOOGLE_PROJECT_ID}

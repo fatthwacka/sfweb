@@ -1,0 +1,60 @@
+# Tables in the shared Supabase project that belong to sfweb (Slyfox site + Netfox tools).
+# Used by: scripts/migrate-storage/00-inventory.ts (URL reference scan), scripts/db/dump-supabase.sh
+# (Phase 2b allowlist). One table per line; '#' comments allowed.
+#
+# NOT listed (owned by sibling apps, stay on Supabase): monday_proj_* (Monday.com app),
+# wh_agency_* (client-report dashboard), dubailink_registrations (DAMAC Dubailink site),
+# bot_army_01 (open_thwack bot army — owner unconfirmed, 0 rows).
+ai_prompt_overrides
+ai_prompts
+ai_skills
+analytics
+blog_categories
+blog_media
+blog_post_tags
+blog_posts
+blog_tags
+bookings
+brand_learning
+category_heroes
+client_brand_assets
+client_brand_profiles
+client_input_sources
+client_output_destinations
+client_performance_metrics
+client_selections
+clients
+content_articles
+content_assets
+content_clients
+content_runs
+content_strategies
+content_types
+favorites
+generation_limits
+images
+ingested_articles
+leads
+local_site_assets
+packages
+pipeline_runs
+platform_rules
+preview_images
+pricing_packages
+profiles
+selection_packages
+shoot_previews
+shoots
+site_config
+site_gradients
+skill_evolution_log
+skill_proposal_history
+social_content_history
+subscriptions
+tool_access_tiers
+tool_usage
+topic_cooldowns
+users
+videos
+visitor_daily_stats
+visitor_sessions

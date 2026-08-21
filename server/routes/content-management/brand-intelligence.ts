@@ -1,6 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import { supabaseAdmin as supabase } from '../../supabase-auth.js';
+import { mediaStore } from '../../media/media-store';
 import type {
   ContentClient,
   ClientBrandProfile,
@@ -671,13 +672,12 @@ router.post('/clients/:clientId/assets/upload', async (req, res) => {
 
     // Upload to Supabase Storage bucket 'brand-assets'
     // Note: This bucket must be created in Supabase Dashboard with public access enabled
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('brand-assets')
-      .upload(filename, imageBuffer, {
-        contentType: 'image/jpeg',
-        cacheControl: '31536000', // 1 year cache
-        upsert: false,
-      });
+    let uploadError: { message?: string } | null = null;
+    try {
+      await mediaStore.put('brand-assets', filename, imageBuffer, { contentType: 'image/jpeg' });
+    } catch (err: any) {
+      uploadError = { message: String(err?.message || err) };
+    }
 
     if (uploadError) {
       console.error('Supabase Storage upload error:', uploadError);
@@ -685,7 +685,7 @@ router.post('/clients/:clientId/assets/upload', async (req, res) => {
       if (uploadError.message?.includes('not found') || uploadError.message?.includes('Bucket')) {
         return res.status(500).json({
           error: 'Storage bucket not configured',
-          details: 'Please create a "brand-assets" bucket in Supabase Dashboard with public access enabled.',
+          details: 'Media store (Google Cloud Storage) upload failed — check GCS_MEDIA_BUCKET and service-account credentials.',
           originalError: uploadError.message
         });
       }
@@ -693,11 +693,7 @@ router.post('/clients/:clientId/assets/upload', async (req, res) => {
     }
 
     // Get the public URL for the uploaded image
-    const { data: urlData } = supabase.storage
-      .from('brand-assets')
-      .getPublicUrl(filename);
-
-    const imageUrl = urlData.publicUrl;
+    const imageUrl = mediaStore.publicUrl('brand-assets', filename);
     console.log(`✅ Brand asset uploaded successfully: ${imageUrl}`);
 
     // Create asset record in database
@@ -733,7 +729,7 @@ router.post('/clients/:clientId/assets/upload', async (req, res) => {
     if (dbError) {
       console.error('Database insert error:', dbError);
       // Try to clean up the uploaded file
-      await supabase.storage.from('brand-assets').remove([filename]);
+      await mediaStore.remove('brand-assets', [filename]);
       return res.status(500).json({ error: 'Failed to create asset record', details: dbError.message });
     }
 

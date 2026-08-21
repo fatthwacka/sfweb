@@ -11,7 +11,7 @@
     "hooks:install": "git config core.hooksPath .githooks && chmod +x .githooks/* scripts/*.sh && echo 'git hooks active'",
     "scan:secrets": "./scripts/scan-secrets.sh --tree",
     "scan:staged": "./scripts/scan-secrets.sh --staged",
-    "prepare": "npm run hooks:install",
+    "prepare": "npm run hooks:install || echo 'git hooks not installed (no git available — e.g. Docker build)'",
     "db:push": "drizzle-kit push",
     "migrate:images": "NODE_ENV=development tsx --env-file=.env scripts/migrate-images-to-preprocessed.ts",
     "docker:build": "docker build -t sfweb .",

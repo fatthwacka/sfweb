@@ -172,7 +172,7 @@
           "id": "slide-1756060051119",
           "title": "Prestige",
           "subtitle": "Celebrity & Event Photography",
-          "image": "https://dwkjfuhykdjtzvrzdnrr.supabase.co/storage/v1/object/public/gallery-images/blog/DSC08210_1769592145465.jpg",
+          "image": "https://storage.googleapis.com/sfweb-media/gallery-images/blog/DSC08210_1769592145465.jpg",
           "cta": "Learn More",
           "gradient": [
             "rgba(0,0,0,0.7)",
@@ -276,11 +276,11 @@
     "photography": {
       "weddings": {
         "hero": {
-          "image": "https://dwkjfuhykdjtzvrzdnrr.supabase.co/storage/v1/object/public/gallery-images/blog/DSC00233b_1769593049456.jpg",
+          "image": "https://storage.googleapis.com/sfweb-media/gallery-images/blog/DSC00233b_1769593049456.jpg",
           "title": "Wedding Photography",
           "subtitle": "Love stories captured timelessly",
           "ctaText": "Book Session",
-          "heroHeight": 99,
+          "heroHeight": 100,
           "imageAlign": "center"
         },
         "serviceOverview": {

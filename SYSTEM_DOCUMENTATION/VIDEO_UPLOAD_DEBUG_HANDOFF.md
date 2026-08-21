@@ -1,9 +1,87 @@
 # 🎥 Video Upload (Production) — Debug Handoff
 
 **Created:** 2026-06-23
-**Status:** 🔴 UNRESOLVED — video uploads fail in production, work in development
+**Status:** ✅ RESOLVED 2026-07-08 — see §0 below
 **Severity:** Non-critical (live public site unaffected; admin-only feature)
-**Next action owner:** continue on another device
+
+---
+
+## 0. Resolution (2026-07-08)
+
+Root cause confirmed and fixed. The missing `upload.slyfox.co.za` A record was recreated via the
+Cloudflare API (record id `aa2b4fe8a9d0824911ea9088e7b6f154`, A `upload` → `168.231.86.89`,
+**DNS-only / grey cloud**). The sfweb `.env` token only has cache-purge scope; the DNS-capable
+token from the WHITEHOUSE migration project was used
+(`node scripts/cloudflare-dns.js add slyfox.co.za A upload 168.231.86.89 "" false`) and is now
+also stored in sfweb `.env` as `CLOUDFLARE_DNS_API_TOKEN`.
+
+Additional findings while verifying:
+- **The record existed before and was deleted**: Traefik held a real LE cert for the subdomain
+  issued 2026-03-05, expired 2026-06-03 — issuance requires DNS, so the record was live in March.
+- **Expired cert fixed**: restarted `root-traefik-1`; TLS-ALPN renewal succeeded immediately.
+  New cert valid to 2026-10-06. Renewals will now keep working as long as the DNS record stays
+  grey-cloud.
+- **Backend route verified**: empty `POST /api/videos/upload` on the VPS returns 400 (route
+  registered) — §5 Q2 answered.
+- **CORS verified**: responses carry `access-control-allow-origin: https://slyfox.co.za` etc. —
+  §5 Q5 answered.
+- **⚠️ NEW open issue found**: LE renewal for the MAIN domain (`slyfox.co.za`/`www`) fails
+  (TLS-ALPN can't pass through the orange-cloud Cloudflare proxy); the origin cert expired
+  2026-03-31. Live site is unaffected (Cloudflare edge cert + "Full" SSL mode tolerates it), but
+  if SSL mode is ever set to "Full (strict)" the site breaks. Fix later via Cloudflare Origin
+  Certificate or DNS-01 challenge.
+
+**Next action owner:** none (resolved) — apart from the main-domain origin-cert issue above.
+
+### Round 2 (same day): multi-video uploads still 502'd — Traefik 60s readTimeout
+
+After the DNS fix, a single short video uploaded fine but multiple videos failed with
+`502 Bad Gateway` (browser showed a misleading CORS error — Traefik's 502 page has no CORS
+headers). VPS logs showed multer `Error: Request aborted` — the request was severed
+mid-transfer. Root cause: **Traefik v3 (3.5.3) defaults `readTimeout` to 60s** on entrypoints
+(v2 had no timeout), so any upload whose body took >60s to transmit was killed. Dev has no
+Traefik in front of Express, which is why localhost multi-upload always worked.
+
+**Fixes applied 2026-07-08:**
+1. **VPS (live now, no deploy needed):** added
+   `--entrypoints.websecure.transport.respondingTimeouts.readTimeout=3600s` to the traefik
+   service in `/root/docker-compose.yml` (backup: `docker-compose.yml.bak-20260708`) and
+   recreated the container. Verified with a rate-limited 106-second 10MB upload → HTTP 200.
+2. **Code (needs next deploy):** `server.requestTimeout = 3600000` in `server/index.ts` and
+   `server/prod-index.ts` — Node 22 defaults to a 5-minute requestTimeout, which becomes the
+   next ceiling for very large uploads (1.5GB at ~20Mbps ≈ 10 min). Until deployed, uploads
+   transferring in under ~5 min work; longer ones will still abort.
+3. **Code (cosmetic, needs next deploy):** `shoot_previews` lookup in
+   `client/src/lib/supabase-operations.ts` switched `.single()` → `.maybeSingle()` — shoots
+   without preview settings caused a harmless-but-noisy 406 in the console on every gallery load.
+
+### Round 3 (same day): main-domain origin cert — fixed via DNS-01, not Origin CA
+
+The Origin CA API route was abandoned: it is a **user-level** endpoint and rejects
+account-owned API tokens with error 1016 regardless of scope (the "site-migrations" token is
+account-owned). Instead, the main domain now uses **Let's Encrypt DNS-01 via the Cloudflare
+API**, which works behind the orange-cloud proxy and auto-renews:
+
+1. `/root/.env` (VPS): added `CF_DNS_API_TOKEN` (the "site-migrations" account token — it has
+   DNS edit on the slyfox.co.za zone). ⚠️ That file's last line had no trailing newline; a
+   blind `>>` append corrupted `SSL_EMAIL` and had to be repaired.
+2. `/root/docker-compose.yml` (backup `.bak2-20260708`): new `cfdns` certresolver
+   (`dnschallenge.provider=cloudflare`, storage `/letsencrypt/acme-cfdns.json`) + the token
+   passed via `environment:` on the traefik service.
+3. `docker-compose.prod.yml` (repo AND `/opt/sfweb`, backup `.bak-20260708`): router
+   `slyfox-https` switched `certresolver: mytlschallenge → cfdns`. The **upload** router stays
+   on `mytlschallenge` (grey cloud, TLS-ALPN works fine there). App container recreated with
+   the standard overlay invocation (same image, labels only).
+4. **Gotcha:** cfdns initially logged "No ACME certificate generation required" — the expired
+   slyfox.co.za cert still in `mytlschallenge`'s `acme.json` made the store consider the
+   domain covered. Removed that entry (backup `/root/acme.json.bak-20260708`), restarted
+   Traefik → cert issued immediately.
+
+Verified: origin serves a fresh LE cert for slyfox.co.za+www (valid to 2026-10-06,
+auto-renews), site + www return 200 through Cloudflare, upload subdomain untouched. It is now
+SAFE to set Cloudflare SSL mode to **Full (strict)**. The staged origin-cert key/CSR were
+removed (unused). Remaining acme noise in Traefik logs: stale `n8n.srv825597.hstgr.cloud`
+renewal failures (NXDOMAIN) — harmless, clean up by removing its acme.json entry if it grates.
 
 ---
 

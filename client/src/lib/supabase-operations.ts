@@ -980,16 +980,19 @@ export const clientSelectionOperations = {
 // Preview Settings Operations (using shoot_previews table)
 export const previewSettingsOperations = {
   getByShoot: async (shootId: string) => {
+    // maybeSingle: shoots without preview settings are normal — .single() returns
+    // an HTTP 406 for zero rows, which litters the browser console with errors
     const { data, error } = await supabase
       .from('shoot_previews')
       .select('*')
       .eq('shoot_id', shootId)
-      .single();
-    
+      .maybeSingle();
+
     if (error) {
-      if (error.code === 'PGRST116') return null; // Not found
       throw new Error(`Failed to fetch preview settings: ${error.message}`);
     }
+
+    if (!data) return null; // Not found
     
     // Convert snake_case fields to camelCase for interface compatibility
     if (data) {

@@ -140,6 +140,10 @@ app.use((req, res, next) => {
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '3000', 10);
   const host = process.env.DOCKER_ENV === 'true' ? "0.0.0.0" : "127.0.0.1";
+  // Node 22 defaults to a 5-minute requestTimeout, which aborts large video
+  // uploads mid-transfer (1.5GB wedding videos on normal connections exceed it).
+  // Match Traefik's 1-hour readTimeout on the websecure entrypoint.
+  server.requestTimeout = 3600000;
   server.listen(port, host, () => {
     log(`serving on port ${port}`);
   });

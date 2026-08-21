@@ -386,7 +386,7 @@ curl https://slyfox.co.za/api/site-config | jq '.contact.business.name'
 ## Server Details
 - **Host**: vps.netfox.co.za (168.231.86.89)
 - **OS**: Ubuntu 24.04 LTS
-- **Resources**: 3.8GB RAM, 1 CPU, 48GB storage
+- **Resources**: 7.8GB RAM, 2 vCPU, 96GB disk (upgraded; measured 2026-08-21)
 - **Provider**: Hostinger
 
 ## Running Services
@@ -734,7 +734,23 @@ ssh slyfox-vps "cd /opt/sfweb && chmod -R 644 public/images && find public -type
 
 # 🎯 DEPLOYMENT HISTORY
 
-**Last Successful Deployment**: 2026-06-23 (Blog Content Studio + Quote Generator + Node 22 + AI image refactor)
+**Last Successful Deployment**: 2026-08-21 (Supabase offboarding Phase 1 — media → Google Cloud Storage)
+
+**Features / Changes Deployed:**
+- All gallery images/videos, preview images and brand assets now served from GCS bucket `sfweb-media`
+  (`https://storage.googleapis.com/sfweb-media/<bucket>/<key>`); new `server/media/media-store.ts` +
+  `supabase-compat.ts` shim; video uploads use multer diskStorage (no 1.5 GB RAM buffer).
+- DB URL rewrite applied (2,528 values, backup in `public._media_url_backup`, `scripts/migrate-storage/out/rollback.sql`).
+- New env vars (defaults in code): `GCS_MEDIA_BUCKET`, `GCS_ARCHIVE_BUCKET`, `MEDIA_PUBLIC_BASE`,
+  `VITE_MEDIA_BASE_URL` (build arg — added to both compose files + Dockerfile).
+- ⚠️ Build fix: `package.json` `prepare` script called `git` and broke Docker builds (exit 127) — now tolerant.
+- Process: rsync (excluding `scripts/migrate-storage/out`) → `build` first (no downtime) → tag rollback
+  `sfweb-app:rollback-20260821-134003` → `down` → URL rewrite (DB + config volume JSON) → `up -d --build`
+  → chmod fix → Cloudflare purge. Downtime ≈ 80 s. Bundle `index-GZLzNBjn.js`, Node 22.23.
+- Verification: site/admin/client-portal 200, `03-verify` OK, covers/variants/video Range/ZIP/blog list green.
+  Full runbook: [`SYSTEM_DOCUMENTATION/SUPABASE_OFFBOARDING.md`](./SYSTEM_DOCUMENTATION/SUPABASE_OFFBOARDING.md).
+
+**Previous Deployment**: 2026-06-23 (Blog Content Studio + Quote Generator + Node 22 + AI image refactor)
 
 **Features / Changes Deployed:**
 - Node 22 base image (required for current @supabase/supabase-js — see Critical Lessons)

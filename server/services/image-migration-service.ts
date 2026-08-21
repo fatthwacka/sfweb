@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { mediaStore } from '../media/media-store';
 import { randomUUID } from 'crypto';
 import { dropboxService, type DropboxFile } from './dropbox-service.js';
 
@@ -135,21 +136,12 @@ export class ImageMigrationService {
 
     console.log(`⬆️  Uploading to Supabase: ${storagePath}`);
 
-    const { data, error } = await this.supabase.storage
-      .from('gallery-images')
-      .upload(storagePath, imageBuffer, {
-        contentType: this.getContentType(fileName),
-        upsert: false
-      });
-
-    if (error) {
-      throw new Error(`Supabase upload failed for ${fileName}: ${error.message}`);
-    }
-
-    // Get public URL
-    const { data: publicUrlData } = this.supabase.storage
-      .from('gallery-images')
-      .getPublicUrl(storagePath);
+    // Media store (Google Cloud Storage) — same key layout as the old Supabase bucket
+    const uploaded = await mediaStore.put('gallery-images', storagePath, imageBuffer, {
+      contentType: this.getContentType(fileName),
+      upsert: false,
+    });
+    const publicUrlData = { publicUrl: uploaded.publicUrl };
 
     console.log(`🔗 Supabase URL: ${publicUrlData.publicUrl}`);
     return { 
@@ -213,9 +205,10 @@ export class ImageMigrationService {
     if (existingImages && existingImages.length > 0) {
       const storagePaths = existingImages.map(img => img.supabase_storage_path);
       
-      const { error: storageError } = await this.supabase.storage
-        .from('gallery-images')
-        .remove(storagePaths);
+      const storageResult = await mediaStore.removeUrls(storagePaths, 'gallery-images');
+      const storageError = storageResult.failed.length
+        ? { message: storageResult.failed.map(f => `${f.key}: ${f.error}`).join('; ') }
+        : null;
 
       if (storageError) {
         console.error(`⚠️  Failed to delete existing storage files: ${storageError.message}`);
@@ -288,9 +281,10 @@ export class ImageMigrationService {
       // 2. Delete from Supabase Storage
       const storagePaths = previewImages.map(img => img.supabase_storage_path);
       
-      const { error: storageError } = await this.supabase.storage
-        .from('gallery-images')
-        .remove(storagePaths);
+      const storageResult = await mediaStore.removeUrls(storagePaths, 'gallery-images');
+      const storageError = storageResult.failed.length
+        ? { message: storageResult.failed.map(f => `${f.key}: ${f.error}`).join('; ') }
+        : null;
 
       if (storageError) {
         console.error(`⚠️  Failed to delete from storage: ${storageError.message}`);

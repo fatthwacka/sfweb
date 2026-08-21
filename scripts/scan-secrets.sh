@@ -108,6 +108,10 @@ ALLOW=(
   # Environment-variable references and shell interpolation, not literals
   '\$\{[A-Z_]+\}'
   'process\.env\.'
+
+  # Base64 font data URIs in static HTML (embedded @font-face). Random base64 can spell
+  # AKIA…/ASIA…; the rule is narrowed to lines that are literally a font data URI.
+  "src:url\\('data:font/[a-z-]+;base64,"
 )
 
 # ─── Canaries: one per pattern, tested in isolation ──────────────────────────

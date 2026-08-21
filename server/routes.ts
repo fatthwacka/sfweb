@@ -11,6 +11,9 @@ import { createSupabaseUser, type CreateUserData } from './supabase-auth.js';
 import { populateWithExistingAuth } from './populate-with-existing-auth.js';
 import { initializeAdmin } from './init-admin.js';
 import { createClient } from '@supabase/supabase-js';
+import os from 'os';
+import { createHybridClient } from './media/supabase-compat';
+import { parseMediaUrl, imageVariantUrl } from './media/media-store';
 import simpleAssetsRouter from './routes/simple-assets';
 import siteConfigRouter from './site-config-api';
 import { gradientRoutes } from './routes/gradients';
@@ -456,9 +459,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (coverImage && coverImage.storagePath) {
           // Add transformation for main preview - higher quality
-          coverImageUrl = coverImage.storagePath.includes('supabase') 
-            ? coverImage.storagePath.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=600&height=400&resize=cover&quality=85'
-            : coverImage.storagePath;
+          coverImageUrl = imageVariantUrl(coverImage.storagePath, 'optimized');
           console.log(`Cover image URL generated:`, coverImageUrl);
         }
         
@@ -470,9 +471,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (differentImage && differentImage.storagePath) {
           // Smaller square format for statistics section
-          statisticsImageUrl = differentImage.storagePath.includes('supabase') 
-            ? differentImage.storagePath.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=300&height=300&resize=cover'
-            : differentImage.storagePath;
+          statisticsImageUrl = imageVariantUrl(differentImage.storagePath, 'thumbnail');
           console.log(`Statistics image URL generated:`, statisticsImageUrl, `(using ${differentImage.filename})`);
         } else {
           console.log(`No different image available for statistics section. Only one image or no valid different image.`);
@@ -589,10 +588,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { slug } = req.params;
       
       // Create Supabase client with server-side secret key
-      const supabase = createClient(
-        process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SECRET_KEY!
-      );
+      const supabase = createHybridClient();
 
       // Get the shoot details first using direct Supabase query
       // Try both custom_slug and id to match frontend logic
@@ -692,23 +688,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           let storagePath;
           let bucketName;
           
-          if (mediaItem.mediaType === 'video') {
-            bucketName = 'gallery-videos';
-            if (mediaItem.storage_path.includes('supabase.co')) {
-              const urlParts = mediaItem.storage_path.split('/storage/v1/object/public/gallery-videos/');
-              storagePath = urlParts[1];
-            } else {
-              storagePath = mediaItem.storage_path;
-            }
-          } else {
-            bucketName = 'gallery-images';
-            if (mediaItem.storage_path.includes('supabase.co')) {
-              const urlParts = mediaItem.storage_path.split('/storage/v1/object/public/gallery-images/');
-              storagePath = urlParts[1];
-            } else {
-              storagePath = mediaItem.storage_path;
-            }
+          // Resolve bucket + key from the stored URL (new GCS form or legacy Supabase form)
+          const mediaRef = parseMediaUrl(mediaItem.storage_path, mediaItem.mediaType === 'video' ? 'gallery-videos' : 'gallery-images');
+          if (!mediaRef) {
+            console.warn(`⚠️ Unrecognised storage URL for ${mediaItem.mediaType}: ${mediaItem.id}`);
+            continue;
           }
+          bucketName = mediaRef.bucket;
+          storagePath = mediaRef.key;
 
           if (!storagePath) {
             console.warn(`⚠️ Invalid storage path for ${mediaItem.mediaType}: ${mediaItem.id}`);
@@ -997,10 +984,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (shootTypesParam) {
         // Use direct Supabase query with .in() filter for shootTypes
-        const supabase = createClient(
-          process.env.VITE_SUPABASE_URL!,
-          process.env.SUPABASE_SECRET_KEY!
-        );
+        const supabase = createHybridClient();
         const shootTypes = shootTypesParam.split(',').map(t => t.trim().toLowerCase());
         const { data, error } = await supabase
           .from('shoots')
@@ -1088,9 +1072,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           if (coverImage && coverImage.storagePath) {
-            coverImageUrl = coverImage.storagePath.includes('supabase')
-              ? coverImage.storagePath.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=600&height=400&resize=cover&quality=85'
-              : coverImage.storagePath;
+            coverImageUrl = imageVariantUrl(coverImage.storagePath, 'optimized');
           }
         }
 
@@ -1314,9 +1296,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           if (coverImagePath) {
-            coverImageUrl = coverImagePath.includes('supabase')
-              ? coverImagePath.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=600&height=400&resize=cover&quality=85'
-              : coverImagePath;
+            coverImageUrl = imageVariantUrl(coverImagePath, 'optimized');
           }
         }
 
@@ -1541,10 +1521,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Initialize Supabase client for storage cleanup
-      const supabase = createClient(
-        process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SECRET_KEY!
-      );
+      const supabase = createHybridClient();
 
       // Delete preview images from Supabase Storage
       let storageDeleteCount = 0;
@@ -1808,10 +1785,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           try {
             // Initialize Supabase client for storage metadata
-            const supabase = createClient(
-              process.env.VITE_SUPABASE_URL!,
-              process.env.SUPABASE_SECRET_KEY!
-            );
+            const supabase = createHybridClient();
 
             // Extract the storage path from the full URL
             const urlParts = existingImage.storagePath.split('/');
@@ -1895,10 +1869,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           try {
             // Initialize Supabase client for storage metadata
-            const supabase = createClient(
-              process.env.VITE_SUPABASE_URL!,
-              process.env.SUPABASE_SECRET_KEY!
-            );
+            const supabase = createHybridClient();
 
             // Extract the storage path from the full URL
             const urlParts = existingVideo.storagePath.split('/');
@@ -1989,10 +1960,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Initialize Supabase client
-      const supabase = createClient(
-        process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SECRET_KEY! // Use service role for admin operations
-      );
+      const supabase = createHybridClient();
 
       const uploadedImages = [];
       const replacedImages = [];
@@ -2090,15 +2058,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Delete all 3 old versions from Supabase storage
             try {
               // Extract base storage path from full URL
-              let oldStoragePath;
-              if (targetImage.storagePath.includes('supabase.co')) {
-                // Full URL format: extract path after /storage/v1/object/public/gallery-images/
-                const urlParts = targetImage.storagePath.split('/storage/v1/object/public/gallery-images/');
-                oldStoragePath = urlParts[1];
-              } else {
-                // Already just the storage path
-                oldStoragePath = targetImage.storagePath;
-              }
+              const oldStoragePath = parseMediaUrl(targetImage.storagePath, 'gallery-images')?.key ?? targetImage.storagePath;
 
               // Generate paths for all 3 versions to delete
               // Original: {base}.{ext} (no suffix)
@@ -2255,10 +2215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`🎯 Workflow state: ${workflowState.state} for shoot ${shootId}`);
 
       // Initialize Supabase client
-      const supabase = createClient(
-        process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SECRET_KEY! // Use service role for admin operations
-      );
+      const supabase = createHybridClient();
 
       // If overwriting existing files, delete old storage files and database records
       if (existingPreviewImages.length > 0) {
@@ -2548,7 +2505,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Video upload endpoint with 1.5GB limit for large wedding videos
   const videoUpload = multer({
-    storage: multer.memoryStorage(),
+    // Disk storage: large videos stream to the OS temp dir instead of being buffered in RAM
+    storage: multer.diskStorage({ destination: os.tmpdir() }),
     limits: {
       fileSize: 1500 * 1024 * 1024, // 1.5GB limit for large wedding videos
     },
@@ -2565,6 +2523,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log("🎬 VIDEO UPLOAD ENDPOINT - Enhanced 3-Tier Processing");
     try {
       const files = req.files as Express.Multer.File[];
+      // Temp files written by multer diskStorage are removed once the response is finished/aborted
+      res.once('close', () => { for (const f of files || []) if (f?.path) fs.unlink(f.path, () => {}); });
       const { shootId, resolutions } = req.body;
 
       if (!files || files.length === 0) {
@@ -2597,10 +2557,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`🎬 Processing ${files.length} video(s) for shoot ${shootId} with 3-tier optimization`);
 
-      const supabase = createClient(
-        process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SECRET_KEY!
-      );
+      const supabase = createHybridClient();
 
       const uploadedVideos = [];
       const replacedVideos = [];
@@ -2615,7 +2572,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`📏 Size: ${formatFileSize(file.size)}`);
 
           // Step 1: Validate video file
-          const validation = validateVideoForProcessing(file.buffer, file.originalname);
+          const validation = validateVideoForProcessing(file.size, file.originalname);
           if (!validation.valid) {
             console.error(`❌ Validation failed: ${validation.error}`);
             errors.push({ filename: file.originalname, error: validation.error });
@@ -2638,7 +2595,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`⚙️ Starting FFmpeg processing for ${cleanFilename}...`);
             try {
               const processingResult = await processVideo({
-                inputBuffer: file.buffer,
+                inputPath: file.path,
                 originalFilename: cleanFilename,
                 maxWidth: 1920, // 1080p max
                 quality: 'medium'
@@ -2687,7 +2644,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           const { data: videoData, error: videoError } = await supabase.storage
             .from('gallery-videos')
-            .upload(videoPath, file.buffer, {
+            .upload(videoPath, file.path, {
               contentType: file.mimetype,
               upsert: false
             });
@@ -2814,23 +2771,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 
                 // Extract storage paths and add to deletion list
                 if (targetVideo.storagePath) {
-                  let oldStoragePath = targetVideo.storagePath.includes('supabase.co') 
-                    ? targetVideo.storagePath.split('/storage/v1/object/public/gallery-videos/')[1]
-                    : targetVideo.storagePath;
+                  let oldStoragePath = parseMediaUrl(targetVideo.storagePath, 'gallery-videos')?.key ?? targetVideo.storagePath;
                   oldVersions.push(oldStoragePath);
                 }
                 
                 if (targetVideo.optimizedPath) {
-                  let oldOptimizedPath = targetVideo.optimizedPath.includes('supabase.co')
-                    ? targetVideo.optimizedPath.split('/storage/v1/object/public/gallery-videos/')[1]
-                    : targetVideo.optimizedPath;
+                  let oldOptimizedPath = parseMediaUrl(targetVideo.optimizedPath, 'gallery-videos')?.key ?? targetVideo.optimizedPath;
                   oldVersions.push(oldOptimizedPath);
                 }
                 
                 if (targetVideo.thumbnailPath) {
-                  let oldThumbnailPath = targetVideo.thumbnailPath.includes('supabase.co')
-                    ? targetVideo.thumbnailPath.split('/storage/v1/object/public/gallery-videos/')[1]
-                    : targetVideo.thumbnailPath;
+                  let oldThumbnailPath = parseMediaUrl(targetVideo.thumbnailPath, 'gallery-videos')?.key ?? targetVideo.thumbnailPath;
                   oldVersions.push(oldThumbnailPath);
                 }
 
@@ -3334,10 +3285,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Use service role key to lookup profile (bypasses RLS for auth purposes)
-      const supabase = createClient(
-        process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SECRET_KEY!
-      );
+      const supabase = createHybridClient();
 
       const { data: userProfile, error } = await supabase
         .from('profiles')
@@ -3513,10 +3461,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`🔄 Uploading to Supabase: ${file.originalname} (${file.mimetype}, ${fileSizeKB}KB)`);
 
       // Initialize Supabase client with service role for storage operations
-      const supabase = createClient(
-        process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SECRET_KEY!
-      );
+      const supabase = createHybridClient();
 
       // Generate unique filename
       const timestamp = Date.now();
@@ -3570,10 +3515,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // List existing blog images from Supabase Storage
   app.get("/api/blog/images", async (req, res) => {
     try {
-      const supabase = createClient(
-        process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SECRET_KEY!
-      );
+      const supabase = createHybridClient();
 
       // List all files in the blog/ folder within gallery-images bucket
       const { data: files, error } = await supabase.storage
@@ -3637,10 +3579,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`🔍 SEO Upload to Supabase: ${category} ${type} - ${file.originalname}`);
 
       // Initialize Supabase client
-      const supabase = createClient(
-        process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SECRET_KEY!
-      );
+      const supabase = createHybridClient();
 
       // Generate SEO-optimized filename with timestamp for uniqueness
       const fileExtension = path.extname(file.originalname).toLowerCase();
@@ -5080,10 +5019,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('🔍 STORAGE VERIFICATION: Starting direct bucket inspection...');
       
       const { createClient } = await import('@supabase/supabase-js');
-      const supabase = createClient(
-        process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SECRET_KEY!
-      );
+      const supabase = createHybridClient();
 
       // List ALL files in gallery-videos bucket recursively
       const { data: allFiles, error: listError } = await supabase.storage
@@ -5134,10 +5070,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('🧹 CLEANUP: Starting orphaned file removal...');
       
       const { createClient } = await import('@supabase/supabase-js');
-      const supabase = createClient(
-        process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SECRET_KEY!
-      );
+      const supabase = createHybridClient();
 
       // Get the orphaned file we found
       const orphanedPath = '1defa09b-1de1-442c-8943-f0e0131c6b70/1763800934540-Kid_shoot6.mp4-optimized.mp4';
@@ -5179,10 +5112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('🔍 IMAGE STORAGE VERIFICATION: Starting...');
       
       const { createClient } = await import('@supabase/supabase-js');
-      const supabase = createClient(
-        process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SECRET_KEY!
-      );
+      const supabase = createHybridClient();
 
       // List ALL files in gallery-images bucket
       const { data: allFiles, error: listError } = await supabase.storage
@@ -5231,10 +5161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "sessionId is required" });
       }
 
-      const supabase = createClient(
-        process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SECRET_KEY!
-      );
+      const supabase = createHybridClient();
 
       // Detect device type from user agent
       const deviceType = userAgent?.toLowerCase().includes('mobile') ? 'mobile'
@@ -5288,10 +5215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get active visitors stats (for admin dashboard)
   app.get("/api/visitors/stats", async (req, res) => {
     try {
-      const supabase = createClient(
-        process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SECRET_KEY!
-      );
+      const supabase = createHybridClient();
 
       // Time windows
       const now = Date.now();
@@ -5434,10 +5358,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Cleanup old sessions and aggregate daily stats (call via VPS cron daily)
   app.delete("/api/visitors/cleanup", async (req, res) => {
     try {
-      const supabase = createClient(
-        process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SECRET_KEY!
-      );
+      const supabase = createHybridClient();
 
       // Get yesterday's date (we aggregate completed days)
       const now = new Date();
@@ -5566,10 +5487,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get historical visitor stats for charts
   app.get("/api/visitors/history", async (req, res) => {
     try {
-      const supabase = createClient(
-        process.env.VITE_SUPABASE_URL!,
-        process.env.SUPABASE_SECRET_KEY!
-      );
+      const supabase = createHybridClient();
 
       // Get number of days from query param (default 30)
       const days = Math.min(parseInt(req.query.days as string) || 30, 365);
